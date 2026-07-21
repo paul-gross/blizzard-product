@@ -1,0 +1,8 @@
+name = "blizzard-product"
+prefix = "bp"
+
+# blizzard-product is blizzard's live product-intent repo — the continuation of
+# the frozen blizzard-discovery corpus. It carries the epic registry
+# (roadmap.md) and per-feature requirements docs; ready-to-execute work lives
+# in GitHub issues, not here. Addressed via the `blizzard-product:` path
+# notation (e.g. `blizzard-product:/roadmap.md`).
