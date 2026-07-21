@@ -1,6 +1,6 @@
 # Writing guide
 
-Every product document in this repo speaks in one voice, and this file defines it. It governs the documents that state intent — roadmap entries, requirements docs, capability descriptions. Convention files like this one, and CONTRIBUTING, stay in the workspace's plainer instructional register; the canon's mechanical principles (`winter-canon:/principles.md`) apply everywhere.
+Every product document in this repo speaks in one voice, and this file defines it. It governs the documents that state intent — registry entries, plans, capability descriptions. Convention files like this one, and CONTRIBUTING, stay in the workspace's plainer instructional register; the canon's mechanical principles (`winter-canon:/principles.md`) apply everywhere.
 
 ## The voice
 

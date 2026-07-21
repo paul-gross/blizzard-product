@@ -1,21 +1,23 @@
 # blizzard-product
 
-Blizzard's **live product intent** — what we are building and why, kept current. This repo is the carry-over and continuation of the frozen [blizzard-discovery](https://github.com/paul-gross/blizzard-discovery) corpus: the epic registry and its `epic:<slug>` ids continue from `blizzard-discovery:/product/epics.md` and live here now. Read this repo when **planning** what to build.
+Blizzard's **live product intent** — what we are building and why, kept current. Read this repo when **planning** what to build.
 
-## Path notation
+## The charter
 
-Files here are addressed with the `blizzard-product:` prefix — for example, `blizzard-product:/roadmap.md`. Resolve to the on-disk path via the `# Winter Extensions` block in workspace `CLAUDE.md`.
+Who blizzard serves and why it exists — [mission](./charter/mission.md), [vision](./charter/vision.md), and [personas](./charter/personas.md) — lives in `charter/`: the standing statement every registry row and plan answers to.
 
-## The three tiers
+## How intent becomes work
 
-Product intent flows through three tiers, each with its own home. Promotion between them is deliberate — the workflow is in [CONTRIBUTING.md](./CONTRIBUTING.md).
+An epic starts as a row in the registry, grows a plan when its time approaches, and ends as filed issues the factory ingests. Each promotion is deliberate — the workflow is in [CONTRIBUTING.md](./CONTRIBUTING.md).
 
-| Tier | What it holds | Where |
-|------|---------------|-------|
-| **Horizon** | The epic registry: capability areas in priority order, a paragraph each | [roadmap.md](./roadmap.md) |
-| **Requirements** | One detailed doc per approaching feature, written at promotion time | `blizzard-product:/epics/<epic-slug>.md` |
-| **Ready** | Sized, well-specified work the factory can ingest | [GitHub issues on `paul-gross/blizzard`](https://github.com/paul-gross/blizzard/issues) |
+| Where | What it holds |
+|-------|---------------|
+| [epics.md](./epics.md) | The epic registry: capability areas in priority order, a paragraph each |
+| [milestones.md](./milestones.md) | The milestone registry: what users will be able to do, each destination demanding its epics |
+| `plans/` | What to build: one plan per promoted epic or single story — a solo file, or a folder whose `index.md` routes its pieces |
+| Backlog source | Ready work: sized, well-specified items the fleet can take |
+| [delivered.md](./delivered.md) | The ledger of landed work: a section per delivered milestone with the epic slices that carried it |
 
 ## Authoring
 
-Writing anything here — a roadmap entry, a requirements doc, a new file — starts from the authoring conventions in [context/index.md](./context/index.md): the repo's structure rules and the voice its product documents are written in.
+Writing anything here — a registry entry, a plan, a new file — starts from the authoring conventions in [context/index.md](./context/index.md): the repo's structure rules and the voice its product documents are written in.
