@@ -16,7 +16,7 @@ A working fleet for a single operator on a single machine: colocated hub and run
 | `epic:review` | full | The default graph's review node. Built from its [plan](./plans/review.md). |
 | `epic:delivery` | full | Hub-executed deliver node, merge queue, epoch-fenced submission (#62 series). Built from its [plan](./plans/delivery.md). |
 | `epic:ask-answer` | hub slice | Question rows at the hub, ask/answer CLI verbs. Remote slice is in the [epic registry](./epics.md). Built from its [plan](./plans/ask-answer-hub.md). |
-| `epic:board` | local slice | Hub-served web app: fleet observability, queue prioritization, chunk grouping. Remote/auth slice is in flight in the [epic registry](./epics.md). Built from its [plan](./plans/board-local/index.md). |
+| `epic:board` | local slice | Hub-served web app: fleet observability, queue prioritization, chunk grouping. Remote/auth slice is in the [epic registry](./epics.md). Built from its [plan](./plans/board-local/index.md). |
 | `epic:gates` | full | Gate nodes plus runner-config gates by node name; decision parking; CLI + board surfacing. Built from its [plan](./plans/gates.md). |
 
 ## `milestone:mvp-feedback` — the lessons of running it for real
@@ -26,7 +26,7 @@ The MVP put a real fleet in an operator's hands, and running it taught what the 
 | Epic | Slice delivered | Notes |
 |------|-----------------|-------|
 | `epic:cost` | core | Usage facts, hub flow-through, board surfacing, budget caps + spend kill-switch (#57 series). Remaining unfiled sub-bullet: model routing by cost. Built from its [plan](./plans/cost.md). |
-| `epic:migration` | core | Explicit migration, `migration_target` auto-drift, retire/re-enable, graph metadata edits (#101, #120, #124 …). Correctness tail is in flight in the [epic registry](./epics.md). Built from its [plan](./plans/migration.md). |
+| `epic:migration` | core | Explicit migration, `migration_target` auto-drift, retire/re-enable, graph metadata edits (#101, #120, #124 …). Correctness tail is in the [epic registry](./epics.md). Built from its [plan](./plans/migration.md). |
 
 ## Outside the milestones
 

@@ -1,6 +1,6 @@
 # Plan — `epic:board`, local slice
 
-> **Shipped.** This plan is frozen: it records what the board's first slice was conceived to be, and its entry in [delivered.md](../../delivered.md) is the record of what landed. Reach and roles are the [remote slice](../board-remote/index.md), in flight.
+> **Shipped.** This plan is frozen: it records what the board's first slice was conceived to be, and its entry in [delivered.md](../../delivered.md) is the record of what landed. Reach and roles are the [remote slice](../board-remote/index.md).
 
 An operator who cannot see the fleet cannot trust it. The board is the hub's web front — served by the hub daemon itself, opened in a local browser — and it exists to answer the two questions an operator actually asks: *where is everything?* and *what should run next?* It is a pure client of the hub's public API and its live event stream — no private side channel, no direct store access — and like every hub surface it is structurally unable to touch code: the hub holds pointers and assets, never worktrees or transcripts. From day one it is the same app the remote board will be; going remote later adds reach and roles, never a second app.
 

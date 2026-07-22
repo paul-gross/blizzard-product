@@ -4,7 +4,7 @@ The board already answers "where is everything?" — for anyone standing at the 
 
 ## What to build
 
-**Auth comes first, and is in flight.** A board on the open network needs a front door before it needs anything else:
+**Auth comes first.** A board on the open network needs a front door before it needs anything else:
 
 - **Login and human identity.** Operators sign in; a hub that answers to the network stops being a hub that answers to anyone who finds it. Locally, the authless-behind-the-network-perimeter posture remains a supported configuration — auth is a capability, not a toll.
 - **Viewer and operator roles.** The person who may look and the person who may act are different grants. A viewer sees everything and touches nothing; an operator answers questions, resolves gates, and shapes the queue. Exactly which controls the operator role spans is decided as the role lands.
