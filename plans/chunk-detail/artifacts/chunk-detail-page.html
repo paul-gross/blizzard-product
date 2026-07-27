@@ -1,0 +1,454 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>blizzard hub — chunk detail page</title>
+<style>
+  :root {
+    --bg: #060a12;
+    --ground: #080d17;
+    --panel: #0b1120;
+    --panel-deep: #080d19;
+    --bezel: #1d2b44;
+    --bezel-hi: #27395c;
+    --line: #131d30;
+    --amber: #f2b25c;
+    --amber-hi: #ffcf8a;
+    --amber-dim: #8f7548;
+    --cyan: #5cd1e5;
+    --cyan-dim: #2b6675;
+    --red: #f05c6c;
+    --red-dim: #7a3540;
+    --green: #4fc57e;
+    --green-dim: #2b5c40;
+    --label: #5c7089;
+    --label-dim: #3c4d63;
+    --text: #b8c6d8;
+    --mono: ui-monospace, "SF Mono", SFMono-Regular, Menlo, Consolas, "Liberation Mono", monospace;
+  }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  html, body { height: 100%; }
+  body {
+    background:
+      radial-gradient(ellipse at 50% -20%, #0c1526 0%, var(--bg) 60%),
+      var(--bg);
+    color: var(--text);
+    font-family: var(--mono);
+    font-size: 12px;
+    font-variant-numeric: tabular-nums;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+  }
+  ::selection { background: var(--cyan-dim); color: #eaf6f9; }
+  .lbl {
+    font-size: 9px;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    color: var(--label);
+    text-shadow: 0 1px 0 rgba(0,0,0,0.9);
+  }
+  .panel {
+    background: linear-gradient(180deg, var(--panel) 0%, var(--panel-deep) 100%);
+    border: 1px solid var(--bezel);
+    box-shadow:
+      inset 0 1px 0 rgba(255,255,255,0.04),
+      inset 0 -1px 0 rgba(0,0,0,0.6),
+      0 0 0 1px rgba(0,0,0,0.55);
+    display: flex;
+    flex-direction: column;
+    min-height: 0;
+  }
+
+  /* ---------- titlebar ---------- */
+  .titlebar {
+    flex: none;
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    padding: 8px 14px;
+    border-bottom: 1px solid var(--bezel);
+    background: linear-gradient(180deg, #0d1526 0%, #0a1120 100%);
+  }
+  .titlebar .crumb { color: var(--label); }
+  .titlebar .crumb a { color: var(--cyan); text-decoration: none; }
+  .titlebar .crumb a:hover { text-decoration: underline; }
+  .titlebar .chunk-id { color: var(--amber-hi); }
+  .status-pill {
+    padding: 1px 10px;
+    border-radius: 999px;
+    border: 1px solid var(--amber-dim);
+    color: var(--amber);
+    background: rgba(242, 178, 92, 0.12);
+    font-size: 10px;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+  }
+
+  /* ---------- tabs ---------- */
+  .tabs {
+    flex: none;
+    display: flex;
+    gap: 2px;
+    padding: 8px 14px 0;
+  }
+  .tab {
+    font-family: var(--mono);
+    background: transparent;
+    border: 1px solid var(--line);
+    border-bottom: none;
+    color: var(--label);
+    cursor: pointer;
+    font-size: 11px;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    padding: 5px 18px;
+  }
+  .tab:hover { color: var(--text); }
+  .tab.active {
+    color: var(--cyan);
+    border-color: var(--bezel-hi);
+    background: linear-gradient(180deg, var(--panel) 0%, var(--panel-deep) 100%);
+  }
+
+  /* ---------- page body ---------- */
+  .page {
+    flex: 1;
+    min-height: 0;
+    display: flex;
+    flex-direction: column;
+    padding: 0 14px 14px;
+  }
+  .sheet {
+    flex: 1;
+    min-height: 0;
+    border: 1px solid var(--bezel-hi);
+    display: flex;
+    background: linear-gradient(180deg, var(--panel) 0%, var(--panel-deep) 100%);
+  }
+
+  /* ---------- artifacts tab: nav + viewer ---------- */
+  .art-nav {
+    flex: none;
+    width: 300px;
+    border-right: 1px solid var(--bezel);
+    display: flex;
+    flex-direction: column;
+    min-height: 0;
+  }
+  .art-nav .head { flex: none; padding: 8px 10px 6px; border-bottom: 1px solid var(--line); }
+  .art-list { flex: 1; overflow-y: auto; list-style: none; }
+  .art-item {
+    display: block;
+    width: 100%;
+    text-align: left;
+    font-family: var(--mono);
+    background: transparent;
+    border: none;
+    border-bottom: 1px solid var(--line);
+    border-left: 2px solid transparent;
+    color: var(--text);
+    cursor: pointer;
+    padding: 6px 10px;
+  }
+  .art-item:hover { background: rgba(92, 209, 229, 0.05); }
+  .art-item.active {
+    border-left-color: var(--cyan);
+    background: rgba(92, 209, 229, 0.08);
+  }
+  .art-item .key { color: var(--cyan); font-size: 11px; overflow-wrap: anywhere; }
+  .art-item .sub {
+    display: flex;
+    gap: 8px;
+    margin-top: 2px;
+    font-size: 9px;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--label-dim);
+  }
+  .art-item .sub .kind { margin-left: auto; }
+
+  .art-view {
+    flex: 1;
+    min-width: 0;
+    display: flex;
+    flex-direction: column;
+    min-height: 0;
+  }
+  .art-view .head {
+    flex: none;
+    display: flex;
+    align-items: baseline;
+    gap: 10px;
+    padding: 8px 12px;
+    border-bottom: 1px solid var(--line);
+  }
+  .art-view .head .key { color: var(--cyan); }
+  .art-view .head .when { color: var(--label-dim); font-size: 10px; margin-left: auto; }
+  .art-view .head .kind {
+    color: var(--label-dim);
+    font-size: 9px;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    border: 1px solid var(--line);
+    border-radius: 999px;
+    padding: 1px 8px;
+  }
+  .art-content {
+    flex: 1;
+    min-height: 0;
+    overflow: auto;
+    padding: 10px 12px;
+    white-space: pre-wrap;
+    word-break: break-word;
+    font-size: 11px;
+    line-height: 1.6;
+    color: var(--text);
+    background: rgba(0, 0, 0, 0.25);
+  }
+  .git-ref { padding: 14px 12px; font-size: 12px; }
+  .git-ref .branch { color: var(--amber-hi); }
+  .git-ref .commit { color: var(--label); }
+
+  /* ---------- general tab ---------- */
+  .general {
+    flex: 1;
+    min-width: 0;
+    overflow-y: auto;
+    padding: 12px;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 12px;
+    align-content: start;
+  }
+  .card { border: 1px solid var(--line); padding: 8px 10px; }
+  .card .lbl { display: block; margin-bottom: 6px; }
+  .kv { display: grid; grid-template-columns: 110px 1fr; gap: 3px 10px; font-size: 11px; }
+  .kv .k { color: var(--label); }
+  .kv .v.cyan { color: var(--cyan); }
+  .kv .v.amber { color: var(--amber-hi); }
+  .hist { list-style: none; font-size: 11px; }
+  .hist li { display: flex; gap: 10px; padding: 2px 0; border-bottom: 1px solid var(--line); }
+  .hist .node { color: var(--cyan); width: 90px; }
+  .hist .outcome { color: var(--green); }
+  .hist .outcome.retry { color: var(--amber); }
+  .hist .when { color: var(--label-dim); margin-left: auto; }
+
+  /* ---------- context strip: what the board dock now shows ---------- */
+  .context-strip {
+    flex: none;
+    margin: 10px 14px 0;
+    border: 1px dashed var(--bezel-hi);
+    padding: 8px 12px;
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    font-size: 11px;
+    color: var(--label);
+  }
+  .context-strip .demo { display: flex; gap: 10px; align-items: baseline; }
+  .context-strip a { color: var(--cyan); text-decoration: none; }
+  .context-strip a:hover { text-decoration: underline; }
+  .context-strip .kind { font-size: 9px; text-transform: uppercase; color: var(--label-dim); }
+</style>
+</head>
+<body>
+
+<div class="titlebar">
+  <span class="crumb"><a href="#">◂ board</a></span>
+  <span class="lbl">chunk</span>
+  <span class="chunk-id">C-EW6W · ch_01KYGJBW67V2T6A6CPZWXJEW6W</span>
+  <span class="status-pill">running</span>
+  <span class="lbl" style="margin-left:auto">node: review · runner-local</span>
+</div>
+
+<div class="context-strip">
+  <span class="lbl">board dock — artifacts now render as links, not inline text:</span>
+  <span class="demo">
+    <a href="#">plan.plan.1</a><span class="kind">asset</span>
+    <a href="#">build.diffstat.2</a><span class="kind">asset</span>
+    <a href="#">review.findings.2</a><span class="kind">asset</span>
+    <a href="#">deliver.commit.3</a><span class="kind">git_commit</span>
+  </span>
+  <span style="margin-left:auto">→ each opens this page, artifact pre-selected</span>
+</div>
+
+<div class="tabs">
+  <button class="tab" data-tab="general">General</button>
+  <button class="tab active" data-tab="artifacts">Artifacts</button>
+</div>
+
+<div class="page">
+  <div class="sheet">
+
+    <!-- ================= ARTIFACTS TAB ================= -->
+    <div id="tab-artifacts" style="display:flex; flex:1; min-height:0;">
+      <nav class="art-nav">
+        <div class="head"><span class="lbl">Artifact store · 4</span></div>
+        <ul class="art-list" id="art-list"></ul>
+      </nav>
+      <section class="art-view">
+        <div class="head">
+          <span class="key" id="view-key"></span>
+          <span class="when" id="view-when"></span>
+          <span class="kind" id="view-kind"></span>
+        </div>
+        <div id="view-body" style="flex:1; min-height:0; display:flex; flex-direction:column;"></div>
+      </section>
+    </div>
+
+    <!-- ================= GENERAL TAB ================= -->
+    <div id="tab-general" style="display:none; flex:1; min-height:0;">
+      <div class="general">
+        <div class="card">
+          <span class="lbl">Identity</span>
+          <div class="kv">
+            <span class="k">chunk</span><span class="v amber">ch_01KYGJBW67V2T6A6CPZWXJEW6W</span>
+            <span class="k">status</span><span class="v amber">running</span>
+            <span class="k">graph</span><span class="v cyan">feature-delivery · g_01KY2Q</span>
+            <span class="k">current node</span><span class="v cyan">review</span>
+            <span class="k">runner</span><span class="v">runner-local</span>
+            <span class="k">environment</span><span class="v">alpha (1 slot)</span>
+          </div>
+        </div>
+        <div class="card">
+          <span class="lbl">Pointers</span>
+          <div class="kv">
+            <span class="k">issue</span><span class="v cyan">blizzard#152 — event log legibility</span>
+            <span class="k">branch</span><span class="v amber">feat/event-log-legibility</span>
+            <span class="k">spend</span><span class="v">$4.12 · 312k tokens</span>
+          </div>
+        </div>
+        <div class="card" style="grid-column: 1 / -1;">
+          <span class="lbl">Node history</span>
+          <ul class="hist">
+            <li><span class="node">plan</span><span class="outcome">→ build</span><span class="when">2h ago</span></li>
+            <li><span class="node">build</span><span class="outcome retry">retry 1 → build</span><span class="when">1h ago</span></li>
+            <li><span class="node">build</span><span class="outcome">→ review</span><span class="when">40m ago</span></li>
+            <li><span class="node">review</span><span class="outcome retry">running…</span><span class="when">now</span></li>
+          </ul>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<script>
+  const ARTIFACTS = [
+    {
+      key: 'plan.plan.1', kind: 'asset', when: '2h ago',
+      content: `# Plan — event log legibility (blizzard#152)
+
+## Intent
+The board's event log renders runner-changed frames as "runner runner-local changed",
+which tells the operator nothing. The frame is published on every heartbeat, so the
+feed is dominated by liveness noise.
+
+## Approach
+1. publish_runner_changed(runner_id, kind=...) — kinds: registered, heartbeat,
+   paused, resumed, locally-paused, locally-resumed.
+2. Carry by/reason for the pause family off the pause facts.
+3. The event-log panel renders only the pause family, descriptively; every frame
+   still invalidates the fleet query so the liveness column keeps working.
+
+## Files
+- src/blizzard/hub/events/broker.py — publish signature + payload
+- src/blizzard/hub/api/fleet.py, api/runners.py — call sites pass kind/by/reason
+- web/projects/fleet/src/lib/sse/fleet-live.ts — payload type
+- web/projects/fleet/src/lib/event-log/event-log-panel.ts — summarize() + filter
+
+## Verification
+- tier-2 broker unit: each publisher stamps its kind
+- tier-3 board spec: heartbeat frame absent from the log feed, pause frame rendered
+  "runner runner-local paused by operator"`
+    },
+    {
+      key: 'build.diffstat.2', kind: 'asset', when: '55m ago',
+      content: ` src/blizzard/hub/events/broker.py                 |  18 ++-
+ src/blizzard/hub/api/fleet.py                     |   9 +-
+ src/blizzard/hub/api/runners.py                   |   6 +-
+ web/projects/fleet/src/lib/sse/fleet-live.ts      |  11 +-
+ web/projects/fleet/src/lib/event-log/event-log-panel.ts | 34 +++--
+ tests/hub/events/test_broker.py                   |  41 ++++++
+ web/.../event-log-panel.spec.ts                   |  58 ++++++++
+ 7 files changed, 152 insertions(+), 25 deletions(-)`
+    },
+    {
+      key: 'review.findings.2', kind: 'asset', when: '38m ago',
+      content: `# Review findings — round 2
+
+## Verdict: approve with nits
+
+1. [nit] broker.py:127 — the kind literal set is re-typed in the panel's filter;
+   consider exporting the pause-family tuple from one owner so a new kind lands once.
+2. [ok] Heartbeat frames verified absent from the log feed while the fleet column
+   still refreshes — the invalidation registry is untouched.
+3. [ok] The descriptive summary renders by/reason only when present; no dangling
+   "by —" for facts that carry neither.
+4. [nit] event-log-panel.spec.ts — the locally-paused fixture hardcodes the reason
+   string twice; hoist to a const.
+
+No blocking findings. The tier-3 spec run is green (14/14).
+
+---
+(long transcript follows — this is the kind of artifact that used to be
+rendered inline in the board dock, hundreds of lines tall, and is exactly
+why this page exists. It now lives behind a link, scrollable here, while
+the dock stays a compact list of keys.)
+
+...`
+    },
+    {
+      key: 'deliver.commit.3', kind: 'git_commit', when: '2m ago',
+      repo: 'blizzard', branch: 'feat/event-log-legibility', commit: '9c41b7e'
+    },
+  ];
+
+  const list = document.getElementById('art-list');
+  const viewKey = document.getElementById('view-key');
+  const viewWhen = document.getElementById('view-when');
+  const viewKind = document.getElementById('view-kind');
+  const viewBody = document.getElementById('view-body');
+
+  function select(i) {
+    document.querySelectorAll('.art-item').forEach((el, j) => el.classList.toggle('active', i === j));
+    const a = ARTIFACTS[i];
+    viewKey.textContent = a.key;
+    viewWhen.textContent = a.when;
+    viewKind.textContent = a.kind;
+    if (a.kind === 'asset') {
+      viewBody.innerHTML = '<div class="art-content"></div>';
+      viewBody.firstChild.textContent = a.content;
+    } else {
+      viewBody.innerHTML = '<div class="git-ref">' + a.repo +
+        ' · <span class="branch">' + a.branch + '</span> <span class="commit">@ ' + a.commit + '</span></div>';
+    }
+  }
+
+  ARTIFACTS.forEach((a, i) => {
+    const li = document.createElement('li');
+    const btn = document.createElement('button');
+    btn.className = 'art-item';
+    btn.innerHTML = '<span class="key">' + a.key + '</span>' +
+      '<div class="sub"><span>' + a.when + '</span><span class="kind">' + a.kind + '</span></div>';
+    btn.addEventListener('click', () => select(i));
+    li.appendChild(btn);
+    list.appendChild(li);
+  });
+
+  // Deep-link pre-selection: the dock link lands here with the artifact key in the
+  // URL; the mock defaults to the long one to make the point.
+  select(2);
+
+  document.querySelectorAll('.tab').forEach((tab) => {
+    tab.addEventListener('click', () => {
+      document.querySelectorAll('.tab').forEach((t) => t.classList.toggle('active', t === tab));
+      document.getElementById('tab-artifacts').style.display = tab.dataset.tab === 'artifacts' ? 'flex' : 'none';
+      document.getElementById('tab-general').style.display = tab.dataset.tab === 'general' ? 'flex' : 'none';
+    });
+  });
+</script>
+</body>
+</html>
