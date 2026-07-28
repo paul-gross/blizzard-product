@@ -18,5 +18,4 @@ Human-facing reach is not here. The board's login, roles, and phone-friendly she
 
 ## Open questions
 
-- The deployment shape blizzard blesses first: bare systemd on a home server, a container image, or both from day one.
-- Whether the hub terminates TLS itself or documents a reverse-proxy front as the supported posture.
+Both questions this plan once carried — the deployment shape blizzard blesses first, and whether the hub terminates TLS itself — are settled by the distribution slice of `epic:hub`: the container image is the blessed shape (systemd remains supported), and TLS terminates at a documented reverse-proxy front.
