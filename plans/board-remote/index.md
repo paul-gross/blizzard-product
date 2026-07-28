@@ -11,7 +11,7 @@ The board already answers "where is everything?" — for anyone standing at the 
 - **A capability-aware UI.** The board renders what the session may do: a viewer is never shown buttons that would fail, and an operator's controls follow their grant.
 - **Runner single sign-on.** The runner's own panel participates in the same identity, so a fleet with a signed-in board never has an unsigned back door.
 
-**Then reach.** The phone-friendly progressive-web-app shell — the board installed on a home screen, laid out for a thumb — and question notifications surfacing through it, with answers flowing back over the same routes as everywhere else (`epic:ask-answer`'s remote slice carries the fan-out).
+**Then reach.** The phone-friendly progressive-web-app shell — the board installed on a home screen, laid out for a thumb — and question notifications surfacing through it, with answers flowing back over the same routes as everywhere else (the notification fan-out seam is `epic:chat`'s to build).
 
 ## Artifacts
 

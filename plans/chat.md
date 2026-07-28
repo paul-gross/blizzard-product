@@ -2,7 +2,7 @@
 
 The fleet's best questions arrive at the worst times: overnight, over a weekend, while [`persona:product-owner`](../charter/personas/product-owner.md) is anywhere but at a browser. A chat bot is the channel that is already in their pocket. This epic gives the fleet one: question notifications that arrive as messages, answers that cost one tap, and a confirmation that the agent picked the answer up and went back to work.
 
-It rides on `epic:ask-answer`'s remote slice — the fan-out and answer-back plumbing lives there ([plan](./ask-answer-remote.md)); this epic is the first chat binding of the human-channel seam.
+This epic owns the notification fan-out seam and builds it together with its first binding: the answer-back plumbing and the closed-loop confirmations live in `epic:ask-answer`'s remote slice ([plan](./ask-answer-remote.md)); carrying a question *out* to a channel — and deciding who subscribes to what — lands here, proven by the bot that first consumes it.
 
 ## What to build
 
@@ -12,5 +12,6 @@ It rides on `epic:ask-answer`'s remote slice — the fan-out and answer-back plu
 
 ## Open questions
 
+- The subscription model: who is told about which questions, and when — everyone about everything is noise, and a routing scheme (per-fleet, per-graph, per-persona) is design work this epic must settle before the first channel is worth having.
 - Identity: how a Telegram account maps to a hub user once the board's auth lands, and whether an unmapped account may answer at all.
 - Where the bot runs — inside the hub daemon or beside it — and what its failure does to the fan-out contract (nothing may be lost: the question row is durable either way).

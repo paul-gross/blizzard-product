@@ -26,10 +26,11 @@ The MVP put a real fleet in an operator's hands, and running it taught what the 
 | Epic | Slice delivered | Notes |
 |------|-----------------|-------|
 | `epic:cost` | core | Usage facts, hub flow-through, board surfacing, budget caps + spend kill-switch (#57 series). Remaining unfiled sub-bullet: model routing by cost. Built from its [plan](./plans/cost.md). |
-| `epic:migration` | core | Explicit migration, `migration_target` auto-drift, retire/re-enable, graph metadata edits (#101, #120, #124 …). Correctness tail is in the [epic registry](./epics.md). Built from its [plan](./plans/migration.md). |
+| `epic:migration` | core | Explicit migration, `migration_target` auto-drift, retire/re-enable, graph metadata edits (#101, #120, #124 …). Correctness tail delivered separately (outside the milestones, below); follow-latest slice is in the [epic registry](./epics.md). Built from its [plan](./plans/migration.md). |
 
 ## Outside the milestones
 
 | Epic | Slice delivered | Notes |
 |------|-----------------|-------|
 | `epic:runner-panel` | core | The runner-served machine panel and transcript viewer: local truth — leases, capacities, escalations with copyable resume commands, transcripts — beside shared fleet views, one codebase with two thin apps. Built from its [plan](./plans/runner-panel/index.md). |
+| `epic:migration` | correctness tail | Transition-keyed derivations and fences made migration-aware (#109 series: #108, #110, #111, #112). |

@@ -10,13 +10,15 @@ What users will be able to do. A milestone is a destination stated in the user's
 
 Today the hub lives where the operator sits: it shares a machine with its runner, and being away from that machine means being away from the fleet. This milestone breaks that tie. The hub becomes something the operator reaches, not something they sit at — one hub, off the machine, and every runner in their fleet signs in to it from wherever it runs.
 
-What that unlocks is told best through the people in the [charter](./charter/personas.md). The application architect queues work Friday evening and checks the board from wherever the weekend takes them. The product owner's questions stop being desk-bound: an agent's ask reaches their phone, and a one-tap answer sends the fleet back to work. And a second machine — a home server, a spare laptop — becomes more fleet with a runner install, not a second island with its own hub.
+What that unlocks is told best through the people in the [charter](./charter/personas.md). The application architect queues work Friday evening and checks the board from wherever the weekend takes them. The product owner checks in from a phone: the board in their pocket shows the question a parked agent is waiting on, and answering it right there sends the fleet back to work. And a second machine — a home server, a spare laptop — becomes more fleet with a runner install, not a second island with its own hub.
 
-The journey demands four pieces of work, and the first has already landed: runners sign in to the hub with hub-minted tokens — the runner-auth slice of `epic:security` — the precondition for a hub that answers to the open network. The hub's remote slice does the heavy lifting: an off-machine deployment serving multiple runners over the existing outbound-only protocol. The ask-answer remote slice carries questions the last mile — fan-out to wherever the humans are, answers flowing back from the board or a chat client. And the board's remote slice makes the web app safe to expose: login, viewer and operator roles, session-aware UI — the auth work now delivered (#89), marked in the epic chart below; its phone-friendly reach remains in the [epic registry](./epics.md).
+The boundary is deliberate: this milestone makes the fleet reachable, not insistent. Checking in is the promise; being summoned — a question pushed to a pocket the moment it is asked — waits for the notification fan-out that `epic:chat` builds with its first channel.
+
+The journey demands four pieces of work, and two have already landed: runners sign in to the hub with hub-minted tokens — the runner-auth slice of `epic:security` — and the board is safe to expose, with login, viewer and operator roles, and a session-aware UI (#89). The hub's remote slice does the heavy lifting: an off-machine deployment serving multiple runners over the existing outbound-only protocol. What remains of the ask-answer remote slice is the closed loop: the person who answers — from the board, on any device — sees that the answer was delivered and the agent resumed, and a beaten answerer is told who won rather than shown an error.
 
 | Epic | Slice | Status |
 |------|-------|--------|
 | `epic:security` | runner-auth | delivered |
 | `epic:board` | remote (auth) | delivered |
 | `epic:hub` | remote | horizon |
-| `epic:ask-answer` | remote | horizon |
+| `epic:ask-answer` | remote (closed loop) | horizon |

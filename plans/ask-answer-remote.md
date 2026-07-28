@@ -1,18 +1,20 @@
 # Plan — `epic:ask-answer`, remote slice
 
-An agent halfway through a feature hits a question no spec ever answered — should the export include archived records? — asks it, and goes dormant. Today the answer requires being at the machine: the question surfaces in `blizzard hub status`, and `blizzard hub answer` sends the agent back to work. The person who actually holds that answer — [`persona:product-owner`](../charter/personas/product-owner.md) — is away from a desk more often than at one. This slice carries the question the last mile: out to wherever the humans are, and their answer back.
+Answering a question away from the machine only feels safe when the answer visibly arrives. The person who taps out a reply between errands is left holding a question of their own — did it get there? is the agent moving again? — and until the product answers *that*, remote answering stays something an operator double-checks from a desk later. This slice closes the exchange: the answer's return trip becomes something any surface can show, end to end.
 
 ## What already holds
 
-The protocol underneath — the [hub slice](./ask-answer-hub.md) — is delivered and does not change. Ask-and-exit, the durable question row at the hub, the parked `waiting_on_human` chunk with its reap clock stopped, resume-with-answer under the same lease — all of it ships and works. What is missing is purely *reach*: the question exists as a row a phone could read, and nothing yet puts it on the phone.
+More of the reach story is delivered than this slice once assumed. The protocol underneath — the [hub slice](./ask-answer-hub.md) — ships and works: durable question rows, the parked `waiting_on_human` chunk, resume-with-answer, first-write-wins arbitration at the hub. And the board already carries questions both ways: an open question appears the moment it is asked (the live event stream re-reads on ask and answer), and the chunk's dock takes an answer through the same hub route as the CLI. With the board reachable from a phone, checking in and answering from anywhere is real today.
 
 ## What to build
 
-- **Fan-out.** An open question reaches its humans instead of waiting to be queried: it appears on the board the moment it is asked, and is pushed to whatever notification channels are configured — the chat bot (`epic:chat`) is the first, and the channel is a seam, not a Telegram assumption.
-- **Answers from remote clients.** The board and any chat client answer through one hub route. Two people answering at once resolve the way the protocol always has: first write wins, and the loser is told who beat them — an answer is never silently discarded and never applied twice.
-- **The closed loop.** The answering surface confirms *delivered, agent resumed* — the person who answered sees the fleet go back to work, not just their half of the exchange. That confirmation is what makes answering from a phone feel safe enough to do from a phone.
+- **The closed loop on the question row.** The row tells the whole story, not just its opening: who answered, that the answer was delivered, and that the agent resumed. Each milestone of the return trip lands on the row and flows out over the event stream, so the board — and any future surface — renders *the fleet went back to work*, not merely *your form submitted*.
+- **A loss told as a fact, not a failure.** Two people answering at once has always resolved to exactly one winner at the hub; the board should say so. The beaten answerer sees who got there first and what they said — an outcome, never an error screen.
+
+## What this slice is not
+
+Fan-out is no longer here. Pushing a question to wherever its humans are — notification channels, subscriptions, chat — belongs to `epic:chat`, which builds the channel seam together with its first binding rather than ahead of it. This slice makes the exchange trustworthy on the surfaces that exist; that one makes the fleet able to summon you.
 
 ## Open questions
 
-- The notification transport's shape: whether the hub pushes to channels directly or exposes a subscription the channels poll — decided together with `epic:chat`'s bot.
-- Whether answering from the board requires the operator role once the board's auth lands, or any authenticated viewer may answer.
+- Which roles hold the answer grant: the permission seam exists (answering is already a distinct capability), so what remains is policy — whether any authenticated viewer may answer or only an operator, decided as role configuration lands.
