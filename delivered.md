@@ -25,7 +25,7 @@ The MVP put a real fleet in an operator's hands, and running it taught what the 
 
 | Epic | Slice delivered | Notes |
 |------|-----------------|-------|
-| `epic:cost` | core | Usage facts, hub flow-through, board surfacing, budget caps + spend kill-switch (#57 series). Remaining unfiled sub-bullet: model routing by cost. Built from its [plan](./plans/cost.md). |
+| `epic:cost` | core | Usage facts, hub flow-through, board surfacing, budget caps + spend kill-switch (#57 series). Model-routing tail delivered separately (outside the milestones, below). Built from its [plan](./plans/cost.md). |
 | `epic:migration` | core | Explicit migration, `migration_target` auto-drift, retire/re-enable, graph metadata edits (#101, #120, #124 …). Correctness tail delivered separately (outside the milestones, below); follow-latest slice is in the [epic registry](./epics.md). Built from its [plan](./plans/migration.md). |
 
 ## Outside the milestones
@@ -34,3 +34,8 @@ The MVP put a real fleet in an operator's hands, and running it taught what the 
 |------|-----------------|-------|
 | `epic:runner-panel` | core | The runner-served machine panel and transcript viewer: local truth — leases, capacities, escalations with copyable resume commands, transcripts — beside shared fleet views, one codebase with two thin apps. Built from its [plan](./plans/runner-panel/index.md). |
 | `epic:migration` | correctness tail | Transition-keyed derivations and fences made migration-aware (#109 series: #108, #110, #111, #112). |
+| `epic:cost` | model-routing tail | Named session pools: each graph node resolves to a model and effort tier, sending work to cheaper models where fit allows, and the session stamps what it ran (#193). Named as remaining scope in the core slice's [plan](./plans/cost.md). |
+| `epic:migration` | follow-latest slice | Standing drift as policy: in-flight chunks re-pin to the newest enabled mint of their graph at each transition — a hub-level default with a per-graph override (#164). Rode the machinery of the core slice's [plan](./plans/migration.md). |
+| `epic:hub` | distribution slice | Public multi-arch hub image with a migrate-then-serve entrypoint, tag-driven releases with generated notes, a written versioning policy, the reference compose deployment, and the operator's book (#196). Remote slice is in the [epic registry](./epics.md). Built from its [plan](./plans/hub-distribution.md). |
+| `epic:forge-status` | full | The fleet's hold projected onto the tracker: one-way labels from hub truth onto forge issues through the annotator seam, a per-source opt-in, reconciled by a periodic diff sweep (#197). Built from its [plan](./plans/forge-status.md). |
+| `epic:board` | chunk-detail slice | Routed chunk detail page with General/Artifacts tabs; dock artifacts became links that land pre-selected in one shared renderer (#199). Reach slice is in the [epic registry](./epics.md). Built from its [plan](./plans/chunk-detail/index.md). |

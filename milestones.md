@@ -14,11 +14,11 @@ What that unlocks is told best through the people in the [charter](./charter/per
 
 The boundary is deliberate: this milestone makes the fleet reachable, not insistent. Checking in is the promise; being summoned — a question pushed to a pocket the moment it is asked — waits for the notification fan-out that `epic:chat` builds with its first channel.
 
-The journey demands four pieces of work, and two have already landed: runners sign in to the hub with hub-minted tokens — the runner-auth slice of `epic:security` — and the board is safe to expose, with login, viewer and operator roles, and a session-aware UI (#89). The hub's remote slice does the heavy lifting: an off-machine deployment serving multiple runners over the existing outbound-only protocol. What remains of the ask-answer remote slice is the closed loop: the person who answers — from the board, on any device — sees that the answer was delivered and the agent resumed, and a beaten answerer is told who won rather than shown an error.
+The journey demands four pieces of work, and three have already landed: runners sign in to the hub with hub-minted tokens — the runner-auth slice of `epic:security`; the board is safe to expose, with login, viewer and operator roles, and a session-aware UI (#89); and the answer's return trip is closed ([plan](./plans/ask-answer-remote.md)) — the person who answers, from any device, sees the answer delivered and the agent back at work, and a beaten answerer is told who won rather than shown an error. The hub's remote slice carries what remains: the deployment now stands off-machine, and the milestone still asks for the fleet part of its promise — more than one runner working that hub, and the outage contract proven with a whole fleet leaning on it.
 
 | Epic | Slice | Status |
 |------|-------|--------|
 | `epic:security` | runner-auth | delivered |
 | `epic:board` | remote (auth) | delivered |
-| `epic:hub` | remote | horizon |
-| `epic:ask-answer` | remote (closed loop) | horizon |
+| `epic:hub` | remote | in flight |
+| `epic:ask-answer` | remote (closed loop) | delivered |
