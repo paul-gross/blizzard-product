@@ -27,7 +27,6 @@ The milestone also carries one deliberate maybe: ideation. A fleet that reads it
 | `epic:transcripts` | full | horizon |
 | `epic:analytics` | full | horizon |
 | `epic:mutation-testing` | full | horizon |
-| `epic:fitness` | full | horizon |
 | `epic:cost` | attribution | horizon |
 | `epic:ideation` | full | horizon |
 
