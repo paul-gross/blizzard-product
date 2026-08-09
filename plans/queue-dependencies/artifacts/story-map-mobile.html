@@ -1,0 +1,453 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>blizzard hub — story map (mobile)</title>
+<style>
+  :root{
+    --ground:#F8EFE2;
+    --surface:#FFFDF8;
+    --surface-dim:#FBF5EA;
+    --ink:#3D3227;
+    --ink-soft:#7A6B58;
+    --ink-faint:#A99A85;
+    --line:#E8DCC8;
+    --line-strong:#D9C9AE;
+    --primary:#C2490D;
+    --primary-deep:#9E3907;
+    --primary-tint:#FBE4D4;
+    --r:12px;
+    --r-pill:999px;
+    --st-ready-bg:#EEE6D6;   --st-ready-ink:#6E6250;
+    --st-running-bg:#DCEBF8; --st-running-ink:#1D5FA0;
+    --st-needs-bg:#F9D8D3;   --st-needs-ink:#A72B1D;
+    --st-done-bg:#DCEFDF;    --st-done-ink:#2A6E3F;
+    --st-blocked-bg:#E9E2F2; --st-blocked-ink:#5B4B8A;
+    --edge-done:#7FAE8B;
+    --edge-open:#C9B48D;
+    --edge-hot:#C25B4A;
+    --shadow-card:0 1px 2px rgba(94,72,40,.08), 0 3px 10px rgba(94,72,40,.07);
+    --shadow-lift:0 4px 8px rgba(94,72,40,.12), 0 12px 28px rgba(94,72,40,.14);
+    --font:-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    --mono:ui-monospace, SFMono-Regular, Menlo, Consolas, "Liberation Mono", monospace;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  html,body{height:100%}
+  body{
+    font-family:var(--font);color:var(--ink);
+    font-size:14px;line-height:1.45;
+    background:#EFE2CC;
+    display:flex;align-items:center;justify-content:center;
+  }
+  button{font:inherit;color:inherit;background:none;border:none;cursor:pointer}
+  :focus-visible{outline:2px solid var(--primary);outline-offset:2px;border-radius:4px}
+
+  /* phone frame — review chrome only; the app fills the viewport on a real phone */
+  .phone{
+    width:min(402px, 100vw);height:min(844px, 100vh);
+    background:var(--ground);
+    border-radius:28px;border:10px solid #3D3227;
+    box-shadow:0 24px 60px rgba(61,50,39,.35);
+    overflow:hidden;position:relative;
+    display:flex;flex-direction:column;
+  }
+  @media (max-width:430px){ .phone{border:none;border-radius:0;box-shadow:none;height:100vh} }
+
+  header.app{
+    display:flex;align-items:center;gap:10px;
+    padding:12px 14px 8px;
+    background:var(--surface);
+    border-bottom:1px solid var(--line);
+  }
+  .brand{display:flex;align-items:baseline;gap:7px;flex:1}
+  .brand .logo{font-weight:800;font-size:17px;letter-spacing:-.02em;color:var(--primary)}
+  .brand .sub{font-size:12px;color:var(--ink-soft)}
+  .head-stat{
+    font-size:11px;color:var(--ink-soft);
+    background:var(--surface-dim);border:1px solid var(--line);
+    border-radius:var(--r-pill);padding:3px 10px;white-space:nowrap;
+  }
+  .head-stat b{color:var(--st-blocked-ink)}
+
+  .story-picker{
+    display:flex;gap:7px;overflow-x:auto;
+    padding:10px 14px;background:var(--surface);
+    border-bottom:1px solid var(--line);
+    scrollbar-width:none;
+  }
+  .story-picker::-webkit-scrollbar{display:none}
+  .story-chip{
+    flex:0 0 auto;font-size:12.5px;font-weight:700;
+    border:1px solid var(--line-strong);border-radius:var(--r-pill);
+    background:var(--surface-dim);padding:5px 13px;color:var(--ink-soft);
+  }
+  .story-chip .sc-meta{font-weight:600;font-size:11px;color:var(--ink-faint)}
+  .story-chip.active{background:var(--primary-tint);border-color:var(--primary);color:var(--primary-deep)}
+  .story-chip.active .sc-meta{color:var(--primary-deep)}
+
+  .map{
+    flex:1;overflow-y:auto;position:relative;
+    padding:18px 16px 90px;
+  }
+  .flow{position:relative}
+  svg.edges{position:absolute;inset:0;width:100%;height:100%;pointer-events:none;overflow:visible}
+  .lvl{position:relative;z-index:1;display:flex;flex-direction:column;gap:12px;margin-bottom:26px}
+  .lvl-label{
+    font-size:10px;font-weight:800;text-transform:uppercase;letter-spacing:.09em;
+    color:var(--ink-faint);
+  }
+  .lvl-row{display:flex;gap:10px}
+  .lvl-row > .node{flex:1;min-width:0}
+
+  .node{
+    background:var(--surface);
+    border:1px solid var(--line);
+    border-radius:var(--r);
+    box-shadow:var(--shadow-card);
+    padding:10px 12px;
+    cursor:pointer;
+  }
+  .node:active{box-shadow:var(--shadow-lift)}
+  .node.done{background:var(--surface-dim)}
+  .node.done h3{color:var(--ink-soft)}
+  .node.blocked{border-style:dashed;border-color:var(--st-blocked-ink)}
+  .node .n-top{display:flex;align-items:center;gap:7px}
+  .node .n-id{font-family:var(--mono);font-size:10px;color:var(--ink-faint)}
+  .node h3{font-size:13.5px;font-weight:700;line-height:1.3;margin:3px 0 8px}
+  .pill{
+    font-size:10px;font-weight:700;letter-spacing:.03em;
+    border-radius:var(--r-pill);padding:2px 9px;text-transform:uppercase;
+  }
+  .pill.ready{background:var(--st-ready-bg);color:var(--st-ready-ink)}
+  .pill.running{background:var(--st-running-bg);color:var(--st-running-ink)}
+  .pill.needs_human{background:var(--st-needs-bg);color:var(--st-needs-ink)}
+  .pill.done{background:var(--st-done-bg);color:var(--st-done-ink)}
+  .pill.blocked{background:var(--st-blocked-bg);color:var(--st-blocked-ink)}
+  .node .meta{display:flex;align-items:center;gap:7px;flex-wrap:wrap}
+  .node .waits{margin-top:7px;font-size:11px;font-weight:600;color:var(--st-blocked-ink)}
+  .node .waits.hot{color:var(--st-needs-ink)}
+  .node .done-note{margin-top:7px;font-size:11px;color:var(--st-done-ink);font-weight:600}
+  .pulse-dot{
+    display:inline-block;width:8px;height:8px;border-radius:50%;background:var(--st-running-ink);
+    margin-right:5px;animation:pulse 1.4s ease-in-out infinite;vertical-align:1px;
+  }
+  @keyframes pulse{0%,100%{opacity:1;transform:scale(1)}50%{opacity:.35;transform:scale(.75)}}
+
+  .reach-note{
+    font-size:11px;color:var(--ink-faint);font-style:italic;
+    text-align:center;padding-top:2px;
+  }
+
+  /* ── Bottom sheet ── */
+  .scrim{
+    position:absolute;inset:0;background:rgba(61,50,39,.35);
+    opacity:0;pointer-events:none;transition:opacity .2s ease;z-index:30;
+  }
+  .scrim.open{opacity:1;pointer-events:auto}
+  .sheet{
+    position:absolute;left:0;right:0;bottom:0;z-index:40;
+    background:var(--surface);
+    border-radius:18px 18px 0 0;
+    box-shadow:0 -8px 32px rgba(61,50,39,.25);
+    max-height:72%;overflow-y:auto;
+    transform:translateY(105%);transition:transform .22s ease;
+    padding:10px 16px 30px;
+  }
+  .sheet.open{transform:none}
+  .grab{width:40px;height:4px;border-radius:var(--r-pill);background:var(--line-strong);margin:2px auto 12px}
+  .sheet .d-id{font-family:var(--mono);font-size:10.5px;color:var(--ink-faint)}
+  .sheet h2{font-size:16px;font-weight:800;margin:2px 0 8px;line-height:1.3}
+  .sheet section{margin-top:16px}
+  .sheet section > h4{
+    font-size:10.5px;text-transform:uppercase;letter-spacing:.07em;
+    color:var(--ink-soft);margin-bottom:7px;
+  }
+  .edge-row{
+    display:flex;align-items:center;gap:8px;
+    border:1px solid var(--line);border-radius:var(--r);
+    background:var(--surface-dim);padding:8px 10px;margin-bottom:7px;font-size:12.5px;
+  }
+  .edge-row.met{border-color:var(--st-done-bg)}
+  .edge-row .er-title{flex:1;min-width:0}
+  .edge-row .er-title b{display:block;line-height:1.3}
+  .edge-row .er-title span{font-size:11px;color:var(--ink-soft)}
+  .edge-row .met-mark{font-size:13px;color:var(--st-done-ink);font-weight:800}
+  .edge-row .release{
+    font-size:11.5px;font-weight:700;color:var(--primary-deep);
+    background:var(--primary-tint);border-radius:var(--r-pill);padding:5px 12px;
+  }
+  .none{font-size:12.5px;color:var(--ink-faint);font-style:italic}
+  .override{
+    margin-top:4px;background:var(--st-blocked-bg);border-radius:var(--r);
+    padding:11px 12px;font-size:12.5px;color:var(--st-blocked-ink);
+  }
+  .override p{margin-bottom:9px;line-height:1.45}
+  .override .mark-done{
+    display:block;width:100%;text-align:center;
+    background:var(--surface);border:1px solid var(--st-blocked-ink);
+    border-radius:var(--r);padding:9px 10px;font-weight:700;font-size:13px;
+  }
+  .issue-row{
+    display:flex;gap:8px;align-items:baseline;padding:6px 0;
+    border-bottom:1px dashed var(--line);font-size:12.5px;
+  }
+  .issue-row .ptr{font-family:var(--mono);font-size:11px;color:var(--primary-deep);font-weight:700;flex:0 0 auto}
+
+  .toast{
+    position:absolute;bottom:14px;left:50%;transform:translateX(-50%);
+    background:var(--ink);color:#F8EFE2;border-radius:var(--r-pill);
+    padding:8px 16px;font-size:12.5px;box-shadow:var(--shadow-lift);
+    opacity:0;pointer-events:none;transition:opacity .25s ease;z-index:60;
+    white-space:nowrap;max-width:92%;overflow:hidden;text-overflow:ellipsis;
+  }
+  .toast.show{opacity:1}
+
+  @media (prefers-reduced-motion: reduce){
+    *,*::before,*::after{animation:none !important;transition:none !important}
+  }
+</style>
+</head>
+<body>
+<div class="phone">
+  <header class="app">
+    <div class="brand">
+      <span class="logo">blizzard</span>
+      <span class="sub">story map</span>
+    </div>
+    <span class="head-stat" id="headStat"></span>
+  </header>
+
+  <nav class="story-picker" id="storyPicker" aria-label="Stories"></nav>
+
+  <div class="map" id="mapScroll">
+    <div class="flow" id="flow"></div>
+    <p class="reach-note">blocked chunks never enter the ready queue — runners reach ahead</p>
+  </div>
+
+  <div class="scrim" id="scrim"></div>
+  <div class="sheet" id="sheet" role="dialog" aria-modal="true" aria-label="Chunk detail"></div>
+  <div class="toast" id="toast" role="status" aria-live="polite"></div>
+</div>
+
+<script>
+/* ═════════ seed data — same fleet the desktop mock reads ═════════ */
+const stories = [
+  { id:'s-hub-source', name:'Hub work source', chunks:[
+    { id:'c-301', title:'Hub store: work items and the intake door',
+      issues:[{repo:'blizzard', num:214, title:'A hub work source whose items live in the hub store'}],
+      state:'done', deps:[] },
+    { id:'c-302', title:'Operator authoring from the board',
+      issues:[{repo:'blizzard', num:215, title:'Create and edit hub work items on the board'}],
+      state:'needs_human', deps:['c-301'],
+      note:'escalated at review — parked for takeover' },
+    { id:'c-303', title:'Advisory priority on hub items',
+      issues:[{repo:'blizzard', num:216, title:'Items carry an author-stated advisory priority'}],
+      state:'ready', deps:['c-302'] },
+    { id:'c-304', title:'Fleet-authored items through the same door',
+      issues:[{repo:'blizzard', num:217, title:'Nodes file observations as hub work items'}],
+      state:'ready', deps:['c-302','c-303'] },
+    { id:'c-305', title:'Forge-less hub: operable end to end',
+      issues:[{repo:'blizzard', num:218, title:'A hub with no forge configured is fully operable'}],
+      state:'ready', deps:['c-301'] }
+  ]},
+  { id:'s-queue-deps', name:'Queue dependencies', chunks:[
+    { id:'c-310', title:'The edge: store, cycles refused',
+      issues:[{repo:'blizzard', num:230, title:'chunk_depends relation and cycle check'}],
+      state:'done', deps:[] },
+    { id:'c-311', title:'Blocked as a derived status',
+      issues:[{repo:'blizzard', num:231, title:'Blocked chunks leave the ready order'}],
+      state:'running', deps:['c-310'] },
+    { id:'c-312', title:'Claim-lock enforcement',
+      issues:[{repo:'blizzard', num:232, title:'Unmet edge is a denied claim'}],
+      state:'ready', deps:['c-311'] },
+    { id:'c-313', title:'Operator overrides: release and hand-done',
+      issues:[{repo:'blizzard', num:233, title:'Release an edge; declare a chunk done by hand'}],
+      state:'ready', deps:['c-311'] }
+  ]},
+  { id:'s-lockdown', name:'Worker lockdown', chunks:[
+    { id:'c-320', title:'Permission profiles per node',
+      issues:[{repo:'blizzard', num:201, title:'Per-node permission config beyond skip-permissions'}],
+      state:'running', deps:[] },
+    { id:'c-321', title:'Force-push structurally out of reach',
+      issues:[{repo:'blizzard', num:202, title:'No worker can force-push, whichever harness'}],
+      state:'ready', deps:['c-320'] }
+  ]}
+];
+
+let activeStory = 's-hub-source';
+let sheetId = null;
+
+const $ = s=>document.querySelector(s);
+function esc(s){ return String(s).replace(/[&<>"]/g, ch=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[ch])); }
+function story(){ return stories.find(s=>s.id===activeStory); }
+function byId(id){ for(const s of stories){ const c=s.chunks.find(c=>c.id===id); if(c) return c; } return null; }
+function toast(msg){
+  const t=$('#toast'); t.textContent=msg; t.classList.add('show');
+  clearTimeout(toast._h); toast._h=setTimeout(()=>t.classList.remove('show'),2600);
+}
+function status(c){
+  if(c.state==='done') return 'done';
+  if(c.state==='needs_human') return 'needs_human';
+  if(c.state==='running') return 'running';
+  const unmet = c.deps.filter(d=>byId(d).state!=='done');
+  return unmet.length ? 'blocked' : 'ready';
+}
+function depth(c, seen={}){
+  if(seen[c.id]!=null) return seen[c.id];
+  if(!c.deps.length) return seen[c.id]=0;
+  return seen[c.id]=1+Math.max(...c.deps.map(d=>depth(byId(d),seen)));
+}
+const STATUS_LABEL = {ready:'ready', running:'running', needs_human:'needs you', done:'done', blocked:'blocked'};
+
+function renderHead(){
+  const all = stories.flatMap(s=>s.chunks);
+  const blocked = all.filter(c=>status(c)==='blocked').length;
+  const done = all.filter(c=>status(c)==='done').length;
+  $('#headStat').innerHTML = `${done} done · <b>${blocked} blocked</b>`;
+}
+
+function renderPicker(){
+  $('#storyPicker').innerHTML = stories.map(s=>{
+    const done = s.chunks.filter(c=>status(c)==='done').length;
+    return `<button class="story-chip ${s.id===activeStory?'active':''}" data-story="${s.id}">
+      ${esc(s.name)} <span class="sc-meta">${done}/${s.chunks.length}</span>
+    </button>`;
+  }).join('');
+  document.querySelectorAll('.story-chip').forEach(b=>b.addEventListener('click', ()=>{
+    activeStory=b.dataset.story; renderAll();
+  }));
+}
+
+function nodeHTML(c){
+  const st = status(c);
+  const unmet = c.deps.filter(d=>byId(d).state!=='done');
+  return `<article class="node ${st}" data-id="${c.id}" tabindex="0" role="button" aria-label="Open ${esc(c.title)}">
+    <div class="n-top"><span class="n-id">${esc(c.id)}</span></div>
+    <h3>${esc(c.title)}</h3>
+    <div class="meta"><span class="pill ${st}">${st==='running'?'<span class="pulse-dot"></span>':''}${STATUS_LABEL[st]}</span></div>
+    ${st==='blocked'?`<div class="waits">waits on ${unmet.map(esc).join(', ')}</div>`:''}
+    ${st==='needs_human'&&c.note?`<div class="waits hot">${esc(c.note)}</div>`:''}
+    ${st==='done'?`<div class="done-note">✓ landed${c.handDone?' · declared by hand':''}</div>`:''}
+  </article>`;
+}
+
+function renderMap(){
+  const s = story();
+  const maxD = Math.max(...s.chunks.map(c=>depth(c)));
+  const levels = [];
+  for(let i=0;i<=maxD;i++) levels.push(s.chunks.filter(c=>depth(c)===i));
+  $('#flow').innerHTML =
+    `<svg class="edges" id="edgeSvg" aria-hidden="true"></svg>` +
+    levels.map((cs,i)=>`
+      <div class="lvl">
+        <div class="lvl-label">${i===0?'foundation':'then'}</div>
+        <div class="lvl-row">${cs.map(nodeHTML).join('')}</div>
+      </div>`).join('');
+  document.querySelectorAll('.node').forEach(n=>{
+    n.addEventListener('click', ()=>openSheet(n.dataset.id));
+    n.addEventListener('keydown', e=>{
+      if(e.key==='Enter'||e.key===' '){ e.preventDefault(); openSheet(n.dataset.id); }
+    });
+  });
+  requestAnimationFrame(drawEdges);
+}
+
+function drawEdges(){
+  const svg = $('#edgeSvg'); if(!svg) return;
+  const wrap = $('#flow').getBoundingClientRect();
+  let paths = '';
+  for(const c of story().chunks){
+    const toEl = document.querySelector(`.node[data-id="${c.id}"]`);
+    if(!toEl) continue;
+    for(const d of c.deps){
+      const fromEl = document.querySelector(`.node[data-id="${d}"]`);
+      if(!fromEl) continue;
+      const a = fromEl.getBoundingClientRect(), b = toEl.getBoundingClientRect();
+      const x1 = a.left + a.width/2 - wrap.left, y1 = a.bottom - wrap.top;
+      const x2 = b.left + b.width/2 - wrap.left, y2 = b.top - wrap.top;
+      const my = (y1+y2)/2;
+      const met = byId(d).state==='done';
+      const hot = !met && status(byId(d))==='needs_human';
+      const stroke = met ? 'var(--edge-done)' : hot ? 'var(--edge-hot)' : 'var(--edge-open)';
+      const dash = met ? '' : 'stroke-dasharray="6 5"';
+      paths += `<path d="M ${x1} ${y1} C ${x1} ${my}, ${x2} ${my}, ${x2} ${y2}"
+        fill="none" stroke="${stroke}" stroke-width="2.5" ${dash} opacity=".9"/>
+        <circle cx="${x2}" cy="${y2}" r="3.5" fill="${stroke}"/>`;
+    }
+  }
+  svg.innerHTML = paths;
+}
+
+function openSheet(id){
+  sheetId = id;
+  const c = byId(id);
+  const st = status(c);
+  const dependents = story().chunks.filter(o=>o.deps.includes(c.id));
+  $('#sheet').innerHTML = `
+    <div class="grab"></div>
+    <div class="d-id">${esc(c.id)}</div>
+    <h2>${esc(c.title)}</h2>
+    <span class="pill ${st}">${STATUS_LABEL[st]}</span>
+
+    <section>
+      <h4>Issues</h4>
+      ${c.issues.map(i=>`<div class="issue-row"><span class="ptr">${esc(i.repo)}#${i.num}</span><span>${esc(i.title)}</span></div>`).join('')}
+    </section>
+
+    <section>
+      <h4>Stands on</h4>
+      ${c.deps.length ? c.deps.map(d=>{
+        const p = byId(d); const met = p.state==='done';
+        return `<div class="edge-row ${met?'met':''}">
+          <div class="er-title"><b>${esc(p.title)}</b><span>${esc(d)} · ${STATUS_LABEL[status(p)]}</span></div>
+          ${met?'<span class="met-mark">✓</span>':`<button class="release" data-edge="${d}">Release</button>`}
+        </div>`;
+      }).join('') : '<div class="none">nothing — a foundation chunk</div>'}
+    </section>
+
+    <section>
+      <h4>Unlocks</h4>
+      ${dependents.length ? dependents.map(o=>`<div class="edge-row">
+          <div class="er-title"><b>${esc(o.title)}</b><span>${esc(o.id)} · ${STATUS_LABEL[status(o)]}</span></div>
+        </div>`).join('') : '<div class="none">nothing waits on this chunk</div>'}
+    </section>
+
+    ${st!=='done' ? `
+    <section>
+      <h4>Operator override</h4>
+      <div class="override">
+        <p>Stopped never unblocks. If this work is complete however it ended, declare it — every edge standing on it is satisfied.</p>
+        <button class="mark-done" data-done="${c.id}">Declare done by hand</button>
+      </div>
+    </section>`:''}
+  `;
+  $('#sheet').querySelectorAll('.release').forEach(b=>b.addEventListener('click', ()=>{
+    const c2 = byId(sheetId);
+    c2.deps = c2.deps.filter(d=>d!==b.dataset.edge);
+    toast(`Edge released — ${sheetId} no longer waits on ${b.dataset.edge}`);
+    renderAll(); openSheet(sheetId);
+  }));
+  $('#sheet').querySelectorAll('.mark-done').forEach(b=>b.addEventListener('click', ()=>{
+    const c2 = byId(b.dataset.done);
+    c2.state='done'; c2.handDone=true;
+    toast(`${c2.id} declared done — dependents come ready on their own`);
+    renderAll(); openSheet(sheetId);
+  }));
+  $('#scrim').classList.add('open');
+  $('#sheet').classList.add('open');
+}
+function closeSheet(){
+  sheetId=null;
+  $('#scrim').classList.remove('open');
+  $('#sheet').classList.remove('open');
+}
+$('#scrim').addEventListener('click', closeSheet);
+document.addEventListener('keydown', e=>{ if(e.key==='Escape' && sheetId) closeSheet(); });
+
+function renderAll(){ renderHead(); renderPicker(); renderMap(); }
+renderAll();
+window.addEventListener('resize', drawEdges);
+</script>
+</body>
+</html>

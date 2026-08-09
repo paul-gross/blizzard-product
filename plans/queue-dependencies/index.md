@@ -18,6 +18,13 @@ Grouping is the existing answer where the coupling is known before anything star
 
 Edges are the first data the board has ever held about how chunks relate, and a picture falls out of them: a chunk drawn in its lineage — what it stood on, greyed out where done; what stands on it, waiting its turn. For the operator planning a feature that arrives as five coupled chunks, that view answers at a glance what today takes reading five detail pages: how far the story has gotten, and what unlocks next. It is read-only by design — the same philosophy the board already lives by, a rich visual reading of the fleet while the changes themselves stay agentic — and it is deliberately optional: the edge, the blocked status, and the enforcement stand complete without it, and the map ships only if the slice has room.
 
+## Artifacts
+
+| Mockup | What it explores |
+|--------|------------------|
+| [story-map-desktop.html](./artifacts/story-map-desktop.html) | The map at a desk: stories in a sidebar, the selected story's chunks drawn left to right with their edges — satisfied, open, and open-from-a-chunk-that-needs-you — and a detail rail carrying the operator's two levers, release-edge and declare-done-by-hand. |
+| [story-map-mobile.html](./artifacts/story-map-mobile.html) | The same map at thumb size: a story-picker chip row, the flow drawn top to bottom, and a bottom sheet holding the detail and the same two levers. |
+
 ## Open questions
 
 - Whether the GitHub binding should read a "depends on #N" line in an issue body as a *suggested* edge for the operator to confirm at ingest. The work-source seam stays thin either way: a suggestion, never an authority.

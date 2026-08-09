@@ -1,0 +1,493 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>blizzard hub — story map</title>
+<style>
+  :root{
+    --ground:#F8EFE2;
+    --surface:#FFFDF8;
+    --surface-dim:#FBF5EA;
+    --ink:#3D3227;
+    --ink-soft:#7A6B58;
+    --ink-faint:#A99A85;
+    --line:#E8DCC8;
+    --line-strong:#D9C9AE;
+    --primary:#C2490D;
+    --primary-deep:#9E3907;
+    --primary-tint:#FBE4D4;
+    --r:12px;
+    --r-pill:999px;
+    --st-ready-bg:#EEE6D6;   --st-ready-ink:#6E6250;
+    --st-running-bg:#DCEBF8; --st-running-ink:#1D5FA0;
+    --st-waiting-bg:#FBEBC0; --st-waiting-ink:#8A5E00;
+    --st-needs-bg:#F9D8D3;   --st-needs-ink:#A72B1D;
+    --st-done-bg:#DCEFDF;    --st-done-ink:#2A6E3F;
+    --st-blocked-bg:#E9E2F2; --st-blocked-ink:#5B4B8A;
+    --edge-done:#7FAE8B;
+    --edge-open:#C9B48D;
+    --edge-hot:#C25B4A;
+    --shadow-card:0 1px 2px rgba(94,72,40,.08), 0 3px 10px rgba(94,72,40,.07);
+    --shadow-lift:0 4px 8px rgba(94,72,40,.12), 0 12px 28px rgba(94,72,40,.14);
+    --font:-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    --mono:ui-monospace, SFMono-Regular, Menlo, Consolas, "Liberation Mono", monospace;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  html,body{height:100%}
+  body{
+    font-family:var(--font);
+    background:var(--ground);
+    color:var(--ink);
+    font-size:14px;line-height:1.45;
+    display:flex;flex-direction:column;
+    overflow:hidden;
+  }
+  button{font:inherit;color:inherit;background:none;border:none;cursor:pointer}
+  :focus-visible{outline:2px solid var(--primary);outline-offset:2px;border-radius:4px}
+
+  header.app{
+    display:flex;align-items:center;gap:20px;flex-wrap:wrap;
+    padding:12px 20px;
+    background:var(--surface);
+    border-bottom:1px solid var(--line);
+  }
+  .brand{display:flex;align-items:baseline;gap:8px}
+  .brand .logo{font-weight:800;font-size:19px;letter-spacing:-.02em;color:var(--primary)}
+  .brand .sub{font-size:13px;color:var(--ink-soft)}
+  .fleet-stats{display:flex;gap:10px;flex-wrap:wrap}
+  .stat{
+    display:flex;align-items:center;gap:7px;
+    background:var(--surface-dim);border:1px solid var(--line);
+    border-radius:var(--r);padding:5px 12px;
+  }
+  .stat .num{font-weight:700;font-size:16px}
+  .stat .lbl{font-size:12px;color:var(--ink-soft)}
+  .stat .dot{width:8px;height:8px;border-radius:50%}
+  .readonly-note{margin-left:auto;font-size:12px;color:var(--ink-faint)}
+
+  main{flex:1;display:flex;min-height:0}
+
+  /* ── Stories sidebar ── */
+  .stories{
+    flex:0 0 248px;background:var(--surface);
+    border-right:1px solid var(--line);
+    padding:16px 12px;overflow-y:auto;
+  }
+  .stories h2{
+    font-size:12px;text-transform:uppercase;letter-spacing:.07em;
+    color:var(--ink-soft);padding:0 6px 10px;
+  }
+  .story-row{
+    display:block;width:100%;text-align:left;
+    border:1px solid transparent;border-radius:var(--r);
+    padding:9px 10px;margin-bottom:6px;
+  }
+  .story-row:hover{background:var(--surface-dim)}
+  .story-row.active{background:var(--primary-tint);border-color:var(--primary)}
+  .story-row .s-name{font-weight:700;font-size:13.5px}
+  .story-row .s-meta{font-size:11.5px;color:var(--ink-soft);margin-top:3px}
+  .progress{
+    height:5px;border-radius:var(--r-pill);background:var(--line);
+    margin-top:7px;overflow:hidden;
+  }
+  .progress i{display:block;height:100%;background:var(--st-done-ink);border-radius:var(--r-pill)}
+  .stories .hint{font-size:11.5px;color:var(--ink-faint);padding:10px 6px 0;line-height:1.5}
+
+  /* ── Map canvas ── */
+  .map-wrap{flex:1;display:flex;flex-direction:column;min-width:0}
+  .map-head{
+    display:flex;align-items:baseline;gap:12px;padding:14px 22px 0;
+  }
+  .map-head h1{font-size:17px;font-weight:800}
+  .map-head .mh-meta{font-size:12.5px;color:var(--ink-soft)}
+  .canvas{
+    position:relative;flex:1;overflow:auto;
+    padding:18px 22px 8px;
+  }
+  .levels{position:relative;display:flex;gap:64px;align-items:flex-start;min-height:100%}
+  svg.edges{position:absolute;inset:0;width:100%;height:100%;pointer-events:none;overflow:visible}
+  .level{flex:0 0 232px;display:flex;flex-direction:column;gap:22px;position:relative;z-index:1}
+  .level-label{
+    font-size:10.5px;font-weight:800;text-transform:uppercase;letter-spacing:.08em;
+    color:var(--ink-faint);text-align:center;
+  }
+
+  .node{
+    background:var(--surface);
+    border:1px solid var(--line);
+    border-radius:var(--r);
+    box-shadow:var(--shadow-card);
+    padding:10px 12px;
+    cursor:pointer;
+    transition:box-shadow .15s ease, transform .15s ease;
+  }
+  .node:hover{box-shadow:var(--shadow-lift);transform:translateY(-1px)}
+  .node.selected{border-color:var(--primary);box-shadow:0 0 0 2px var(--primary-tint), var(--shadow-card)}
+  .node.done{background:var(--surface-dim);border-color:var(--line)}
+  .node.done h3{color:var(--ink-soft)}
+  .node.blocked{border-style:dashed;border-color:var(--st-blocked-ink)}
+  .node .n-id{font-family:var(--mono);font-size:10.5px;color:var(--ink-faint)}
+  .node h3{font-size:13px;font-weight:700;line-height:1.3;margin:2px 0 7px}
+  .node .chips{display:flex;flex-wrap:wrap;gap:4px;margin-bottom:7px}
+  .chip{
+    font-family:var(--mono);font-size:10.5px;
+    background:var(--surface-dim);border:1px solid var(--line);
+    border-radius:var(--r-pill);padding:0 7px;color:var(--ink-soft);
+  }
+  .pill{
+    font-size:10px;font-weight:700;letter-spacing:.03em;
+    border-radius:var(--r-pill);padding:2px 9px;text-transform:uppercase;
+  }
+  .pill.ready{background:var(--st-ready-bg);color:var(--st-ready-ink)}
+  .pill.running{background:var(--st-running-bg);color:var(--st-running-ink)}
+  .pill.needs_human{background:var(--st-needs-bg);color:var(--st-needs-ink)}
+  .pill.done{background:var(--st-done-bg);color:var(--st-done-ink)}
+  .pill.blocked{background:var(--st-blocked-bg);color:var(--st-blocked-ink)}
+  .node .waits{
+    margin-top:7px;font-size:11px;color:var(--st-blocked-ink);font-weight:600;
+  }
+  .node .done-note{margin-top:7px;font-size:11px;color:var(--st-done-ink);font-weight:600}
+  .node .hand-note{margin-top:2px;font-size:10.5px;color:var(--ink-faint);font-style:italic}
+  .pulse-dot{
+    display:inline-block;width:8px;height:8px;border-radius:50%;background:var(--st-running-ink);
+    margin-right:5px;animation:pulse 1.4s ease-in-out infinite;vertical-align:1px;
+  }
+  @keyframes pulse{0%,100%{opacity:1;transform:scale(1)}50%{opacity:.35;transform:scale(.75)}}
+
+  .legend{
+    display:flex;gap:18px;flex-wrap:wrap;align-items:center;
+    padding:10px 22px 14px;font-size:11.5px;color:var(--ink-soft);
+    border-top:1px solid var(--line);background:var(--surface);
+  }
+  .legend .k{display:inline-flex;align-items:center;gap:6px}
+  .legend .swatch{width:22px;height:0;border-top:2.5px solid}
+  .legend .swatch.done{border-color:var(--edge-done)}
+  .legend .swatch.open{border-color:var(--edge-open);border-top-style:dashed}
+  .legend .swatch.hot{border-color:var(--edge-hot);border-top-style:dashed}
+  .legend .reach{margin-left:auto;font-style:italic;color:var(--ink-faint)}
+
+  /* ── Detail rail ── */
+  .rail{
+    flex:0 0 312px;background:var(--surface);
+    border-left:1px solid var(--line);
+    overflow-y:auto;padding:18px 16px 30px;
+  }
+  .rail .d-id{font-family:var(--mono);font-size:11px;color:var(--ink-faint)}
+  .rail h2.d-title{font-size:16.5px;font-weight:800;margin:3px 0 8px;line-height:1.3}
+  .rail section{margin-top:18px}
+  .rail section > h4{
+    font-size:11px;text-transform:uppercase;letter-spacing:.07em;
+    color:var(--ink-soft);margin-bottom:8px;
+  }
+  .edge-row{
+    display:flex;align-items:center;gap:8px;
+    border:1px solid var(--line);border-radius:var(--r);
+    background:var(--surface-dim);padding:7px 9px;margin-bottom:7px;font-size:12.5px;
+  }
+  .edge-row .er-title{flex:1;min-width:0}
+  .edge-row .er-title b{display:block;font-size:12.5px;line-height:1.3}
+  .edge-row .er-title span{font-size:11px;color:var(--ink-soft)}
+  .edge-row.met{border-color:var(--st-done-bg)}
+  .edge-row .release{
+    flex:0 0 auto;font-size:11px;font-weight:700;color:var(--primary-deep);
+    background:var(--primary-tint);border-radius:var(--r-pill);padding:3px 10px;
+  }
+  .edge-row .release:hover{background:var(--primary);color:#fff}
+  .edge-row .met-mark{flex:0 0 auto;font-size:12px;color:var(--st-done-ink);font-weight:800}
+  .rail .none{font-size:12.5px;color:var(--ink-faint);font-style:italic}
+  .override{
+    margin-top:10px;background:var(--st-blocked-bg);border-radius:var(--r);
+    padding:11px 12px;font-size:12.5px;color:var(--st-blocked-ink);
+  }
+  .override p{margin-bottom:8px;line-height:1.45}
+  .override .mark-done{
+    display:block;width:100%;text-align:center;
+    background:var(--surface);border:1px solid var(--st-blocked-ink);
+    border-radius:var(--r);padding:6px 10px;font-weight:700;font-size:12.5px;
+  }
+  .override .mark-done:hover{background:var(--st-blocked-ink);color:#fff}
+  .issue-row{
+    display:flex;gap:9px;align-items:baseline;padding:6px 0;
+    border-bottom:1px dashed var(--line);font-size:12.5px;
+  }
+  .issue-row .ptr{font-family:var(--mono);font-size:11.5px;color:var(--primary-deep);font-weight:700;flex:0 0 auto}
+
+  .toast{
+    position:fixed;bottom:18px;left:50%;transform:translateX(-50%);
+    background:var(--ink);color:#F8EFE2;border-radius:var(--r-pill);
+    padding:8px 18px;font-size:13px;box-shadow:var(--shadow-lift);
+    opacity:0;pointer-events:none;transition:opacity .25s ease;z-index:60;
+  }
+  .toast.show{opacity:1}
+
+  @media (prefers-reduced-motion: reduce){
+    *,*::before,*::after{animation:none !important;transition:none !important}
+  }
+</style>
+</head>
+<body>
+<header class="app">
+  <div class="brand">
+    <span class="logo">blizzard</span>
+    <span class="sub">story map</span>
+  </div>
+  <div class="fleet-stats" id="stats"></div>
+  <span class="readonly-note">a reading of the fleet — changes stay agentic</span>
+</header>
+
+<main>
+  <nav class="stories" aria-label="Stories">
+    <h2>Stories</h2>
+    <div id="storyList"></div>
+    <p class="hint">A story is chunks joined by dependency edges. A chunk with no edges keeps to the flow board.</p>
+  </nav>
+
+  <div class="map-wrap">
+    <div class="map-head">
+      <h1 id="mapTitle"></h1>
+      <span class="mh-meta" id="mapMeta"></span>
+    </div>
+    <div class="canvas" id="canvas">
+      <div class="levels" id="levels"></div>
+    </div>
+    <div class="legend">
+      <span class="k"><span class="swatch done"></span> edge satisfied</span>
+      <span class="k"><span class="swatch open"></span> edge open</span>
+      <span class="k"><span class="swatch hot"></span> open edge from a chunk that needs you</span>
+      <span class="reach">blocked chunks never enter the ready queue — runners reach ahead</span>
+    </div>
+  </div>
+
+  <aside class="rail" id="rail" aria-label="Chunk detail"></aside>
+</main>
+<div class="toast" id="toast" role="status" aria-live="polite"></div>
+
+<script>
+/* ═════════ seed data ═════════ */
+const stories = [
+  { id:'s-hub-source', name:'Hub work source', chunks:[
+    { id:'c-301', title:'Hub store: work items and the intake door',
+      issues:[{repo:'blizzard', num:214, title:'A hub work source whose items live in the hub store'}],
+      state:'done', deps:[] },
+    { id:'c-302', title:'Operator authoring from the board',
+      issues:[{repo:'blizzard', num:215, title:'Create and edit hub work items on the board'}],
+      state:'needs_human', deps:['c-301'],
+      note:'escalated at review — parked for takeover' },
+    { id:'c-303', title:'Advisory priority on hub items',
+      issues:[{repo:'blizzard', num:216, title:'Items carry an author-stated advisory priority'}],
+      state:'ready', deps:['c-302'] },
+    { id:'c-304', title:'Fleet-authored items through the same door',
+      issues:[{repo:'blizzard', num:217, title:'Nodes file observations as hub work items'}],
+      state:'ready', deps:['c-302','c-303'] },
+    { id:'c-305', title:'Forge-less hub: operable end to end',
+      issues:[{repo:'blizzard', num:218, title:'A hub with no forge configured is fully operable'}],
+      state:'ready', deps:['c-301'] }
+  ]},
+  { id:'s-queue-deps', name:'Queue dependencies', chunks:[
+    { id:'c-310', title:'The edge: store, cycles refused',
+      issues:[{repo:'blizzard', num:230, title:'chunk_depends relation and cycle check'}],
+      state:'done', deps:[] },
+    { id:'c-311', title:'Blocked as a derived status',
+      issues:[{repo:'blizzard', num:231, title:'Blocked chunks leave the ready order'}],
+      state:'running', deps:['c-310'] },
+    { id:'c-312', title:'Claim-lock enforcement',
+      issues:[{repo:'blizzard', num:232, title:'Unmet edge is a denied claim'}],
+      state:'ready', deps:['c-311'] },
+    { id:'c-313', title:'Operator overrides: release and hand-done',
+      issues:[{repo:'blizzard', num:233, title:'Release an edge; declare a chunk done by hand'}],
+      state:'ready', deps:['c-311'] }
+  ]},
+  { id:'s-lockdown', name:'Worker lockdown', chunks:[
+    { id:'c-320', title:'Permission profiles per node',
+      issues:[{repo:'blizzard', num:201, title:'Per-node permission config beyond skip-permissions'}],
+      state:'running', deps:[] },
+    { id:'c-321', title:'Force-push structurally out of reach',
+      issues:[{repo:'blizzard', num:202, title:'No worker can force-push, whichever harness'}],
+      state:'ready', deps:['c-320'] }
+  ]}
+];
+
+let activeStory = 's-hub-source';
+let selectedId = 'c-303';
+
+/* ═════════ helpers ═════════ */
+const $ = s=>document.querySelector(s);
+function esc(s){ return String(s).replace(/[&<>"]/g, ch=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[ch])); }
+function story(){ return stories.find(s=>s.id===activeStory); }
+function byId(id){ for(const s of stories){ const c=s.chunks.find(c=>c.id===id); if(c) return c; } return null; }
+function toast(msg){
+  const t=$('#toast'); t.textContent=msg; t.classList.add('show');
+  clearTimeout(toast._h); toast._h=setTimeout(()=>t.classList.remove('show'),2600);
+}
+
+/* status derivation: blocked is never stored — it is read off the edges */
+function status(c){
+  if(c.state==='done') return 'done';
+  if(c.state==='needs_human') return 'needs_human';
+  if(c.state==='running') return 'running';
+  const unmet = c.deps.filter(d=>byId(d).state!=='done');
+  return unmet.length ? 'blocked' : 'ready';
+}
+function depth(c, seen={}){
+  if(seen[c.id]!=null) return seen[c.id];
+  if(!c.deps.length) return seen[c.id]=0;
+  return seen[c.id]=1+Math.max(...c.deps.map(d=>depth(byId(d),seen)));
+}
+const STATUS_LABEL = {ready:'ready', running:'running', needs_human:'needs you', done:'done', blocked:'blocked'};
+
+/* ═════════ rendering ═════════ */
+function renderStats(){
+  const all = stories.flatMap(s=>s.chunks);
+  const done = all.filter(c=>status(c)==='done').length;
+  const blocked = all.filter(c=>status(c)==='blocked').length;
+  const needs = all.filter(c=>status(c)==='needs_human').length;
+  $('#stats').innerHTML = `
+    <span class="stat"><span class="dot" style="background:var(--st-done-ink)"></span><span class="num">${done}</span><span class="lbl">done</span></span>
+    <span class="stat"><span class="dot" style="background:var(--st-blocked-ink)"></span><span class="num">${blocked}</span><span class="lbl">blocked</span></span>
+    <span class="stat"><span class="dot" style="background:var(--st-needs-ink)"></span><span class="num">${needs}</span><span class="lbl">needs you</span></span>`;
+}
+
+function renderStories(){
+  $('#storyList').innerHTML = stories.map(s=>{
+    const done = s.chunks.filter(c=>status(c)==='done').length;
+    const blocked = s.chunks.filter(c=>status(c)==='blocked').length;
+    return `<button class="story-row ${s.id===activeStory?'active':''}" data-story="${s.id}">
+      <span class="s-name">${esc(s.name)}</span>
+      <div class="s-meta">${done}/${s.chunks.length} done${blocked?` · ${blocked} blocked`:''}</div>
+      <div class="progress"><i style="width:${Math.round(100*done/s.chunks.length)}%"></i></div>
+    </button>`;
+  }).join('');
+  document.querySelectorAll('.story-row').forEach(b=>b.addEventListener('click', ()=>{
+    activeStory = b.dataset.story;
+    selectedId = story().chunks[0].id;
+    renderAll();
+  }));
+}
+
+function nodeHTML(c){
+  const st = status(c);
+  const unmet = c.deps.filter(d=>byId(d).state!=='done');
+  return `<article class="node ${st} ${c.id===selectedId?'selected':''}" data-id="${c.id}" tabindex="0" role="button" aria-label="Open ${esc(c.title)}">
+    <div class="n-id">${esc(c.id)}</div>
+    <h3>${esc(c.title)}</h3>
+    <div class="chips">${c.issues.map(i=>`<span class="chip">${esc(i.repo)}#${i.num}</span>`).join('')}</div>
+    <span class="pill ${st}">${st==='running'?'<span class="pulse-dot"></span>':''}${STATUS_LABEL[st]}</span>
+    ${st==='blocked'?`<div class="waits">waits on ${unmet.map(esc).join(', ')}</div>`:''}
+    ${st==='done'?`<div class="done-note">✓ landed</div>${c.handDone?'<div class="hand-note">declared done by hand</div>':''}`:''}
+    ${st==='needs_human'&&c.note?`<div class="waits" style="color:var(--st-needs-ink)">${esc(c.note)}</div>`:''}
+  </article>`;
+}
+
+function renderMap(){
+  const s = story();
+  const maxD = Math.max(...s.chunks.map(c=>depth(c)));
+  const levels = [];
+  for(let i=0;i<=maxD;i++) levels.push(s.chunks.filter(c=>depth(c)===i));
+  $('#mapTitle').textContent = s.name;
+  const done = s.chunks.filter(c=>status(c)==='done').length;
+  $('#mapMeta').textContent = `${s.chunks.length} chunks · ${done} landed · reading left to right`;
+  $('#levels').innerHTML =
+    `<svg class="edges" id="edgeSvg" aria-hidden="true"></svg>` +
+    levels.map((cs,i)=>`
+      <div class="level">
+        <div class="level-label">${i===0?'foundation':'then'}</div>
+        ${cs.map(nodeHTML).join('')}
+      </div>`).join('');
+  document.querySelectorAll('.node').forEach(n=>{
+    n.addEventListener('click', ()=>{ selectedId=n.dataset.id; renderAll(); });
+    n.addEventListener('keydown', e=>{
+      if(e.key==='Enter'||e.key===' '){ e.preventDefault(); selectedId=n.dataset.id; renderAll(); }
+    });
+  });
+  requestAnimationFrame(drawEdges);
+}
+
+function drawEdges(){
+  const svg = $('#edgeSvg'); if(!svg) return;
+  const wrap = $('#levels').getBoundingClientRect();
+  let paths = '';
+  for(const c of story().chunks){
+    const toEl = document.querySelector(`.node[data-id="${c.id}"]`);
+    if(!toEl) continue;
+    for(const d of c.deps){
+      const fromEl = document.querySelector(`.node[data-id="${d}"]`);
+      if(!fromEl) continue;
+      const a = fromEl.getBoundingClientRect(), b = toEl.getBoundingClientRect();
+      const x1 = a.right - wrap.left, y1 = a.top + a.height/2 - wrap.top;
+      const x2 = b.left - wrap.left,  y2 = b.top + b.height/2 - wrap.top;
+      const mx = (x1+x2)/2;
+      const met = byId(d).state==='done';
+      const hot = !met && status(byId(d))==='needs_human';
+      const stroke = met ? 'var(--edge-done)' : hot ? 'var(--edge-hot)' : 'var(--edge-open)';
+      const dash = met ? '' : 'stroke-dasharray="6 5"';
+      paths += `<path d="M ${x1} ${y1} C ${mx} ${y1}, ${mx} ${y2}, ${x2} ${y2}"
+        fill="none" stroke="${stroke}" stroke-width="2.5" ${dash} opacity=".9"/>
+        <circle cx="${x2}" cy="${y2}" r="3.5" fill="${stroke}"/>`;
+    }
+  }
+  svg.innerHTML = paths;
+}
+
+function renderRail(){
+  const c = byId(selectedId);
+  if(!c){ $('#rail').innerHTML=''; return; }
+  const st = status(c);
+  const dependents = story().chunks.filter(o=>o.deps.includes(c.id));
+  $('#rail').innerHTML = `
+    <div class="d-id">${esc(c.id)}</div>
+    <h2 class="d-title">${esc(c.title)}</h2>
+    <span class="pill ${st}">${STATUS_LABEL[st]}</span>
+
+    <section>
+      <h4>Issues</h4>
+      ${c.issues.map(i=>`<div class="issue-row"><span class="ptr">${esc(i.repo)}#${i.num}</span><span>${esc(i.title)}</span></div>`).join('')}
+    </section>
+
+    <section>
+      <h4>Stands on</h4>
+      ${c.deps.length ? c.deps.map(d=>{
+        const p = byId(d); const met = p.state==='done';
+        return `<div class="edge-row ${met?'met':''}">
+          <div class="er-title"><b>${esc(p.title)}</b><span>${esc(d)} · ${STATUS_LABEL[status(p)]}</span></div>
+          ${met?'<span class="met-mark">✓</span>':`<button class="release" data-edge="${d}">Release edge</button>`}
+        </div>`;
+      }).join('') : '<div class="none">nothing — a foundation chunk</div>'}
+    </section>
+
+    <section>
+      <h4>Unlocks</h4>
+      ${dependents.length ? dependents.map(o=>`<div class="edge-row">
+          <div class="er-title"><b>${esc(o.title)}</b><span>${esc(o.id)} · ${STATUS_LABEL[status(o)]}</span></div>
+        </div>`).join('') : '<div class="none">nothing waits on this chunk</div>'}
+    </section>
+
+    ${st!=='done' ? `
+    <section>
+      <h4>Operator override</h4>
+      <div class="override">
+        <p>Stopped never unblocks. If this work is complete however it ended — landed by hand, landed elsewhere — declare it, and every edge standing on it is satisfied.</p>
+        <button class="mark-done" data-done="${c.id}">Declare done by hand</button>
+      </div>
+    </section>`:''}
+  `;
+  document.querySelectorAll('.release').forEach(b=>b.addEventListener('click', ()=>{
+    const c2 = byId(selectedId);
+    c2.deps = c2.deps.filter(d=>d!==b.dataset.edge);
+    toast(`Edge released — ${selectedId} no longer waits on ${b.dataset.edge}`);
+    renderAll();
+  }));
+  document.querySelectorAll('.mark-done').forEach(b=>b.addEventListener('click', ()=>{
+    const c2 = byId(b.dataset.done);
+    c2.state='done'; c2.handDone=true;
+    toast(`${c2.id} declared done by hand — its dependents come ready on their own`);
+    renderAll();
+  }));
+}
+
+function renderAll(){ renderStats(); renderStories(); renderMap(); renderRail(); }
+renderAll();
+window.addEventListener('resize', drawEdges);
+</script>
+</body>
+</html>
