@@ -37,6 +37,15 @@ Conventional Commits with a scope, matching the sibling repos:
 
 The repo's structure rules and the voice its product documents are written in live under [context/](./context/index.md) — read the relevant file before adding or editing anything here.
 
+## Markdown checks
+
+Every `.md` file is formatted with [dprint](https://dprint.dev/) and linted with [rumdl](https://github.com/rvben/rumdl), configured in `dprint.json` and `.rumdl.toml`.
+
+- Check: `dprint check` and `rumdl check .`
+- Fix: `dprint fmt` and `rumdl check . --fix`
+
+Run both checks before pushing.
+
 ## Delivery
 
 - Default branch: `master`.

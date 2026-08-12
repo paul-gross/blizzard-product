@@ -1,0 +1,6 @@
+[global]
+# MD013 off: canon:no-hard-wrap makes long physical lines the house style
+disable = ["MD013"]
+
+[MD004]
+style = "dash"
