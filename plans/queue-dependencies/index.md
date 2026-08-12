@@ -20,10 +20,10 @@ Edges are the first data the board has ever held about how chunks relate, and a 
 
 ## Artifacts
 
-| Mockup | What it explores |
-|--------|------------------|
+| Mockup                                                       | What it explores                                                                                                                                                                                                                                                 |
+| ------------------------------------------------------------ | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | [story-map-desktop.html](./artifacts/story-map-desktop.html) | The map at a desk: stories in a sidebar, the selected story's chunks drawn left to right with their edges — satisfied, open, and open-from-a-chunk-that-needs-you — and a detail rail carrying the operator's two levers, release-edge and declare-done-by-hand. |
-| [story-map-mobile.html](./artifacts/story-map-mobile.html) | The same map at thumb size: a story-picker chip row, the flow drawn top to bottom, and a bottom sheet holding the detail and the same two levers. |
+| [story-map-mobile.html](./artifacts/story-map-mobile.html)   | The same map at thumb size: a story-picker chip row, the flow drawn top to bottom, and a bottom sheet holding the detail and the same two levers.                                                                                                                |
 
 ## Open questions
 

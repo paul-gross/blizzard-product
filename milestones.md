@@ -2,11 +2,11 @@
 
 What users will be able to do. A milestone is a destination stated in the user's terms, and it comes first: you declare where the product must reach, then ask what work the journey requires — the milestone demands its epics, never the other way around.
 
-| Milestone | What users will be able to do |
-|-----------|-------------------------------|
+| Milestone               | What users will be able to do                                                                                                                                                                                               |
+| ----------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | `milestone:homeostasis` | Run a fleet that holds its own pace and quality: what the fleet learns, spends, and builds is watched by the fleet itself, decay becomes filed work instead of quiet debt — and the fleet begins to offer ideas of its own. |
-| `milestone:polyglot` | Run the fleet on the coding harness of their choice — Claude Code, Codex, or OpenCode, first-class and mixable by node — with the safeties on: no worker runs with permissions dangerously bypassed. |
-| `milestone:projects` | Run every project from one fleet: a single hub hosting many projects' sources and queues, and a single runner per machine working all of them — a workspace per project, not a stack per project. |
+| `milestone:polyglot`    | Run the fleet on the coding harness of their choice — Claude Code, Codex, or OpenCode, first-class and mixable by node — with the safeties on: no worker runs with permissions dangerously bypassed.                        |
+| `milestone:projects`    | Run every project from one fleet: a single hub hosting many projects' sources and queues, and a single runner per machine working all of them — a workspace per project, not a stack per project.                           |
 
 ## `milestone:homeostasis` — a fleet that keeps its own house
 
@@ -20,15 +20,15 @@ And what the fleet can reach, it should count. One question asked of the transcr
 
 The milestone also carries one deliberate maybe: ideation. A fleet that reads its own code every night is well placed to notice what the product could become, not only what it should repair — so it offers the operator an occasional brief of high-level feature directions worth exploring, recommendations to weigh rather than work it files. Whether those briefs earn their reading is exactly what the exploration exists to find out.
 
-| Epic | Slice | Status |
-|------|-------|--------|
-| `epic:self-sourced-work` | full | horizon |
-| `epic:garden` | full | horizon |
-| `epic:transcripts` | full | horizon |
-| `epic:analytics` | full | horizon |
-| `epic:mutation-testing` | full | horizon |
-| `epic:cost` | attribution | horizon |
-| `epic:ideation` | full | horizon |
+| Epic                     | Slice       | Status  |
+| ------------------------ | ----------- | ------- |
+| `epic:self-sourced-work` | full        | horizon |
+| `epic:garden`            | full        | horizon |
+| `epic:transcripts`       | full        | horizon |
+| `epic:analytics`         | full        | horizon |
+| `epic:mutation-testing`  | full        | horizon |
+| `epic:cost`              | attribution | horizon |
+| `epic:ideation`          | full        | horizon |
 
 ## `milestone:polyglot` — any harness, with the safeties on
 
@@ -36,9 +36,9 @@ Blizzard was built around a harness seam — spawn, resume, verdict — precisel
 
 Through the charter's people: the harness engineer runs the same chunk through two harnesses and compares the runs on cost and quality, because harness choice has become a tunable rather than a fact of the platform. The application architect dials trust by station — a build node's hands looser than a deliver-adjacent one's — and force-push is structurally out of any worker's reach. And the operator stops lending the fleet their whole keyring: a worker holds the least a chunk needs, and a worker gone wrong is contained by walls the operator chose, not by the agent's judgment on a bad night.
 
-| Epic | Slice | Status |
-|------|-------|--------|
-| `epic:adapters` | breadth | horizon |
+| Epic            | Slice           | Status  |
+| --------------- | --------------- | ------- |
+| `epic:adapters` | breadth         | horizon |
 | `epic:security` | worker-lockdown | horizon |
 
 ## `milestone:projects` — one fleet, every project
@@ -47,7 +47,7 @@ Today the platform is single-project by silent assumption: one hub, and every so
 
 The runner is rearchitected to match. A runner stops being the extension of a single workspace and becomes a host of many: it configures a local workspace per project, and each workspace works for its project. Three projects on one laptop means three workspaces and one runner — never three runners, and never three of everything above them. For the operator, a desk full of stacks collapses into one: queue work against any project, watch all of it on one board, and slice the view to a single project when only that one matters.
 
-| Epic | Slice | Status |
-|------|-------|--------|
-| `epic:projects` | hub | horizon |
+| Epic            | Slice  | Status  |
+| --------------- | ------ | ------- |
+| `epic:projects` | hub    | horizon |
 | `epic:projects` | runner | horizon |

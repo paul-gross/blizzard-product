@@ -16,7 +16,7 @@ Some of the fleet's most important material can never appear on the board, by de
 
 The panel's founding mockups live in [artifacts/](./artifacts/):
 
-| Mockup | What it explores |
-|--------|------------------|
-| [runner-panel.html](./artifacts/runner-panel.html) | The machine panel: capacities, hub link, tick and lease state, escalations with copyable commands. |
-| [runner-transcripts.html](./artifacts/runner-transcripts.html) | The transcript viewer: sessions on disk beside the store's derived state, with follow mode. |
+| Mockup                                                         | What it explores                                                                                   |
+| -------------------------------------------------------------- | -------------------------------------------------------------------------------------------------- |
+| [runner-panel.html](./artifacts/runner-panel.html)             | The machine panel: capacities, hub link, tick and lease state, escalations with copyable commands. |
+| [runner-transcripts.html](./artifacts/runner-transcripts.html) | The transcript viewer: sessions on disk beside the store's derived state, with follow mode.        |

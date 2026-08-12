@@ -19,8 +19,8 @@ Gate decisions resolve from the board as well as the CLI, against the same hub r
 
 The board's founding mockups live in [artifacts/](./artifacts/) — three explorations of what watching a fleet should feel like, from the concept round before the build:
 
-| Mockup | What it explores |
-|--------|------------------|
+| Mockup                                                   | What it explores                                                                                                                                                            |
+| -------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | [mission-control.html](./artifacts/mission-control.html) | The one that won: the dark mission-control aesthetic and the three-column shape — fleet, chunk detail, event log — whose design tokens seeded the shared component library. |
-| [flow-board.html](./artifacts/flow-board.html) | A kanban-style alternative: one column per workflow node with chunks flowing across, a merge-queue rail, and a detail drawer. |
-| [departures.html](./artifacts/departures.html) | The playful extreme: the fleet as a railway departures board — ready to depart, movements log, announcements — kept for its glanceable-status ideas. |
+| [flow-board.html](./artifacts/flow-board.html)           | A kanban-style alternative: one column per workflow node with chunks flowing across, a merge-queue rail, and a detail drawer.                                               |
+| [departures.html](./artifacts/departures.html)           | The playful extreme: the fleet as a railway departures board — ready to depart, movements log, announcements — kept for its glanceable-status ideas.                        |

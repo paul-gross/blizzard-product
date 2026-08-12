@@ -10,13 +10,13 @@ Who blizzard serves and why it exists — [mission](./charter/mission.md), [visi
 
 An epic starts as a row in the registry, grows a plan when its time approaches, and ends as filed issues the factory ingests. Each promotion is deliberate — the workflow is in [CONTRIBUTING.md](./CONTRIBUTING.md).
 
-| Where | What it holds |
-|-------|---------------|
-| [epics.md](./epics.md) | The epic registry: capability areas in priority order, a paragraph each |
-| [milestones.md](./milestones.md) | The milestone registry: what users will be able to do, each destination demanding its epics |
-| `plans/` | What to build: one plan per promoted epic or single story — a solo file, or a folder whose `index.md` routes its pieces |
-| Backlog source | Ready work: sized, well-specified items the fleet can take |
-| [delivered.md](./delivered.md) | The ledger of landed work: a section per delivered milestone with the epic slices that carried it |
+| Where                            | What it holds                                                                                                           |
+| -------------------------------- | ----------------------------------------------------------------------------------------------------------------------- |
+| [epics.md](./epics.md)           | The epic registry: capability areas in priority order, a paragraph each                                                 |
+| [milestones.md](./milestones.md) | The milestone registry: what users will be able to do, each destination demanding its epics                             |
+| `plans/`                         | What to build: one plan per promoted epic or single story — a solo file, or a folder whose `index.md` routes its pieces |
+| Backlog source                   | Ready work: sized, well-specified items the fleet can take                                                              |
+| [delivered.md](./delivered.md)   | The ledger of landed work: a section per delivered milestone with the epic slices that carried it                       |
 
 ## Authoring
 

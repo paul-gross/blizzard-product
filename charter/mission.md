@@ -4,14 +4,14 @@ Blizzard is an **orchestration platform for fleets of coding agents**: work flow
 
 The core of blizzard is **interoperability**. It is deliberately not tied to one workspace framework, one user workflow, one forge, or one project-management system. Every external dependency is a named seam that a provider plugs into:
 
-| Seam | What plugs in | Reference binding (first implementation) |
-|------|---------------|------------------------------------------|
-| **Workspace** | Provides isolated execution environments | winter feature environments (polyrepo-native) |
-| **Work source** | The project-management system holding the backlog — specific items ingested by id into the hub, never into runners | GitHub issues |
-| **Coding Harness** | The coding agent that does the work | Claude Code, then OpenCode and Codex |
-| **Workflow** | The definition of how work moves — user-defined graphs of nodes, judgements, and gates, so anyone can shape any agent workflow | Hub-defined YAML workflow graphs; the default build → review → deliver graph |
-| **Delivery** | Integrates finished work — the workflow graph's deliver node, executed at the hub | Merge to the main branch; a GitHub pull request where a human-review gate is configured |
-| **Human channel** | Reaches people for questions, escalations, visibility | the board + a chat bot |
+| Seam               | What plugs in                                                                                                                  | Reference binding (first implementation)                                                |
+| ------------------ | ------------------------------------------------------------------------------------------------------------------------------ | --------------------------------------------------------------------------------------- |
+| **Workspace**      | Provides isolated execution environments                                                                                       | winter feature environments (polyrepo-native)                                           |
+| **Work source**    | The project-management system holding the backlog — specific items ingested by id into the hub, never into runners             | GitHub issues                                                                           |
+| **Coding Harness** | The coding agent that does the work                                                                                            | Claude Code, then OpenCode and Codex                                                    |
+| **Workflow**       | The definition of how work moves — user-defined graphs of nodes, judgements, and gates, so anyone can shape any agent workflow | Hub-defined YAML workflow graphs; the default build → review → deliver graph            |
+| **Delivery**       | Integrates finished work — the workflow graph's deliver node, executed at the hub                                              | Merge to the main branch; a GitHub pull request where a human-review gate is configured |
+| **Human channel**  | Reaches people for questions, escalations, visibility                                                                          | the board + a chat bot                                                                  |
 
 The **reference stack** — winter + GitHub + Claude Code — is the proving ground. That is a binding, not an identity: a design choice that would weld the platform to any single binding is a mission violation, not an implementation detail.
 

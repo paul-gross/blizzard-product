@@ -11,6 +11,6 @@ A chunk's artifact store is where the fleet's real output accumulates — plans,
 
 ## Artifacts
 
-| Mockup | What it explores |
-|--------|------------------|
+| Mockup                                                       | What it explores                                                                                                                           |
+| ------------------------------------------------------------ | ------------------------------------------------------------------------------------------------------------------------------------------ |
 | [chunk-detail-page.html](./artifacts/chunk-detail-page.html) | The page: General/Artifacts tabs, the artifact nav beside the full-text viewer, and the dock's compact link row that replaces inline text. |
