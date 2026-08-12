@@ -1,7 +1,15 @@
 [global]
-# MD013 off: canon:no-hard-wrap makes long physical lines the house style
 # MD028 off: adjacent blockquotes separated by a blank line are deliberately distinct quotes, not one split by accident
-disable = ["MD013", "MD028"]
+# MD018 off: the 120-column wrap can land an issue reference (`#N`) at line start; CommonMark does not parse it as a heading, but MD018's autofix would turn it into one
+disable = ["MD028", "MD018"]
 
 [MD004]
 style = "dash"
+
+[MD013]
+# 120 matches dprint's lineWidth; tables and code fences keep their own formatting, so only prose is held to the ceiling
+line-length = 120
+tables = false
+code-blocks = false
+# an inline code span (a command, a quoted assertion message) is unbreakable; a line only it pushes past 120 is not a wrap defect
+code-spans = false
