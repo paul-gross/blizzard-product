@@ -1,6 +1,7 @@
 [global]
 # MD013 off: canon:no-hard-wrap makes long physical lines the house style
-disable = ["MD013"]
+# MD028 off: adjacent blockquotes separated by a blank line are deliberately distinct quotes, not one split by accident
+disable = ["MD013", "MD028"]
 
 [MD004]
 style = "dash"
