@@ -10,7 +10,7 @@ The top-down origin of the registry: each milestone declares a destination in th
 
 1. A short intro paragraph in the product voice — what a milestone is, no governance.
 2. A summary table of every live milestone. Columns: `Milestone | What users will be able to do`.
-3. One `## \`milestone:<slug>\` — <short title>` section per milestone, in the same order as the table: a prose breakdown — the destination, what it unlocks (told through the charter's personas where that sharpens it), and the work it demands — followed by the milestone's **epic chart**: the work it requires as a table with columns `Epic | Slice | Status`.
+3. One ``## `milestone:<slug>` — <short title>`` section per milestone, in the same order as the table: a prose breakdown — the destination, what it unlocks (told through the charter's personas where that sharpens it), and the work it demands — followed by the milestone's **epic chart**: the work it requires as a table with columns `Epic | Slice | Status`.
 
 ## Row and section rules
 
