@@ -1,25 +1,65 @@
 # Plan — `epic:garden`
 
-Standing tending of everything the fleet produces — the guidance it runs on and the code it writes. The name is the thesis: a garden grows naturally over time, and maintenance is its steady state — nothing tended here holds still between interventions, so tuning, trimming, and pruning on a cadence is the discipline, whatever the subject. This is a hard problem that will take real exploration, and this epic is shaped for exploring it: it builds the machinery for named, repeatable evaluation passes an operator kicks off by hand, watches, and refines — with fully autonomous recurrence as the end state the machinery is built to grow into, not the thing built first.
+Standing tending of everything the fleet produces — the guidance it runs on and the code it writes. The name is the
+thesis: a garden grows naturally over time, and maintenance is its steady state — nothing tended here holds still
+between interventions, so tuning, trimming, and pruning on a cadence is the discipline, whatever the subject. This is a
+hard problem that will take real exploration, and this epic is shaped for exploring it: it builds the machinery for
+named, repeatable evaluation passes an operator kicks off by hand, watches, and refines — with fully autonomous
+recurrence as the end state the machinery is built to grow into, not the thing built first.
 
-The garden has two beds. The agent-facing corpus spans four bodies in three repos: the harness rules in blizzard-context (the biggest accretion surface — every retrospective proposes rules and no standing process removes anything), the node prompts inside the blizzard repo, the workspace context docs and workflow methodology, and the skills and agents themselves. And the application code, held against the architectural constraints blizzard-context declares — layering, dependency direction, seam shape — because the code accretes faster than human review can hold an architecture line, and a constraint binds only if something checks it. The beds entangle in exactly the way the design assumes: the first pull of the comment thread found that the code's density problem is the corpus's gap — no comment standard exists, the exemplar spreads the style, and the fleet's verbose priors ratchet density upward with nothing pushing back. Bed one before bed two: author the rule, then hold the code to it.
+The garden has two beds. The agent-facing corpus spans four bodies in three repos: the harness rules in blizzard-context
+(the biggest accretion surface — every retrospective proposes rules and no standing process removes anything), the node
+prompts inside the blizzard repo, the workspace context docs and workflow methodology, and the skills and agents
+themselves. And the application code, held against the architectural constraints blizzard-context declares — layering,
+dependency direction, seam shape — because the code accretes faster than human review can hold an architecture line, and
+a constraint binds only if something checks it. The beds entangle in exactly the way the design assumes: the first pull
+of the comment thread found that the code's density problem is the corpus's gap — no comment standard exists, the
+exemplar spreads the style, and the fleet's verbose priors ratchet density upward with nothing pushing back. Bed one
+before bed two: author the rule, then hold the code to it.
 
 ## What already holds
 
-`epic:self-sourced-work` built everything a pass needs to act through. Its findings become hub work items via the proposal lane — structured proposals on node completions, materialized by the hub at delivery, filterable at a human gate before they exist — so a pass never creates anything by fiat; it delivers opinions the way every chunk delivers commits. The backlog those items land in is rankable, the promote gate holds, and closure facts record how every finding ends.
+`epic:self-sourced-work` built everything a pass needs to act through. Its findings become hub work items via the
+proposal lane — structured proposals on node completions, materialized by the hub at delivery, filterable at a human
+gate before they exist — so a pass never creates anything by fiat; it delivers opinions the way every chunk delivers
+commits. The backlog those items land in is rankable, the promote gate holds, and closure facts record how every finding
+ends.
 
-Work already runs as graphs with human gates where a graph wants them, and the hub has no work scheduler of any kind — the only recurring machinery is the reconciler sweep loop. That absence is now deliberate: this epic leaves it mostly intact.
+Work already runs as graphs with human gates where a graph wants them, and the hub has no work scheduler of any kind —
+the only recurring machinery is the reconciler sweep loop. That absence is now deliberate: this epic leaves it mostly
+intact.
 
-The evidence a pass can act on arrives in stages. Available immediately: the canon's mechanical shape checks (routing-hub integrity, the auto-load tax, oversized files, rules nothing cites), the mature `architecture/` rules, git history, and whatever retrospective material is locally reachable. Arriving with `epic:transcripts` and `epic:analytics`: the usage truth — which files are actually read, which skills actually fire. Arriving with `epic:mutation-testing`: measured test weight — a test that kills no mutants some other test doesn't also kill is dead weight by evidence, not judgment.
+The evidence a pass can act on arrives in stages. Available immediately: the canon's mechanical shape checks
+(routing-hub integrity, the auto-load tax, oversized files, rules nothing cites), the mature `architecture/` rules, git
+history, and whatever retrospective material is locally reachable. Arriving with `epic:transcripts` and
+`epic:analytics`: the usage truth — which files are actually read, which skills actually fire. Arriving with
+`epic:mutation-testing`: measured test weight — a test that kills no mutants some other test doesn't also kill is dead
+weight by evidence, not judgment.
 
 ## Axes as data
 
-What a pass checks is the deployment's data, never blizzard's code — the same platform/content split the graphs already honor: users bring their graphs, they bring their gardening axes. In an agentic factory, code is context — every comment and every test is read by agents orders of magnitude more often than by humans, so weight per read is the unifying question every axis asks. The resolution chain has four layers, each owning exactly one thing:
+What a pass checks is the deployment's data, never blizzard's code — the same platform/content split the graphs already
+honor: users bring their graphs, they bring their gardening axes. In an agentic factory, code is context — every comment
+and every test is read by agents orders of magnitude more often than by humans, so weight per read is the unifying
+question every axis asks. The resolution chain has four layers, each owning exactly one thing:
 
-1. **The template** (hub data) names an axis: "run the garden evaluation against axis `comments`." It stays one template per axis — not for the prose, which is trivial, but because the template anchors the axis's lineage, cadence, and trust, and those must stay per-axis.
-2. **The methodology** — how any convergent garden pass behaves, for any axis, for any project — is written once in the workflow layer: inherit, converge, propose boundedly, report the trend, respect scope.
-3. **The harness's garden registry** — a well-known declaration point in the target's harness (blizzard-context grows a `garden/` section) with one entry per axis: what it evaluates, over what scope, judged against which standards — pointing at the standards rather than restating them. A template naming an axis the harness does not declare fails loudly at the pass's first step, and that failure is itself a finding. This mirrors the verifiability-matrix contract — a plan names a tier, the harness resolves it — and the canon now legislates it: `canon:gardening-axes` (in flight on winter-canon's `gardening` branch) requires every harness to declare its registry, with each axis carrying what it evaluates, its scope, a criteria pointer, and a mandatory measurement. Blizzard-context's `garden/` section is the rule's first instance.
-4. **The standards themselves**, which govern at write time as well: the agent writing code and the pass judging it read the same sentence, so prevention and enforcement can never drift apart. This is why no separate gardening repo exists — a standard homed anywhere but the harness would leave the writing agent blind to it, and the pass pruning downstream what the harness keeps permitting upstream.
+1. **The template** (hub data) names an axis: "run the garden evaluation against axis `comments`." It stays one template
+   per axis — not for the prose, which is trivial, but because the template anchors the axis's lineage, cadence, and
+   trust, and those must stay per-axis.
+2. **The methodology** — how any convergent garden pass behaves, for any axis, for any project — is written once in the
+   workflow layer: inherit, converge, propose boundedly, report the trend, respect scope.
+3. **The harness's garden registry** — a well-known declaration point in the target's harness (blizzard-context grows a
+   `garden/` section) with one entry per axis: what it evaluates, over what scope, judged against which standards —
+   pointing at the standards rather than restating them. A template naming an axis the harness does not declare fails
+   loudly at the pass's first step, and that failure is itself a finding. This mirrors the verifiability-matrix contract
+   — a plan names a tier, the harness resolves it — and the canon now legislates it: `canon:gardening-axes` (in flight
+   on winter-canon's `gardening` branch) requires every harness to declare its registry, with each axis carrying what it
+   evaluates, its scope, a criteria pointer, and a mandatory measurement. Blizzard-context's `garden/` section is the
+   rule's first instance.
+4. **The standards themselves**, which govern at write time as well: the agent writing code and the pass judging it read
+   the same sentence, so prevention and enforcement can never drift apart. This is why no separate gardening repo exists
+   — a standard homed anywhere but the harness would leave the writing agent blind to it, and the pass pruning
+   downstream what the harness keeps permitting upstream.
 
 ## The axes
 
@@ -33,41 +73,102 @@ What a pass checks is the deployment's data, never blizzard's code — the same 
 | `product`      | guidance | The product intent's currency — blizzard-product declares itself kept current, so staleness there is a defect, not history: registry rows whose rationale evaporated, plans delivered but never moved to the ledger, milestone charts out of step with their epics, dead cross-references                                               | The product repo's own authoring conventions and the observable state of what landed                                                                                                                                                            | LLM judgment; the delivered ledger and git as ground truth                                                                           |
 | `verification` | code     | The apparatus's reach, where `tests` prunes its excess: can the app run itself against mocks through every edge case — mock-fleet gaps (forge, harnesses, hub/runner, the stubbed fixture scenarios), behaviors with no mock-reachable path (crash paths, fencing races, lease expiry), behaviors whose only proof is the live instance | The verifiability matrix — the canon already names an unprovable behavior as a gap; this axis hunts those gaps on a cadence                                                                                                                     | LLM judgment over matrix vs. behavior inventory → mutation results expose asserted-but-weak coverage                                 |
 
-Every axis declares its measurement and every run records it whether or not it proposes anything — comment-lines and test-lines per code-line for the weight axes, corpus size and routing depth for `corpus`, stale-claim and dead-reference counts for `context` and `product`, matrix coverage for `verification` — so the trend is the run's product even when the findings are none.
+Every axis declares its measurement and every run records it whether or not it proposes anything — comment-lines and
+test-lines per code-line for the weight axes, corpus size and routing depth for `corpus`, stale-claim and dead-reference
+counts for `context` and `product`, matrix coverage for `verification` — so the trend is the run's product even when the
+findings are none.
 
 ## The pass machinery
 
-- **Work item templates.** A pass is a named, hub-stored template: a name, the axis it names, the graph it runs on, and model/effort defaults. Templates are listed and edited through CLI verbs and listed read-only on the board. A cadence field is the end state, deliberately absent for now.
-- **Instantiation, with options.** `blizzard hub pass run <name>` (and a board action beside the template's row) mints a fresh work item from the template, ingests, and promotes in one act — manual kickoff is itself the deliberate human trigger. The run takes options: a **scope** ("this run: `src/blizzard/runner/`"), a **mode** (full sweep, or delta — see below), and a free-text **charge note** appended as a "This run" section. Since the consumer is an LLM reading prose, parameters are concatenation, not a substitution grammar. The body is a snapshot — editing the template changes future runs only — and machine state stays out of it: the running pass fetches its live context through the API.
-- **Template lineage.** Instantiated items — and the items a run's proposals materialize into — carry their template's name as provenance, alongside the author. Lineage makes runs siblings and is the query key convergence turns on.
-- **The convergent standing pass.** Every run inherits its predecessors: it lists the open items its lineage filed, then converges the set toward current reality. New drift becomes a `create` proposal; a known, still-unresolved finding gets an `update` proposal appending evidence rather than a duplicate; a finding that no longer reproduces gets flagged as apparently resolved for the operator's one-click decision. Convergence is **scope-aware**: a run only updates or flags findings within its scope — inherited findings in territory this run did not visit are left untouched, never absolved by omission. Withdrawal remains a purely human act.
-- **The audit graph.** Passes run on an audit-shaped graph — read, evaluate, propose — whose delivery is zero commits and N work items. When scope exceeds one context, the graph fans out axis-pure sub-agents per partition (packages, features) and merges their findings into one docket. Whether a human gate filters the docket before materialization is per-graph placement of the existing gate construct — the dial that loosens as a pass earns trust.
-- **Mechanization — the second deliverable.** A recurring finding is LLM judgment paid on every run forever; a deterministic check is that judgment paid once. So every pass ends by asking which of its judgments no longer need it, and proposes accordingly, up a ladder of cost: rule data in existing infrastructure (a lint rule enabled, a config tightened), new infrastructure (a linter or test-quality tool adopted — carrying its case: which recurring finding class it retires, at what run-cost saved), and harness changes (a missing standard, a fuzzy rule made crisp). The ladder is a graduation path a check travels — prose standard → LLM-judged finding → lint rule → CI gate — and the readiness signal is convergence data the pass already has: a finding class recurring with high agreement and no human overrides is, by demonstration, crisp enough to encode, while ambiguity is what legitimately keeps a judgment at the LLM rung. Mechanization proposals ride the same lane as findings — two kinds of proposal, one docket. Graduation moves a check's home, never copies it: when a category becomes a lint rule, the axis's registry entry points at the mechanized check and stops re-judging it — one owner per check, at whatever rung it lives. The epic's real success metric follows: a garden that shrinks its own LLM surface over time, judgment migrating into reflexes until the passes spend their context only on what genuinely needs a mind.
+- **Work item templates.** A pass is a named, hub-stored template: a name, the axis it names, the graph it runs on, and
+  model/effort defaults. Templates are listed and edited through CLI verbs and listed read-only on the board. A cadence
+  field is the end state, deliberately absent for now.
+- **Instantiation, with options.** `blizzard hub pass run <name>` (and a board action beside the template's row) mints a
+  fresh work item from the template, ingests, and promotes in one act — manual kickoff is itself the deliberate human
+  trigger. The run takes options: a **scope** ("this run: `src/blizzard/runner/`"), a **mode** (full sweep, or delta —
+  see below), and a free-text **charge note** appended as a "This run" section. Since the consumer is an LLM reading
+  prose, parameters are concatenation, not a substitution grammar. The body is a snapshot — editing the template changes
+  future runs only — and machine state stays out of it: the running pass fetches its live context through the API.
+- **Template lineage.** Instantiated items — and the items a run's proposals materialize into — carry their template's
+  name as provenance, alongside the author. Lineage makes runs siblings and is the query key convergence turns on.
+- **The convergent standing pass.** Every run inherits its predecessors: it lists the open items its lineage filed, then
+  converges the set toward current reality. New drift becomes a `create` proposal; a known, still-unresolved finding
+  gets an `update` proposal appending evidence rather than a duplicate; a finding that no longer reproduces gets flagged
+  as apparently resolved for the operator's one-click decision. Convergence is **scope-aware**: a run only updates or
+  flags findings within its scope — inherited findings in territory this run did not visit are left untouched, never
+  absolved by omission. Withdrawal remains a purely human act.
+- **The audit graph.** Passes run on an audit-shaped graph — read, evaluate, propose — whose delivery is zero commits
+  and N work items. When scope exceeds one context, the graph fans out axis-pure sub-agents per partition (packages,
+  features) and merges their findings into one docket. Whether a human gate filters the docket before materialization is
+  per-graph placement of the existing gate construct — the dial that loosens as a pass earns trust.
+- **Mechanization — the second deliverable.** A recurring finding is LLM judgment paid on every run forever; a
+  deterministic check is that judgment paid once. So every pass ends by asking which of its judgments no longer need it,
+  and proposes accordingly, up a ladder of cost: rule data in existing infrastructure (a lint rule enabled, a config
+  tightened), new infrastructure (a linter or test-quality tool adopted — carrying its case: which recurring finding
+  class it retires, at what run-cost saved), and harness changes (a missing standard, a fuzzy rule made crisp). The
+  ladder is a graduation path a check travels — prose standard → LLM-judged finding → lint rule → CI gate — and the
+  readiness signal is convergence data the pass already has: a finding class recurring with high agreement and no human
+  overrides is, by demonstration, crisp enough to encode, while ambiguity is what legitimately keeps a judgment at the
+  LLM rung. Mechanization proposals ride the same lane as findings — two kinds of proposal, one docket. Graduation moves
+  a check's home, never copies it: when a category becomes a lint rule, the axis's registry entry points at the
+  mechanized check and stops re-judging it — one owner per check, at whatever rung it lives. The epic's real success
+  metric follows: a garden that shrinks its own LLM surface over time, judgment migrating into reflexes until the passes
+  spend their context only on what genuinely needs a mind.
 
 ## Garden states and target scales
 
-The pass judges against declared standards, never its own taste — and that one rule makes its behavior proportionate across every condition of the garden:
+The pass judges against declared standards, never its own taste — and that one rule makes its behavior proportionate
+across every condition of the garden:
 
-- **Empty garden** (young codebase, few standards): there is little to judge and nothing to judge by, so the output flips beds — scaffolding proposals, not enforcement. "No comment standard exists; here is a draft based on what the code currently does." The pass helps plant the standards it will later uphold.
-- **Healthy garden**: silence is the success state and it must be cheap. A converged run delivers zero items, a few still-fine confirmations, and its measurement — the flat trendline is what upheld gardening looks like as evidence rather than a feeling.
-- **Overgrown garden** (a run finds thousands): a pass never files a thousand items — the backlog is a human triage surface, and per-instance filing confuses inventory with work. Three-part response, in order: **stop the inflow first** (the highest-leverage proposal is almost always bed one — the missing standard, the exemplar spreading the pattern); **aggregate into campaigns** (the item is the theme per area — "≈1,200 retrospective comments across the runner package, inventory attached as an artifact" — sized as an executable chunk of remediation); **propose boundedly, converge the rest** (report the full honest measurement, propose the top-leverage campaigns, and let what was not proposed surface on later runs as the backlog drains).
+- **Empty garden** (young codebase, few standards): there is little to judge and nothing to judge by, so the output
+  flips beds — scaffolding proposals, not enforcement. "No comment standard exists; here is a draft based on what the
+  code currently does." The pass helps plant the standards it will later uphold.
+- **Healthy garden**: silence is the success state and it must be cheap. A converged run delivers zero items, a few
+  still-fine confirmations, and its measurement — the flat trendline is what upheld gardening looks like as evidence
+  rather than a feeling.
+- **Overgrown garden** (a run finds thousands): a pass never files a thousand items — the backlog is a human triage
+  surface, and per-instance filing confuses inventory with work. Three-part response, in order: **stop the inflow
+  first** (the highest-leverage proposal is almost always bed one — the missing standard, the exemplar spreading the
+  pattern); **aggregate into campaigns** (the item is the theme per area — "≈1,200 retrospective comments across the
+  runner package, inventory attached as an artifact" — sized as an executable chunk of remediation); **propose
+  boundedly, converge the rest** (report the full honest measurement, propose the top-leverage campaigns, and let what
+  was not proposed surface on later runs as the backlog drains).
 
 Scale is handled by the run options and one economy:
 
-- **Tiny targets**: the deployment's data declares fewer axes or one merged one — per-axis templates are blizzard's choice, not machinery's mandate.
+- **Tiny targets**: the deployment's data declares fewer axes or one merged one — per-axis templates are blizzard's
+  choice, not machinery's mandate.
 - **Big targets** (one context holds it): the default — whole-scope runs, faceted fan-out when useful.
-- **Gigantic targets** (no context holds it): covered by rotating **scoped runs** under one lineage — scope-aware convergence is what makes sharding honest — with fan-out inside each run. And after one full sweep, **delta mode** is the steady state: weeds grow where change happens, git answers what changed since the lineage last ran, so a run examines the delta plus its inherited findings and cost scales with change rate, not repo size. The full sweep becomes a rare deliberate act — a new axis, or a changed standard, which re-opens judgment on unchanged code.
+- **Gigantic targets** (no context holds it): covered by rotating **scoped runs** under one lineage — scope-aware
+  convergence is what makes sharding honest — with fan-out inside each run. And after one full sweep, **delta mode** is
+  the steady state: weeds grow where change happens, git answers what changed since the lineage last ran, so a run
+  examines the delta plus its inherited findings and cost scales with change rate, not repo size. The full sweep becomes
+  a rare deliberate act — a new axis, or a changed standard, which re-opens judgment on unchanged code.
 
 ## The end state
 
-Autonomous recurrence — the eval that runs every 7 days whether or not anyone remembers it — is one small addition to a shape that will not change: a cadence field on the template and a hub sweep that runs any template whose interval has elapsed and whose previous run is not still live. The convergent pattern is what makes the schedule safe to turn on: a pass that inherits and converges never floods the backlog with duplicates no matter how often it fires, so automation is a trust decision per template, not new machinery. Until then, exploration is the mode: edit the charge, run it again, watch what it proposes — with the findings backlog persisting across every experiment.
+Autonomous recurrence — the eval that runs every 7 days whether or not anyone remembers it — is one small addition to a
+shape that will not change: a cadence field on the template and a hub sweep that runs any template whose interval has
+elapsed and whose previous run is not still live. The convergent pattern is what makes the schedule safe to turn on: a
+pass that inherits and converges never floods the backlog with duplicates no matter how often it fires, so automation is
+a trust decision per template, not new machinery. Until then, exploration is the mode: edit the charge, run it again,
+watch what it proposes — with the findings backlog persisting across every experiment.
 
 ## What this epic is not
 
-Not a scheduler yet: manual kickoff is the exploration mode, and the cadence ships when a pass has earned it. Not edit authority: a pass never prunes anything directly — corpus and code alike change only through promoted chunks riding normal delivery. Not a taste engine: every judgment traces to a declared standard, and where none exists the proposal is to author one. Not analytics or mutation testing: this epic consumes their evidence when it exists and works from judgment, git, and the canon's checks until then.
+Not a scheduler yet: manual kickoff is the exploration mode, and the cadence ships when a pass has earned it. Not edit
+authority: a pass never prunes anything directly — corpus and code alike change only through promoted chunks riding
+normal delivery. Not a taste engine: every judgment traces to a declared standard, and where none exists the proposal is
+to author one. Not analytics or mutation testing: this epic consumes their evidence when it exists and works from
+judgment, git, and the canon's checks until then.
 
 ## Open questions
 
-- The two missing standards — `standards/comments.md` (with the exemplar's citation-docstring decision) and `standards/tests.md` — authored as the comment and test axes' first acts, whether by hand or as the passes' own scaffolding proposals.
-- Whether the architecture axis grows a per-landing dimension — judging each delivery's change while it is one commit old, rather than only sweeping on a cadence — decided after the sweep has shown what kinds of drift it actually catches.
-- What earns a template its cadence — how many clean manual runs, and judged by what — decided after the exploration phase has produced some.
+- The two missing standards — `standards/comments.md` (with the exemplar's citation-docstring decision) and
+  `standards/tests.md` — authored as the comment and test axes' first acts, whether by hand or as the passes' own
+  scaffolding proposals.
+- Whether the architecture axis grows a per-landing dimension — judging each delivery's change while it is one commit
+  old, rather than only sweeping on a cadence — decided after the sweep has shown what kinds of drift it actually
+  catches.
+- What earns a template its cadence — how many clean manual runs, and judged by what — decided after the exploration
+  phase has produced some.

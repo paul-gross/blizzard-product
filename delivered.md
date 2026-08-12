@@ -1,10 +1,12 @@
 # Delivered
 
-The ledger of landed work, told the way the work was conceived: by destination. Each delivered milestone keeps a section with the grid of epic slices that carried it.
+The ledger of landed work, told the way the work was conceived: by destination. Each delivered milestone keeps a section
+with the grid of epic slices that carried it.
 
 ## `milestone:mvp` — one operator, one machine
 
-A working fleet for a single operator on a single machine: colocated hub and runner, the local board, and the full autonomous baseline from ingest to merge.
+A working fleet for a single operator on a single machine: colocated hub and runner, the local board, and the full
+autonomous baseline from ingest to merge.
 
 | Epic              | Slice delivered  | Notes                                                                                                                                                                                                                                                      |
 | ----------------- | ---------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
@@ -21,7 +23,8 @@ A working fleet for a single operator on a single machine: colocated hub and run
 
 ## `milestone:mvp-feedback` — the lessons of running it for real
 
-The MVP put a real fleet in an operator's hands, and running it taught what the platform still owed them: an operator can now see and bound what the fleet spends, and evolve workflow graphs underneath running work.
+The MVP put a real fleet in an operator's hands, and running it taught what the platform still owed them: an operator
+can now see and bound what the fleet spends, and evolve workflow graphs underneath running work.
 
 | Epic             | Slice delivered | Notes                                                                                                                                                                                                                                                                                          |
 | ---------------- | --------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
@@ -30,7 +33,9 @@ The MVP put a real fleet in an operator's hands, and running it taught what the 
 
 ## `milestone:centralized-hub` — run the fleet from anywhere
 
-The hub stopped living where the operator sits: one hosted hub off the machine, runners signing in to it from wherever they run, and a board and answer loop safe to reach from any device. Away from the desk no longer means away from the fleet.
+The hub stopped living where the operator sits: one hosted hub off the machine, runners signing in to it from wherever
+they run, and a board and answer loop safe to reach from any device. Away from the desk no longer means away from the
+fleet.
 
 | Epic              | Slice delivered     | Notes                                                                                                                                                                                                                                                                                                                                                        |
 | ----------------- | ------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |

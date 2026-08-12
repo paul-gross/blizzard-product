@@ -1,8 +1,12 @@
 # Personas
 
-Every requirement in this repo should be traceable to a person it serves. Each persona carries a stable identifier of the form `persona:<slug>`; other documents cite personas by that id, and a piece of the product that serves no persona here is gold-plating and should be challenged. A persona's card is the id's single home — renaming or removing one is a breaking change for everything that cites it.
+Every requirement in this repo should be traceable to a person it serves. Each persona carries a stable identifier of
+the form `persona:<slug>`; other documents cite personas by that id, and a piece of the product that serves no persona
+here is gold-plating and should be challenged. A persona's card is the id's single home — renaming or removing one is a
+breaking change for everything that cites it.
 
-[`persona:application-architect`](./personas/application-architect.md) is the primary persona: the engineer blizzard is built by and for. The others are served deliberately later, as the roadmap's layers arrive.
+[`persona:application-architect`](./personas/application-architect.md) is the primary persona: the engineer blizzard is
+built by and for. The others are served deliberately later, as the roadmap's layers arrive.
 
 | Persona                         | In one line                                                                                            | Card                                        |
 | ------------------------------- | ------------------------------------------------------------------------------------------------------ | ------------------------------------------- |

@@ -1,36 +1,97 @@
 # Plan — `epic:self-sourced-work`
 
-The forge stops being the only door work can arrive through. This epic builds the door itself: work items that live in the hub's own store, addressed like any other work (`hub:42`), flowing through the same ingest → backlog → promote → deliver pipeline as forge-born chunks. The producers that will one day author work through it — a delivery-review pass that judges whether a landing truly succeeded, a retrospective whose finding becomes an item rather than a paragraph — arrive through later epics; what this epic guarantees is that when they do, stating work is a structured proposal on a node completion, and the hub materializes it at delivery. And the door pays for itself before any producer shows up: a hub with zero forge sources configured becomes fully operable — items authored by hand, a queue with no forge behind it at all.
+The forge stops being the only door work can arrive through. This epic builds the door itself: work items that live in
+the hub's own store, addressed like any other work (`hub:42`), flowing through the same ingest → backlog → promote →
+deliver pipeline as forge-born chunks. The producers that will one day author work through it — a delivery-review pass
+that judges whether a landing truly succeeded, a retrospective whose finding becomes an item rather than a paragraph —
+arrive through later epics; what this epic guarantees is that when they do, stating work is a structured proposal on a
+node completion, and the hub materializes it at delivery. And the door pays for itself before any producer shows up: a
+hub with zero forge sources configured becomes fully operable — items authored by hand, a queue with no forge behind it
+at all.
 
 ## What already holds
 
-The work-source seam fits an internal source without alteration. `IWorkSource` is `parse`/`fetch`/`label`/`web_url`; a chunk stores only the opaque `{source, ref}` pointer and every consumer fetches content fresh from the source — so a source whose `fetch` reads the hub's own table satisfies the whole contract, and nothing above the seam can tell the difference. Write abilities are already sibling protocols a source may or may not implement (`IWorkAnnotator`, `IWorkCloser`), which is exactly the shape item mutation needs.
+The work-source seam fits an internal source without alteration. `IWorkSource` is `parse`/`fetch`/`label`/`web_url`; a
+chunk stores only the opaque `{source, ref}` pointer and every consumer fetches content fresh from the source — so a
+source whose `fetch` reads the hub's own table satisfies the whole contract, and nothing above the seam can tell the
+difference. Write abilities are already sibling protocols a source may or may not implement (`IWorkAnnotator`,
+`IWorkCloser`), which is exactly the shape item mutation needs.
 
-Intake is push and deliberate: ingest mints a resting `not_ready` chunk, and promotion is a separate human act. That gate does not move. The ranking machinery is general too — `queue_positions` is keyed by chunk with a fallback to mint order, and only the API edges restrict reordering to the ready set.
+Intake is push and deliberate: ingest mints a resting `not_ready` chunk, and promotion is a separate human act. That
+gate does not move. The ranking machinery is general too — `queue_positions` is keyed by chunk with a fallback to mint
+order, and only the API edges restrict reordering to the ready set.
 
-Identity comes in exactly the two families authorship needs: hub-local users with roles behind the operator surface, and runner principals valid only on the fleet router — so who authored an item is something the hub stamps from what it already knows, never something a caller claims.
+Identity comes in exactly the two families authorship needs: hub-local users with roles behind the operator surface, and
+runner principals valid only on the fleet router — so who authored an item is something the hub stamps from what it
+already knows, never something a caller claims.
 
-And chunks already know how to disappear without deleting anything: a grouped chunk records a fact and becomes ephemeral — gone from every view, row intact.
+And chunks already know how to disappear without deleting anything: a grouped chunk records a fact and becomes ephemeral
+— gone from every view, row intact.
 
 ## The item and its author
 
-A hub work item carries a per-source monotonic integer `ref` (the `42` in `hub:42`, never reused), a `title`, a markdown `body` that is the work's full spec, an `author`, an advisory `stated_priority` (`low`/`normal`/`high`), creation and last-edit instants, and a closure — `delivered` when its chunk lands, `withdrawn` when it is deleted. The author is structured, not a string: kind `user` with the hub user's login, or kind `fleet` with the runner, chunk, and node the hub resolves itself when it materializes a proposal at delivery. Comments stay out of the table: the fetch seam returns an empty list and every consumer is satisfied; an append-only comments table slots in behind the same seam the day a real need appears.
+A hub work item carries a per-source monotonic integer `ref` (the `42` in `hub:42`, never reused), a `title`, a markdown
+`body` that is the work's full spec, an `author`, an advisory `stated_priority` (`low`/`normal`/`high`), creation and
+last-edit instants, and a closure — `delivered` when its chunk lands, `withdrawn` when it is deleted. The author is
+structured, not a string: kind `user` with the hub user's login, or kind `fleet` with the runner, chunk, and node the
+hub resolves itself when it materializes a proposal at delivery. Comments stay out of the table: the fetch seam returns
+an empty list and every consumer is satisfied; an append-only comments table slots in behind the same seam the day a
+real need appears.
 
 ## What to build
 
-- **The `hub` source, reserved and built-in.** Always present under the reserved name `hub` — no config stanza, no credentials, and user-configured sources cannot claim the name. Its `label` prints `hub:42`, its `web_url` points at the board's own chunk view rather than anywhere external, and its `fetch` reads the item table — which means editing an open item shows up on its chunk immediately, the same fresh-fetch semantics forge issues have today.
-- **Source-addressed item routes.** Items are a sub-resource of the source they live in: `GET`/`POST` on `/api/work-sources/{source}/items` and `GET`/`PATCH`/`DELETE` on `/api/work-sources/{source}/items/{ref}`, plus a sources listing so the board can enumerate what exists and what is writable. Tokens (`hub:42`, `blizzard#123`) are input grammar, not identity: the CLI parses them once at the edge through the source's own `parse` and the wire carries `{source}` and `{ref}` as plain segments. Mutation is capability-gated the way annotate and close already are — a sibling editor protocol the hub source implements and the GitHub source does not, so `PATCH` against a forge item refuses cleanly today while leaving the seam open for a source that earns it later.
-- **Proposals, materialized at delivery.** The fleet never creates items — runners state facts and desires, the hub materializes consequences, and this epic keeps that invariant intact. A node attaches proposed work items to its node completion as structured payloads — `create` with title, body, and stated priority, or `update` appending evidence to an existing open item — riding the same atomic channel assets already ride, so the proposal set inherits the completion lane's at-least-once idempotence and a retried completion can never double-propose. When the chunk delivers, the hub mints the accumulated proposals into real items, stamping authorship and lineage itself, epoch-fenced like the rest of delivery. A graph that wants human judgment places its existing gate construct before delivery and the gate presents the proposal docket — strike some, pass the rest — so filtering happens before durable state exists, not by deleting items after. Which nodes may carry proposals at all is graph policy. A chunk that never delivers takes its proposals with it: a stopped or failed run's opinions do not outlive it — a decision, not an accident. This lane is the seam the producer epics use; proposing work is never the part a producer has to build.
-- **Auto-ingest, promotion untouched.** Creating an item mints its `not_ready` chunk in the same act — the item is on the board the moment it exists, and nothing about it runs until an operator promotes it. Stated priority renders at triage as the author's claim; it never writes a queue position.
-- **A sortable backlog.** Lift the ready-only validation at the reorder edges so drag-and-drop ranks `not_ready` chunks exactly as it ranks the queue. The position machinery already treats rank as a property any chunk can carry; this makes the backlog a real triage surface instead of a list ordered by accident of mint time.
-- **Deletion — the board's first.** A `chunk.deleted` fact makes a chunk ephemeral, following grouping's precedent: nothing is row-deleted, the activity feed can say who deleted what, and a mistake is diagnosable. The guard is the unacquired predicate grouping already trusts — backlog and queue chunks delete, anything a runner holds refuses by name. On the board: a delete affordance with confirmation on unacquired chunk cards, gated like the other chunk controls, announced over the existing change stream. A hub-born chunk and its items live and die together — deleting either withdraws the other — while deleting a forge-born chunk merely un-tracks it and the issue lives on at the forge.
-- **Refine by CLI, view read-only.** `blizzard hub item create`/`edit`/`delete` verbs, thin over the routes, accepting the token forms a human types. The board renders the item in full — markdown body, authorship line, stated priority — and grows no editor by design: the board is the read-only view, and editing is the agentic surface's job.
-- **Closure on delivery.** The `hub` source implements the closer protocol against its own table, so the reconciler that closes forge issues marks hub items `delivered` when their chunk lands — items get a complete lifecycle from the machinery that already runs.
+- **The `hub` source, reserved and built-in.** Always present under the reserved name `hub` — no config stanza, no
+  credentials, and user-configured sources cannot claim the name. Its `label` prints `hub:42`, its `web_url` points at
+  the board's own chunk view rather than anywhere external, and its `fetch` reads the item table — which means editing
+  an open item shows up on its chunk immediately, the same fresh-fetch semantics forge issues have today.
+- **Source-addressed item routes.** Items are a sub-resource of the source they live in: `GET`/`POST` on
+  `/api/work-sources/{source}/items` and `GET`/`PATCH`/`DELETE` on `/api/work-sources/{source}/items/{ref}`, plus a
+  sources listing so the board can enumerate what exists and what is writable. Tokens (`hub:42`, `blizzard#123`) are
+  input grammar, not identity: the CLI parses them once at the edge through the source's own `parse` and the wire
+  carries `{source}` and `{ref}` as plain segments. Mutation is capability-gated the way annotate and close already are
+  — a sibling editor protocol the hub source implements and the GitHub source does not, so `PATCH` against a forge item
+  refuses cleanly today while leaving the seam open for a source that earns it later.
+- **Proposals, materialized at delivery.** The fleet never creates items — runners state facts and desires, the hub
+  materializes consequences, and this epic keeps that invariant intact. A node attaches proposed work items to its node
+  completion as structured payloads — `create` with title, body, and stated priority, or `update` appending evidence to
+  an existing open item — riding the same atomic channel assets already ride, so the proposal set inherits the
+  completion lane's at-least-once idempotence and a retried completion can never double-propose. When the chunk
+  delivers, the hub mints the accumulated proposals into real items, stamping authorship and lineage itself,
+  epoch-fenced like the rest of delivery. A graph that wants human judgment places its existing gate construct before
+  delivery and the gate presents the proposal docket — strike some, pass the rest — so filtering happens before durable
+  state exists, not by deleting items after. Which nodes may carry proposals at all is graph policy. A chunk that never
+  delivers takes its proposals with it: a stopped or failed run's opinions do not outlive it — a decision, not an
+  accident. This lane is the seam the producer epics use; proposing work is never the part a producer has to build.
+- **Auto-ingest, promotion untouched.** Creating an item mints its `not_ready` chunk in the same act — the item is on
+  the board the moment it exists, and nothing about it runs until an operator promotes it. Stated priority renders at
+  triage as the author's claim; it never writes a queue position.
+- **A sortable backlog.** Lift the ready-only validation at the reorder edges so drag-and-drop ranks `not_ready` chunks
+  exactly as it ranks the queue. The position machinery already treats rank as a property any chunk can carry; this
+  makes the backlog a real triage surface instead of a list ordered by accident of mint time.
+- **Deletion — the board's first.** A `chunk.deleted` fact makes a chunk ephemeral, following grouping's precedent:
+  nothing is row-deleted, the activity feed can say who deleted what, and a mistake is diagnosable. The guard is the
+  unacquired predicate grouping already trusts — backlog and queue chunks delete, anything a runner holds refuses by
+  name. On the board: a delete affordance with confirmation on unacquired chunk cards, gated like the other chunk
+  controls, announced over the existing change stream. A hub-born chunk and its items live and die together — deleting
+  either withdraws the other — while deleting a forge-born chunk merely un-tracks it and the issue lives on at the
+  forge.
+- **Refine by CLI, view read-only.** `blizzard hub item create`/`edit`/`delete` verbs, thin over the routes, accepting
+  the token forms a human types. The board renders the item in full — markdown body, authorship line, stated priority —
+  and grows no editor by design: the board is the read-only view, and editing is the agentic surface's job.
+- **Closure on delivery.** The `hub` source implements the closer protocol against its own table, so the reconciler that
+  closes forge issues marks hub items `delivered` when their chunk lands — items get a complete lifecycle from the
+  machinery that already runs.
 
 ## What this epic is not
 
-Not the producers: no node proposes work yet — the delivery-review pass, the tending passes, and the retrospective's finding-to-item rewiring are their own epics, and this one's proposal lane is the seam they will use. Not auto-promotion: a stated priority is advice for the triaging human, and the promote gate holds against fleet-authored work exactly as it holds against forge-born work. Not fleet mutation routes of any kind: item creation and editing through the API stay operator acts, and withdrawal stays a purely human one. Not comments, until something needs them. Not forge editing: the capability gate leaves that door framed but unopened.
+Not the producers: no node proposes work yet — the delivery-review pass, the tending passes, and the retrospective's
+finding-to-item rewiring are their own epics, and this one's proposal lane is the seam they will use. Not
+auto-promotion: a stated priority is advice for the triaging human, and the promote gate holds against fleet-authored
+work exactly as it holds against forge-born work. Not fleet mutation routes of any kind: item creation and editing
+through the API stay operator acts, and withdrawal stays a purely human one. Not comments, until something needs them.
+Not forge editing: the capability gate leaves that door framed but unopened.
 
 ## Open questions
 
-- Whether promotion should read the stated priority to auto-place a high-priority chunk near the front instead of at the tail — deferred until real triage shows whether the drag is a burden worth saving.
+- Whether promotion should read the stated priority to auto-place a high-priority chunk near the front instead of at the
+  tail — deferred until real triage shows whether the drag is a burden worth saving.
