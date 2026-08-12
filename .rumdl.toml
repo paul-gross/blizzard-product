@@ -11,5 +11,3 @@ style = "dash"
 line-length = 120
 tables = false
 code-blocks = false
-# an inline code span (a command, a quoted assertion message) is unbreakable; a line only it pushes past 120 is not a wrap defect
-code-spans = false
