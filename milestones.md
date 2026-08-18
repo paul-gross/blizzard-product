@@ -35,7 +35,10 @@ sweeps read. A fleet can only learn from what it can reach.
 And what the fleet can reach, it should count. One question asked of the transcripts by hand — how often are skills
 used? — overturned an assumption: agents constantly, skills nearly never. Aggregated usage of the fleet's own machinery
 — skills fired, agents spawned, context files read — turns the tending of the corpus from taste into evidence: the file
-nobody reads gets reworded or removed on the numbers, not on a hunch.
+nobody reads gets reworded or removed on the numbers, not on a hunch. Counting is only half of it, though: a number that
+takes a terminal session and a throwaway script to retrieve is learned once and then paid for again the next time
+someone wonders. So the evidence surfaces where the operator already looks — a page that opens on the week against the
+week before, and gives way to whatever dimension the question turns out to need.
 
 The milestone also carries one deliberate maybe: ideation. A fleet that reads its own code every night is well placed to
 notice what the product could become, not only what it should repair — so it offers the operator an occasional brief of
@@ -48,6 +51,7 @@ earn their reading is exactly what the exploration exists to find out.
 | `epic:garden`            | full        | horizon |
 | `epic:transcripts`       | full        | horizon |
 | `epic:analytics`         | full        | horizon |
+| `epic:visual-analytics`  | full        | horizon |
 | `epic:mutation-testing`  | full        | horizon |
 | `epic:cost`              | attribution | horizon |
 | `epic:ideation`          | full        | horizon |

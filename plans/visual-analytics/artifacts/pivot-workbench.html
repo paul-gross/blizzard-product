@@ -1,0 +1,506 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>blizzard hub — analytics workbench</title>
+<style>
+  :root {
+    --bg: #060a12;
+    --ground: #080d17;
+    --panel: #0b1120;
+    --panel-deep: #080d19;
+    --bezel: #1d2b44;
+    --bezel-hi: #27395c;
+    --line: #131d30;
+    --amber: #f2b25c;
+    --amber-hi: #ffcf8a;
+    --amber-dim: #8f7548;
+    --cyan: #5cd1e5;
+    --cyan-dim: #2b6675;
+    --red: #f05c6c;
+    --green: #4fc57e;
+    --label: #5c7089;
+    --label-dim: #3c4d63;
+    --text: #b8c6d8;
+    --mono: ui-monospace, "SF Mono", SFMono-Regular, Menlo, Consolas, "Liberation Mono", monospace;
+
+    /* Sequential magnitude ramp — one hue (amber), validated for this surface:
+       node scripts/validate_palette.js "#6b5228,#8a6931,#a8813a,#c69a44,#e0b350,#ffcf8a"
+         --mode dark --surface "#0b1120" --ordinal   → ALL CHECKS PASS */
+    --seq-1: #6b5228; --seq-2: #8a6931; --seq-3: #a8813a;
+    --seq-4: #c69a44; --seq-5: #e0b350; --seq-6: #ffcf8a;
+  }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  html, body { height: 100%; }
+  body {
+    background: radial-gradient(ellipse at 50% -20%, #0c1526 0%, var(--bg) 60%), var(--bg);
+    color: var(--text);
+    font-family: var(--mono);
+    font-size: 12px;
+    font-variant-numeric: tabular-nums;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+  }
+  button {
+    font-family: var(--mono); font-variant-numeric: tabular-nums;
+    background: var(--panel-deep); color: var(--cyan);
+    border: 1px solid var(--cyan-dim); cursor: pointer;
+    font-size: 11px; padding: 2px 7px;
+  }
+  button:hover:not(:disabled) { border-color: var(--cyan); background: #0d1a28; }
+  button[aria-pressed="true"] { background: #12283a; border-color: var(--cyan); color: #d6f4fb; }
+  button:disabled { color: var(--label-dim); border-color: var(--line); cursor: default; }
+  button:focus-visible { outline: 2px solid var(--cyan); outline-offset: 1px; }
+  ::selection { background: var(--cyan-dim); color: #eaf6f9; }
+
+  .lbl { font-size: 9px; letter-spacing: 0.18em; text-transform: uppercase; color: var(--label); text-shadow: 0 1px 0 rgba(0,0,0,0.9); }
+  .panel {
+    background: linear-gradient(180deg, var(--panel) 0%, var(--panel-deep) 100%);
+    border: 1px solid var(--bezel);
+    box-shadow: inset 0 1px 0 rgba(255,255,255,0.04), inset 0 -1px 0 rgba(0,0,0,0.6), 0 0 0 1px rgba(0,0,0,0.55);
+    display: flex; flex-direction: column; min-height: 0;
+  }
+  .panel-head {
+    display: flex; align-items: center; justify-content: space-between; gap: 8px;
+    padding: 5px 8px; border-bottom: 1px solid var(--line);
+    background: rgba(0,0,0,0.25); flex: none;
+  }
+  .panel-body { overflow: auto; flex: 1; min-height: 0; }
+  .panel-body::-webkit-scrollbar { width: 7px; height: 7px; }
+  .panel-body::-webkit-scrollbar-thumb { background: var(--bezel); }
+
+  header {
+    flex: none; display: flex; align-items: stretch;
+    border-bottom: 1px solid var(--bezel);
+    background: linear-gradient(180deg, #0d1526, #080d18); height: 42px;
+  }
+  .hdr-cell {
+    display: flex; flex-direction: column; justify-content: center;
+    padding: 0 14px; border-right: 1px solid var(--line); white-space: nowrap;
+  }
+  .hdr-cell .v { color: var(--amber); font-size: 15px; line-height: 1.15; }
+  .hdr-cell .v .u { color: var(--amber-dim); font-size: 11px; }
+  #brand { color: var(--amber-hi); font-size: 15px; letter-spacing: 0.28em; text-transform: uppercase; }
+  #brand small { color: var(--label); font-size: 9px; letter-spacing: 0.16em; display: block; text-transform: none; }
+  header .spacer { flex: 1; border-right: none; }
+
+  main { flex: 1; min-height: 0; display: grid; grid-template-columns: 208px 1fr 300px; gap: 6px; padding: 6px; }
+  .col { display: flex; flex-direction: column; gap: 6px; min-height: 0; min-width: 0; }
+
+  /* ---------- shelf ---------- */
+  .shelf-group { padding: 6px 8px 10px; }
+  .shelf-group + .shelf-group { border-top: 1px solid var(--line); }
+  .chip {
+    display: flex; align-items: center; justify-content: space-between; gap: 6px;
+    width: 100%; text-align: left; margin-top: 4px;
+    background: var(--ground); border: 1px solid var(--line); color: var(--text);
+    padding: 4px 7px; font-size: 11px; cursor: pointer;
+  }
+  .chip:hover { border-color: var(--bezel-hi); }
+  .chip .slot { font-size: 9px; letter-spacing: 0.14em; color: var(--label-dim); }
+  .chip[data-slot="row"] { border-color: var(--amber-dim); color: var(--amber-hi); }
+  .chip[data-slot="row"] .slot { color: var(--amber); }
+  .chip[data-slot="col"] { border-color: var(--cyan-dim); color: #cdeef6; }
+  .chip[data-slot="col"] .slot { color: var(--cyan); }
+  .chip[aria-pressed="true"] { background: #101a2b; }
+
+  /* ---------- filter bar ---------- */
+  #filterbar { display: flex; align-items: center; gap: 6px; flex-wrap: wrap; padding: 6px 8px; }
+  .fchip {
+    display: inline-flex; align-items: center; gap: 6px;
+    background: var(--ground); border: 1px solid var(--line);
+    padding: 3px 6px; font-size: 11px; color: var(--text);
+  }
+  .fchip select {
+    font-family: var(--mono); font-size: 11px; background: var(--panel-deep);
+    color: var(--cyan); border: 1px solid var(--cyan-dim); padding: 1px 3px;
+  }
+  .fchip .x { color: var(--label-dim); cursor: pointer; }
+  .fchip .x:hover { color: var(--red); }
+
+  /* ---------- pivot grid ---------- */
+  table.pivot { border-collapse: separate; border-spacing: 2px; width: 100%; }
+  table.pivot th, table.pivot td { padding: 5px 8px; white-space: nowrap; }
+  table.pivot thead th {
+    font-size: 9px; letter-spacing: 0.14em; text-transform: uppercase;
+    color: var(--label); font-weight: 600; text-align: right; background: rgba(0,0,0,0.25);
+  }
+  table.pivot thead th.corner { text-align: left; color: var(--amber); }
+  table.pivot tbody th {
+    text-align: left; font-weight: 400; color: var(--text);
+    background: var(--ground); border-left: 2px solid var(--amber-dim); font-size: 11px;
+  }
+  table.pivot td { text-align: right; color: var(--text); border-radius: 3px; cursor: default; }
+  table.pivot td.zero { color: var(--label-dim); background: rgba(255,255,255,0.015) !important; }
+  table.pivot td:hover { outline: 1px solid var(--cyan); }
+  table.pivot .tot { background: rgba(0,0,0,0.3) !important; color: var(--amber-hi); border-top: 1px solid var(--bezel); }
+  table.pivot tfoot th { text-align: left; color: var(--amber); background: rgba(0,0,0,0.3); font-weight: 600; font-size: 11px; }
+  table.pivot tfoot td { background: rgba(0,0,0,0.3); color: var(--amber-hi); }
+
+  /* ---------- reading panel ---------- */
+  #question { padding: 9px 10px; color: var(--text); font-size: 12px; line-height: 1.6; border-bottom: 1px solid var(--line); }
+  #question b { color: var(--amber-hi); font-weight: 600; }
+  #question i { color: var(--cyan); font-style: normal; }
+  .barrow { display: grid; grid-template-columns: 92px 1fr 62px; align-items: center; gap: 7px; padding: 3px 10px; }
+  .barrow .nm { color: var(--text); font-size: 11px; overflow: hidden; text-overflow: ellipsis; }
+  .barrow .track { height: 9px; background: rgba(255,255,255,0.04); position: relative; }
+  .barrow .fill { display: block; height: 100%; background: var(--seq-4); border-radius: 0 3px 3px 0; }
+  .barrow .fill.top { background: var(--amber); }
+  .barrow .val { text-align: right; color: var(--amber-hi); font-size: 11px; }
+  .note { padding: 9px 10px; color: var(--label); font-size: 11px; line-height: 1.6; border-top: 1px solid var(--line); }
+  .note b { color: var(--text); font-weight: 400; }
+
+  /* ---------- legend / scale ---------- */
+  #scale { display: flex; align-items: center; gap: 6px; }
+  #scale .sw { width: 17px; height: 9px; border: 1px solid rgba(0,0,0,0.5); }
+
+  #tip {
+    position: fixed; pointer-events: none; z-index: 40; display: none;
+    background: #0a1220; border: 1px solid var(--bezel-hi);
+    box-shadow: 0 6px 20px rgba(0,0,0,0.7); padding: 6px 9px; font-size: 11px; line-height: 1.55;
+    color: var(--text); max-width: 260px;
+  }
+  #tip .k { color: var(--label); }
+  #tip .v { color: var(--amber-hi); }
+
+  footer {
+    flex: none; display: flex; align-items: center; gap: 16px;
+    border-top: 1px solid var(--bezel); background: #070c16;
+    padding: 4px 10px; color: var(--label-dim); font-size: 10px;
+  }
+  footer kbd { color: var(--cyan); border: 1px solid var(--cyan-dim); padding: 0 3px; }
+  footer .fr { margin-left: auto; color: var(--amber-dim); }
+</style>
+</head>
+<body>
+  <header>
+    <div class="hdr-cell" id="brand">blizzard<small>analytics workbench · concept</small></div>
+    <div class="hdr-cell"><span class="lbl">Spend</span><span class="v" id="kpi-cost">—</span></div>
+    <div class="hdr-cell"><span class="lbl">Steps</span><span class="v" id="kpi-steps">—</span></div>
+    <div class="hdr-cell"><span class="lbl">Hours</span><span class="v" id="kpi-hours">—</span></div>
+    <div class="hdr-cell"><span class="lbl">Chunks</span><span class="v" id="kpi-chunks">—</span></div>
+    <div class="hdr-cell"><span class="lbl">Rows in view</span><span class="v" id="kpi-rows">—</span></div>
+    <div class="hdr-cell spacer"></div>
+    <div class="hdr-cell"><span class="lbl">Session</span><span class="v" style="font-size:12px;">pgross<span class="u"> · operator</span></span></div>
+  </header>
+
+  <main>
+    <!-- ============ shelf ============ -->
+    <div class="col">
+      <section class="panel" style="flex:1;" aria-label="Dimensions and measures">
+        <div class="panel-head"><span class="lbl">Shelf</span><button id="swap" title="Swap rows and columns">SWAP</button></div>
+        <div class="panel-body">
+          <div class="shelf-group">
+            <span class="lbl">Dimensions · click to cycle row → col → off</span>
+            <div id="dims"></div>
+          </div>
+          <div class="shelf-group">
+            <span class="lbl">Measure</span>
+            <div id="measures"></div>
+          </div>
+        </div>
+      </section>
+    </div>
+
+    <!-- ============ grid ============ -->
+    <div class="col">
+      <section class="panel" style="flex:none;" aria-label="Filters">
+        <div class="panel-head"><span class="lbl">Filters · narrow every panel at once</span><span class="lbl" id="filter-count"></span></div>
+        <div id="filterbar"></div>
+      </section>
+      <section class="panel" style="flex:1;" aria-label="Pivot grid">
+        <div class="panel-head">
+          <span class="lbl" id="grid-title">Grid</span>
+          <span id="scale"><span class="lbl">low</span>
+            <span class="sw" style="background:var(--seq-1)"></span><span class="sw" style="background:var(--seq-2)"></span>
+            <span class="sw" style="background:var(--seq-3)"></span><span class="sw" style="background:var(--seq-4)"></span>
+            <span class="sw" style="background:var(--seq-5)"></span><span class="sw" style="background:var(--seq-6)"></span>
+            <span class="lbl">high</span></span>
+        </div>
+        <div class="panel-body" style="padding:6px;"><table class="pivot" id="grid"></table></div>
+      </section>
+    </div>
+
+    <!-- ============ reading ============ -->
+    <div class="col">
+      <section class="panel" style="flex:none;" aria-label="The question">
+        <div class="panel-head"><span class="lbl">The question</span></div>
+        <div id="question"></div>
+      </section>
+      <section class="panel" style="flex:1;" aria-label="Row totals">
+        <div class="panel-head"><span class="lbl">Row totals</span><span class="lbl" id="rt-measure"></span></div>
+        <div class="panel-body" id="rowtotals" style="padding:6px 0;"></div>
+        <div class="note" id="reading"></div>
+      </section>
+    </div>
+  </main>
+
+  <div id="tip" role="tooltip"></div>
+
+  <footer>
+    <span><kbd>click</kbd> a dimension to cycle row → column → off</span>
+    <span><kbd>swap</kbd> transpose the grid</span>
+    <span><kbd>hover</kbd> a cell for its exact figures</span>
+    <span class="fr">blizzard hub · design mock · real fleet totals, illustrative weekly split</span>
+  </footer>
+
+<script>
+"use strict";
+
+/* =====================================================================
+   Seed — a fact table at step grain.
+
+   Node totals (steps, hours, cost, outcome mix) and the graph split are
+   the real figures from the fleet on 2026-08-15. The per-week spread is
+   illustrative: the time dimension an axis needs is precisely what this
+   epic adds, so there is nothing real to copy yet.
+   ===================================================================== */
+
+const NODES = [
+  { name: "build",         steps: 225, hours: 233.8, cost: 2963.81, out: { pass: 191, fail: 17, "admin-closed": 5 } },
+  { name: "review",        steps: 201, hours: 101.2, cost: 1093.34, out: { pass: 136, fail: 64, "admin-closed": 1 } },
+  { name: "verify",        steps: 105, hours:  33.7, cost:  666.59, out: { pass: 105 } },
+  { name: "plan",          steps: 121, hours:  17.4, cost:  664.76, out: { drafted: 121 } },
+  { name: "plan-review",   steps: 123, hours:  20.4, cost:  508.07, out: { "must-fix": 70, pass: 41, acceptable: 12 } },
+  { name: "pre-push",      steps: 126, hours:  11.4, cost:  410.52, out: { clean: 120, "must-fix": 3, significant: 2, insignificant: 1 } },
+  { name: "retrospective", steps:  87, hours:  13.4, cost:  109.90, out: { recorded: 87 } },
+  { name: "triage",        steps:   4, hours:   0.2, cost:   59.25, out: { "already-done": 4 } },
+  { name: "resolve",       steps:   6, hours:   9.5, cost:   10.39, out: { resolved: 5, broken: 1 } },
+  { name: "deliver",       steps:  86, hours:   0.0, cost:    0.00, out: { landed: 79, conflict: 7 } },
+];
+
+const GRAPHS = [["adv-dwf", 0.750], ["bas-dwf", 0.153], ["glacier", 0.055], ["blizzard", 0.042]];
+const SOURCES = [["blizzard", 0.78], ["blizzard-mock", 0.14], ["blizzard-infra", 0.08]];
+const MODELS = [["blizzard:advanced", 0.62], ["blizzard:basic", 0.38]];
+const WEEKS = ["Jun 22", "Jun 29", "Jul 06", "Jul 13", "Jul 20", "Jul 27", "Aug 03", "Aug 10"];
+const WEEK_W = [0.05, 0.07, 0.09, 0.11, 0.14, 0.17, 0.19, 0.18];
+
+/* deterministic PRNG so the sheet renders identically every open */
+let _s = 0x9e3779b9;
+const rnd = () => (_s = (_s * 1664525 + 1013904223) >>> 0) / 4294967296;
+const pick = (pairs) => { let r = rnd(), a = 0; for (const [v, w] of pairs) { a += w; if (r <= a) return v; } return pairs[pairs.length - 1][0]; };
+const pickWeek = () => { let r = rnd(), a = 0; for (let i = 0; i < WEEKS.length; i++) { a += WEEK_W[i]; if (r <= a) return WEEKS[i]; } return WEEKS[7]; };
+
+const FACTS = [];
+let chunkSeq = 0;
+for (const n of NODES) {
+  /* expand the outcome mix into one entry per step */
+  const bag = [];
+  for (const [choice, count] of Object.entries(n.out)) for (let i = 0; i < count; i++) bag.push(choice);
+  while (bag.length < n.steps) bag.push(Object.keys(n.out)[0]);
+  for (let i = 0; i < n.steps; i++) {
+    const j = (rnd() * bag.length) | 0;
+    const jitter = 0.45 + rnd() * 1.4;
+    FACTS.push({
+      node: n.name,
+      graph: pick(GRAPHS),
+      source: pick(SOURCES),
+      model: pick(MODELS),
+      week: pickWeek(),
+      outcome: bag.splice(j, 1)[0] || "pass",
+      chunk: "ch_" + (1000 + ((chunkSeq++ / 9.6) | 0)),
+      cost: (n.cost / n.steps) * jitter,
+      hours: (n.hours / n.steps) * jitter,
+      steps: 1,
+    });
+  }
+}
+/* renormalize the jitter so each node's totals land exactly on the real figures */
+for (const n of NODES) {
+  const rows = FACTS.filter((f) => f.node === n.name);
+  const cs = rows.reduce((a, f) => a + f.cost, 0), hs = rows.reduce((a, f) => a + f.hours, 0);
+  for (const f of rows) { f.cost = cs ? (f.cost / cs) * n.cost : 0; f.hours = hs ? (f.hours / hs) * n.hours : 0; }
+}
+
+/* =====================================================================
+   State
+   ===================================================================== */
+
+const DIMS = [
+  { key: "node",    label: "node" },
+  { key: "week",    label: "week" },
+  { key: "graph",   label: "graph" },
+  { key: "outcome", label: "outcome" },
+  { key: "source",  label: "source" },
+  { key: "model",   label: "model" },
+];
+const MEASURES = [
+  { key: "cost",  label: "cost",     fmt: (v) => "$" + v.toLocaleString(undefined, { minimumFractionDigits: 0, maximumFractionDigits: 0 }), unit: "USD" },
+  { key: "hours", label: "duration", fmt: (v) => v.toFixed(1) + "h", unit: "hours" },
+  { key: "steps", label: "steps",    fmt: (v) => String(Math.round(v)), unit: "steps" },
+];
+
+const state = { row: "node", col: "week", measure: "cost", filters: {} };
+
+/* =====================================================================
+   Render
+   ===================================================================== */
+
+const $ = (id) => document.getElementById(id);
+const SEQ = ["--seq-1", "--seq-2", "--seq-3", "--seq-4", "--seq-5", "--seq-6"];
+
+function filtered() {
+  return FACTS.filter((f) => Object.entries(state.filters).every(([k, v]) => f[k] === v));
+}
+function measure() { return MEASURES.find((m) => m.key === state.measure); }
+
+function renderShelf() {
+  $("dims").innerHTML = DIMS.map((d) => {
+    const slot = state.row === d.key ? "row" : state.col === d.key ? "col" : "";
+    return `<button class="chip" data-dim="${d.key}" ${slot ? `data-slot="${slot}"` : ""}
+      aria-pressed="${slot ? "true" : "false"}">
+      <span>${d.label}</span><span class="slot">${slot ? slot.toUpperCase() : "—"}</span></button>`;
+  }).join("");
+  $("measures").innerHTML = MEASURES.map((m) =>
+    `<button class="chip" data-measure="${m.key}" aria-pressed="${state.measure === m.key}"
+       ${state.measure === m.key ? 'data-slot="row"' : ""}>
+       <span>${m.label}</span><span class="slot">${m.unit}</span></button>`).join("");
+
+  $("dims").querySelectorAll("[data-dim]").forEach((b) => b.onclick = () => {
+    const k = b.dataset.dim;
+    if (state.row === k) { state.row = state.col; state.col = k; }
+    else if (state.col === k) { state.col = null; }
+    else if (!state.col) { state.col = k; }
+    else { state.row = k; }
+    if (state.row === state.col) state.col = null;
+    if (!state.row) { state.row = k; state.col = null; }
+    render();
+  });
+  $("measures").querySelectorAll("[data-measure]").forEach((b) => b.onclick = () => {
+    state.measure = b.dataset.measure; render();
+  });
+}
+
+function renderFilters() {
+  const bar = $("filterbar");
+  const opts = (dim) => [...new Set(FACTS.map((f) => f[dim]))].sort();
+  bar.innerHTML = DIMS.map((d) => {
+    const cur = state.filters[d.key];
+    return `<span class="fchip"><span class="lbl">${d.label}</span>
+      <select data-f="${d.key}">
+        <option value="">all</option>
+        ${opts(d.key).map((o) => `<option ${cur === o ? "selected" : ""}>${o}</option>`).join("")}
+      </select>${cur ? `<span class="x" data-clear="${d.key}" title="clear">×</span>` : ""}</span>`;
+  }).join("");
+  bar.querySelectorAll("select").forEach((s) => s.onchange = () => {
+    const k = s.dataset.f;
+    if (s.value) state.filters[k] = s.value; else delete state.filters[k];
+    render();
+  });
+  bar.querySelectorAll("[data-clear]").forEach((x) => x.onclick = () => { delete state.filters[x.dataset.clear]; render(); });
+  const n = Object.keys(state.filters).length;
+  $("filter-count").textContent = n ? `${n} active` : "none active";
+}
+
+function renderGrid() {
+  const rows = filtered(), m = measure();
+  const rk = state.row, ck = state.col;
+  const rowKeys = [...new Set(rows.map((f) => f[rk]))];
+  const colKeys = ck ? [...new Set(rows.map((f) => f[ck]))] : [null];
+
+  /* keep a meaningful order: weeks chronological, everything else by magnitude */
+  const total = (k, dim) => rows.filter((f) => f[dim] === k).reduce((a, f) => a + f[m.key], 0);
+  if (rk === "week") rowKeys.sort((a, b) => WEEKS.indexOf(a) - WEEKS.indexOf(b));
+  else rowKeys.sort((a, b) => total(b, rk) - total(a, rk));
+  if (ck === "week") colKeys.sort((a, b) => WEEKS.indexOf(a) - WEEKS.indexOf(b));
+  else if (ck) colKeys.sort((a, b) => total(b, ck) - total(a, ck));
+
+  const cell = {};
+  for (const f of rows) {
+    const key = f[rk] + " " + (ck ? f[ck] : "");
+    cell[key] = (cell[key] || 0) + f[m.key];
+  }
+  const vals = Object.values(cell).filter((v) => v > 0);
+  const max = vals.length ? Math.max(...vals) : 1;
+
+  const shade = (v) => {
+    if (!v) return "";
+    const t = Math.sqrt(v / max);            // sqrt so the low end stays legible
+    const i = Math.min(SEQ.length - 1, Math.floor(t * SEQ.length));
+    return `background: var(${SEQ[i]}); color: ${i >= 4 ? "#241a08" : "#f0e2c9"};`;
+  };
+
+  const rowTot = (r) => colKeys.reduce((a, c) => a + (cell[r + " " + (c || "")] || 0), 0);
+  const colTot = (c) => rowKeys.reduce((a, r) => a + (cell[r + " " + (c || "")] || 0), 0);
+  const grand = rowKeys.reduce((a, r) => a + rowTot(r), 0);
+
+  $("grid").innerHTML =
+    `<thead><tr><th class="corner">${rk} \\ ${ck || "—"}</th>
+      ${colKeys.map((c) => `<th>${c === null ? m.label : c}</th>`).join("")}
+      ${ck ? `<th>total</th>` : ""}</tr></thead>
+     <tbody>${rowKeys.map((r) => `<tr><th>${r}</th>
+        ${colKeys.map((c) => {
+          const v = cell[r + " " + (c || "")] || 0;
+          return `<td class="${v ? "" : "zero"}" style="${shade(v)}"
+            data-r="${r}" data-c="${c || ""}" data-v="${v}">${v ? m.fmt(v) : "·"}</td>`;
+        }).join("")}
+        ${ck ? `<td class="tot">${m.fmt(rowTot(r))}</td>` : ""}</tr>`).join("")}</tbody>
+     <tfoot><tr><th>total</th>
+       ${colKeys.map((c) => `<td>${m.fmt(colTot(c))}</td>`).join("")}
+       ${ck ? `<td>${m.fmt(grand)}</td>` : ""}</tr></tfoot>`;
+
+  $("grid-title").textContent = `${m.label} · ${rk}${ck ? " × " + ck : ""}`;
+
+  /* per-cell hover — an HTML chart is interactive by default */
+  $("grid").querySelectorAll("td[data-v]").forEach((td) => {
+    td.onmousemove = (e) => {
+      const v = +td.dataset.v; if (!v) return;
+      const sub = rows.filter((f) => f[rk] === td.dataset.r && (!ck || f[ck] === td.dataset.c));
+      const t = $("tip");
+      t.style.display = "block";
+      t.style.left = Math.min(e.clientX + 14, innerWidth - 274) + "px";
+      t.style.top = (e.clientY + 16) + "px";
+      t.innerHTML =
+        `<div><span class="k">${rk}</span> <span class="v">${td.dataset.r}</span></div>` +
+        (ck ? `<div><span class="k">${ck}</span> <span class="v">${td.dataset.c}</span></div>` : "") +
+        `<div><span class="k">${m.label}</span> <span class="v">${m.fmt(v)}</span></div>` +
+        `<div><span class="k">steps</span> <span class="v">${sub.length}</span></div>` +
+        `<div><span class="k">share of total</span> <span class="v">${((v / grand) * 100).toFixed(1)}%</span></div>`;
+    };
+    td.onmouseleave = () => ($("tip").style.display = "none");
+  });
+
+  return { rowKeys, rowTot, grand, m, rk, ck, rows };
+}
+
+function renderReading(g) {
+  const { rowKeys, rowTot, grand, m, rk, ck, rows } = g;
+  const fl = Object.entries(state.filters);
+  $("question").innerHTML =
+    `<b>${m.label}</b> by <i>${rk}</i>${ck ? ` and <i>${ck}</i>` : ""}` +
+    (fl.length ? `, where ${fl.map(([k, v]) => `<i>${k}</i> is <b>${v}</b>`).join(" and ")}` : ", across the whole fleet") +
+    `. <span style="color:var(--label)">${rows.length.toLocaleString()} steps in scope.</span>`;
+
+  const ranked = rowKeys.map((r) => [r, rowTot(r)]).sort((a, b) => b[1] - a[1]);
+  const top = ranked.length ? ranked[0][1] : 1;
+  $("rt-measure").textContent = m.label;
+  $("rowtotals").innerHTML = ranked.map(([r, v], i) => `
+    <div class="barrow">
+      <span class="nm" title="${r}">${r}</span>
+      <span class="track"><span class="fill ${i === 0 ? "top" : ""}" style="width:${Math.max(2, (v / top) * 100)}%"></span></span>
+      <span class="val">${m.fmt(v)}</span>
+    </div>`).join("");
+
+  const lead = ranked[0], share = lead ? (lead[1] / grand) * 100 : 0;
+  $("reading").innerHTML = ranked.length
+    ? `<b>${lead[0]}</b> carries ${share.toFixed(0)}% of ${m.label} in this view` +
+      (ranked.length > 1 ? `, ${(lead[1] / ranked[1][1]).toFixed(1)}× the next.` : ".") +
+      ` Change the row dimension to ask the same question a different way — nothing here needed a new endpoint.`
+    : "No rows in scope.";
+
+  $("kpi-cost").innerHTML = "$" + Math.round(rows.reduce((a, f) => a + f.cost, 0)).toLocaleString();
+  $("kpi-steps").textContent = rows.length.toLocaleString();
+  $("kpi-hours").innerHTML = Math.round(rows.reduce((a, f) => a + f.hours, 0)).toLocaleString() + '<span class="u">h</span>';
+  $("kpi-chunks").textContent = new Set(rows.map((f) => f.chunk)).size;
+  $("kpi-rows").textContent = rows.length.toLocaleString();
+}
+
+function render() { renderShelf(); renderFilters(); renderReading(renderGrid()); }
+
+$("swap").onclick = () => { if (state.col) { const t = state.row; state.row = state.col; state.col = t; render(); } };
+render();
+</script>
+</body>
+</html>

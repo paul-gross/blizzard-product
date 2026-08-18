@@ -1,0 +1,437 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>blizzard hub — analytics flow atlas</title>
+<style>
+  :root {
+    --bg: #060a12;
+    --ground: #080d17;
+    --panel: #0b1120;
+    --panel-deep: #080d19;
+    --bezel: #1d2b44;
+    --bezel-hi: #27395c;
+    --line: #131d30;
+    --amber: #f2b25c;
+    --amber-hi: #ffcf8a;
+    --amber-dim: #8f7548;
+    --cyan: #5cd1e5;
+    --cyan-dim: #2b6675;
+    --label: #5c7089;
+    --label-dim: #3c4d63;
+    --text: #b8c6d8;
+    --mono: ui-monospace, "SF Mono", SFMono-Regular, Menlo, Consolas, "Liberation Mono", monospace;
+
+    /* Status — reserved, always with a glyph and a word. */
+    --ok: #4fc57e; --bad: #f05c6c; --bad-dim: #7a3540;
+
+    /* Sequential magnitude ramp — one hue, validated for this surface:
+       "#6b5228,#8a6931,#a8813a,#c69a44,#e0b350,#ffcf8a" --mode dark
+       --surface "#0b1120" --ordinal  → ALL CHECKS PASS */
+    --seq-1: #6b5228; --seq-2: #8a6931; --seq-3: #a8813a;
+    --seq-4: #c69a44; --seq-5: #e0b350; --seq-6: #ffcf8a;
+  }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  html, body { height: 100%; }
+  body {
+    background: radial-gradient(ellipse at 50% -20%, #0c1526 0%, var(--bg) 60%), var(--bg);
+    color: var(--text); font-family: var(--mono); font-size: 12px;
+    font-variant-numeric: tabular-nums; display: flex; flex-direction: column; overflow: hidden;
+  }
+  button {
+    font-family: var(--mono); font-variant-numeric: tabular-nums;
+    background: var(--panel-deep); color: var(--cyan);
+    border: 1px solid var(--cyan-dim); cursor: pointer; font-size: 11px; padding: 3px 9px;
+  }
+  button:hover { border-color: var(--cyan); background: #0d1a28; }
+  button[aria-pressed="true"] { background: #12283a; border-color: var(--cyan); color: #d6f4fb; }
+  button:focus-visible, select:focus-visible { outline: 2px solid var(--cyan); outline-offset: 1px; }
+  select {
+    font-family: var(--mono); font-size: 11px; background: var(--panel-deep);
+    color: var(--cyan); border: 1px solid var(--cyan-dim); padding: 1px 4px;
+  }
+  ::selection { background: var(--cyan-dim); color: #eaf6f9; }
+
+  .lbl { font-size: 9px; letter-spacing: 0.18em; text-transform: uppercase; color: var(--label); text-shadow: 0 1px 0 rgba(0,0,0,0.9); }
+  .panel {
+    background: linear-gradient(180deg, var(--panel) 0%, var(--panel-deep) 100%);
+    border: 1px solid var(--bezel);
+    box-shadow: inset 0 1px 0 rgba(255,255,255,0.04), inset 0 -1px 0 rgba(0,0,0,0.6), 0 0 0 1px rgba(0,0,0,0.55);
+    display: flex; flex-direction: column; min-height: 0;
+  }
+  .panel-head {
+    display: flex; align-items: center; justify-content: space-between; gap: 8px;
+    padding: 5px 9px; border-bottom: 1px solid var(--line); background: rgba(0,0,0,0.25); flex: none;
+  }
+  .panel-body { overflow: auto; flex: 1; min-height: 0; padding: 8px 9px 10px; }
+  .panel-body::-webkit-scrollbar { width: 7px; }
+  .panel-body::-webkit-scrollbar-thumb { background: var(--bezel); }
+
+  header {
+    flex: none; display: flex; align-items: stretch; border-bottom: 1px solid var(--bezel);
+    background: linear-gradient(180deg, #0d1526, #080d18); height: 42px;
+  }
+  .hdr-cell { display: flex; flex-direction: column; justify-content: center; padding: 0 14px; border-right: 1px solid var(--line); white-space: nowrap; }
+  .hdr-cell .v { color: var(--amber); font-size: 15px; line-height: 1.15; }
+  .hdr-cell .v .u { color: var(--amber-dim); font-size: 11px; }
+  #brand { color: var(--amber-hi); font-size: 15px; letter-spacing: 0.28em; text-transform: uppercase; }
+  #brand small { color: var(--label); font-size: 9px; letter-spacing: 0.16em; display: block; text-transform: none; }
+  header .spacer { flex: 1; border-right: none; }
+  #measures { display: flex; gap: 5px; }
+
+  main { flex: 1; min-height: 0; display: grid; grid-template-columns: 1fr 306px; gap: 6px; padding: 6px; }
+  .col { display: flex; flex-direction: column; gap: 6px; min-height: 0; min-width: 0; }
+
+  #atlas { width: 100%; height: 100%; display: block; }
+  .nodebox { cursor: pointer; }
+  .nodebox:hover rect.body { stroke: var(--cyan); }
+  .nodebox.sel rect.body { stroke: var(--amber-hi); stroke-width: 2; }
+
+  .legend { display: flex; gap: 15px; align-items: center; flex-wrap: wrap; }
+  .legend i { display: inline-flex; align-items: center; gap: 5px; font-style: normal; font-size: 10px; color: var(--label); }
+  .legend .swline { width: 20px; height: 0; border-top-style: solid; }
+  .legend .sw { width: 11px; height: 9px; display: inline-block; border: 1px solid rgba(0,0,0,0.5); }
+
+  /* ---------- detail ---------- */
+  #dtitle { color: var(--amber-hi); font-size: 14px; }
+  .kv { display: flex; justify-content: space-between; gap: 10px; padding: 3px 0; border-bottom: 1px solid var(--line); }
+  .kv span:first-child { color: var(--label); font-size: 11px; }
+  .kv span:last-child { color: var(--text); font-size: 11px; }
+  .kv.hi span:last-child { color: var(--amber-hi); }
+  .outrow { display: grid; grid-template-columns: 84px 1fr 34px; align-items: center; gap: 7px; margin-top: 4px; }
+  .outrow .nm { font-size: 11px; color: var(--text); }
+  .outrow .track { height: 9px; background: rgba(255,255,255,0.04); }
+  .outrow .fill { display: block; height: 100%; border-radius: 0 3px 3px 0; background: var(--seq-4); }
+  .outrow .fill.rw { background: var(--bad); }
+  .outrow .val { text-align: right; font-size: 11px; color: var(--text); }
+
+  /* ---------- leaks ---------- */
+  table.leaks { border-collapse: collapse; width: 100%; font-size: 11px; }
+  table.leaks th {
+    text-align: left; font-size: 9px; letter-spacing: 0.14em; text-transform: uppercase;
+    color: var(--label); font-weight: 600; padding: 3px 8px 3px 0; border-bottom: 1px solid var(--bezel);
+  }
+  table.leaks th.r, table.leaks td.r { text-align: right; }
+  table.leaks td { padding: 4px 8px 4px 0; border-bottom: 1px solid var(--line); }
+  table.leaks tr:hover td { background: rgba(92,209,229,0.05); }
+  table.leaks .path { color: var(--text); }
+  table.leaks .path b { color: var(--bad); font-weight: 400; }
+  table.leaks .cost { color: var(--amber-hi); }
+  table.leaks .barcell { width: 34%; }
+  table.leaks .track { height: 8px; background: rgba(255,255,255,0.04); display: block; }
+  table.leaks .fill { height: 100%; background: var(--bad); display: block; border-radius: 0 3px 3px 0; }
+
+  .callout { margin-top: 8px; padding: 7px 9px; border-left: 2px solid var(--bad); background: rgba(240,92,108,0.07); font-size: 11px; line-height: 1.6; color: var(--text); }
+  .callout b { color: var(--amber-hi); font-weight: 600; }
+  .flag { display: inline-flex; align-items: center; gap: 4px; font-size: 10px; padding: 0 4px; border: 1px solid var(--bad-dim); color: var(--bad); }
+
+  #tip {
+    position: fixed; pointer-events: none; z-index: 40; display: none;
+    background: #0a1220; border: 1px solid var(--bezel-hi); box-shadow: 0 6px 20px rgba(0,0,0,0.7);
+    padding: 6px 9px; font-size: 11px; line-height: 1.55; color: var(--text); max-width: 260px;
+  }
+  #tip .k { color: var(--label); } #tip .v { color: var(--amber-hi); }
+
+  footer {
+    flex: none; display: flex; align-items: center; gap: 16px; border-top: 1px solid var(--bezel);
+    background: #070c16; padding: 4px 10px; color: var(--label-dim); font-size: 10px;
+  }
+  footer .fr { margin-left: auto; color: var(--amber-dim); }
+</style>
+</head>
+<body>
+  <header>
+    <div class="hdr-cell" id="brand">blizzard<small>analytics flow atlas · concept</small></div>
+    <div class="hdr-cell"><span class="lbl">Graph</span>
+      <select id="f-graph"><option>adv-dwf</option><option>bas-dwf</option><option>glacier</option></select></div>
+    <div class="hdr-cell"><span class="lbl">Weight nodes and edges by</span><span id="measures"></span></div>
+    <div class="hdr-cell"><span class="lbl">Total</span><span class="v" id="hdr-total">—</span></div>
+    <div class="hdr-cell"><span class="lbl">Spent on rework</span><span class="v" id="hdr-rework" style="color:var(--bad)">—</span></div>
+    <div class="hdr-cell spacer"></div>
+    <div class="hdr-cell"><span class="lbl">Session</span><span class="v" style="font-size:12px;">pgross<span class="u"> · operator</span></span></div>
+  </header>
+
+  <main>
+    <div class="col">
+      <section class="panel" style="flex:1.5;" aria-label="Workflow atlas">
+        <div class="panel-head">
+          <span class="lbl" id="atlas-title">The workflow, weighted</span>
+          <span class="legend">
+            <i><span class="swline" style="border-top:3px solid var(--cyan-dim)"></span>forward</i>
+            <i><span class="swline" style="border-top:3px dashed var(--bad)"></span>rework — sends work back</i>
+            <i><span class="sw" style="background:var(--seq-1)"></span><span class="sw" style="background:var(--seq-3)"></span><span class="sw" style="background:var(--seq-6)"></span> node weight</i>
+          </span>
+        </div>
+        <div class="panel-body" style="padding:0;"><svg id="atlas" viewBox="0 0 1120 470" preserveAspectRatio="xMidYMid meet" role="img" aria-label="Workflow graph weighted by the selected measure"></svg></div>
+      </section>
+
+      <section class="panel" style="flex:1;" aria-label="Rework loops">
+        <div class="panel-head"><span class="lbl">Where the work is done twice · rework loops by what they cost</span>
+          <span class="lbl" id="leak-share"></span></div>
+        <div class="panel-body"><table class="leaks" id="leaks"></table>
+          <div class="callout" id="leak-note"></div></div>
+      </section>
+    </div>
+
+    <div class="col">
+      <section class="panel" style="flex:1;" aria-label="Node detail">
+        <div class="panel-head"><span class="lbl">Station detail</span><span class="lbl">click a node</span></div>
+        <div class="panel-body" id="detail"></div>
+      </section>
+    </div>
+  </main>
+
+  <div id="tip" role="tooltip"></div>
+
+  <footer>
+    <span>The graph an operator already reads, carrying the numbers instead of the status.</span>
+    <span class="fr">blizzard hub · design mock · real fleet totals from 2026-08-15</span>
+  </footer>
+
+<script>
+"use strict";
+
+/* =====================================================================
+   Seed — the real adv-dwf shape and the real figures behind it.
+   Node totals and every edge count come from the fleet on 2026-08-15;
+   the rework cost is those figures multiplied out, not an estimate of
+   something unmeasured.
+   ===================================================================== */
+
+const N = {
+  plan:          { x:  70, y:  70, cost:  664.76, hours:  17.4, steps: 121, events:  39, out: { drafted: 121 } },
+  "plan-review": { x: 250, y:  70, cost:  508.07, hours:  20.4, steps: 123, events:  79, out: { "must-fix": 70, pass: 41, acceptable: 12 } },
+  build:         { x: 440, y:  70, cost: 2963.81, hours: 233.8, steps: 225, events: 271, out: { pass: 191, fail: 17, "admin-closed": 5 } },
+  verify:        { x: 630, y:  70, cost:  666.59, hours:  33.7, steps: 105, events:  35, out: { pass: 105 } },
+  review:        { x: 820, y:  70, cost: 1093.34, hours: 101.2, steps: 201, events:  54, out: { pass: 136, fail: 64, "admin-closed": 1 } },
+  "pre-push":    { x: 950, y: 210, cost:  410.52, hours:  11.4, steps: 126, events:   0, out: { clean: 120, "must-fix": 3, significant: 2, insignificant: 1 } },
+  deliver:       { x: 760, y: 210, cost:    0.00, hours:   0.0, steps:  86, events:   0, out: { landed: 79, conflict: 7 }, hub: true },
+  resolve:       { x: 760, y: 350, cost:   10.39, hours:   9.5, steps:   6, events:   0, out: { resolved: 5, broken: 1 } },
+  retrospective: { x: 500, y: 210, cost:  109.90, hours:  13.4, steps:  87, events:  20, out: { recorded: 87 } },
+  triage:        { x: 250, y: 350, cost:   59.25, hours:   0.2, steps:   4, events:   1, out: { "already-done": 4 } },
+};
+const BW = 128, BH = 56;   /* node box */
+
+/* edges: [from, to, count, rework?] — counts are the real choice tallies */
+const E = [
+  ["plan", "plan-review", 121, false],
+  ["plan-review", "build", 53, false],
+  ["plan-review", "plan", 70, true],
+  ["build", "verify", 191, false],
+  ["build", "build", 17, true],
+  ["verify", "review", 105, false],
+  ["review", "pre-push", 136, false],
+  ["review", "build", 64, true],
+  ["pre-push", "deliver", 120, false],
+  ["pre-push", "review", 3, true],
+  ["deliver", "retrospective", 79, false],
+  ["deliver", "resolve", 7, true],
+  ["resolve", "deliver", 5, false],
+];
+
+const per = (n) => N[n].cost / Math.max(1, N[n].steps);   /* cost of one pass through a station */
+
+/* A rework edge costs the stations the work must be pushed through again. */
+const LOOPS = [
+  { path: ["review", "build", "verify", "review"], count: 64, why: "a review rejection re-runs build, verify, and review" },
+  { path: ["plan-review", "plan", "plan-review"],  count: 70, why: "a plan rejected sends planning round again" },
+  { path: ["build", "build"],                      count: 17, why: "a build that fails its own step retries in place" },
+  { path: ["pre-push", "review", "pre-push"],      count: 3,  why: "a pre-push finding reopens review" },
+  { path: ["deliver", "resolve", "deliver"],       count: 7,  why: "a merge conflict routes through resolve" },
+];
+for (const L of LOOPS) {
+  L.unit = L.path.slice(1).reduce((a, n) => a + per(n), 0);
+  L.cost = L.unit * L.count;
+}
+LOOPS.sort((a, b) => b.cost - a.cost);
+
+const MEASURES = [
+  { key: "cost",   label: "cost",   fmt: (v) => "$" + Math.round(v).toLocaleString() },
+  { key: "hours",  label: "hours",  fmt: (v) => v.toFixed(1) + "h" },
+  { key: "steps",  label: "steps",  fmt: (v) => String(Math.round(v)) },
+  { key: "events", label: "reads",  fmt: (v) => String(Math.round(v)) },
+];
+
+const state = { measure: "cost", sel: "build" };
+const $ = (id) => document.getElementById(id);
+const SEQ = ["--seq-1", "--seq-2", "--seq-3", "--seq-4", "--seq-5", "--seq-6"];
+const m = () => MEASURES.find((x) => x.key === state.measure);
+
+function tipOn(el, html) {
+  el.addEventListener("mousemove", (e) => {
+    const t = $("tip");
+    t.style.display = "block";
+    t.style.left = Math.min(e.clientX + 14, innerWidth - 274) + "px";
+    t.style.top = (e.clientY + 16) + "px";
+    t.innerHTML = html;
+  });
+  el.addEventListener("mouseleave", () => ($("tip").style.display = "none"));
+}
+
+/* ---------------- atlas ---------------- */
+function renderAtlas() {
+  const M = m();
+  const vals = Object.values(N).map((n) => n[M.key]);
+  const max = Math.max(...vals);
+  const shade = (v) => {
+    if (!v) return "var(--ground)";
+    const i = Math.min(SEQ.length - 1, Math.floor(Math.sqrt(v / max) * SEQ.length));
+    return `var(${SEQ[i]})`;
+  };
+  const ink = (v) => (v && Math.sqrt(v / max) > 0.66 ? "#241a08" : "#e8dcc6");
+
+  const cx = (k) => N[k].x + BW / 2, cy = (k) => N[k].y + BH / 2;
+  const maxCount = Math.max(...E.map((e) => e[2]));
+  const wOf = (c) => 1.2 + (c / maxCount) * 7;
+
+  /* edge geometry: straight where the boxes align, arced otherwise */
+  const edgePath = (a, b) => {
+    if (a === b) {                                   /* self-loop */
+      const x = cx(a), y = N[a].y;
+      return `M${x - 22},${y} C${x - 30},${y - 46} ${x + 30},${y - 46} ${x + 22},${y}`;
+    }
+    const x1 = cx(a), y1 = cy(a), x2 = cx(b), y2 = cy(b);
+    const back = x2 < x1;
+    if (Math.abs(y1 - y2) < 4) {
+      const lift = back ? -(BH / 2 + 30 + Math.abs(x1 - x2) * 0.045) : 0;
+      if (!back) {
+        const s = N[a].x + BW, t = N[b].x;
+        return `M${s},${y1} L${t},${y2}`;
+      }
+      return `M${x1},${y1 - BH / 2} C${x1},${y1 + lift} ${x2},${y2 + lift} ${x2},${y2 - BH / 2}`;
+    }
+    return `M${x1},${y1} C${(x1 + x2) / 2},${y1} ${(x1 + x2) / 2},${y2} ${x2},${y2}`;
+  };
+
+  const edges = E.map(([a, b, c, rw], i) => {
+    const stroke = rw ? "var(--bad)" : "var(--cyan-dim)";
+    const mid = `edge-${i}`;
+    return `<g class="edge">
+      <path id="${mid}" d="${edgePath(a, b)}" fill="none" stroke="${stroke}" stroke-width="${wOf(c).toFixed(1)}"
+        stroke-linecap="round" ${rw ? 'stroke-dasharray="7 5"' : ""} opacity="${rw ? 0.9 : 0.65}"
+        marker-end="url(#${rw ? "arrow-bad" : "arrow-fwd"})"/>
+      <path d="${edgePath(a, b)}" fill="none" stroke="transparent" stroke-width="16"
+        data-e="${i}" style="cursor:default"/>
+    </g>`;
+  }).join("");
+
+  const labels = E.filter(([, , c]) => c >= 40).map(([a, b, c, rw]) => {
+    const x = (cx(a) + cx(b)) / 2, y = (cy(a) + cy(b)) / 2;
+    const dy = a === b ? -46 : (cx(b) < cx(a) ? -(BH / 2 + 16) : -8);
+    return `<text x="${x}" y="${y + dy}" text-anchor="middle" font-size="10"
+      fill="${rw ? "var(--bad)" : "var(--label)"}" style="paint-order:stroke;stroke:#080d17;stroke-width:3px;">${c}</text>`;
+  }).join("");
+
+  const boxes = Object.entries(N).map(([k, n]) => {
+    const v = n[M.key];
+    return `<g class="nodebox ${state.sel === k ? "sel" : ""}" data-n="${k}" transform="translate(${n.x},${n.y})">
+      <rect class="body" width="${BW}" height="${BH}" rx="4" fill="${shade(v)}" stroke="var(--bezel-hi)" stroke-width="1"/>
+      <text x="9" y="19" font-size="11" fill="${ink(v)}" style="letter-spacing:0.04em">${k}</text>
+      <text x="9" y="40" font-size="16" fill="${ink(v)}">${n.hub && M.key !== "steps" ? "—" : M.fmt(v)}</text>
+      <text x="${BW - 9}" y="40" font-size="9" text-anchor="end" fill="${ink(v)}" opacity="0.72">${n.steps} steps</text>
+      ${n.hub ? `<text x="${BW - 9}" y="19" font-size="8" text-anchor="end" fill="${ink(v)}" opacity="0.7">HUB</text>` : ""}
+    </g>`;
+  }).join("");
+
+  $("atlas").innerHTML = `
+    <defs>
+      <marker id="arrow-fwd" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="5" markerHeight="5" orient="auto-start-reverse">
+        <path d="M0,1 L9,5 L0,9 z" fill="var(--cyan-dim)"/></marker>
+      <marker id="arrow-bad" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="5" markerHeight="5" orient="auto-start-reverse">
+        <path d="M0,1 L9,5 L0,9 z" fill="var(--bad)"/></marker>
+    </defs>
+    <g>${edges}</g><g>${labels}</g><g>${boxes}</g>`;
+
+  $("atlas").querySelectorAll(".nodebox").forEach((g) => {
+    const k = g.dataset.n, n = N[k];
+    g.onclick = () => { state.sel = k; render(); };
+    tipOn(g, `<div><span class="k">station</span> <span class="v">${k}</span></div>
+      <div><span class="k">${M.label}</span> <span class="v">${n.hub && M.key !== "steps" ? "n/a — runs at the hub" : M.fmt(n[M.key])}</span></div>
+      <div><span class="k">steps</span> <span class="v">${n.steps}</span></div>
+      <div><span class="k">per step</span> <span class="v">${n.hub ? "—" : "$" + per(k).toFixed(2)}</span></div>`);
+  });
+  $("atlas").querySelectorAll("[data-e]").forEach((p) => {
+    const [a, b, c, rw] = E[+p.dataset.e];
+    tipOn(p, `<div><span class="k">${a}</span> → <span class="v">${b}</span></div>
+      <div><span class="k">taken</span> <span class="v">${c} times</span></div>
+      ${rw ? `<div style="color:var(--bad)">rework — this edge sends work backwards</div>` : ""}`);
+  });
+
+  $("atlas-title").textContent = `The workflow, weighted by ${M.label}`;
+}
+
+/* ---------------- detail ---------------- */
+function renderDetail() {
+  const k = state.sel, n = N[k], M = m();
+  const totOut = Object.values(n.out).reduce((a, b) => a + b, 0);
+  const rejects = { "plan-review": ["must-fix"], review: ["fail"], build: ["fail"], "pre-push": ["must-fix", "significant"], deliver: ["conflict"], resolve: ["broken"] }[k] || [];
+  const inbound = E.filter(([, b]) => b === k);
+  const outbound = E.filter(([a]) => a === k);
+
+  $("detail").innerHTML = `
+    <div id="dtitle">${k}</div>
+    <div class="lbl" style="margin:2px 0 8px;">${n.hub ? "executed by the hub" : "executed by a runner"}</div>
+    <div class="kv hi"><span>spend</span><span>${n.hub ? "—" : "$" + n.cost.toFixed(2)}</span></div>
+    <div class="kv"><span>hours</span><span>${n.hub ? "—" : n.hours + "h"}</span></div>
+    <div class="kv"><span>steps completed</span><span>${n.steps}</span></div>
+    <div class="kv"><span>cost per step</span><span>${n.hub ? "—" : "$" + per(k).toFixed(2)}</span></div>
+    <div class="kv"><span>minutes per step</span><span>${n.hub ? "—" : ((n.hours * 60) / n.steps).toFixed(1)}</span></div>
+    <div class="kv"><span>file reads derived</span><span>${n.events || "—"}</span></div>
+    <div class="kv"><span>share of fleet spend</span><span>${((n.cost / 6486.63) * 100).toFixed(1)}%</span></div>
+
+    <div class="lbl" style="margin:12px 0 2px;">Outcomes · ${totOut} resolved</div>
+    ${Object.entries(n.out).sort((a, b) => b[1] - a[1]).map(([c, v]) => `
+      <div class="outrow">
+        <span class="nm">${c}</span>
+        <span class="track"><span class="fill ${rejects.includes(c) ? "rw" : ""}" style="width:${(v / totOut) * 100}%"></span></span>
+        <span class="val">${v}</span>
+      </div>`).join("")}
+    ${rejects.length ? `<div class="lbl" style="margin-top:7px;color:var(--bad)">red bars send work backwards</div>` : ""}
+
+    <div class="lbl" style="margin:12px 0 4px;">Edges</div>
+    ${inbound.map(([a, , c]) => `<div class="kv"><span>← from ${a}</span><span>${c}</span></div>`).join("")}
+    ${outbound.map(([, b, c, rw]) => `<div class="kv"><span style="${rw ? "color:var(--bad)" : ""}">→ to ${b}${rw ? " (rework)" : ""}</span><span>${c}</span></div>`).join("")}
+  `;
+}
+
+/* ---------------- leaks ---------------- */
+function renderLeaks() {
+  const total = 6486.63;
+  const rework = LOOPS.reduce((a, l) => a + l.cost, 0);
+  const max = LOOPS[0].cost;
+
+  $("leaks").innerHTML =
+    `<thead><tr><th>loop</th><th>why it happens</th><th class="r">taken</th><th class="r">each</th><th class="r">cost</th><th class="barcell"></th></tr></thead>
+     <tbody>${LOOPS.map((l) => `<tr>
+        <td class="path">${l.path.map((p, i) => (i ? "<b> → </b>" : "") + p).join("")}</td>
+        <td style="color:var(--label)">${l.why}</td>
+        <td class="r">${l.count}</td>
+        <td class="r">$${l.unit.toFixed(2)}</td>
+        <td class="r cost">$${Math.round(l.cost).toLocaleString()}</td>
+        <td class="barcell"><span class="track"><span class="fill" style="width:${(l.cost / max) * 100}%"></span></span></td>
+      </tr>`).join("")}</tbody>`;
+
+  $("leak-share").textContent = `${Math.round(rework).toLocaleString()} of $${Math.round(total).toLocaleString()}`;
+  $("hdr-rework").innerHTML = "$" + Math.round(rework).toLocaleString() + `<span class="u"> · ${((rework / total) * 100).toFixed(0)}%</span>`;
+  $("leak-note").innerHTML =
+    `<span class="flag">▲ rework</span> Roughly <b>${((rework / total) * 100).toFixed(0)}%</b> of everything the fleet
+     has spent went into work it had already done once. The largest single loop is
+     <b>review → build</b>: 64 rejections, each costing about $${LOOPS.find((l) => l.path[0] === "review").unit.toFixed(2)}
+     to push back through build, verify, and review again. Whether that is waste or the price of the quality bar is a
+     judgment — but until now it was not a number anyone could see.`;
+}
+
+function render() {
+  const M = m();
+  $("measures").innerHTML = MEASURES.map((x) =>
+    `<button data-m="${x.key}" aria-pressed="${state.measure === x.key}">${x.label}</button>`).join("");
+  $("measures").querySelectorAll("[data-m]").forEach((b) => b.onclick = () => { state.measure = b.dataset.m; render(); });
+  const tot = Object.values(N).reduce((a, n) => a + n[M.key], 0);
+  $("hdr-total").textContent = M.fmt(tot);
+  renderAtlas(); renderDetail(); renderLeaks();
+}
+render();
+</script>
+</body>
+</html>
