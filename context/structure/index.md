@@ -27,11 +27,13 @@ against. Read the one guide for the file you are authoring or reviewing:
 
 **Every plan is accounted for.** Each plan under `plans/` is linked from a row in `epics.md` (live work — the epic
 registry aligns the priority of the plans) or in `delivered.md` (completed work). A plan referenced from neither is
-orphaned, and that is a defect to fix in the same change that surfaces it.
+orphaned, and that is a defect to fix in the same change that surfaces it. One state is exempt: a slice that landed
+ahead of every milestone it serves has left `epics.md` and cannot yet enter `delivered.md`, so its plan carries no link
+until that destination is reached — the epic chart marking it `delivered` is the accounting in the meantime.
 
 **Every epic is accounted for.** Each epic cited anywhere — a milestone's epic chart, a plan, an issue — resolves to a
-row in `epics.md` or `delivered.md`. A milestone may demand work that does not exist yet, but demanding it and creating
-its epic row happen in the same change.
+row in `epics.md`, to a `delivered`-marked row in a live milestone's epic chart, or to `delivered.md`. A milestone may
+demand work that does not exist yet, but demanding it and creating its epic row happen in the same change.
 
 ## Deliberately absent
 

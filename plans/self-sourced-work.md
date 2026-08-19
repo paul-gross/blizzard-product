@@ -11,15 +11,27 @@ at all.
 
 ## What already holds
 
-The work-source seam fits an internal source without alteration. `IWorkSource` is `parse`/`fetch`/`label`/`web_url`; a
-chunk stores only the opaque `{source, ref}` pointer and every consumer fetches content fresh from the source — so a
-source whose `fetch` reads the hub's own table satisfies the whole contract, and nothing above the seam can tell the
-difference. Write abilities are already sibling protocols a source may or may not implement (`IWorkAnnotator`,
+The work-source protocol fits an internal source without alteration. `IWorkSource` asks for `parse`, `fetch`, `label`,
+`web_url`, and `branch_url`; a chunk stores only the opaque `{source, ref}` pointer and every consumer fetches content
+fresh from the source — so a source whose `fetch` reads the hub's own table satisfies the whole contract, and nothing
+above the seam can tell the difference. The two address methods are the seam's own escape hatch at work: each may answer
+with nothing when a pointer has no such address, which is the honest answer for a source with no repository and no forge
+to link out to. Write abilities are already sibling protocols a source may or may not implement (`IWorkAnnotator`,
 `IWorkCloser`), which is exactly the shape item mutation needs.
 
+What does not fit is the assembly below the protocol. The registry is built by walking the configured source entries and
+resolving each one's declared provider to an adapter, with credentials drawn from the environment; a source that is
+always present, holds no credential, and appears in no configuration has nowhere in that walk to come from. Its write
+halves are gated the same way, by a per-entry opt-in flag rather than by anything the source itself declares. The seam
+is right and the construction path is missing — that gap is scope this epic carries, named below.
+
 Intake is push and deliberate: ingest mints a resting `not_ready` chunk, and promotion is a separate human act. That
-gate does not move. The ranking machinery is general too — `queue_positions` is keyed by chunk with a fallback to mint
-order, and only the API edges restrict reordering to the ready set.
+gate does not move. The ranking machinery is nearly general — positions are keyed by chunk, and a chunk with no explicit
+position falls back to when it was promoted, or to when it was minted if it never was. A backlog chunk has only ever
+known the last of those, so ranking one is a question the existing sort key can already answer. What is not general is
+the reach: the reorder service reads the ready set directly, so the ready-only restriction is a property of the domain
+rather than a guard at the API edge. Opening ranking to the backlog is a change to that service, not a validation lifted
+off an endpoint.
 
 Identity comes in exactly the two families authorship needs: hub-local users with roles behind the operator surface, and
 runner principals valid only on the fleet router — so who authored an item is something the hub stamps from what it
@@ -40,10 +52,13 @@ real need appears.
 
 ## What to build
 
-- **The `hub` source, reserved and built-in.** Always present under the reserved name `hub` — no config stanza, no
-  credentials, and user-configured sources cannot claim the name. Its `label` prints `hub:42`, its `web_url` points at
-  the board's own chunk view rather than anywhere external, and its `fetch` reads the item table — which means editing
-  an open item shows up on its chunk immediately, the same fresh-fetch semantics forge issues have today.
+- **The `hub` source, reserved and built-in.** Always present under the reserved name `hub` — no config stanza and no
+  credentials, which means giving the registry's construction a way to seat a source that configuration never mentions
+  and to hand it a closer that no opt-in flag switches on. Configuration learns to refuse `hub` as a source name, the
+  way it already refuses a duplicate one, so nothing a user writes can shadow the built-in. Its `label` prints `hub:42`,
+  its `web_url` points at the board's own chunk view rather than anywhere external, and its `fetch` reads the item table
+  — which means editing an open item shows up on its chunk immediately, the same fresh-fetch semantics forge issues have
+  today.
 - **Source-addressed item routes.** Items are a sub-resource of the source they live in: `GET`/`POST` on
   `/api/work-sources/{source}/items` and `GET`/`PATCH`/`DELETE` on `/api/work-sources/{source}/items/{ref}`, plus a
   sources listing so the board can enumerate what exists and what is writable. Tokens (`hub:42`, `blizzard#123`) are
@@ -65,16 +80,25 @@ real need appears.
 - **Auto-ingest, promotion untouched.** Creating an item mints its `not_ready` chunk in the same act — the item is on
   the board the moment it exists, and nothing about it runs until an operator promotes it. Stated priority renders at
   triage as the author's claim; it never writes a queue position.
-- **A sortable backlog.** Lift the ready-only validation at the reorder edges so drag-and-drop ranks `not_ready` chunks
-  exactly as it ranks the queue. The position machinery already treats rank as a property any chunk can carry; this
-  makes the backlog a real triage surface instead of a list ordered by accident of mint time.
-- **Deletion — the board's first.** A `chunk.deleted` fact makes a chunk ephemeral, following grouping's precedent:
-  nothing is row-deleted, the activity feed can say who deleted what, and a mistake is diagnosable. The guard is the
-  unacquired predicate grouping already trusts — backlog and queue chunks delete, anything a runner holds refuses by
-  name. On the board: a delete affordance with confirmation on unacquired chunk cards, gated like the other chunk
-  controls, announced over the existing change stream. A hub-born chunk and its items live and die together — deleting
-  either withdraws the other — while deleting a forge-born chunk merely un-tracks it and the issue lives on at the
-  forge.
+- **A sortable backlog.** Teach the reorder service to work over the backlog as well as the ready set, so drag-and-drop
+  ranks `not_ready` chunks exactly as it ranks the queue. The position machinery already treats rank as a property any
+  chunk can carry, and a backlog chunk's mint instant already sorts it sensibly among its peers; what changes is which
+  chunks the service will consider neighbours, and the endpoints follow. Ranking the two lists together is not asked for
+  here — each is ordered within itself — which keeps a backlog chunk's mint instant and a queued chunk's promotion
+  instant from being compared as though they measured the same thing. This makes the backlog a real triage surface
+  instead of a list ordered by accident of mint time.
+- **Deletion, and why it is not the verb we already have.** An operator can already abandon a chunk by stopping it and
+  close one by hand by marking it done, so a third way to make work disappear owes an account of itself. The account is
+  what each verb says about the work: stopping says this run was abandoned, completing says the work is finished, and
+  both leave the item behind the chunk standing as though it still wants doing. Deletion is the only one that says the
+  work should never have been filed — and once items live in the hub, that sentence has to reach the item too, not just
+  the card in front of it. A `chunk.deleted` fact makes a chunk ephemeral, following the precedent both grouping and
+  manual completion set: nothing is row-deleted, the activity feed can say who deleted what, and a mistake is
+  diagnosable. The guard is the unacquired predicate grouping already trusts — backlog and queue chunks delete, anything
+  a runner holds refuses by name. On the board: a delete affordance with confirmation on unacquired chunk cards, gated
+  like the other chunk controls, announced over the existing change stream. A hub-born chunk and its items live and die
+  together — deleting either withdraws the other — while deleting a forge-born chunk merely un-tracks it and the issue
+  lives on at the forge.
 - **Refine by CLI, view read-only.** `blizzard hub item create`/`edit`/`delete` verbs, thin over the routes, accepting
   the token forms a human types. The board renders the item in full — markdown body, authorship line, stated priority —
   and grows no editor by design: the board is the read-only view, and editing is the agentic surface's job.

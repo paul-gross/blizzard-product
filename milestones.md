@@ -45,16 +45,16 @@ notice what the product could become, not only what it should repair — so it o
 high-level feature directions worth exploring, recommendations to weigh rather than work it files. Whether those briefs
 earn their reading is exactly what the exploration exists to find out.
 
-| Epic                     | Slice       | Status  |
-| ------------------------ | ----------- | ------- |
-| `epic:self-sourced-work` | full        | horizon |
-| `epic:garden`            | full        | horizon |
-| `epic:transcripts`       | full        | horizon |
-| `epic:analytics`         | full        | horizon |
-| `epic:visual-analytics`  | full        | horizon |
-| `epic:mutation-testing`  | full        | horizon |
-| `epic:cost`              | attribution | horizon |
-| `epic:ideation`          | full        | horizon |
+| Epic                     | Slice       | Status    |
+| ------------------------ | ----------- | --------- |
+| `epic:self-sourced-work` | full        | horizon   |
+| `epic:garden`            | full        | horizon   |
+| `epic:transcripts`       | full        | delivered |
+| `epic:analytics`         | full        | delivered |
+| `epic:visual-analytics`  | full        | horizon   |
+| `epic:mutation-testing`  | full        | horizon   |
+| `epic:cost`              | attribution | horizon   |
+| `epic:ideation`          | full        | horizon   |
 
 ## `milestone:polyglot` — any harness, with the safeties on
 
