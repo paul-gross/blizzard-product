@@ -3,25 +3,14 @@
 Blizzard's **live product intent** — what we are building and why, kept current. Read this repo when **planning** what
 to build.
 
-## The charter
-
-Who blizzard serves and why it exists — [mission](./charter/mission.md), [vision](./charter/vision.md), and
-[personas](./charter/personas.md) — lives in `charter/`: the standing statement every registry row and plan answers to.
-
-## How intent becomes work
-
-An epic starts as a row in the registry, grows a plan when its time approaches, and ends as filed issues the factory
-ingests. Each promotion is deliberate — the workflow is in [CONTRIBUTING.md](./CONTRIBUTING.md).
-
-| Where                            | What it holds                                                                                                           |
-| -------------------------------- | ----------------------------------------------------------------------------------------------------------------------- |
-| [epics.md](./epics.md)           | The epic registry: capability areas in priority order, a paragraph each                                                 |
-| [milestones.md](./milestones.md) | The milestone registry: what users will be able to do, each destination demanding its epics                             |
-| `plans/`                         | What to build: one plan per promoted epic or single story — a solo file, or a folder whose `index.md` routes its pieces |
-| Backlog source                   | Ready work: sized, well-specified items the fleet can take                                                              |
-| [delivered.md](./delivered.md)   | The ledger of landed work: a section per delivered milestone with the epic slices that carried it                       |
-
-## Authoring
-
-Writing anything here — a registry entry, a plan, a new file — starts from the authoring conventions in
-[context/index.md](./context/index.md): the repo's structure rules and the voice its product documents are written in.
+| Where                                        | When to read                                                                                           |
+| -------------------------------------------- | ------------------------------------------------------------------------------------------------------ |
+| [charter/mission.md](./charter/mission.md)   | Judging whether a capability is blizzard's to build at all                                             |
+| [charter/vision.md](./charter/vision.md)     | Reasoning about where the product is headed beyond the current work                                    |
+| [charter/personas.md](./charter/personas.md) | Deciding or writing on behalf of a specific user, cited as `persona:<slug>`                            |
+| [epics.md](./epics.md)                       | Placing, citing, or re-scoping a capability area — the registry, in priority order                     |
+| [milestones.md](./milestones.md)             | Reasoning about what users will be able to do next, and which epics a destination demands              |
+| `plans/`                                     | Decomposing work — the plan for a promoted epic or single story, linked from its row in `epics.md`     |
+| [delivered.md](./delivered.md)               | Looking up, or recording, work that has landed                                                         |
+| [CONTRIBUTING.md](./CONTRIBUTING.md)         | Promoting intent a step — adding a registry row, writing a plan, filing issues, or closing a slice out |
+| [context/index.md](./context/index.md)       | Authoring anything here — the repo's structure rules and the voice its documents are written in        |
