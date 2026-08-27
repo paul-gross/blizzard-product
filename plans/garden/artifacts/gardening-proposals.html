@@ -1,0 +1,933 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>blizzard hub — gardening · proposals</title>
+<style>
+  /* ── Tokens, verbatim from web/projects/fleet/src/lib/design/tokens.css ── */
+  :root{
+    --bg:#060a12; --ground:#080d17; --panel:#0b1120; --panel-deep:#080d19;
+    --panel-hover:#121b30; --panel-hi:#1a2748; --bezel:#1d2b44; --bezel-hi:#27395c;
+    --line:#131d30;
+    --amber:#f2b25c; --amber-hi:#ffcf8a; --amber-dim:#8f7548; --amber-faint:#4d4130;
+    --snow:#eef4fb; --cyan:#5cd1e5; --cyan-dim:#2b6675;
+    --red:#f05c6c; --red-dim:#7a3540; --red-wash-text:#ffd9dd;
+    --green:#4fc57e; --green-dim:#2b5c40;
+    --label:#5c7089; --label-dim:#3c4d63; --text:#b8c6d8;
+    --mono:ui-monospace,"SF Mono",SFMono-Regular,Menlo,Consolas,"Liberation Mono",monospace;
+    --header-hi:#0d1526; --header-lo:#080d18;
+    --fs-label:11px; --fs-xs:12px; --fs-sm:13px; --fs-base:15px; --fs-md:16px; --fs-lg:19px;
+    --overlay-20:rgba(0,0,0,.2); --overlay-25:rgba(0,0,0,.25); --overlay-30:rgba(0,0,0,.3);
+    --overlay-35:rgba(0,0,0,.35); --overlay-40:rgba(0,0,0,.4); --overlay-90:rgba(0,0,0,.9);
+    --surface-resting:var(--panel); --surface-hover:var(--panel-hover); --surface-selected:var(--panel-hi);
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  html,body{height:100%}
+  body{
+    background:var(--ground); color:var(--text);
+    font-family:var(--mono); font-size:var(--fs-base);
+    font-variant-numeric:tabular-nums; line-height:1.45; overflow:hidden;
+  }
+  button,input,select,textarea{font:inherit;color:inherit}
+  :focus-visible{outline:1px solid var(--cyan);outline-offset:1px}
+  .shell{display:flex;flex-direction:column;height:100%;min-height:0;overflow:hidden}
+
+  /* ── Header (fleet BoardHeader) ───────────────────────────── */
+  .mc-header{
+    display:flex;align-items:stretch;height:48px;flex:none;
+    border-bottom:1px solid var(--bezel);
+    background:linear-gradient(180deg,var(--header-hi),var(--header-lo));
+  }
+  .lbl,.stat-lbl{
+    font-size:var(--fs-label);letter-spacing:.18em;text-transform:uppercase;
+    color:var(--label);text-shadow:0 1px 0 var(--overlay-90);
+  }
+  .brand{display:flex;flex:none;align-items:center;gap:10px;padding:0 14px;border-right:1px solid var(--line);white-space:nowrap}
+  .brand-text{display:flex;flex-direction:column;justify-content:center;color:var(--amber-hi);font-size:var(--fs-lg);letter-spacing:.28em;text-transform:uppercase}
+  .brand small{color:var(--label);font-size:var(--fs-label);letter-spacing:.18em}
+  .cell{display:flex;flex:none;flex-direction:column;justify-content:center;padding:0 14px;border-right:1px solid var(--line);white-space:nowrap}
+  .cell .v{color:var(--amber);font-size:var(--fs-lg);line-height:1.1}
+  .cell[data-stat=needs] .v{color:var(--red)}
+  .cell[data-stat=waiting] .v{color:var(--amber-hi)}
+  .cell[data-stat=done] .v{color:var(--green)}
+  .stats{display:flex;align-items:stretch;overflow:hidden}
+  .spacer{flex:1;border-right:1px solid var(--line)}
+  .conn{border-right:none}
+  .conn .v{color:var(--cyan)}
+  .avatar{display:flex;align-items:center;padding:0 14px}
+  .avatar i{
+    display:block;width:26px;height:26px;border-radius:999px;
+    border:1px solid var(--bezel-hi);background:var(--panel-hi);
+    font-style:normal;font-size:var(--fs-xs);color:var(--amber);
+    display:flex;align-items:center;justify-content:center;
+  }
+  .flake{stroke:var(--snow);stroke-linecap:round}
+  .tip{fill:var(--cyan)} .hub{fill:var(--amber)}
+  .halo{fill:none;stroke:var(--amber);opacity:.45}
+
+  /* ── Tab strip (fleet KitTabStrip / KitTab) ───────────────── */
+  .tabstrip{
+    display:flex;align-items:stretch;height:32px;flex:none;
+    border-bottom:1px solid var(--bezel);background:var(--header-lo);
+    font-size:var(--fs-label);letter-spacing:.14em;text-transform:uppercase;
+  }
+  .tab{
+    display:flex;align-items:center;padding:0 16px;background:transparent;
+    border:none;border-right:1px solid var(--line);color:var(--label);
+    text-decoration:none;cursor:pointer;flex:none;white-space:nowrap;
+  }
+  .tab.active{color:var(--amber-hi);background:var(--header-hi)}
+  .tab:hover:not(.active){color:var(--text)}
+
+  /* The gardening tab's own second strip. Dimmer than the app strip so the
+     hierarchy reads at a glance: app surface, then surface-within-surface. */
+  .subnav{
+    display:flex;align-items:stretch;height:30px;flex:none;gap:0;
+    border-bottom:1px solid var(--bezel);background:var(--panel-deep);
+    font-size:var(--fs-label);letter-spacing:.14em;text-transform:uppercase;
+  }
+  .subnav .tab{border-right:1px solid var(--line)}
+  .subnav .tab.active{color:var(--cyan);background:var(--overlay-30);box-shadow:inset 0 -2px 0 var(--cyan-dim)}
+  .subnav .cnt{margin-left:8px;color:var(--snow);letter-spacing:.06em}
+  .subnav .cnt.hot{color:var(--amber-hi)}
+  .subnav-right{margin-left:auto;display:flex;align-items:center;gap:8px;padding:0 12px;color:var(--label-dim)}
+
+  /* ── Panels (fleet KitPanel) ──────────────────────────────── */
+  .layout{flex:1;min-height:0;display:grid;gap:6px;padding:6px}
+  .panel{
+    display:flex;flex-direction:column;min-height:0;min-width:0;
+    background:linear-gradient(180deg,var(--panel) 0%,var(--panel-deep) 100%);
+    border:1px solid var(--bezel);
+  }
+  .p-hdr{
+    display:flex;align-items:center;justify-content:space-between;gap:8px;
+    padding:4px 8px;border-bottom:1px solid var(--line);background:var(--overlay-25);flex:none;
+  }
+  .p-hdr .cnt{color:var(--snow);font-size:var(--fs-xs)}
+  .p-body{position:relative;overflow-y:auto;overflow-x:hidden;flex:1;min-height:0}
+  .p-foot{flex:none;border-top:1px solid var(--line);background:var(--overlay-25);padding:6px 8px;display:flex;align-items:center;gap:8px}
+  .hdr-actions{display:flex;align-items:center;gap:6px}
+
+  /* ── Rows ─────────────────────────────────────────────────── */
+  .row{
+    display:block;width:100%;text-align:left;background:var(--surface-resting);
+    border:none;border-bottom:1px solid var(--line);border-left:2px solid transparent;
+    padding:7px 10px;cursor:pointer;
+  }
+  .row:hover{background:var(--surface-hover)}
+  .row.active{background:var(--surface-selected);border-left-color:var(--cyan)}
+  .row-top{display:flex;align-items:baseline;gap:8px}
+  .row-name{color:var(--snow);font-size:var(--fs-md)}
+  .row-sub{color:var(--label);font-size:var(--fs-xs);margin-top:2px;display:flex;gap:10px;flex-wrap:wrap}
+  .row-right{margin-left:auto;display:flex;align-items:center;gap:8px}
+
+  /* ── Atoms ────────────────────────────────────────────────── */
+  .act{
+    font-family:inherit;background:var(--overlay-30);border:1px solid var(--line);
+    color:var(--text);cursor:pointer;padding:2px 7px;font-size:var(--fs-xs);
+  }
+  .act:hover:not(:disabled){border-color:var(--cyan)}
+  .act.primary{color:var(--cyan)}
+  .act.danger{color:var(--red)}
+  .act.danger:hover:not(:disabled){border-color:var(--red)}
+  .act:disabled{opacity:.4;cursor:default}
+  .act.big{padding:5px 14px;font-size:var(--fs-sm)}
+  .chip{
+    font-family:inherit;background:transparent;border:1px solid var(--line);border-radius:999px;
+    color:var(--text);cursor:pointer;padding:1px 8px;font-size:var(--fs-xs);letter-spacing:.04em;white-space:nowrap;
+  }
+  .chip:hover{border-color:var(--cyan)}
+  .chip.selected{border-color:var(--amber-hi);color:var(--amber-hi)}
+  .badge{
+    display:inline-block;border:1px solid currentcolor;border-radius:999px;padding:0 7px;
+    font-size:var(--fs-label);letter-spacing:.08em;text-transform:uppercase;
+  }
+  .t-cyan{color:var(--cyan)} .t-amber{color:var(--amber)} .t-amber-hi{color:var(--amber-hi)}
+  .t-green{color:var(--green)} .t-red{color:var(--red)} .t-label{color:var(--label)}
+  .t-snow{color:var(--snow)} .t-dim{color:var(--label-dim)}
+  .mono-id{font-size:var(--fs-xs);color:var(--label)}
+  .dot{width:8px;height:8px;border-radius:999px;display:inline-block;flex:none}
+  .dot.green{background:var(--green)} .dot.amber{background:var(--amber)}
+  .dot.red{background:var(--red)} .dot.grey{background:var(--label-dim)}
+  .xs{font-size:var(--fs-xs)} .sm{font-size:var(--fs-sm)}
+  .empty{display:flex;align-items:center;justify-content:center;height:100%;padding:24px;text-align:center;
+    color:var(--label);font-size:var(--fs-lg);letter-spacing:.1em;text-transform:uppercase}
+
+  /* Key/value definition grid — the shape every "what this record is" block uses. */
+  .kv{display:grid;grid-template-columns:auto 1fr;gap:3px 14px;padding:8px 10px;font-size:var(--fs-sm)}
+  .kv dt{color:var(--label);font-size:var(--fs-label);letter-spacing:.14em;text-transform:uppercase;align-self:center}
+  .kv dd{color:var(--text);min-width:0;overflow-wrap:anywhere}
+
+  .sect{border-bottom:1px solid var(--line)}
+  .sect-hdr{display:flex;align-items:center;gap:8px;padding:5px 10px;background:var(--overlay-20);border-bottom:1px solid var(--line)}
+  .sect-hdr .act{margin-left:auto}
+  .prose{padding:10px;font-size:var(--fs-sm);color:var(--text);max-width:78ch}
+  .prose p{margin-bottom:8px}
+  .prose code{color:var(--amber);background:var(--overlay-30);padding:0 3px}
+  .prose ul{margin:0 0 8px 18px}
+
+  table.grid{width:100%;border-collapse:collapse;font-size:var(--fs-sm)}
+  table.grid th{
+    text-align:left;padding:4px 10px;background:var(--overlay-35);color:var(--label);
+    font-size:var(--fs-label);letter-spacing:.14em;text-transform:uppercase;font-weight:400;
+    border-bottom:1px solid var(--line);position:sticky;top:0;
+  }
+  table.grid td{padding:5px 10px;border-bottom:1px solid var(--line);vertical-align:top}
+  table.grid tr:hover td{background:var(--overlay-20)}
+
+  /* ── Form controls ────────────────────────────────────────── */
+  .field{display:flex;flex-direction:column;gap:4px;margin-bottom:14px}
+  .field > .lbl{display:flex;align-items:center;gap:8px}
+  .hint{color:var(--label);font-size:var(--fs-xs);max-width:70ch}
+  input[type=text],select,textarea{
+    background:var(--overlay-40);border:1px solid var(--bezel);color:var(--snow);
+    padding:5px 8px;font-size:var(--fs-sm);width:100%;
+  }
+  textarea{resize:vertical;min-height:76px;line-height:1.5}
+  input[type=text]:focus,select:focus,textarea:focus{border-color:var(--cyan);outline:none}
+  .radio-set{display:flex;flex-direction:column;gap:6px}
+  .radio{
+    display:flex;gap:9px;align-items:flex-start;padding:8px 10px;cursor:pointer;
+    border:1px solid var(--bezel);background:var(--overlay-30);
+  }
+  .radio:hover{border-color:var(--bezel-hi);background:var(--panel-hover)}
+  .radio.on{border-color:var(--cyan);background:var(--panel-hi)}
+  .radio input{margin-top:3px;accent-color:#5cd1e5}
+  .radio .rt{display:block;color:var(--snow);font-size:var(--fs-sm)}
+  .radio .rh{display:block;color:var(--label);font-size:var(--fs-xs);margin-top:2px}
+
+  /* ── Modal ────────────────────────────────────────────────── */
+  .scrim{position:fixed;inset:0;background:rgba(3,6,12,.72);display:none;align-items:center;justify-content:center;z-index:40;padding:24px}
+  .scrim.open{display:flex}
+  .dialog{
+    width:min(700px,100%);max-height:100%;display:flex;flex-direction:column;
+    background:linear-gradient(180deg,var(--panel) 0%,var(--panel-deep) 100%);
+    border:1px solid var(--bezel-hi);box-shadow:0 24px 60px rgba(0,0,0,.6);
+  }
+  .dialog .d-hdr{display:flex;align-items:center;gap:10px;padding:8px 12px;border-bottom:1px solid var(--bezel);background:var(--overlay-35)}
+  .dialog .d-hdr .x{margin-left:auto}
+  .dialog .d-body{padding:14px 16px;overflow-y:auto}
+  .dialog .d-foot{display:flex;align-items:center;gap:10px;padding:10px 12px;border-top:1px solid var(--bezel);background:var(--overlay-35)}
+  .dialog .d-foot .grow{flex:1;color:var(--label);font-size:var(--fs-xs);max-width:52ch}
+
+  /* ── Toast ────────────────────────────────────────────────── */
+  .toast{
+    position:fixed;right:16px;bottom:16px;z-index:50;max-width:440px;
+    border:1px solid var(--cyan-dim);background:var(--panel-hi);
+    padding:10px 14px;font-size:var(--fs-sm);display:none;box-shadow:0 12px 32px rgba(0,0,0,.5);
+  }
+  .toast.open{display:block}
+  .toast .tl{color:var(--cyan);font-size:var(--fs-label);letter-spacing:.18em;text-transform:uppercase;display:block;margin-bottom:3px}
+
+  /* ── Trend sparkline ──────────────────────────────────────── */
+  .spark{display:flex;align-items:stretch;gap:4px;height:48px;padding:0 2px}
+  .spark .b{flex:1;min-width:3px;align-self:flex-end;background:var(--label-dim)}
+  .spark .b.in{background:var(--amber-dim)}
+  .spark .b.out{background:var(--green-dim)}
+  .spark-pair{display:flex;gap:2px;align-items:flex-end;flex:1;height:100%}
+  .legend{display:flex;gap:14px;flex-wrap:wrap;font-size:var(--fs-label);letter-spacing:.14em;text-transform:uppercase;color:var(--label);padding:6px 10px 0}
+  .legend b{font-weight:400;white-space:nowrap}
+  .swatch{display:inline-block;width:9px;height:9px;margin-right:5px;vertical-align:baseline}
+
+  /* ── Design-notes drawer (the sheet's own annotation, not the app's) ── */
+  .notes-toggle{
+    border:1px solid var(--amber-faint);background:var(--panel);color:var(--amber);
+    padding:1px 10px;font-size:var(--fs-label);letter-spacing:.18em;text-transform:uppercase;cursor:pointer;
+  }
+  .notes-toggle:hover{border-color:var(--amber)}
+  .notes{
+    position:fixed;inset:auto 0 0 0;z-index:31;max-height:62%;overflow-y:auto;display:none;
+    background:var(--panel-deep);border-top:2px solid var(--amber-faint);padding:14px 20px 60px;
+  }
+  .notes.open{display:block}
+  .notes h2{font-size:var(--fs-label);letter-spacing:.18em;text-transform:uppercase;color:var(--amber);margin-bottom:10px}
+  .notes .cards{display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:10px}
+  .notes .card{border:1px solid var(--bezel);background:var(--panel);padding:10px 12px}
+  .notes .card h3{font-size:var(--fs-xs);color:var(--cyan);letter-spacing:.1em;text-transform:uppercase;margin-bottom:5px}
+  .notes .card p{font-size:var(--fs-sm);color:var(--text);margin-bottom:6px}
+  .notes .card p:last-child{margin-bottom:0}
+  .notes .card.open-q{border-color:var(--amber-faint)}
+  .notes .card.open-q h3{color:var(--amber)}
+  .notes code{color:var(--amber);background:var(--overlay-30);padding:0 3px}
+</style>
+</head>
+<body>
+<div class="shell">
+
+  <!-- ── fleet BoardHeader, unchanged: the gardening tab inherits the app shell ── -->
+  <header class="mc-header">
+    <div class="brand">
+      <svg viewBox="0 0 32 32" width="30" height="30" aria-hidden="true">
+        <defs>
+          <g id="bz-spoke">
+            <line x1="16" y1="11.5" x2="16" y2="6" class="flake" stroke-width="1.4"/>
+            <line x1="16" y1="8.5" x2="13.45" y2="7.05" class="flake" stroke-width="1.1"/>
+            <line x1="16" y1="8.5" x2="18.55" y2="7.05" class="flake" stroke-width="1.1"/>
+            <circle cx="16" cy="4" r="1.8" class="tip"/>
+          </g>
+        </defs>
+        <use href="#bz-spoke"/><use href="#bz-spoke" transform="rotate(60 16 16)"/>
+        <use href="#bz-spoke" transform="rotate(120 16 16)"/><use href="#bz-spoke" transform="rotate(180 16 16)"/>
+        <use href="#bz-spoke" transform="rotate(240 16 16)"/><use href="#bz-spoke" transform="rotate(300 16 16)"/>
+        <circle cx="16" cy="16" r="2.8" class="hub"/>
+        <circle cx="16" cy="16" r="4.4" class="halo" stroke-width="0.8"/>
+      </svg>
+      <div class="brand-text">blizzard<small>mission control</small></div>
+    </div>
+    <div class="stats">
+      <div class="cell" data-stat="ready"><span class="stat-lbl">Ready</span><span class="v">4</span></div>
+      <div class="cell" data-stat="running"><span class="stat-lbl">Running</span><span class="v">3/6</span></div>
+      <div class="cell" data-stat="waiting"><span class="stat-lbl">Waiting</span><span class="v">1</span></div>
+      <div class="cell" data-stat="needs"><span class="stat-lbl">Needs human</span><span class="v">0</span></div>
+      <div class="cell" data-stat="done"><span class="stat-lbl">Done</span><span class="v">12</span></div>
+    </div>
+    <div class="spacer"></div>
+    <div class="cell spend"><span class="stat-lbl">Today</span><span class="v t-amber-hi">$41.06</span></div>
+    <div class="cell conn"><span class="stat-lbl">Stream</span><span class="v">live</span></div>
+    <div class="avatar"><i>PG</i></div>
+  </header>
+
+  <!-- ── AppNav: gardening is a fifth top-level tab, a peer of the board ── -->
+  <nav class="tabstrip">
+    <a class="tab" href="#">Board</a>
+    <a class="tab" href="#">Graphs</a>
+    <a class="tab" href="#">Events</a>
+    <a class="tab active" href="#">Gardening</a>
+    <a class="tab" href="#">Admin</a>
+  </nav>
+
+  <!-- ── The tab's own strip. Three surfaces, one per noun the machinery has. ── -->
+  <nav class="subnav">
+    <a class="tab " href="./gardening-routines.html">Routines<span class="cnt">6</span></a>
+    <a class="tab " href="./gardening-findings.html">Runs &amp; findings<span class="cnt">148</span></a>
+    <a class="tab active" href="./gardening-proposals.html">Proposals<span class="cnt hot">7</span></a>
+    <div class="subnav-right xs">manual kickoff only &mdash; no routine has a cadence yet
+      <button class="notes-toggle" onclick="toggleNotes()">Design notes</button>
+    </div>
+  </nav>
+
+  <!-- ── The tab's third surface: the one place gardening waits on a person ── -->
+  <div class="layout" style="grid-template-columns:minmax(330px,390px) 1fr">
+
+    <section class="panel">
+      <div class="p-hdr">
+        <span class="lbl">Proposals</span>
+        <span class="cnt" id="docket-count"></span>
+        <div class="hdr-actions"><span class="xs t-dim">batched across runs</span></div>
+      </div>
+      <div style="padding:6px 8px;border-bottom:1px solid var(--line);display:flex;gap:5px;flex-wrap:wrap" id="filters"></div>
+      <div class="p-body" id="prop-list"></div>
+      <div class="p-foot">
+        <span class="xs t-dim">Proposals attach to their routine and go no further on their own.</span>
+      </div>
+    </section>
+
+    <section class="panel" id="prop-detail"></section>
+  </div>
+
+  <!-- ── Accept: the act that creates the work item is the act that carries the link ── -->
+  <div class="scrim" id="accept-scrim">
+    <div class="dialog" style="width:min(820px,100%)" role="dialog" aria-modal="true" aria-label="Accept proposal">
+      <div class="d-hdr">
+        <span class="lbl">Accept</span><span class="t-amber-hi" id="acc-title-hdr"></span>
+        <button class="act x" onclick="closeAccept()">Close</button>
+      </div>
+      <div class="d-body">
+        <div class="field">
+          <span class="lbl">Response</span>
+          <div class="radio-set">
+            <label class="radio on" id="mint-on-row" onclick="setMint(true)">
+              <input type="radio" name="mint" checked>
+              <span>
+                <span class="rt">Mint a work item</span>
+                <span class="rh">The default. Agreement that is a commission, linked to this proposal in the same act.</span>
+              </span>
+            </label>
+            <label class="radio" id="mint-off-row" onclick="setMint(false)">
+              <input type="radio" name="mint">
+              <span>
+                <span class="rt">Agree, and mint nothing</span>
+                <span class="rh">The problem is handled elsewhere &mdash; outside the fleet, by hand, in a decision no work item would honestly capture.</span>
+              </span>
+            </label>
+          </div>
+          <span class="hint">
+            The two failure modes are not symmetric: a spurious backlog item is visible and deletable, while a real
+            commission that silently created nothing is a decision nobody can find again. So minting is the default and
+            refusing it is the deliberate act.
+          </span>
+        </div>
+
+        <div class="field mint-only">
+          <span class="lbl">Work item title</span>
+          <input type="text" id="acc-title">
+        </div>
+        <div class="field mint-only">
+          <span class="lbl">Body</span>
+          <textarea id="acc-body" style="min-height:150px"></textarea>
+          <span class="hint">
+            Prefilled from the proposal and yours to rewrite &mdash; or to replace wholesale with something drafted
+            elsewhere. Acceptance is a verb inside blizzard even when the body is written outside it: paste the text in,
+            but let the act that creates the item be the act that carries the link.
+          </span>
+        </div>
+        <div class="field mint-only">
+          <span class="lbl">Graph</span>
+          <select id="acc-graph">
+            <option>delivery-lane v9 &mdash; build &rarr; review &rarr; deliver</option>
+            <option>delivery-lane-docs v3 &mdash; write &rarr; review &rarr; deliver</option>
+            <option>campaign-fanout v2 &mdash; one cheap agent per finding</option>
+          </select>
+          <span class="hint">An ordinary work item running an ordinary graph. Nothing about it is special downstream.</span>
+        </div>
+
+        <div class="field" id="acc-where-field" style="display:none">
+          <span class="lbl">Where it is handled</span>
+          <textarea id="acc-where" placeholder="What settles this, and where — so the agreement is findable later."></textarea>
+        </div>
+
+        <div class="sect" style="border:1px solid var(--bezel);background:var(--overlay-30)">
+          <div class="sect-hdr"><span class="lbl">What this links</span></div>
+          <div class="prose sm" id="acc-links"></div>
+        </div>
+      </div>
+      <div class="d-foot">
+        <span class="grow" id="acc-foot-note">
+          Creates the item in the backlog and links it. It does not promote it &mdash; ranking and the promote gate stay
+          the backlog's own, so nothing this fleet thinks becomes work by fiat.
+        </span>
+        <button class="act" onclick="closeAccept()">Cancel</button>
+        <button class="act big primary" id="acc-submit" onclick="doAccept()">Accept &amp; create work item</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── Pass: declining is a record, not a delete ── -->
+  <div class="scrim" id="pass-scrim">
+    <div class="dialog" role="dialog" aria-modal="true" aria-label="Pass on proposal">
+      <div class="d-hdr">
+        <span class="lbl">Pass</span><span class="t-amber-hi" id="pass-title-hdr"></span>
+        <button class="act x" onclick="closePass()">Close</button>
+      </div>
+      <div class="d-body">
+        <div class="field">
+          <span class="lbl">Why</span>
+          <textarea id="pass-note" placeholder="The reason a later run should not raise this again as though it were new."></textarea>
+          <span class="hint">
+            Passing leaves the record that the proposal was considered and declined. The reason is what the next
+            cross-reference reads &mdash; and, over a lineage, whether a whole class of response is one nobody ever
+            wants is a query rather than somebody's memory.
+          </span>
+        </div>
+        <div class="field">
+          <span class="lbl">The findings behind it</span>
+          <div class="prose sm" style="border:1px solid var(--bezel);background:var(--overlay-30);color:var(--label)" id="pass-findings"></div>
+        </div>
+      </div>
+      <div class="d-foot">
+        <span class="grow">A proposal is closed out; its findings are untouched. Evidence persists whether or not anyone ever acts.</span>
+        <button class="act" onclick="closePass()">Cancel</button>
+        <button class="act big danger" onclick="doPass()">Pass</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="toast" id="toast"></div>
+
+</div>
+
+  <aside class="notes" id="notes">
+    <h2>Sheet 3 &mdash; the docket, and the one decision that is a person's</h2>
+    <div class="cards">
+
+      <div class="card">
+        <h3>Batched, not per-run</h3>
+        <p>Proposals attach to their routine and are read across runs. That is what lets a run go end to end with nobody
+          in it: the decision is available afterward, and it batches. The filters are state and class, because those are
+          the two axes a person actually triages along.</p>
+      </div>
+
+      <div class="card">
+        <h3>Two verbs, and both leave a record</h3>
+        <p><b>Pass</b> is not a dismiss. It records that the proposal was considered and declined, with the reason,
+          so a later cross-reference does not raise it again as new &mdash; and so &ldquo;does anyone ever want this
+          class of response?&rdquo; becomes a query.</p>
+      </div>
+
+      <div class="card">
+        <h3>Accept is where the link is made</h3>
+        <p>The body is prefilled and fully editable &mdash; paste in something drafted elsewhere if you like. What
+          cannot move outside blizzard is the <i>act</i>: the item is created here so it carries the link to the
+          proposal, through it to the findings, and through them to the routine.</p>
+      </div>
+
+      <div class="card">
+        <h3>Agreement is not always a commission</h3>
+        <p>An accept may mint nothing &mdash; the problem is handled elsewhere, by hand, in a decision no work item
+          would honestly capture. Minting stays the default and refusing it is the deliberate act, because the failure
+          modes are asymmetric: a spurious backlog item is visible and deletable, a silent commission is not findable at
+          all.</p>
+        <p>The surface says which happened rather than showing an accepted proposal with a blank item beside it, and an
+          uncommissioned acceptance makes no claim on the routine's outflow.</p>
+      </div>
+
+      <div class="card">
+        <h3>Accept does not promote</h3>
+        <p>The item lands in the backlog, rankable, behind the promote gate that already exists. Acceptance is a
+          judgment about the proposal, not a decision to start work now &mdash; and conflating them would put a fleet's
+          opinion straight into flight.</p>
+      </div>
+
+      <div class="card">
+        <h3>Findings are linked, never pasted</h3>
+        <p>The case is prose a person can decide on without re-reading the evidence; the evidence is a table below it
+          that stays live &mdash; the same rows sheet 2 triages, one entity across two surfaces.</p>
+        <p>Deciding a proposal moves none of them. Accepting shows the work item beside a finding and leaves it
+          <b>open</b>: a decision about a proposal is never an observation about the ground.</p>
+      </div>
+
+      <div class="card">
+        <h3>The class is the query, not decoration</h3>
+        <p>The hub never reads <code>prevent</code>, <code>remediate</code>, or <code>mechanize</code>. It groups by
+          them &mdash; which is what makes &ldquo;this routine's accepted proposals are all remediation, so it is being
+          weeded while its source runs untouched&rdquo; a fact rather than a feeling.</p>
+      </div>
+
+      <div class="card">
+        <h3>A passed proposal is evidence too</h3>
+        <p>The <code>mechanize</code> proposal on this docket was passed with a reason: the judgment is genuinely
+          ambiguous and stays at the LLM rung. That is the record that stops the same lint rule being proposed every
+          quarter &mdash; and it is why passing needs a note more than accepting does.</p>
+      </div>
+
+      <div class="card open-q">
+        <h3>Open &mdash; the campaign shape</h3>
+        <p>A <code>remediate</code> proposal over forty findings is one work item, not forty. The accept dialog offers a
+          <code>campaign-fanout</code> graph as the alternative, but whether one accepted proposal may mint a fan-out of
+          cheap per-finding chunks &mdash; and how their outflow attributes back &mdash; is not settled here.</p>
+      </div>
+
+      <div class="card open-q">
+        <h3>Open &mdash; superseding a proposal</h3>
+        <p>Two runs weeks apart can propose the same response. Cross-referencing is supposed to catch it, but nothing on
+          this docket lets a person say &ldquo;this one supersedes that one&rdquo; &mdash; today the answer is to pass
+          the older with a note, which works and reads badly.</p>
+      </div>
+
+    </div>
+  </aside>
+  <script>function toggleNotes(){document.getElementById('notes').classList.toggle('open')}</script>
+
+
+<script>
+"use strict";
+
+/* ============================ seed data ============================
+ * The docket. A proposal is a proposed response to one or more findings —
+ * a separate entity because the lifetimes differ: findings persist as
+ * evidence whether or not anyone acts, and a proposal is waiting on a
+ * person from the moment it lands.
+ *
+ * `class` is blizzard's own vocabulary (remediate / prevent / mechanize),
+ * declared in its strategy registry. The hub stores it, groups by it, and
+ * never interprets it.
+ * ================================================================== */
+
+const CLASS_TONE = { prevent: "t-cyan", mechanize: "t-green", remediate: "t-amber" };
+const CLASS_GLOSS = {
+  prevent: "Fix the source so the inflow stops — the missing standard, the exemplar spreading the pattern, the rule too fuzzy to follow.",
+  mechanize: "Retire the judgment itself: move the check into a lint rule, a config, or a gate so no later run pays a model to notice this class again.",
+  remediate: "Do the cleanup the findings describe — one proposal per theme per area, sized as work somebody could actually pick up.",
+};
+
+const FIND = (id, locus, summary, state) => ({ id, locus, summary, state });
+
+const PROPOSALS = [
+  { id: "prop_01JX7B1", routine: "comments", cls: "prevent", state: "waiting", age: "6d ago",
+    run: "run_01JX7A", scope: "hub",
+    title: "Author a comments standard covering retrospective narration and provenance",
+    body: `Five of the nine live findings in <code>hub</code> are one of two shapes: a comment reconstructing why the code changed, or a comment citing the issue or review that prompted it. Both are facts git already owns, and both are being written fresh — three of the five were introduced in the last month, by agents working from the current standard.
+
+<b>That is the tell.</b> This is not a backlog of old code; it is an inflow with nothing pushing back on it. <code>standards/comments.md</code> does not exist, so the fleet's verbose priors are the standard, and every sweep of every scope will keep finding this shape until something upstream says otherwise.
+
+<b>The ask:</b> author <code>blizzard-context:/standards/comments.md</code> stating what a comment may contain — the constraint the code cannot show, and nothing else — and make the call on the exemplar's citation-docstring style, which is currently teaching the opposite of this rule by example.
+
+Filing five cleanups while the thing producing them runs untouched is motion, not progress. Remediation for the existing five is worth raising separately, and only after this lands.`,
+    findings: [
+      FIND("fin_01JX7AM1", "hub/graphs/engine.py:118", "Comment narrates why the retry ladder changed shape last quarter.", "open"),
+      FIND("fin_01JX7AM2", "hub/api/chunks.py:64", "Docstring opens with what the endpoint used to return.", "open"),
+      FIND("fin_01JX7AM3", "hub/stores/finding_store.py:22", "Comment cites the issue number the module was written for.", "open"),
+      FIND("fin_01JX7AM7", "hub/leases/fencing.py:203", "Comment credits a review for catching the fencing race.", "open"),
+      FIND("fin_01JX7AM9", "hub/scheduler/sweep.py:9", "Docstring says the sweep reaps expired sessions. It has not since the reconciler took over.", "open"),
+    ] },
+
+  { id: "prop_01JXB9C", routine: "architecture", cls: "mechanize", state: "waiting", age: "2d ago",
+    run: "run_01JXB9", scope: "hub",
+    title: "Import-linter contract for the hub → stores direction",
+    body: `Six findings across four runs are the same judgment: a hub module importing an adapter directly instead of resolving it through the store's Protocol seam. It is mechanical every time — there is no case where reading the import line leaves the answer in doubt.
+
+<b>The case for retiring the judgment:</b> this class has recurred in every <code>hub</code> run since the routine's first, nobody has ever passed on a proposal about it, and no instance has ever been struck as not-a-finding. That is the whole evidentiary bar — a class that recurs and that nobody overrides.
+
+<b>What it costs to keep judging it:</b> roughly a fifth of each <code>architecture</code> run's context is spent re-deriving the dependency direction from the layering rules. An <code>import-linter</code> contract answers it at CI time for pennies.
+
+<b>Moving house, not copying.</b> On landing, the <code>architecture</code> strategy drops the dependency-direction check and points at the contract instead. A check judged in two places is a check whose two owners will disagree.`,
+    findings: [
+      FIND("fin_01JXB9A1", "hub/api/routers/chunks.py:12", "Imports SqlChunkAdapter directly; the router should hold the Protocol.", "open"),
+      FIND("fin_01JXB9A2", "hub/api/routers/runs.py:15", "Same shape — adapter imported past the seam.", "open"),
+      FIND("fin_01JXB9A3", "hub/delivery/materialize.py:8", "Delivery script reaches into the adapter for a transaction handle.", "open"),
+      FIND("fin_01JXB9A4", "hub/scheduler/sweep.py:21", "Sweep loop constructs its own adapter rather than taking the injected store.", "open"),
+      FIND("fin_01JXB4B1", "hub/api/deps.py:44", "Dependency provider returns the adapter type, leaking it into every signature downstream.", "open"),
+      FIND("fin_01JX41C2", "hub/events/publisher.py:19", "Publisher imports the adapter to read a connection string.", "open"),
+    ] },
+
+  { id: "prop_01JXF2A", routine: "corpus", cls: "mechanize", state: "waiting", age: "yesterday",
+    run: "run_01JXF2", scope: "blizzard-context",
+    title: "Fold the routing-orphan check into the canon lint gate",
+    body: `Seven live findings are files no hub or index routes to. The check is a graph walk over the routing tables — entirely mechanical, and already written twice as throwaway scripts inside two different runs' transcripts.
+
+Graduating it takes the check off the model's plate permanently and, more to the point, moves it upstream of the writing: an orphan becomes a failed check on the change that created it, rather than something a sweep notices six weeks later.
+
+<b>What stays at the LLM rung:</b> whether a file <i>ought</i> to be routed from where it is, and whether two files are one fact stated twice. Only the reachability half mechanizes.`,
+    findings: [
+      FIND("fin_01JXF2B1", "blizzard-context/standards/naming.md", "Routed from nothing since the standards hub was re-tabled.", "open"),
+      FIND("fin_01JXF2B2", "blizzard-context/domain/humans/escalation.md", "Orphaned by the gates.md split.", "open"),
+      FIND("fin_01JXF2B3", "blizzard-context/architecture/seams/legacy.md", "No inbound route; content superseded by seams/index.md.", "open"),
+      FIND("fin_01JXF2B4", "blizzard-context/verification/mock-fleet.md", "Cited by prose but absent from every routing table.", "open"),
+      FIND("fin_01JX88C1", "blizzard/prompts/review.legacy.md", "Unreferenced by any graph in the repo.", "open"),
+      FIND("fin_01JX88C2", "blizzard/prompts/deliver.v1.md", "Superseded prompt, still on disk, still routed from nothing.", "open"),
+      FIND("fin_01JWR5D1", "workspace/context/legacy-envs.md", "No inbound link since the lifecycle rewrite.", "open"),
+    ] },
+
+  { id: "prop_01JXB9B", routine: "architecture", cls: "remediate", state: "waiting", age: "2d ago",
+    run: "run_01JXB9", scope: "hub",
+    title: "Route the hub's router-layer reads through the store seam",
+    body: `The campaign half of the contract proposal above, sized as one chunk somebody could actually pick up: five call sites in the router layer, each replacing a direct adapter import with the injected Protocol.
+
+Deliberately filed as one item rather than five. The backlog is a human triage surface, and per-instance filing confuses inventory with work — the inventory already exists, as five findings, queryable and linked from here.
+
+<b>Order matters:</b> this is worth doing after the contract lands, not before. Otherwise the cleanup is unenforced and the sixth site arrives next week.`,
+    findings: [
+      FIND("fin_01JXB9A1", "hub/api/routers/chunks.py:12", "Imports SqlChunkAdapter directly.", "open"),
+      FIND("fin_01JXB9A2", "hub/api/routers/runs.py:15", "Adapter imported past the seam.", "open"),
+      FIND("fin_01JXB9A4", "hub/scheduler/sweep.py:21", "Constructs its own adapter.", "open"),
+      FIND("fin_01JXB4B1", "hub/api/deps.py:44", "Provider returns the adapter type.", "open"),
+      FIND("fin_01JX41C2", "hub/events/publisher.py:19", "Imports the adapter for a connection string.", "open"),
+    ] },
+
+  { id: "prop_01JWX0A", routine: "context", cls: "remediate", state: "waiting", age: "12d ago",
+    run: "run_01JWX0", scope: "blizzard-context",
+    title: "Retire six dead references across the harness's routing prose",
+    body: `Six references to files, commands, or verbs that no longer exist. Each is a one-line edit; together they are one chunk.
+
+These are the cheapest findings the <code>context</code> routine produces and the ones that most reliably mislead an agent mid-task, because a dead reference does not fail loudly — it sends a reader somewhere that is merely absent, and the reader improvises.`,
+    findings: [
+      FIND("fin_01JWX0E1", "blizzard-context/workflows/release.md:31", "Names `winter ws sync`, a verb that no longer exists.", "open"),
+      FIND("fin_01JWX0E2", "blizzard-context/tooling/index.md:12", "Links a tooling page deleted two months ago.", "open"),
+      FIND("fin_01JWX0E3", "blizzard-context/domain/work/backlog.md:44", "Cites `promote.md`, folded into gates.md.", "open"),
+      FIND("fin_01JW61F1", "workspace/context/worktree-ops.md:58", "References a config key the CLI dropped.", "open"),
+      FIND("fin_01JW61F2", "workspace/context/environment-lifecycle.md:20", "Names a provision flag that was renamed.", "open"),
+      FIND("fin_01JVD3G1", "blizzard/prompts/survey.md:9", "Points at an endpoint that never shipped under that path.", "open"),
+    ] },
+
+  { id: "prop_01JW04P", routine: "comments", cls: "remediate", state: "waiting", age: "20d ago",
+    run: "run_01JW04", scope: "web",
+    title: "Sweep the eleven restated-the-obvious comments in the web app",
+    body: `The full sweep of <code>web</code> recorded eleven instances of one shape: a comment restating what the line below it says. Mechanical to remove, and safe — none of them state a constraint.
+
+Raised as a campaign rather than eleven items. Worth noting that this proposal predates the <code>prevent</code> proposal above and should probably wait behind it, which is the ordinary reason to leave a remediation sitting on the docket rather than to pass on it.`,
+    findings: [
+      FIND("fin_01JW04H1", "web/projects/fleet/src/lib/queue/queue-panel.ts:22", "\"Render the rows.\" above a render of the rows.", "open"),
+      FIND("fin_01JW04H2", "web/projects/fleet/src/lib/board-card/board-card.ts:41", "\"The card's id.\" above `readonly id`.", "open"),
+      FIND("fin_01JW04H3", "web/projects/hub/src/app/events/events-page.ts:18", "\"Subscribe to the stream.\" above a subscribe.", "open"),
+      FIND("fin_01JW04H4", "web/projects/fleet/src/lib/sse/sse-client.ts:66", "Restates the reconnect constant below it.", "open"),
+      FIND("fin_01JW04H5", "web/projects/fleet/src/lib/kit/kit-chip.ts:9", "\"A chip.\"", "open"),
+      FIND("fin_01JW04H6", "web/projects/runner/src/app/panel/panel.ts:30", "\"Poll every tick.\" above the tick poll.", "open"),
+    ] },
+
+  { id: "prop_01JX9M1", routine: "verification", cls: "prevent", state: "waiting", age: "4d ago",
+    run: "run_01JX9M", scope: "hub",
+    title: "Give the mock fleet a lease-expiry clock so fencing races become provable",
+    body: `Nine live findings are behaviors the matrix claims but nothing can exercise: lease expiry, fencing races, and every crash path that depends on wall-clock passage. They are unprovable for one shared reason — the mock fleet has no controllable clock.
+
+<b>Why this is prevent and not remediate:</b> nine separate "add a test" items would each stall on the same missing capability. One injectable clock retires the whole cluster and makes the next nine reachable too.`,
+    findings: [
+      FIND("fin_01JX9MA1", "hub/leases/fencing.py", "Fencing race has no mock-reachable path.", "open"),
+      FIND("fin_01JX9MA2", "hub/leases/expiry.py", "Lease expiry provable only against the live instance.", "open"),
+      FIND("fin_01JX9MA3", "runner/heartbeat.py", "Heartbeat-loss recovery unprovable under mocks.", "open"),
+      FIND("fin_01JWM4B1", "hub/scheduler/sweep.py", "Reconciler sweep timing untestable.", "open"),
+      FIND("fin_01JWM4B2", "hub/graphs/engine.py", "Retry-ladder backoff asserted nowhere.", "open"),
+    ] },
+
+  /* ── already decided, kept on the docket as the record ── */
+
+  { id: "prop_01JXD40", routine: "comments", cls: "remediate", state: "accepted", age: "3d ago",
+    run: "run_01JX7A", scope: "hub",
+    title: "Prune the four provenance comments in the hub's lease and event modules",
+    body: `Four comments crediting reviews or naming issue numbers. One chunk, four one-line deletions.`,
+    accepted: { item: "wi_01JXD40", chunk: "ch_01JXD44", where: "running at build", when: "3d ago" },
+    findings: [ FIND("fin_01JX7AM7", "hub/leases/fencing.py:203", "Comment credits a review for catching the fencing race.", "open") ] },
+
+  { id: "prop_01JVQ40", routine: "comments", cls: "remediate", state: "accepted", age: "16d ago",
+    run: "run_01JVK8", scope: "hub",
+    title: "Hub comment sweep — fourteen restated-the-obvious instances",
+    body: `The first campaign this routine produced. Fourteen instances, one chunk.`,
+    accepted: { item: "wi_01JVQ40", chunk: "ch_01JW2M8", where: "landed 11d ago — 14 findings resolved", when: "16d ago", landed: true },
+    findings: [
+      FIND("fin_01JX7AMC", "hub/stores/chunk_store.py:71", "\"Commit the transaction.\" above a commit.", "resolved"),
+      FIND("fin_01JX7AMD", "hub/stores/graph_store.py:33", "\"Fetch the graph by id.\" above fetch_graph_by_id.", "resolved"),
+    ] },
+
+  { id: "prop_01JX9M2", routine: "verification", cls: "prevent", state: "accepted", age: "18d ago",
+    run: "run_01JWM4", scope: "hub",
+    title: "The crash-path behaviors need a harness the mock fleet cannot give them",
+    body: `Three findings are behaviors provable only against the live instance, and no amount of mock work reaches them — they need a real process to kill.
+
+<b>The response is not a work item.</b> This is settled outside the fleet: the live instance's own runbook covers it, by hand, on the release cut. Filing a chunk for it would put a lie in the backlog.`,
+    accepted: { item: null, when: "18d ago", where: "Covered by the live-instance runbook's release-cut checks. Agreed, deliberately uncommissioned." },
+    findings: [
+      FIND("fin_01JWM4C1", "runner/supervisor.py", "Crash-during-delivery recovery provable only live.", "open"),
+      FIND("fin_01JWM4C2", "hub/leases/fencing.py", "Fencing under a killed runner has no mock path.", "open"),
+      FIND("fin_01JWM4C3", "runner/harness/adapter.py", "Adapter kill-and-resume unprovable under mocks.", "open"),
+    ] },
+
+  { id: "prop_01JW04Q", routine: "comments", cls: "mechanize", state: "passed", age: "20d ago",
+    run: "run_01JW04", scope: "web",
+    title: "Lint rule for restated-the-obvious comments",
+    body: `Proposes a heuristic lint comparing a comment's tokens against the identifier on the line below it.`,
+    passed: { when: "18d ago", why: "The judgment is genuinely ambiguous and stays at the LLM rung. Any heuristic tight enough to catch these fires on every legitimate section header and every domain term that happens to appear in both places — and a noisy gate teaches people to skip gates. There is no shame in leaving a check judged; this one has earned its place there." },
+    findings: [ FIND("fin_01JW04H5", "web/projects/fleet/src/lib/kit/kit-chip.ts:9", "\"A chip.\"", "open") ] },
+];
+
+/* ============================ state ============================ */
+
+let stateFilter = "waiting";
+let classFilter = "*";
+let selected = "prop_01JX7B1";
+
+const el = (id) => document.getElementById(id);
+const prop = () => PROPOSALS.find((p) => p.id === selected);
+
+function visible() {
+  return PROPOSALS.filter((p) =>
+    (stateFilter === "*" || p.state === stateFilter) &&
+    (classFilter === "*" || p.cls === classFilter));
+}
+
+function renderFilters() {
+  const counts = { waiting: 0, accepted: 0, passed: 0 };
+  PROPOSALS.forEach((p) => counts[p.state]++);
+  el("filters").innerHTML = `
+    ${["waiting", "accepted", "passed", "*"].map((s) => `<button class="chip ${stateFilter === s ? "selected" : ""}" onclick="setState('${s}')">${s === "*" ? "all" : s}${counts[s] !== undefined ? ` ${counts[s]}` : ""}</button>`).join("")}
+    <span style="width:100%;height:0"></span>
+    ${["*", "prevent", "remediate", "mechanize"].map((c) => `<button class="chip ${classFilter === c ? "selected" : ""}" onclick="setClass('${c}')">${c === "*" ? "every class" : c}</button>`).join("")}`;
+  el("docket-count").textContent = visible().length;
+}
+function setState(s) { stateFilter = s; const v = visible(); if (v.length) selected = v[0].id; renderAll(); }
+function setClass(c) { classFilter = c; const v = visible(); if (v.length) selected = v[0].id; renderAll(); }
+
+function renderList() {
+  const v = visible();
+  el("prop-list").innerHTML = v.length ? v.map((p) => `
+    <button class="row ${p.id === selected ? "active" : ""}" onclick="select('${p.id}')">
+      <div class="row-top">
+        <span class="badge ${CLASS_TONE[p.cls]}">${p.cls}</span>
+        <code class="t-amber-hi xs">${p.routine}</code>
+        <span class="row-right">
+          ${p.state === "waiting" ? '<span class="badge t-amber-hi">waiting</span>'
+            : p.state === "accepted" ? `<span class="badge ${p.accepted.landed ? "t-green" : p.accepted.item ? "t-cyan" : "t-dim"}">${p.accepted.landed ? "landed" : p.accepted.item ? "in flight" : "agreed"}</span>`
+            : '<span class="badge t-dim">passed</span>'}
+        </span>
+      </div>
+      <div style="color:var(--snow);font-size:var(--fs-sm);margin-top:3px">${p.title}</div>
+      <div class="row-sub">
+        <span>${p.findings.length} finding${p.findings.length > 1 ? "s" : ""}</span>
+        <span class="mono-id">${p.id}</span>
+        <span>${p.age}</span>
+      </div>
+    </button>`).join("") : `<div class="empty">nothing here</div>`;
+}
+
+function select(id) { selected = id; renderDetail(); renderList(); }
+
+function renderDetail() {
+  const p = prop();
+  if (!p) { el("prop-detail").innerHTML = `<div class="empty">select a proposal</div>`; return; }
+
+  el("prop-detail").innerHTML = `
+    <div class="p-hdr">
+      <span class="lbl">Proposal</span>
+      <span class="badge ${CLASS_TONE[p.cls]}">${p.cls}</span>
+      <code class="t-amber-hi xs">${p.routine}</code>
+      <span class="mono-id">${p.id}</span>
+      <div class="hdr-actions">
+        ${p.state === "waiting" ? `
+          <button class="act danger" onclick="openPass()">Pass&hellip;</button>
+          <button class="act primary" onclick="openAccept()">Accept&hellip;</button>` : ""}
+      </div>
+    </div>
+    <div class="p-body">
+
+      ${p.state === "accepted" ? `<div class="sect" style="background:${p.accepted.landed ? "var(--green-dim)" : p.accepted.item ? "var(--panel-hi)" : "var(--overlay-30)"}">
+        <div class="sect-hdr" style="background:transparent"><span class="lbl" style="color:var(--snow)">Accepted ${p.accepted.when}${p.accepted.item ? "" : " &mdash; minted nothing"}</span></div>
+        <div class="prose sm">
+          ${p.accepted.item
+            ? `<p>Work item <code>${p.accepted.item}</code> &middot; chunk <span class="mono-id">${p.accepted.chunk}</span> &mdash; ${p.accepted.where}.</p>
+               <p class="t-dim xs">That link is the entire measurement story. Findings resolve because work lands, and knowing
+                 <i>which</i> work resolved <i>which</i> findings is what separates a real inflow and outflow from two unrelated counts.</p>`
+            : `<p>&ldquo;${p.accepted.where}&rdquo;</p>
+               <p class="t-dim xs">Agreement without a commission. It makes no claim on the findings and mints no measurement &mdash;
+                 which is exactly why the surface says so rather than showing an accepted proposal with a blank work item beside it.</p>`}
+          <p class="t-dim xs">Either way the findings behind it stay live. A decision about a proposal is never an observation about the ground.</p>
+        </div></div>` : ""}
+
+      ${p.state === "passed" ? `<div class="sect">
+        <div class="sect-hdr"><span class="lbl">Passed ${p.passed.when}</span></div>
+        <div class="prose sm"><p>&ldquo;${p.passed.why}&rdquo;</p>
+          <p class="t-dim xs">The record that it was considered and declined &mdash; so a later run's cross-reference
+            does not raise it again as though it were new. Its findings are untouched and still live.</p></div></div>` : ""}
+
+      <div class="sect">
+        <div class="prose" style="padding-bottom:0">
+          <h1 style="font-size:var(--fs-lg);color:var(--snow);letter-spacing:.02em;line-height:1.3;margin-bottom:10px">${p.title}</h1>
+        </div>
+        <dl class="kv" style="padding-top:0">
+          <dt>Class</dt><dd><span class="badge ${CLASS_TONE[p.cls]}">${p.cls}</span>
+            <div class="t-dim xs" style="margin-top:3px">${CLASS_GLOSS[p.cls]}</div>
+            <div class="t-dim xs">The deployment's taxonomy. The hub stores it, indexes it, groups by it, and never interprets it.</div></dd>
+          <dt>Delivered by</dt><dd><span class="mono-id">${p.run}</span> <span class="t-dim xs">over scope</span> <code class="t-amber">${p.scope}</code>
+            &middot; <a class="act" href="./gardening-findings.html">Open the run &rarr;</a></dd>
+        </dl>
+      </div>
+
+      <div class="sect">
+        <div class="sect-hdr"><span class="lbl">The case</span>
+          <span class="xs t-dim" style="margin-left:auto">enough detail to decide without re-reading the findings</span></div>
+        <div class="prose">${p.body.split("\n\n").map((x) => `<p>${x}</p>`).join("")}</div>
+      </div>
+
+      <div class="sect">
+        <div class="sect-hdr"><span class="lbl">Findings behind it <span class="cnt">${p.findings.length}</span></span>
+          <a class="act" href="./gardening-findings.html">Triage them &rarr;</a></div>
+        <table class="grid">
+          <thead><tr><th>Finding</th><th>Locus</th><th>Summary</th><th>State</th></tr></thead>
+          <tbody>${p.findings.map((f) => `<tr>
+            <td><span class="mono-id">${f.id}</span></td>
+            <td class="xs"><code>${f.locus}</code></td>
+            <td class="xs" style="max-width:46ch">${f.summary}</td>
+            <td><span class="badge ${f.state === "resolved" ? "t-green" : "t-label"}">${f.state}</span></td>
+          </tr>`).join("")}</tbody>
+        </table>
+        <div class="prose xs" style="color:var(--label-dim)">
+          Required and non-empty: a proposal with nothing behind it is an opinion the run was not asked for. The findings
+          are <i>linked</i>, never pasted into the body &mdash; which is what keeps the inventory queryable while the
+          proposal stays readable.
+        </div>
+      </div>
+
+    </div>
+    <div class="p-foot">
+      <span class="xs t-dim">Also <code>blizzard hub proposal accept ${p.id}</code> / <code>proposal pass ${p.id}</code>.</span>
+      <span style="margin-left:auto"></span>
+      ${p.state === "waiting" ? `
+        <button class="act danger" onclick="openPass()">Pass&hellip;</button>
+        <button class="act big primary" onclick="openAccept()">Accept&hellip;</button>` : ""}
+    </div>`;
+}
+
+/* ============================ accept ============================ */
+
+let mint = true;
+
+function openAccept() {
+  const p = prop();
+  el("acc-title-hdr").textContent = p.id;
+  el("acc-title").value = p.title;
+  el("acc-body").value = p.body.replace(/<[^>]+>/g, "");
+  setMint(true);
+  el("accept-scrim").classList.add("open");
+}
+function closeAccept() { el("accept-scrim").classList.remove("open"); }
+
+function setMint(on) {
+  mint = on;
+  el("mint-on-row").classList.toggle("on", on);
+  el("mint-off-row").classList.toggle("on", !on);
+  el("mint-on-row").querySelector("input").checked = on;
+  el("mint-off-row").querySelector("input").checked = !on;
+  [...document.querySelectorAll(".mint-only")].forEach((n) => { n.style.display = on ? "" : "none"; });
+  el("acc-where-field").style.display = on ? "none" : "";
+  el("acc-submit").textContent = on ? "Accept & create work item" : "Accept, mint nothing";
+  el("acc-foot-note").innerHTML = on
+    ? `Creates the item in the backlog and links it. It does not promote it &mdash; ranking and the promote gate stay the
+       backlog's own, so nothing this fleet thinks becomes work by fiat.`
+    : `Records agreement and creates nothing. The proposal is settled; its findings are untouched and stay live.`;
+  const p = prop();
+  el("acc-links").innerHTML = on
+    ? `<p><code class="t-amber-hi">the new work item</code> <span class="t-dim">&rarr;</span>
+         <code>${p.id}</code> <span class="t-dim">&rarr;</span>
+         <code>${p.findings.length} findings</code> <span class="t-dim">&rarr;</span>
+         <code class="t-amber-hi">routine ${p.routine}</code></p>
+       <p class="xs t-dim">The item links to the proposal directly, to its findings through it, and to the routine
+         through them. Nothing is copied down: when those findings resolve, the routine's outflow knows which work did
+         it. The findings themselves do not move &mdash; they stay live until a run reports them gone or you withdraw
+         them.</p>`
+    : `<p><code>${p.id}</code> <span class="t-dim">&rarr;</span> <code class="t-amber-hi">routine ${p.routine}</code>
+         <span class="t-dim">&mdash; and nothing else.</span></p>
+       <p class="xs t-dim">No item, so no measurement claim: this acceptance never appears in the routine's outflow. Its
+         ${p.findings.length} findings stay live, exactly as they were.</p>`;
+}
+
+function doAccept() {
+  const p = prop();
+  p.state = "accepted";
+  p.accepted = mint
+    ? { item: "wi_01JXG7T2", chunk: "ch_01JXG7T9", where: "queued in the backlog, not yet promoted", when: "just now" }
+    : { item: null, when: "just now", where: el("acc-where").value.trim() || "No reason given." };
+  closeAccept();
+  renderAll();
+  toast("Accepted", mint
+    ? `<code>wi_01JXG7T2</code> created and linked to <code>${p.id}</code>.<br>
+       <span class="t-dim xs">In the backlog, rankable, not promoted &mdash; the human gate that already exists stays where it is.
+       Its ${p.findings.length} findings are untouched.</span>`
+    : `<code>${p.id}</code> settled &mdash; agreed, and deliberately uncommissioned.<br>
+       <span class="t-dim xs">Nothing minted, nothing claimed. Its ${p.findings.length} findings stay live.</span>`);
+}
+
+/* ============================ pass ============================ */
+
+function openPass() {
+  const p = prop();
+  el("pass-title-hdr").textContent = p.id;
+  el("pass-note").value = "";
+  el("pass-findings").innerHTML = `<p>${p.findings.length} findings stay exactly as they are &mdash;
+    ${p.findings.slice(0, 3).map((f) => `<code>${f.id}</code>`).join(", ")}${p.findings.length > 3 ? ", &hellip;" : ""}.
+    Declining a response is not a claim that the observations were wrong.</p>`;
+  el("pass-scrim").classList.add("open");
+}
+function closePass() { el("pass-scrim").classList.remove("open"); }
+
+function doPass() {
+  const p = prop();
+  p.state = "passed";
+  p.passed = { when: "just now", why: el("pass-note").value.trim() || "No reason given." };
+  closePass();
+  renderAll();
+  toast("Passed", `<code>${p.id}</code> closed out as declined. Its ${p.findings.length} findings are untouched and still live.`);
+}
+
+function toast(title, html) {
+  const t = el("toast");
+  t.innerHTML = `<span class="tl">${title}</span>${html}`;
+  t.classList.add("open");
+  clearTimeout(toast._t);
+  toast._t = setTimeout(() => t.classList.remove("open"), 9000);
+}
+
+document.addEventListener("keydown", (e) => { if (e.key === "Escape") { closeAccept(); closePass(); } });
+
+function renderAll() { renderFilters(); renderList(); renderDetail(); }
+renderAll();
+</script>
+</body>
+</html>

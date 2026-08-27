@@ -17,8 +17,8 @@ cleanups while the thing generating them runs untouched is motion without progre
 thousand more.
 
 Then ask which of your own judgments no longer need a model. A finding class that recurs run after run with nobody ever
-overriding it is, by demonstration, crisp enough to encode — that is a `mechanize` proposal, and it carries its case:
-which class it retires, and what it saves. A garden that shrinks its own judgment surface is the one working best.
+overriding it is, by demonstration, crisp enough to encode — a proposal to retire the judgment altogether, carrying its
+case: which class it retires, and what it saves. A garden that shrinks its own judgment surface is the one working best.
 
 Reach for the cheapest rung that would actually hold. Rule data in infrastructure the project already runs — a lint rule
 enabled, a config tightened — costs nothing to adopt. New infrastructure — a linter or a test-quality tool — has to
@@ -31,11 +31,20 @@ graduate, it **moves house rather than being copied**: once a class is a lint ru
 points at the mechanized check and stops re-judging it. One owner per check, at whatever rung it lives — a check judged
 in two places is a check whose two owners will disagree.
 
+## When the delta is a bail-out
+
+A delta holding one `excessive-scope` finding is the survey reporting that the ground is past what a pass can hold.
+Draft one proposal and stop. Hand the problem out of the fleet: name what a person would have to decide — rescope the
+routine, author the standard the volume is really reporting, plan the campaign somewhere blizzard is not — and use the
+response class your strategy declares for handing work outside. Do not draft cleanups against an inventory that was
+never taken.
+
 ## Shape
 
-The `proposals` doc has it. Every proposal names the findings that justify it, and its `kind` is one of `remediate`,
-`prevent`, or `mechanize`. The body should let a reader decide without opening the findings — state the case, not the
-inventory.
+The `proposals` doc has it. Every proposal names the findings that justify it, and carries a `class` — one of the
+response classes your routine's strategy declares, and never a label you invent, because a class nobody else spells the
+same way is a class the store cannot count. The body should let a reader decide without opening the findings: state the
+case, not the inventory.
 
 ## What you are not doing
 

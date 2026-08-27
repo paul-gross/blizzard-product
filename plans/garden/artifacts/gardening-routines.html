@@ -1,0 +1,885 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>blizzard hub — gardening · routines</title>
+<style>
+  /* ── Tokens, verbatim from web/projects/fleet/src/lib/design/tokens.css ── */
+  :root{
+    --bg:#060a12; --ground:#080d17; --panel:#0b1120; --panel-deep:#080d19;
+    --panel-hover:#121b30; --panel-hi:#1a2748; --bezel:#1d2b44; --bezel-hi:#27395c;
+    --line:#131d30;
+    --amber:#f2b25c; --amber-hi:#ffcf8a; --amber-dim:#8f7548; --amber-faint:#4d4130;
+    --snow:#eef4fb; --cyan:#5cd1e5; --cyan-dim:#2b6675;
+    --red:#f05c6c; --red-dim:#7a3540; --red-wash-text:#ffd9dd;
+    --green:#4fc57e; --green-dim:#2b5c40;
+    --label:#5c7089; --label-dim:#3c4d63; --text:#b8c6d8;
+    --mono:ui-monospace,"SF Mono",SFMono-Regular,Menlo,Consolas,"Liberation Mono",monospace;
+    --header-hi:#0d1526; --header-lo:#080d18;
+    --fs-label:11px; --fs-xs:12px; --fs-sm:13px; --fs-base:15px; --fs-md:16px; --fs-lg:19px;
+    --overlay-20:rgba(0,0,0,.2); --overlay-25:rgba(0,0,0,.25); --overlay-30:rgba(0,0,0,.3);
+    --overlay-35:rgba(0,0,0,.35); --overlay-40:rgba(0,0,0,.4); --overlay-90:rgba(0,0,0,.9);
+    --surface-resting:var(--panel); --surface-hover:var(--panel-hover); --surface-selected:var(--panel-hi);
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  html,body{height:100%}
+  body{
+    background:var(--ground); color:var(--text);
+    font-family:var(--mono); font-size:var(--fs-base);
+    font-variant-numeric:tabular-nums; line-height:1.45; overflow:hidden;
+  }
+  button,input,select,textarea{font:inherit;color:inherit}
+  :focus-visible{outline:1px solid var(--cyan);outline-offset:1px}
+  .shell{display:flex;flex-direction:column;height:100%;min-height:0;overflow:hidden}
+
+  /* ── Header (fleet BoardHeader) ───────────────────────────── */
+  .mc-header{
+    display:flex;align-items:stretch;height:48px;flex:none;
+    border-bottom:1px solid var(--bezel);
+    background:linear-gradient(180deg,var(--header-hi),var(--header-lo));
+  }
+  .lbl,.stat-lbl{
+    font-size:var(--fs-label);letter-spacing:.18em;text-transform:uppercase;
+    color:var(--label);text-shadow:0 1px 0 var(--overlay-90);
+  }
+  .brand{display:flex;flex:none;align-items:center;gap:10px;padding:0 14px;border-right:1px solid var(--line);white-space:nowrap}
+  .brand-text{display:flex;flex-direction:column;justify-content:center;color:var(--amber-hi);font-size:var(--fs-lg);letter-spacing:.28em;text-transform:uppercase}
+  .brand small{color:var(--label);font-size:var(--fs-label);letter-spacing:.18em}
+  .cell{display:flex;flex:none;flex-direction:column;justify-content:center;padding:0 14px;border-right:1px solid var(--line);white-space:nowrap}
+  .cell .v{color:var(--amber);font-size:var(--fs-lg);line-height:1.1}
+  .cell[data-stat=needs] .v{color:var(--red)}
+  .cell[data-stat=waiting] .v{color:var(--amber-hi)}
+  .cell[data-stat=done] .v{color:var(--green)}
+  .stats{display:flex;align-items:stretch;overflow:hidden}
+  .spacer{flex:1;border-right:1px solid var(--line)}
+  .conn{border-right:none}
+  .conn .v{color:var(--cyan)}
+  .avatar{display:flex;align-items:center;padding:0 14px}
+  .avatar i{
+    display:block;width:26px;height:26px;border-radius:999px;
+    border:1px solid var(--bezel-hi);background:var(--panel-hi);
+    font-style:normal;font-size:var(--fs-xs);color:var(--amber);
+    display:flex;align-items:center;justify-content:center;
+  }
+  .flake{stroke:var(--snow);stroke-linecap:round}
+  .tip{fill:var(--cyan)} .hub{fill:var(--amber)}
+  .halo{fill:none;stroke:var(--amber);opacity:.45}
+
+  /* ── Tab strip (fleet KitTabStrip / KitTab) ───────────────── */
+  .tabstrip{
+    display:flex;align-items:stretch;height:32px;flex:none;
+    border-bottom:1px solid var(--bezel);background:var(--header-lo);
+    font-size:var(--fs-label);letter-spacing:.14em;text-transform:uppercase;
+  }
+  .tab{
+    display:flex;align-items:center;padding:0 16px;background:transparent;
+    border:none;border-right:1px solid var(--line);color:var(--label);
+    text-decoration:none;cursor:pointer;flex:none;white-space:nowrap;
+  }
+  .tab.active{color:var(--amber-hi);background:var(--header-hi)}
+  .tab:hover:not(.active){color:var(--text)}
+
+  /* The gardening tab's own second strip. Dimmer than the app strip so the
+     hierarchy reads at a glance: app surface, then surface-within-surface. */
+  .subnav{
+    display:flex;align-items:stretch;height:30px;flex:none;gap:0;
+    border-bottom:1px solid var(--bezel);background:var(--panel-deep);
+    font-size:var(--fs-label);letter-spacing:.14em;text-transform:uppercase;
+  }
+  .subnav .tab{border-right:1px solid var(--line)}
+  .subnav .tab.active{color:var(--cyan);background:var(--overlay-30);box-shadow:inset 0 -2px 0 var(--cyan-dim)}
+  .subnav .cnt{margin-left:8px;color:var(--snow);letter-spacing:.06em}
+  .subnav .cnt.hot{color:var(--amber-hi)}
+  .subnav-right{margin-left:auto;display:flex;align-items:center;gap:8px;padding:0 12px;color:var(--label-dim)}
+
+  /* ── Panels (fleet KitPanel) ──────────────────────────────── */
+  .layout{flex:1;min-height:0;display:grid;gap:6px;padding:6px}
+  .panel{
+    display:flex;flex-direction:column;min-height:0;min-width:0;
+    background:linear-gradient(180deg,var(--panel) 0%,var(--panel-deep) 100%);
+    border:1px solid var(--bezel);
+  }
+  .p-hdr{
+    display:flex;align-items:center;justify-content:space-between;gap:8px;
+    padding:4px 8px;border-bottom:1px solid var(--line);background:var(--overlay-25);flex:none;
+  }
+  .p-hdr .cnt{color:var(--snow);font-size:var(--fs-xs)}
+  .p-body{position:relative;overflow-y:auto;overflow-x:hidden;flex:1;min-height:0}
+  .p-foot{flex:none;border-top:1px solid var(--line);background:var(--overlay-25);padding:6px 8px;display:flex;align-items:center;gap:8px}
+  .hdr-actions{display:flex;align-items:center;gap:6px}
+
+  /* ── Rows ─────────────────────────────────────────────────── */
+  .row{
+    display:block;width:100%;text-align:left;background:var(--surface-resting);
+    border:none;border-bottom:1px solid var(--line);border-left:2px solid transparent;
+    padding:7px 10px;cursor:pointer;
+  }
+  .row:hover{background:var(--surface-hover)}
+  .row.active{background:var(--surface-selected);border-left-color:var(--cyan)}
+  .row-top{display:flex;align-items:baseline;gap:8px}
+  .row-name{color:var(--snow);font-size:var(--fs-md)}
+  .row-sub{color:var(--label);font-size:var(--fs-xs);margin-top:2px;display:flex;gap:10px;flex-wrap:wrap}
+  .row-right{margin-left:auto;display:flex;align-items:center;gap:8px}
+
+  /* ── Atoms ────────────────────────────────────────────────── */
+  .act{
+    font-family:inherit;background:var(--overlay-30);border:1px solid var(--line);
+    color:var(--text);cursor:pointer;padding:2px 7px;font-size:var(--fs-xs);
+  }
+  .act:hover:not(:disabled){border-color:var(--cyan)}
+  .act.primary{color:var(--cyan)}
+  .act.danger{color:var(--red)}
+  .act.danger:hover:not(:disabled){border-color:var(--red)}
+  .act:disabled{opacity:.4;cursor:default}
+  .act.big{padding:5px 14px;font-size:var(--fs-sm)}
+  .chip{
+    font-family:inherit;background:transparent;border:1px solid var(--line);border-radius:999px;
+    color:var(--text);cursor:pointer;padding:1px 8px;font-size:var(--fs-xs);letter-spacing:.04em;white-space:nowrap;
+  }
+  .chip:hover{border-color:var(--cyan)}
+  .chip.selected{border-color:var(--amber-hi);color:var(--amber-hi)}
+  .badge{
+    display:inline-block;border:1px solid currentcolor;border-radius:999px;padding:0 7px;
+    font-size:var(--fs-label);letter-spacing:.08em;text-transform:uppercase;
+  }
+  .t-cyan{color:var(--cyan)} .t-amber{color:var(--amber)} .t-amber-hi{color:var(--amber-hi)}
+  .t-green{color:var(--green)} .t-red{color:var(--red)} .t-label{color:var(--label)}
+  .t-snow{color:var(--snow)} .t-dim{color:var(--label-dim)}
+  .mono-id{font-size:var(--fs-xs);color:var(--label)}
+  .dot{width:8px;height:8px;border-radius:999px;display:inline-block;flex:none}
+  .dot.green{background:var(--green)} .dot.amber{background:var(--amber)}
+  .dot.red{background:var(--red)} .dot.grey{background:var(--label-dim)}
+  .xs{font-size:var(--fs-xs)} .sm{font-size:var(--fs-sm)}
+  .empty{display:flex;align-items:center;justify-content:center;height:100%;padding:24px;text-align:center;
+    color:var(--label);font-size:var(--fs-lg);letter-spacing:.1em;text-transform:uppercase}
+
+  /* Key/value definition grid — the shape every "what this record is" block uses. */
+  .kv{display:grid;grid-template-columns:auto 1fr;gap:3px 14px;padding:8px 10px;font-size:var(--fs-sm)}
+  .kv dt{color:var(--label);font-size:var(--fs-label);letter-spacing:.14em;text-transform:uppercase;align-self:center}
+  .kv dd{color:var(--text);min-width:0;overflow-wrap:anywhere}
+
+  .sect{border-bottom:1px solid var(--line)}
+  .sect-hdr{display:flex;align-items:center;gap:8px;padding:5px 10px;background:var(--overlay-20);border-bottom:1px solid var(--line)}
+  .sect-hdr .act{margin-left:auto}
+  .prose{padding:10px;font-size:var(--fs-sm);color:var(--text);max-width:78ch}
+  .prose p{margin-bottom:8px}
+  .prose code{color:var(--amber);background:var(--overlay-30);padding:0 3px}
+  .prose ul{margin:0 0 8px 18px}
+
+  table.grid{width:100%;border-collapse:collapse;font-size:var(--fs-sm)}
+  table.grid th{
+    text-align:left;padding:4px 10px;background:var(--overlay-35);color:var(--label);
+    font-size:var(--fs-label);letter-spacing:.14em;text-transform:uppercase;font-weight:400;
+    border-bottom:1px solid var(--line);position:sticky;top:0;
+  }
+  table.grid td{padding:5px 10px;border-bottom:1px solid var(--line);vertical-align:top}
+  table.grid tr:hover td{background:var(--overlay-20)}
+
+  /* ── Form controls ────────────────────────────────────────── */
+  .field{display:flex;flex-direction:column;gap:4px;margin-bottom:14px}
+  .field > .lbl{display:flex;align-items:center;gap:8px}
+  .hint{color:var(--label);font-size:var(--fs-xs);max-width:70ch}
+  input[type=text],select,textarea{
+    background:var(--overlay-40);border:1px solid var(--bezel);color:var(--snow);
+    padding:5px 8px;font-size:var(--fs-sm);width:100%;
+  }
+  textarea{resize:vertical;min-height:76px;line-height:1.5}
+  input[type=text]:focus,select:focus,textarea:focus{border-color:var(--cyan);outline:none}
+  .radio-set{display:flex;flex-direction:column;gap:6px}
+  .radio{
+    display:flex;gap:9px;align-items:flex-start;padding:8px 10px;cursor:pointer;
+    border:1px solid var(--bezel);background:var(--overlay-30);
+  }
+  .radio:hover{border-color:var(--bezel-hi);background:var(--panel-hover)}
+  .radio.on{border-color:var(--cyan);background:var(--panel-hi)}
+  .radio input{margin-top:3px;accent-color:#5cd1e5}
+  .radio .rt{display:block;color:var(--snow);font-size:var(--fs-sm)}
+  .radio .rh{display:block;color:var(--label);font-size:var(--fs-xs);margin-top:2px}
+
+  /* ── Modal ────────────────────────────────────────────────── */
+  .scrim{position:fixed;inset:0;background:rgba(3,6,12,.72);display:none;align-items:center;justify-content:center;z-index:40;padding:24px}
+  .scrim.open{display:flex}
+  .dialog{
+    width:min(700px,100%);max-height:100%;display:flex;flex-direction:column;
+    background:linear-gradient(180deg,var(--panel) 0%,var(--panel-deep) 100%);
+    border:1px solid var(--bezel-hi);box-shadow:0 24px 60px rgba(0,0,0,.6);
+  }
+  .dialog .d-hdr{display:flex;align-items:center;gap:10px;padding:8px 12px;border-bottom:1px solid var(--bezel);background:var(--overlay-35)}
+  .dialog .d-hdr .x{margin-left:auto}
+  .dialog .d-body{padding:14px 16px;overflow-y:auto}
+  .dialog .d-foot{display:flex;align-items:center;gap:10px;padding:10px 12px;border-top:1px solid var(--bezel);background:var(--overlay-35)}
+  .dialog .d-foot .grow{flex:1;color:var(--label);font-size:var(--fs-xs);max-width:52ch}
+
+  /* ── Toast ────────────────────────────────────────────────── */
+  .toast{
+    position:fixed;right:16px;bottom:16px;z-index:50;max-width:440px;
+    border:1px solid var(--cyan-dim);background:var(--panel-hi);
+    padding:10px 14px;font-size:var(--fs-sm);display:none;box-shadow:0 12px 32px rgba(0,0,0,.5);
+  }
+  .toast.open{display:block}
+  .toast .tl{color:var(--cyan);font-size:var(--fs-label);letter-spacing:.18em;text-transform:uppercase;display:block;margin-bottom:3px}
+
+  /* ── Trend sparkline ──────────────────────────────────────── */
+  .spark{display:flex;align-items:stretch;gap:4px;height:48px;padding:0 2px}
+  .spark .b{flex:1;min-width:3px;align-self:flex-end;background:var(--label-dim)}
+  .spark .b.in{background:var(--amber-dim)}
+  .spark .b.out{background:var(--green-dim)}
+  .spark-pair{display:flex;gap:2px;align-items:flex-end;flex:1;height:100%}
+  .legend{display:flex;gap:14px;flex-wrap:wrap;font-size:var(--fs-label);letter-spacing:.14em;text-transform:uppercase;color:var(--label);padding:6px 10px 0}
+  .legend b{font-weight:400;white-space:nowrap}
+  .swatch{display:inline-block;width:9px;height:9px;margin-right:5px;vertical-align:baseline}
+
+  /* ── Design-notes drawer (the sheet's own annotation, not the app's) ── */
+  .notes-toggle{
+    border:1px solid var(--amber-faint);background:var(--panel);color:var(--amber);
+    padding:1px 10px;font-size:var(--fs-label);letter-spacing:.18em;text-transform:uppercase;cursor:pointer;
+  }
+  .notes-toggle:hover{border-color:var(--amber)}
+  .notes{
+    position:fixed;inset:auto 0 0 0;z-index:31;max-height:62%;overflow-y:auto;display:none;
+    background:var(--panel-deep);border-top:2px solid var(--amber-faint);padding:14px 20px 60px;
+  }
+  .notes.open{display:block}
+  .notes h2{font-size:var(--fs-label);letter-spacing:.18em;text-transform:uppercase;color:var(--amber);margin-bottom:10px}
+  .notes .cards{display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:10px}
+  .notes .card{border:1px solid var(--bezel);background:var(--panel);padding:10px 12px}
+  .notes .card h3{font-size:var(--fs-xs);color:var(--cyan);letter-spacing:.1em;text-transform:uppercase;margin-bottom:5px}
+  .notes .card p{font-size:var(--fs-sm);color:var(--text);margin-bottom:6px}
+  .notes .card p:last-child{margin-bottom:0}
+  .notes .card.open-q{border-color:var(--amber-faint)}
+  .notes .card.open-q h3{color:var(--amber)}
+  .notes code{color:var(--amber);background:var(--overlay-30);padding:0 3px}
+</style>
+</head>
+<body>
+<div class="shell">
+
+  <!-- ── fleet BoardHeader, unchanged: the gardening tab inherits the app shell ── -->
+  <header class="mc-header">
+    <div class="brand">
+      <svg viewBox="0 0 32 32" width="30" height="30" aria-hidden="true">
+        <defs>
+          <g id="bz-spoke">
+            <line x1="16" y1="11.5" x2="16" y2="6" class="flake" stroke-width="1.4"/>
+            <line x1="16" y1="8.5" x2="13.45" y2="7.05" class="flake" stroke-width="1.1"/>
+            <line x1="16" y1="8.5" x2="18.55" y2="7.05" class="flake" stroke-width="1.1"/>
+            <circle cx="16" cy="4" r="1.8" class="tip"/>
+          </g>
+        </defs>
+        <use href="#bz-spoke"/><use href="#bz-spoke" transform="rotate(60 16 16)"/>
+        <use href="#bz-spoke" transform="rotate(120 16 16)"/><use href="#bz-spoke" transform="rotate(180 16 16)"/>
+        <use href="#bz-spoke" transform="rotate(240 16 16)"/><use href="#bz-spoke" transform="rotate(300 16 16)"/>
+        <circle cx="16" cy="16" r="2.8" class="hub"/>
+        <circle cx="16" cy="16" r="4.4" class="halo" stroke-width="0.8"/>
+      </svg>
+      <div class="brand-text">blizzard<small>mission control</small></div>
+    </div>
+    <div class="stats">
+      <div class="cell" data-stat="ready"><span class="stat-lbl">Ready</span><span class="v">4</span></div>
+      <div class="cell" data-stat="running"><span class="stat-lbl">Running</span><span class="v">3/6</span></div>
+      <div class="cell" data-stat="waiting"><span class="stat-lbl">Waiting</span><span class="v">1</span></div>
+      <div class="cell" data-stat="needs"><span class="stat-lbl">Needs human</span><span class="v">0</span></div>
+      <div class="cell" data-stat="done"><span class="stat-lbl">Done</span><span class="v">12</span></div>
+    </div>
+    <div class="spacer"></div>
+    <div class="cell spend"><span class="stat-lbl">Today</span><span class="v t-amber-hi">$41.06</span></div>
+    <div class="cell conn"><span class="stat-lbl">Stream</span><span class="v">live</span></div>
+    <div class="avatar"><i>PG</i></div>
+  </header>
+
+  <!-- ── AppNav: gardening is a fifth top-level tab, a peer of the board ── -->
+  <nav class="tabstrip">
+    <a class="tab" href="#">Board</a>
+    <a class="tab" href="#">Graphs</a>
+    <a class="tab" href="#">Events</a>
+    <a class="tab active" href="#">Gardening</a>
+    <a class="tab" href="#">Admin</a>
+  </nav>
+
+  <!-- ── The tab's own strip. Three surfaces, one per noun the machinery has. ── -->
+  <nav class="subnav">
+    <a class="tab active" href="./gardening-routines.html">Routines<span class="cnt">6</span></a>
+    <a class="tab " href="./gardening-findings.html">Runs &amp; findings<span class="cnt">148</span></a>
+    <a class="tab " href="./gardening-proposals.html">Proposals<span class="cnt hot">7</span></a>
+    <div class="subnav-right xs">manual kickoff only &mdash; no routine has a cadence yet
+      <button class="notes-toggle" onclick="toggleNotes()">Design notes</button>
+    </div>
+  </nav>
+
+  <!-- ── The tab's first surface: what a deployment has declared, and the act of running one ── -->
+  <div class="layout" style="grid-template-columns:minmax(290px,360px) 1fr">
+
+    <section class="panel">
+      <div class="p-hdr">
+        <span class="lbl">Routines <span class="cnt">6</span></span>
+        <div class="hdr-actions">
+          <button class="act" onclick="alert('Mockup: opens the routine editor — name, graph, default scope, model and effort defaults. That is the whole record.')">New&hellip;</button>
+        </div>
+      </div>
+      <div class="p-body" id="routine-list"></div>
+      <div class="p-foot">
+        <span class="xs t-dim">One routine per axis, named for the axis it tends. The platform sees only the name.</span>
+      </div>
+    </section>
+
+    <section class="panel" id="routine-detail"></section>
+  </div>
+
+  <!-- ── Run dialog: the three options a run takes, and nothing else ── -->
+  <div class="scrim" id="run-scrim">
+    <div class="dialog" role="dialog" aria-modal="true" aria-label="Run routine">
+      <div class="d-hdr">
+        <span class="lbl">Run routine</span>
+        <span class="t-amber-hi" id="run-routine-name">comments</span>
+        <button class="act x" onclick="closeRun()">Close</button>
+      </div>
+      <div class="d-body">
+
+        <div class="field">
+          <span class="lbl">Scope</span>
+          <select id="run-scope" onchange="onScopeChange()"></select>
+          <span class="hint" id="run-scope-hint"></span>
+        </div>
+
+        <div class="field" id="run-scope-custom-field" style="display:none">
+          <span class="lbl">Scope name</span>
+          <input type="text" id="run-scope-custom" placeholder="lowercase-hyphenated-slug" value="">
+          <span class="hint">
+            A slug — lowercase letters, digits, hyphens. The hub stores it and never resolves it, so a name that
+            reads like an existing one silently splits that bucket. Typing a new one here is declaring it.
+          </span>
+        </div>
+
+        <div class="field">
+          <span class="lbl">Mode</span>
+          <div class="radio-set">
+            <label class="radio" id="mode-full-row" onclick="setMode('full')">
+              <input type="radio" name="mode" value="full" checked>
+              <span>
+                <span class="rt">Full &mdash; judge the whole scope afresh</span>
+                <span class="rh">The rare deliberate act: a new routine, or a standard that changed and re-opened judgment on unchanged code.</span>
+              </span>
+            </label>
+            <label class="radio on" id="mode-delta-row" onclick="setMode('delta')">
+              <input type="radio" name="mode" value="delta" checked>
+              <span>
+                <span class="rt">Delta &mdash; judge only what changed since this routine last ran</span>
+                <span class="rh" id="delta-baseline"></span>
+              </span>
+            </label>
+          </div>
+          <span class="hint">
+            The baseline is the platform's, not the agent's: the hub knows the revision every prior run recorded per
+            repository, so a delta run is handed a real one rather than an instruction to work one out.
+          </span>
+        </div>
+
+        <div class="field">
+          <span class="lbl">Charge note <span class="t-dim xs" style="letter-spacing:0">optional</span></span>
+          <textarea id="run-note" placeholder="Free text, appended to the run's charge as a &quot;This run&quot; section."></textarea>
+          <span class="hint">
+            Concatenated onto the charge, not substituted into it &mdash; the consumer is a model reading prose. This is
+            the field the exploration loop runs on: edit it, run again, watch what it proposes.
+          </span>
+        </div>
+
+        <div class="sect" style="border:1px solid var(--bezel);background:var(--overlay-30)">
+          <div class="sect-hdr"><span class="lbl">The charge this mints</span></div>
+          <div class="prose xs" style="color:var(--label)">
+            <p><span class="t-label">routine</span> <code id="pv-routine">comments</code>
+               &nbsp; <span class="t-label">scope</span> <code id="pv-scope">hub</code>
+               &nbsp; <span class="t-label">mode</span> <code id="pv-mode">delta</code>
+               &nbsp; <span class="t-label">graph</span> <code>garden-routine</code></p>
+            <p>Carried twice, for two readers: as prose, because what acts on it is an agent reading a preamble &mdash;
+               and as values, because the store buckets findings by them and draws the lineage's trend from them.</p>
+          </div>
+        </div>
+
+      </div>
+      <div class="d-foot">
+        <span class="grow">
+          Mints a work item from the routine, ingests it, and promotes it &mdash; one act. Manual kickoff is itself the
+          deliberate human trigger, and for this epic it is the only trigger there is.
+        </span>
+        <button class="act" onclick="closeRun()">Cancel</button>
+        <button class="act big primary" onclick="fireRun()">Run</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="toast" id="toast"></div>
+
+</div>
+
+  <aside class="notes" id="notes">
+    <h2>Sheet 1 &mdash; routines, and the act of running one</h2>
+    <div class="cards">
+
+      <div class="card">
+        <h3>Why a top-level tab</h3>
+        <p>The board watches work in flight; gardening is a standing discipline set up once and tuned over months. It
+          sits beside <b>Board</b> rather than inside it, and the app shell above it is unchanged &mdash; same header,
+          same nav, one more tab.</p>
+      </div>
+
+      <div class="card">
+        <h3>Three surfaces, three nouns</h3>
+        <p>The sub-strip is the machinery's own shape: <b>routines</b> (what is declared), <b>runs &amp; findings</b>
+          (what was seen), <b>proposals</b> (what wants a decision). Only the third carries a hot count, because it is
+          the only one that is waiting on a person.</p>
+      </div>
+
+      <div class="card">
+        <h3>The record is small on purpose</h3>
+        <p>A name, a graph, a default scope, model and effort defaults. No strategy field &mdash; the strategy lives in
+          the graph's preambles, and the deployment's own registry behind the routine's name. The panel shows the
+          strategy as read-only prose to make that visible without implying the hub owns it.</p>
+      </div>
+
+      <div class="card">
+        <h3>Run takes exactly three options</h3>
+        <p>Scope, mode, charge note. The dialog shows the charge preview as prose <i>and</i> as values, because that is
+          how the work item carries it &mdash; and the preview is what stops the charge note from being mistaken for a
+          template slot.</p>
+      </div>
+
+      <div class="card">
+        <h3>Delta is the platform's honesty, not the agent's</h3>
+        <p>The mode row names the baseline revision the hub already recorded for this routine over this scope, and how
+          many commits landed since. Pick a scope this routine has never swept and delta self-disables with the reason
+          &mdash; there is nothing to subtract from.</p>
+      </div>
+
+      <div class="card">
+        <h3>Scope is a list you can leave</h3>
+        <p>The picker offers the declared vocabulary and one escape hatch. The hatch is deliberately worded as a warning
+          rather than a convenience: the hub stores names and resolves none, so a near-miss slug opens a second bucket
+          that nothing will ever reconcile.</p>
+      </div>
+
+      <div class="card">
+        <h3>A blocked routine says so here</h3>
+        <p><code>tests</code> points at a standard nobody has written, so its one run escalated at <code>survey</code>
+          rather than judging by its own taste. Run is refused at the surface with that reason, because the fix is
+          outside blizzard entirely &mdash; somebody writes the standard.</p>
+      </div>
+
+      <div class="card">
+        <h3>The trend is the run's product</h3>
+        <p>Inflow against outflow per week, with the axis's own measurement beside it. A clean run still owns a row:
+          leaving it out would put a hole in the trendline exactly where the garden was healthiest.</p>
+      </div>
+
+      <div class="card open-q">
+        <h3>Open &mdash; where routines are authored</h3>
+        <p><b>New&hellip;</b> and <b>Edit</b> are stubs. Whether a routine is authored in this tab, in the CLI, or
+          declared as data alongside the graph it points at is not settled &mdash; the plan says both surfaces exist,
+          and this sheet assumes the tab is the primary one.</p>
+      </div>
+
+      <div class="card open-q">
+        <h3>Open &mdash; scope health as a first-class read</h3>
+        <p>The scopes table shows &ldquo;last swept&rdquo; per scope, which is what makes rotating scoped runs legible.
+          A routine with one never-swept scope is not converged, and nothing on this sheet yet says so in one word.</p>
+      </div>
+
+    </div>
+  </aside>
+  <script>function toggleNotes(){document.getElementById('notes').classList.toggle('open')}</script>
+
+
+<script>
+"use strict";
+
+/* ============================ seed data ============================
+ * Blizzard's own garden, per plans/garden/blizzard-garden.md: one routine
+ * per axis, named for the axis. Everything the hub shows here it either
+ * stores on the routine record or counts off the findings rows — nothing
+ * on this screen requires the hub to know what any of these names mean.
+ * ================================================================== */
+
+const ROUTINES = [
+  {
+    name: "comments", bed: "code", health: "holding",
+    graph: "garden-routine", graphVer: "v4", defaultScope: "hub",
+    model: "blizzard:advanced", effort: "high", cadence: null,
+    runs: 11, since: "2026-06-14", open: 34, proposals: 2,
+    lastRun: "6d ago", lastRunId: "run_01JX7A",
+    evaluates: "Comment and docstring weight — retrospective comments, provenance git already owns, restatements of the obvious.",
+    judged: "blizzard-context:/standards/comments.md",
+    measure: { label: "comment-lines per code-line", now: "0.14", was: "0.19", dir: "down", good: "down" },
+    trend: [ [9,2],[14,3],[11,8],[6,9],[7,12],[4,7],[3,9],[2,6] ],
+    scopes: [
+      { name: "hub",        covers: "The hub package — API, stores, graph engine, delivery scripts.", rev: "blizzard@a1b2c3d", swept: "6d ago",  open: 12 },
+      { name: "runner",     covers: "The runner package and its harness adapters.",                   rev: "blizzard@a1b2c3d", swept: "6d ago",  open: 7  },
+      { name: "web",        covers: "Both Angular apps and the shared fleet library.",                rev: "blizzard@9f2e881", swept: "20d ago", open: 11 },
+      { name: "test-files", covers: "Every test module across the repo, wherever it lives.",          rev: "—",                swept: "never",   open: 4  },
+    ],
+    classes: [
+      { name: "retrospective-comment", n: 13 }, { name: "provenance-comment", n: 9 },
+      { name: "restates-the-obvious", n: 8 }, { name: "stale-docstring", n: 4 },
+    ],
+    recent: [
+      { id: "run_01JX7A", when: "6d ago",  scope: "hub",    mode: "delta", add: 2,  obs: 9,  gone: 3, m: "0.14", status: "recorded" },
+      { id: "run_01JWQ2", when: "13d ago", scope: "runner", mode: "delta", add: 3,  obs: 11, gone: 1, m: "0.15", status: "recorded" },
+      { id: "run_01JW04", when: "20d ago", scope: "web",    mode: "full",  add: 11, obs: 0,  gone: 0, m: "0.21", status: "recorded" },
+      { id: "run_01JVK8", when: "27d ago", scope: "hub",    mode: "delta", add: 4,  obs: 8,  gone: 2, m: "0.16", status: "recorded" },
+      { id: "run_01JV3C", when: "34d ago", scope: "hub",    mode: "full",  add: 22, obs: 0,  gone: 0, m: "0.19", status: "recorded" },
+    ],
+  },
+  {
+    name: "architecture", bed: "code", health: "losing",
+    graph: "garden-routine", graphVer: "v4", defaultScope: "hub",
+    model: "blizzard:advanced", effort: "high", cadence: null,
+    runs: 6, since: "2026-06-28", open: 19, proposals: 3,
+    lastRun: "2d ago", lastRunId: "run_01JXB9",
+    evaluates: "Structural drift — layering, dependency direction, seam shape, repository pattern.",
+    judged: "blizzard-context:/architecture/ (mature)",
+    measure: { label: "seam bypasses per 1k lines", now: "0.9", was: "0.6", dir: "up", good: "down" },
+    trend: [ [0,0],[5,0],[3,1],[4,2],[6,1],[5,2],[7,3],[6,2] ],
+    scopes: [
+      { name: "hub",         covers: "Hub layering and the store seams behind it.",        rev: "blizzard@c44f019", swept: "2d ago",  open: 8 },
+      { name: "runner",      covers: "Runner layering and harness adapter boundaries.",    rev: "blizzard@c44f019", swept: "2d ago",  open: 5 },
+      { name: "web",         covers: "Angular layering — fleet library vs. app surfaces.", rev: "blizzard@9f2e881", swept: "24d ago", open: 4 },
+      { name: "cli",         covers: "The CLI package and its transport boundary.",        rev: "blizzard@c44f019", swept: "2d ago",  open: 2 },
+      { name: "public-api-surface", covers: "Symbols the hub publishes as its wire contract, wherever they are declared.", rev: "—", swept: "never", open: 0 },
+    ],
+    classes: [
+      { name: "seam-bypass", n: 7 }, { name: "layering-violation", n: 6 },
+      { name: "adapter-leak", n: 4 }, { name: "repo-pattern-drift", n: 2 },
+    ],
+    recent: [
+      { id: "run_01JXB9", when: "2d ago",  scope: "hub",    mode: "delta", add: 3, obs: 6, gone: 1, m: "0.9", status: "recorded" },
+      { id: "run_01JX41", when: "9d ago",  scope: "runner", mode: "delta", add: 2, obs: 4, gone: 0, m: "0.8", status: "recorded" },
+      { id: "run_01JWH7", when: "16d ago", scope: "hub",    mode: "delta", add: 4, obs: 5, gone: 2, m: "0.8", status: "recorded" },
+    ],
+  },
+  {
+    name: "corpus", bed: "guidance", health: "holding",
+    graph: "garden-routine", graphVer: "v4", defaultScope: "blizzard-context",
+    model: "blizzard:advanced", effort: "high", cadence: null,
+    runs: 9, since: "2026-06-14", open: 51, proposals: 1,
+    lastRun: "yesterday", lastRunId: "run_01JXF2",
+    evaluates: "The harness's own shape and weight — routing integrity, auto-load tax, oversized files, uncited rules.",
+    judged: "winter-canon structure rules (mature)",
+    measure: { label: "auto-load bytes", now: "31.2k", was: "38.7k", dir: "down", good: "down" },
+    trend: [ [18,4],[22,9],[14,16],[9,21],[11,14],[6,12],[5,9],[3,11] ],
+    scopes: [
+      { name: "blizzard-context",  covers: "The conventions harness — every rule file and its routing.", rev: "blizzard-context@77aa10e", swept: "1d ago",  open: 24 },
+      { name: "node-prompts",      covers: "The node preambles shipped inside the blizzard repo.",       rev: "blizzard@c44f019",        swept: "8d ago",  open: 9  },
+      { name: "workspace-docs",    covers: "The workspace's own context tree and workflow methodology.", rev: "workspace@31d0e5b",       swept: "15d ago", open: 13 },
+      { name: "skills-and-agents", covers: "Skill and agent definitions, wherever an extension declares them.", rev: "workspace@31d0e5b", swept: "15d ago", open: 5 },
+    ],
+    classes: [
+      { name: "uncited-rule", n: 19 }, { name: "duplicated-fact", n: 14 },
+      { name: "oversized-file", n: 11 }, { name: "routing-orphan", n: 7 },
+    ],
+    recent: [
+      { id: "run_01JXF2", when: "yesterday", scope: "blizzard-context", mode: "delta", add: 3, obs: 17, gone: 6, m: "31.2k", status: "recorded" },
+      { id: "run_01JX88", when: "8d ago",    scope: "node-prompts",     mode: "delta", add: 1, obs: 8,  gone: 1, m: "31.9k", status: "recorded" },
+      { id: "run_01JWR5", when: "15d ago",   scope: "workspace-docs",   mode: "full",  add: 13, obs: 0, gone: 0, m: "33.4k", status: "recorded" },
+    ],
+  },
+  {
+    name: "context", bed: "guidance", health: "stale",
+    graph: "garden-routine", graphVer: "v4", defaultScope: "blizzard-context",
+    model: "blizzard:advanced", effort: "high", cadence: null,
+    runs: 4, since: "2026-07-05", open: 28, proposals: 1,
+    lastRun: "12d ago", lastRunId: "run_01JWX0",
+    evaluates: "The guidance's truth — rules the code now contradicts, dead references, instructions superseded but never retired.",
+    judged: "The live codebase, and the canon's freshness principles",
+    measure: { label: "dead references", now: "6", was: "11", dir: "down", good: "down" },
+    trend: [ [0,0],[0,0],[16,0],[7,4],[5,6],[4,5],[3,7],[0,0] ],
+    scopes: [
+      { name: "blizzard-context", covers: "Harness rules held against what the code actually does.", rev: "blizzard-context@6f1d244", swept: "12d ago", open: 17 },
+      { name: "workspace-docs",   covers: "Workspace context and methodology, held against the CLI it describes.", rev: "workspace@2ab77c1", swept: "12d ago", open: 8 },
+      { name: "node-prompts",     covers: "Preambles held against the verbs and endpoints they call.", rev: "blizzard@8801f5a", swept: "31d ago", open: 3 },
+    ],
+    classes: [
+      { name: "contradicted-rule", n: 12 }, { name: "dead-reference", n: 6 },
+      { name: "superseded-instruction", n: 10 },
+    ],
+    recent: [
+      { id: "run_01JWX0", when: "12d ago", scope: "blizzard-context", mode: "delta", add: 3, obs: 9, gone: 7, m: "6",  status: "recorded" },
+      { id: "run_01JW61", when: "19d ago", scope: "workspace-docs",   mode: "delta", add: 4, obs: 5, gone: 1, m: "8",  status: "recorded" },
+      { id: "run_01JVD3", when: "31d ago", scope: "node-prompts",     mode: "full",  add: 16, obs: 0, gone: 0, m: "11", status: "recorded" },
+    ],
+  },
+  {
+    name: "verification", bed: "code", health: "holding",
+    graph: "garden-routine", graphVer: "v4", defaultScope: "hub",
+    model: "blizzard:advanced", effort: "high", cadence: null,
+    runs: 2, since: "2026-08-02", open: 16, proposals: 0,
+    lastRun: "4d ago", lastRunId: "run_01JX9M",
+    evaluates: "The apparatus's reach — mock-fleet gaps, behaviors with no mock-reachable path, behaviors whose only proof is the live instance.",
+    judged: "blizzard-context:/verification/ — the verifiability matrix",
+    measure: { label: "matrix coverage", now: "0.78", was: "0.71", dir: "up", good: "up" },
+    trend: [ [0,0],[0,0],[0,0],[0,0],[0,0],[0,0],[14,0],[2,4] ],
+    scopes: [
+      { name: "hub",    covers: "Hub behaviors held against the matrix rows that claim to prove them.", rev: "blizzard@b0c4712", swept: "4d ago", open: 11 },
+      { name: "runner", covers: "Runner and harness behaviors, including the crash paths.",             rev: "blizzard@b0c4712", swept: "4d ago", open: 5 },
+    ],
+    classes: [ { name: "unprovable-behavior", n: 9 }, { name: "mock-fleet-gap", n: 7 } ],
+    recent: [
+      { id: "run_01JX9M", when: "4d ago",  scope: "hub",    mode: "delta", add: 2, obs: 9, gone: 4, m: "0.78", status: "recorded" },
+      { id: "run_01JWM4", when: "18d ago", scope: "hub",    mode: "full",  add: 14, obs: 0, gone: 0, m: "0.71", status: "recorded" },
+    ],
+  },
+  {
+    name: "tests", bed: "code", health: "blocked",
+    graph: "garden-routine", graphVer: "v4", defaultScope: "test-files",
+    model: "blizzard:advanced", effort: "high", cadence: null,
+    runs: 1, since: "2026-08-19", open: 0, proposals: 0,
+    lastRun: "8d ago", lastRunId: "run_01JXC1",
+    evaluates: "Test weight — duplicative tests, assert-nothing tests, implementation-welded brittle tests, ceremony tests.",
+    judged: "blizzard-context:/standards/tests.md — does not exist yet",
+    measure: { label: "test-lines per code-line", now: "—", was: "—", dir: "flat", good: "down" },
+    trend: [ [0,0],[0,0],[0,0],[0,0],[0,0],[0,0],[0,0],[0,0] ],
+    scopes: [
+      { name: "test-files", covers: "Every test module across the repo, wherever it lives.", rev: "—", swept: "never", open: 0 },
+    ],
+    classes: [],
+    recent: [
+      { id: "run_01JXC1", when: "8d ago", scope: "test-files", mode: "full", add: 0, obs: 0, gone: 0, m: "—", status: "escalated" },
+    ],
+    blocked: "The routine's strategy points at a standard nobody has written. Its one run stopped at <code>survey</code> and escalated rather than improvising one — a pass judging by its own taste is worse than no pass. Nothing here unblocks inside blizzard: <code>standards/tests.md</code> is written by hand, first.",
+  },
+];
+
+const HEALTH = {
+  holding: ["green", "holding"],
+  losing:  ["amber", "losing ground"],
+  stale:   ["grey",  "unswept 12d"],
+  blocked: ["red",   "blocked"],
+};
+
+/* ============================ rendering ============================ */
+
+let selected = "comments";
+const el = (id) => document.getElementById(id);
+const routine = () => ROUTINES.find((r) => r.name === selected);
+
+function renderList() {
+  el("routine-list").innerHTML = ROUTINES.map((r) => {
+    const [dot, word] = HEALTH[r.health];
+    return `<button class="row ${r.name === selected ? "active" : ""}" onclick="select('${r.name}')">
+      <div class="row-top">
+        <span class="dot ${dot}"></span>
+        <span class="row-name">${r.name}</span>
+        <span class="badge t-dim">${r.bed}</span>
+        <span class="row-right">
+          ${r.proposals ? `<span class="badge t-amber-hi">${r.proposals} waiting</span>` : ""}
+          <span class="xs t-label">${r.open} open</span>
+        </span>
+      </div>
+      <div class="row-sub">
+        <span>${r.scopes.length} scopes</span>
+        <span>${r.runs} runs</span>
+        <span>last ${r.lastRun}</span>
+        <span class="${dot === "red" ? "t-red" : dot === "amber" ? "t-amber" : "t-label"}">${word}</span>
+      </div>
+    </button>`;
+  }).join("");
+}
+
+function bars(trend) {
+  const max = Math.max(4, ...trend.flat());
+  return trend.map(([i, o]) => `<div class="spark-pair">
+      <div class="b in"  style="height:${Math.round((i / max) * 100)}%" title="inflow ${i}"></div>
+      <div class="b out" style="height:${Math.round((o / max) * 100)}%" title="outflow ${o}"></div>
+    </div>`).join("");
+}
+
+function renderDetail() {
+  const r = routine();
+  const [dot, word] = HEALTH[r.health];
+  const inflow = r.trend.reduce((a, [i]) => a + i, 0);
+  const outflow = r.trend.reduce((a, [, o]) => a + o, 0);
+
+  el("routine-detail").innerHTML = `
+    <div class="p-hdr">
+      <span class="lbl">Routine</span>
+      <span class="t-amber-hi">${r.name}</span>
+      <span class="dot ${dot}"></span><span class="xs ${dot === "red" ? "t-red" : "t-label"}">${word}</span>
+      <div class="hdr-actions">
+        <button class="act" onclick="alert('Mockup: edits the record — name, graph, default scope, model, effort. A rename severs a lineage from its own history, so the name is the one field the editor guards.')">Edit</button>
+        <button class="act primary" onclick="openRun()">Run&hellip;</button>
+      </div>
+    </div>
+    <div class="p-body">
+
+      ${r.blocked ? `<div class="sect" style="background:var(--red-dim);color:var(--red-wash-text)">
+        <div class="sect-hdr" style="background:transparent;border-color:var(--red)"><span class="lbl" style="color:var(--red-wash-text)">Cannot run</span></div>
+        <div class="prose sm" style="color:var(--red-wash-text)"><p>${r.blocked}</p></div>
+      </div>` : ""}
+
+      <div class="sect">
+        <div class="sect-hdr"><span class="lbl">The record</span>
+          <span class="xs t-dim" style="margin-left:auto">a name, a graph, a default scope, and model/effort defaults &mdash; that is the whole of it</span></div>
+        <dl class="kv">
+          <dt>Graph</dt><dd><span class="t-cyan">${r.graph}</span> <span class="mono-id">${r.graphVer} &middot; gr_01JQ8T4M2X</span></dd>
+          <dt>Default scope</dt><dd><code class="t-amber">${r.defaultScope}</code></dd>
+          <dt>Model</dt><dd>${r.model} <span class="t-dim">&middot; effort ${r.effort}</span></dd>
+          <dt>Cadence</dt><dd class="t-dim">none &mdash; manual kickoff only <span class="xs">(a cadence field is the end state, not this epic)</span></dd>
+          <dt>Lineage</dt><dd>${r.runs} runs since ${r.since} &middot; ${r.open} live findings &middot; ${r.proposals} proposals waiting</dd>
+        </dl>
+      </div>
+
+      <div class="sect">
+        <div class="sect-hdr"><span class="lbl">Strategy</span>
+          <span class="xs t-dim" style="margin-left:auto">stored by the deployment, never read by the hub</span></div>
+        <div class="prose sm">
+          <p>${r.evaluates}</p>
+          <p class="xs"><span class="t-label">Judged against</span> <code>${r.judged}</code></p>
+        </div>
+      </div>
+
+      <div class="sect">
+        <div class="sect-hdr"><span class="lbl">Trend &mdash; 8 weeks</span>
+          <span class="xs" style="margin-left:auto">
+            <span class="t-amber">${inflow} in</span> &nbsp;/&nbsp; <span class="t-green">${outflow} out</span>
+            &nbsp;&middot;&nbsp; <span class="t-label">${r.measure.label}</span>
+            <span class="${r.measure.dir === r.measure.good ? "t-green" : r.measure.dir === "flat" ? "t-dim" : "t-red"}">${r.measure.was} &rarr; ${r.measure.now}</span>
+          </span></div>
+        <div style="padding:10px 10px 0"><div class="spark">${bars(r.trend)}</div></div>
+        <div class="legend">
+          <span><b><span class="swatch" style="background:var(--amber-dim)"></span>inflow</b> findings created</span>
+          <span><b><span class="swatch" style="background:var(--green-dim)"></span>outflow</b> findings resolved</span>
+          <span class="t-dim">a routine whose inflow outruns its outflow week after week is losing ground in a way no single run would show</span>
+        </div>
+      </div>
+
+      <div class="sect">
+        <div class="sect-hdr"><span class="lbl">Scopes <span class="cnt">${r.scopes.length}</span></span>
+          <span class="xs t-dim" style="margin-left:auto">a declared vocabulary &mdash; the hub indexes the name and resolves nothing</span></div>
+        <table class="grid">
+          <thead><tr><th>Scope</th><th>Covers</th><th>Last swept</th><th style="text-align:right">Open</th><th></th></tr></thead>
+          <tbody>${r.scopes.map((s) => `<tr>
+            <td><code class="t-amber">${s.name}</code></td>
+            <td class="t-label xs">${s.covers}</td>
+            <td class="xs">${s.swept === "never" ? '<span class="t-dim">never</span>' : `${s.swept}<br><span class="mono-id">${s.rev}</span>`}</td>
+            <td style="text-align:right">${s.open}</td>
+            <td style="text-align:right"><button class="act" onclick="openRun('${s.name}')">Run</button></td>
+          </tr>`).join("")}</tbody>
+        </table>
+      </div>
+
+      ${r.classes.length ? `<div class="sect">
+        <div class="sect-hdr"><span class="lbl">Live findings by class <span class="cnt">${r.open}</span></span>
+          <a class="act" href="./gardening-findings.html">Open findings &rarr;</a></div>
+        <div style="padding:8px 10px;display:flex;gap:8px;flex-wrap:wrap">
+          ${r.classes.map((c) => `<a class="chip" href="./gardening-findings.html"><code>${c.name}</code> <span class="t-snow">${c.n}</span></a>`).join("")}
+        </div>
+        <div class="prose xs" style="padding-top:0;color:var(--label-dim)">
+          The hub counts a class without ever learning what the name means. Keep the spelling stable &mdash; two
+          spellings of one class split its own recurrence count and hide the case for mechanizing it.
+        </div>
+      </div>` : ""}
+
+      <div class="sect">
+        <div class="sect-hdr"><span class="lbl">Recent runs <span class="cnt">${r.runs}</span></span>
+          <a class="act" href="./gardening-findings.html">All runs &rarr;</a></div>
+        <table class="grid">
+          <thead><tr><th>Run</th><th>When</th><th>Scope</th><th>Mode</th><th>Delta</th><th>Measurement</th><th></th></tr></thead>
+          <tbody>${r.recent.map((x) => `<tr>
+            <td><span class="mono-id">${x.id}</span></td>
+            <td class="xs">${x.when}</td>
+            <td><code class="t-amber xs">${x.scope}</code></td>
+            <td class="xs ${x.mode === "full" ? "t-cyan" : "t-label"}">${x.mode}</td>
+            <td class="xs">${x.status === "escalated"
+              ? '<span class="t-red">escalated at survey &mdash; nothing written</span>'
+              : `<span class="t-amber">+${x.add}</span> &nbsp;<span class="t-label">${x.obs} seen</span> &nbsp;<span class="t-dim">${x.gone} gone?</span>`}</td>
+            <td class="xs">${x.m}</td>
+            <td style="text-align:right"><a class="act" href="./gardening-findings.html">Open</a></td>
+          </tr>`).join("")}</tbody>
+        </table>
+        <div class="prose xs" style="color:var(--label-dim)">
+          <span class="t-amber">+n</span> added &middot; <span class="t-label">n seen</span> observed again &middot;
+          <span class="t-dim">n gone?</span> reported gone, awaiting a person. A clean run still has a row here: its
+          measurement is its product whether or not it recorded a single finding.
+        </div>
+      </div>
+
+    </div>
+    <div class="p-foot">
+      <span class="xs t-dim">Also reachable as <code>blizzard hub routine show ${r.name}</code> &mdash; every surface here has a CLI verb behind it.</span>
+      <span style="margin-left:auto"></span>
+      ${r.proposals ? `<a class="act primary" href="./gardening-proposals.html">${r.proposals} proposals waiting &rarr;</a>` : ""}
+    </div>`;
+}
+
+function select(name) { selected = name; renderList(); renderDetail(); }
+
+/* ============================ run dialog ============================ */
+
+let mode = "delta";
+
+function openRun(scope) {
+  const r = routine();
+  if (r.blocked) {
+    toast("Cannot run", "This routine's strategy points at a standard that does not exist. Its own prompts refuse rather than improvise one.");
+    return;
+  }
+  el("run-routine-name").textContent = r.name;
+  el("pv-routine").textContent = r.name;
+  el("run-scope").innerHTML = r.scopes.map((s) =>
+    `<option value="${s.name}" ${s.name === (scope || r.defaultScope) ? "selected" : ""}>${s.name}${s.name === r.defaultScope ? "  (routine default)" : ""}</option>`
+  ).join("") + `<option value="__new">+ a scope not declared yet&hellip;</option>`;
+  onScopeChange();
+  el("run-scrim").classList.add("open");
+}
+function closeRun() { el("run-scrim").classList.remove("open"); }
+
+function onScopeChange() {
+  const r = routine();
+  const v = el("run-scope").value;
+  const custom = v === "__new";
+  el("run-scope-custom-field").style.display = custom ? "" : "none";
+  const s = r.scopes.find((x) => x.name === v);
+  el("run-scope-hint").innerHTML = custom
+    ? "A scope the deployment has not declared. The hub will accept it — it stores names and resolves none — which is exactly why a typo here quietly opens a second bucket."
+    : `${s.covers} <span class="t-dim">&middot; ${s.open} live findings in this bucket</span>`;
+  el("pv-scope").textContent = custom ? (el("run-scope-custom").value || "…") : v;
+  const swept = s && s.swept !== "never";
+  el("delta-baseline").innerHTML = swept
+    ? `Baseline: <code>${s.rev}</code>, recorded by this routine's last run over <code>${s.name}</code> (${s.swept}) &middot; <span class="t-amber">41 commits since</span>.`
+    : `<span class="t-amber">No baseline &mdash; this routine has never swept this scope.</span> Delta has nothing to subtract, so this run would be a full sweep wearing the wrong label. Pick full.`;
+  el("mode-delta-row").classList.toggle("t-dim", !swept);
+  if (!swept) setMode("full");
+}
+
+function setMode(m) {
+  mode = m;
+  el("mode-full-row").classList.toggle("on", m === "full");
+  el("mode-delta-row").classList.toggle("on", m === "delta");
+  el("mode-full-row").querySelector("input").checked = m === "full";
+  el("mode-delta-row").querySelector("input").checked = m === "delta";
+  el("pv-mode").textContent = m;
+}
+
+function fireRun() {
+  const r = routine();
+  const scope = el("run-scope").value === "__new" ? (el("run-scope-custom").value || "unnamed-scope") : el("run-scope").value;
+  closeRun();
+  toast("Run promoted",
+    `<code>ch_01JXG4R7</code> is on the board, running <code>${r.graph}</code> at <code>survey</code>.<br>
+     <span class="t-label">routine</span> <code>${r.name}</code>
+     <span class="t-label">scope</span> <code>${scope}</code>
+     <span class="t-label">mode</span> <code>${mode}</code><br>
+     <span class="t-dim xs">Minted, ingested, and promoted in one act. Watch it on the board if you like — nothing here needs you until it delivers.</span>`);
+}
+
+function toast(title, html) {
+  const t = el("toast");
+  t.innerHTML = `<span class="tl">${title}</span>${html}`;
+  t.classList.add("open");
+  clearTimeout(toast._t);
+  toast._t = setTimeout(() => t.classList.remove("open"), 9000);
+}
+
+document.addEventListener("keydown", (e) => { if (e.key === "Escape") closeRun(); });
+renderList(); renderDetail();
+</script>
+</body>
+</html>
