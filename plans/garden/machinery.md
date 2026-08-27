@@ -4,15 +4,17 @@ What blizzard builds, stated without a single fact about what anyone will tend. 
 platform brings a way to run that judgment repeatedly, keep what it saw, and put what it thinks in front of a person.
 Everything here holds for a project blizzard knows nothing about.
 
-Three nouns carry it. A **routine** is a named, repeatable evaluation pass. A **run** is one execution of a routine,
-given a scope and a mode. A run delivers **findings** — what it observed — and **proposals** — what it believes should
-be done about them. Findings and proposals are durable hub entities with their own identity, lifecycle, and management
-surface, and they are the only two things in this epic whose shape blizzard has an opinion about.
+Four nouns carry it. A **routine** is a named, repeatable evaluation pass. A **scope** is a named body of ground a
+routine sweeps. A **run** is one execution of a routine over a scope, in a mode. A run delivers **findings** — what it
+observed — and **proposals** — what it believes should be done about them. All of them are durable hub entities with
+their own identity, lifecycle, and management surface, and findings and proposals are the only two whose *contents*
+blizzard has an opinion about — a routine and a scope are records, where those two are shapes a graph writes to.
 
 ## Routines
 
 A routine is a small hub-stored record: a name, the graph a run of it executes, a default scope, and model and effort
-defaults. That is the whole of it. It carries no strategy, because the strategy lives in the graph it points at.
+defaults — the graph and the scope held as references to entities the hub owns. That is the whole of it. It carries no
+strategy, because the strategy lives in the graph it points at.
 
 Routines are authored by the operator — in the gardening tab and through CLI verbs — at the moment a project has grown
 enough to need one. A young project declares none, and that is the correct state rather than a gap: tending begins when
@@ -32,12 +34,13 @@ epic it is the only trigger there is.
 
 A run takes three options, and each of them reaches the pass as prose:
 
-- **Scope** — one of the names the deployment's strategy declares, defaulting to the routine's own. It says which ground
-  this run covers.
+- **Scope** — an existing scope or a new slug, defaulting to the routine's own. It says which ground this run covers,
+  and naming one that does not exist yet mints it.
 - **Mode** — `full` or `delta`. A full run judges the whole scope afresh. A delta run judges only what has changed since
   this routine last ran, which is the option that makes cost scale with change rate rather than with target size. The
-  platform is what makes delta honest: it knows the revision every prior run of the routine recorded, so a delta run is
-  handed a real baseline rather than an instruction to work one out.
+  platform is what makes delta honest: it knows the revision the last run of this routine over this scope recorded, so a
+  delta run is handed a real baseline rather than an instruction to work one out. A pair with no prior run has no
+  baseline to subtract from, and a run against one is a full run whatever it is asked for.
 - **A charge note** — free text, appended to the run's charge as a "This run" section, for the operator steering an
   experiment.
 
@@ -45,25 +48,51 @@ Because the consumer is a model reading prose, options are concatenation rather 
 state stays out of the preambles entirely: a running pass fetches its live context, and its routine's live findings,
 through the API rather than having them pasted into a prompt at mint time.
 
-## Scope is a declared vocabulary
+## Scopes are entities
 
-A run does not sweep everything; it sweeps a scope. A scope is not a path — it is a name the deployment has defined and
-listed with what it covers. `runner` may happen to resolve to a directory, but `test-files` resolves to something
-scattered across a whole tree, and `public-api-surface` to a judgment about which symbols count. The declared list is
-what makes such a name mean the same ground twice.
+A run does not sweep everything; it sweeps a scope. A scope is not a path — it is a name the deployment has defined, and
+what it covers is a sentence rather than a directory. `runner` may happen to resolve to a directory, but `test-files`
+resolves to something scattered across a whole tree, and `public-api-surface` to a judgment about which symbols count.
 
-The name is a slug: lowercase letters, digits, and hyphens, and nothing else. It is a key an agent types into a CLI
-call, a value the store groups by, and a token that has to survive a round trip through a preamble unchanged — so the
-description carries the prose and the name never does. `test-files`, not `Test Files`; never a scope that has to be
+A scope is a hub entity: a slug and a description, global to the deployment rather than owned by any one routine. It is
+minted the first time a run names it, and from then on it is a row the store enumerates — which is what lets a run
+dialog offer the vocabulary rather than ask an operator to remember it.
+
+The slug is lowercase letters, digits, and hyphens, and nothing else. It is a key an agent types into a CLI call, a
+value the store groups by, and a token that has to survive a round trip through a preamble unchanged — so the
+description carries the prose and the slug never does. `test-files`, not `Test Files`; never a scope that has to be
 quoted to be passed.
 
-Blizzard stores the name and never resolves it. A scope is opaque to the hub — a label it indexes, groups by, and hands
-back, with the meaning living in the deployment's list and the adherence living in the agent that read it. Best effort
-is the honest standard here: a model deciding what falls inside `test-files` is exercising the same judgment it
-exercises deciding a finding is real, and no validation the hub could run would improve it.
+Minting on first use is what makes a near-miss recoverable rather than merely regrettable. A slug that resembles an
+existing one still opens a second bucket — the hub resolves no scope and cannot know the two were meant to be one — but
+that bucket is now a row somebody can see and act on, instead of a divergence that surfaces only when a trend stops
+making sense. Scopes retire and re-enable the way graphs do (`blizzard-context:/domain/graphs/identity.md`): retiring
+takes a scope out of the selection list and leaves every finding recorded under it live and queryable, and re-enabling
+restores the same entity rather than minting a twin, so the bucket survives the round trip.
 
-That opacity is exactly what lets scope be the bucket. Every finding carries the scope it was recorded under, so a
-routine's findings partition into buckets a later run fetches one of, rather than a wall it has to filter for itself.
+What the hub still does not do is resolve one. A scope is opaque — a label the store indexes, groups by, and hands back,
+with the meaning living in its description and the adherence living in the agent that read it. Best effort is the honest
+standard: a model deciding what falls inside `test-files` exercises the same judgment it exercises deciding a finding is
+real, and no validation the hub could run would improve it. Holding the list is not reading it, exactly as indexing a
+class is not interpreting one.
+
+Every scope is offered to every routine. Whether a routine should see only the scopes it tends is a later refinement,
+and nothing about it changes the entity.
+
+## Routine and scope are a pair
+
+A routine names what is being judged and a scope names which ground. Neither addresses a run's standing state alone, and
+**the pair is the unit that does.**
+
+Every finding carries both, so a routine's findings partition into buckets a later run fetches one of rather than a wall
+it has to filter for itself. The revision a run recorded is a fact of the pair, so a delta run is handed the baseline
+for this routine over this scope and no other. Last-swept is a fact of the pair too: a routine converges only when every
+scope it tends has been visited, and a scope one routine swept this morning says nothing about what any other routine
+has looked at.
+
+That the pair carries the state is why none of it lives on the scope row. A scope is a global name and a sentence; when
+it was last swept, against which revision, and what is open under it are answers to a question that names a routine as
+well.
 
 ## Strategy is data
 

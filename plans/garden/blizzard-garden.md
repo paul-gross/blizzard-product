@@ -136,9 +136,10 @@ fan-out are the default, and delta mode becomes the steady state once each routi
   engineer, before any tests routine exists; until then there is simply no strategy telling anything to run.
 - **The `garden/` section in blizzard-context** — the registry above, authored in canon's four-field shape so every
   routine has one place to point at.
-- **A scope list per axis** — the names a run may be scoped to and a sentence each on what they cover, inside those
-  entries. Blizzard indexes the name and resolves nothing, so an axis whose scopes are undeclared is one whose buckets
-  drift the first time an agent invents a name that reads like an existing one.
+- **A scope list per axis** — the slugs a run of that axis may be scoped to, inside those entries. The registry names
+  which scopes an axis sweeps; what each one covers is the hub scope entity's sentence, written when the scope is
+  created and not restated here. An axis whose scopes are undeclared is one whose buckets drift the first time an agent
+  invents a name that reads like an existing one.
 - **The proposal vocabulary, written down** — the four classes above belong in the same registry, because a class the
   hub never interprets is only as stable as the list an agent read before choosing one.
 

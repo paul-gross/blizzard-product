@@ -26,9 +26,10 @@ Gardening is a top-level tab beside the board, not a panel inside it. The board 
 gardening is one they visit, and the two rhythms do not share a screen well. The app shell is untouched: same header,
 same nav strip, one more entry.
 
-Inside it, the tab divides into the three nouns the machinery already has — routines, runs and findings, proposals —
-because any other division would be one this fleet invented rather than one the domain has. Only proposals carry an
-urgent count in the strip, since only proposals are waiting on somebody.
+Inside it, the tab divides along the machinery's own nouns — routines, runs and findings, proposals — because any other
+division would be one this fleet invented rather than one the domain has. Scopes get no sub-tab of their own: they are a
+vocabulary the other three are read through rather than a thing anybody visits, so they are managed where they are used.
+Only proposals carry an urgent count in the strip, since only proposals are waiting on somebody.
 
 ## Declaring and running a routine
 
@@ -42,17 +43,33 @@ weeks, the measurement its strategy asks every run to record, and — the fact t
 into a practice — when each of its scopes was last swept, and against which revision. A routine with one scope nobody
 has ever visited is not converged, however good its trendline looks, and the surface has to be able to say so.
 
+That table is per routine and scope both, never per scope alone. Scopes are global, so a scope another routine swept
+this morning is unswept ground for this one, and a panel that read the scope's own row would report the wrong thing
+confidently.
+
 Running one is a dialog over the three options a run takes, and no more. Two of them deserve care.
 
-**Scope** is a picker over the vocabulary the deployment declared, with one escape hatch for a name that is not on the
-list. The hatch is worded as a warning rather than a convenience, because the hub stores scope names and resolves none:
-a slug that merely resembles an existing one silently opens a second bucket that no later run will ever reconcile.
-Anything the surface can do to make a near-miss feel like the deliberate act it is, it should do.
+**Scope** is a picker over the scopes the hub holds — every one of them, since scopes are global and not a routine's own
+(`machinery.md` §Scopes are entities). Each is shown as its slug and the sentence that says what it covers, because a
+list of bare slugs is a list a reader has to already know. Ordering does the work filtering would: the scopes this
+routine has swept before come first, and the rest follow.
+
+Naming a scope that does not exist mints it, and the surface treats that as the deliberate act it is rather than a
+typo's silent consequence. Creating one asks for its description in the same breath — a scope with no sentence is the
+one a later reader cannot tell from its neighbour — and shows near-matches on the existing list before it commits, since
+a slug resembling one already there opens a second bucket that no run reconciles.
 
 **Mode** is where the platform earns its keep, and the dialog should show that rather than assert it. A delta run names
 the revision the hub already recorded for this routine over this scope, and how much has landed since — a real baseline
 handed to the pass, not an instruction to work one out. Choose a scope this routine has never swept and delta has
 nothing to subtract from; the surface says so and steers to a full run rather than letting a run mislabel itself.
+
+Scopes are managed from the same panel, because the routines surface is the only place anybody has a reason to look at
+one. A scope's description is editable — the sentence is what makes the picker readable, and a first guess written in a
+run dialog deserves a second pass. Retiring one takes it out of every picker and changes nothing else: its findings stay
+live, queryable, and attributable, exactly as a retired graph's chunks keep running. Re-enabling restores the same
+entity, so a scope retired early and wanted back resumes its own bucket rather than starting a second one beside it, and
+the surface says which retired scopes exist rather than making somebody remember.
 
 Kicking a run off mints a work item, ingests it, and promotes it in one act, and the surface then gets out of the way.
 It confirms the chunk and offers a link to the board. It does not rebuild the board inside the tab. A run is a chunk
@@ -144,10 +161,6 @@ that performs it, because the operator working from a terminal and the operator 
 the same things to the same entities.
 
 ## Open questions the sheets raise
-
-**Where routines are authored.** The mockups assume the tab is the primary surface for declaring one, with the CLI as a
-peer. Whether a routine is instead data that lives beside the graph it points at is unsettled, and it decides whether
-the New and Edit actions are real.
 
 **What a pass sees of triage.** A withdrawn finding leaves the live set, which means the verb a running pass calls stops
 returning it — and the next run is free to raise its twin. Whether withdrawn findings are exposed to a pass as
