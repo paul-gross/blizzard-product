@@ -1,0 +1,115 @@
+# A prebaked garden routine graph — the concept, for review before anything is built.
+#
+# Conforms to the canonical authoring schema (`blizzard-context:/domain/graphs.md`):
+# fused choice/edge entries, prompts as file references inlined at mint, retries
+# escaping to escalation, a hub-executed delivery node. It differs from the delivery
+# lanes in what it produces: zero commits, and artifacts that are lists.
+#
+# The routine supplies the strategy, not this graph. Every prompt here is written to
+# read the routine's own charge — which axis, over what scope, judged against what —
+# out of the chunk's work item, and to follow wherever that charge points. Nothing in
+# this file names a standard, a rule, or a kind of weed.
+#
+# NOT YET BUILT: `deliver` runs a hub script that does not exist, and the CLI verbs the
+# prompts call are this epic's to add. Everything else is machinery that already ships.
+
+name: garden-routine
+entry: survey
+
+# Two pools. `survey` does the reading and the judging and is the expensive lineage —
+# it holds the project's context and the scope it swept. `match` is cold-eyes only:
+# reconcile enters fresh so that matching new observations against live findings is
+# done by something that has not spent a session convincing itself the findings are
+# real.
+sessions:
+  survey:
+    model: ["blizzard:advanced"]
+  match:
+    model: ["blizzard:advanced"]
+
+# Baked into the mint verbatim and carried into worker sessions: the wire formats a
+# run's artifacts must conform to. The hub validates against these shapes at delivery
+# and reads nothing inside them.
+artifacts:
+  findings: ./findings.md
+  proposals: ./proposals.md
+
+nodes:
+  survey:
+    executor: runner
+    prompt: ./prompts/survey.md
+    session: fresh:survey        # every run is a cold read of the target
+    produces:
+      - survey                   # candidate observations, no ids yet
+    judgement:
+      prompt: ./prompts/survey.judgement.md
+      choices:
+        found:
+          description: The sweep recorded candidate observations in the survey asset.
+          to: reconcile
+        clean:
+          description: The scope was swept and nothing was observed. The run still delivers, because its measurement is the product whether or not it found anything.
+          to: deliver
+    retries:
+      max: 2
+      exhausted: escalate
+
+  reconcile:
+    executor: runner
+    prompt: ./prompts/reconcile.md
+    session: fresh:match         # cold eyes for matching, per the pool note above
+    produces:
+      - delta                    # additions and transformations, per findings.md
+    judgement:
+      prompt: ./prompts/reconcile.judgement.md
+      choices:
+        converged:
+          description: The delta is assembled — every candidate resolved as an addition or as a transformation of a live finding, and every live finding inside this run's scope accounted for.
+          to: propose
+        nothing-to-propose:
+          description: The delta holds only transformations — nothing new, and nothing whose response is not already open. Deliver the delta and stop.
+          to: deliver
+    retries:
+      max: 2
+      exhausted: escalate
+
+  propose:
+    executor: runner
+    prompt: ./prompts/propose.md
+    session: resume:match        # the reconcile session already holds the delta
+    produces:
+      - docket                   # proposed responses, per proposals.md
+    judgement:
+      prompt: ./prompts/propose.judgement.md
+      choices:
+        proposed:
+          description: One or more proposals are drafted, each naming the findings that justify it.
+          to: deliver
+        none:
+          description: Nothing found this run warrants a response yet. The findings still deliver as evidence.
+          to: deliver
+    retries:
+      max: 2
+      exhausted: escalate
+
+  deliver:
+    executor: hub
+    run:
+      - name: materialize-garden-artifacts
+        command: python3 -m blizzard.hub.graphs.scripts.garden_deliver
+    # The script validates each artifact's shape and nothing else: that it parses,
+    # that every finding carries the fields findings.md requires, that ids are
+    # well-formed, that every fin_ referenced by a transformation or a proposal is
+    # live on this axis, and that any commit cited exists. It reads none of the prose.
+    # On success it mints a fin_<ULID> per addition, a fins_<ULID> set per artifact
+    # list, applies the transformations, and attaches the surviving proposals to the
+    # axis. A run that reached here clean records its measurement and mints nothing.
+    judgement:
+      choices:
+        recorded:
+          description: The delta and proposals are durable; findings and proposals are attached to the axis.
+          to: done
+        invalid:
+          description: An artifact failed shape validation — malformed entry, unknown finding id, or a commit that does not exist. Nothing was written.
+          to: reconcile
+          prompt_addendum: ./prompts/reconcile.from-deliver.md
