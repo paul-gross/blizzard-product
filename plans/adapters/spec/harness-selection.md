@@ -9,10 +9,11 @@ A **harness id** is an opaque, stable identifier for one adapter family. The ini
 `opencode`; `codex` is the next intended occupant. Renaming an id breaks persisted session dispatch and authored graph
 constraints.
 
-A **runner capability** is one enabled harness id together with the observed harness version and its availability
-evidence. Configured but missing, version-incompatible, or failed-selftest bindings remain visible diagnostically but do
-not satisfy acquisition. One available capability is the runner's default; a duplicate id or a default that is not
-available is a configuration error.
+A **runner capability** is one enabled harness id together with the observed harness version, its availability evidence,
+and the capability tiers its configuration can resolve. Configured but missing, version-incompatible, failed-selftest,
+or unmapped-tier bindings remain visible diagnostically but do not satisfy the requirement they cannot run. One
+available capability is the runner's default; a duplicate id or a default that is not available is a configuration
+error.
 
 An **acceptable harness set** is an ordered, nonempty list of harness ids. Order is preference and membership is
 permission: the first available member wins, and no harness outside the list may substitute. This deliberately differs
@@ -45,24 +46,27 @@ Neither field is designed here; both are named so no slice can land believing it
 
 The acceptable set rides the node envelope, exactly as model and effort already do. The hub resolves the declared
 session's `harnesses` against the chunk's `default_harnesses` — the declared list outranking the chunk default as a
-whole — and stamps the winner onto the envelope it hands the runner. One resolution, computed where the graph and the
-chunk both live.
+whole — and stamps the effective ordered set onto the envelope it hands the runner. Inheritance is resolved once, where
+the graph and the chunk both live; capability matching remains the runner's work.
 
-The runner obeys it. It selects the first member its available capability registry supports, and consults its own
-default harness only when the envelope carries no set at all. It never re-derives the levels above it, so a runner and
-its hub cannot disagree about what a node was allowed to run. A present graph list must be nonempty and unique; the
-graph mint validates its shape but not current fleet availability, and an unsupported but well-formed graph remains
-valid and unclaimable until a matching runner exists.
+The runner obeys it. Harness order is primary: for each acceptable harness from left to right, it resolves the session's
+model preference from left to right and selects the first harness that can resolve at least one authored tier. The first
+resolvable model preference inside that harness becomes the model. It consults its own default harness only when the
+envelope carries no set at all. A single-harness lineage containing harness-native model names retains the existing
+left-to-right resolution and adapter-default fallback; native names do not become cross-harness capabilities. The runner
+never re-derives the inheritance levels above it, so a runner and its hub cannot disagree about what a node was allowed
+to run. A present graph list must be nonempty and unique; the graph mint validates its shape but not current fleet
+availability, and an unsupported but well-formed graph remains valid and unclaimable until a matching runner exists.
 
 Bare `fresh`, bare `resume`, and node-addressed `resume:<node>` forms use the chunk and runner levels because they
 reference no declared session. When any resume form has no stored session and therefore falls back to fresh, that mint
 follows the same resolution order.
 
-Acquisition eligibility gates on declared sessions only, and this is sound rather than a shortcut: a lineage that names
-no declared session carries no harness constraint to violate, and a lineage that does is visible to the walk while it is
-still reachable. The one lineage that changes harness across a runner boundary is a `resume:<node>` whose stored session
-lives on a runner that no longer holds the chunk — the fresh mint that follows resolves under the new holder, exactly as
-the lost conversation itself does.
+Acquisition eligibility walks declared sessions and any reachable bare lineage when the chunk carries
+`default_harnesses`. A bare lineage with no chunk default carries no harness constraint to violate; a declared session
+or bare lineage with a default is visible to the walk while it is still reachable. The one lineage that changes harness
+across a runner boundary is a `resume:<node>` whose stored session lives on a runner that no longer holds the chunk —
+the fresh mint that follows resolves under the new holder, exactly as the lost conversation itself does.
 
 ## Capability tiers
 
@@ -75,11 +79,13 @@ Claude model at `high` through the Claude Code binding and an OpenAI model at `m
 same authored tier. The mapping is runner configuration, declared per harness, and a tier with no mapping for a harness
 makes that harness unable to satisfy a session demanding it.
 
-This is what keeps harness order and model intent from contradicting each other. Selection resolves the harness first,
-then asks that harness's mapping for the tier; a session that could only ever run one provider's model expresses that by
-constraining `harnesses`, never by naming the model. An explicitly authored model string remains legal for a
-single-harness lineage and is passed through to the adapter unchanged, where an unresolvable value still falls back to
-the adapter default rather than failing the spawn.
+This is what keeps harness order and model intent from contradicting each other. Harness preference is the outer order;
+model preference is the inner order. If `opencode` precedes `claude_code`, OpenCode wins when it can resolve any
+authored tier even where Claude Code could resolve an earlier model preference. A harness unable to resolve any authored
+tier is skipped rather than selected under a model it cannot provide. A session that could only ever run one provider's
+model expresses that by constraining `harnesses`; a harness-native model name remains legal in that single-harness
+lineage and is passed through to the adapter unchanged, where a wholly unresolvable list still falls back to the adapter
+default rather than failing the spawn.
 
 ## Session identity
 
@@ -122,9 +128,11 @@ pre-migration Claude Code session.
 Sticky tenure requires a runner to be able to carry the chunk through the graph rather than merely start its current
 node. The hub owns one eligibility calculation over the pinned graph, chunk defaults, and the runner capability
 snapshot. From the chunk's current position, it computes every statically reachable runner-executed declared session.
-The runner is eligible only when each session's effective authored set intersects its available capabilities.
-Hub-executed nodes are excluded; branches and cycles are included once; different sessions may be satisfied by different
-capabilities on the same runner.
+The runner is eligible only when the same nested resolution used at mint finds a result for each declared session or
+constrained bare lineage: an available member of its effective harness set that can resolve at least one tier in its
+ordered model preference. An empty model preference adds no tier requirement, and a single-harness native preference
+retains adapter fallback rather than becoming an admission gate. Hub-executed nodes are excluded; branches and cycles
+are included once; different requirements may be satisfied by different capabilities on the same runner.
 
 The fleet's queue read separates from the operator's. Until now `GET /api/fleet/queue/peek` returned the operator
 queue's own rendering, which suited a hub that had nothing to say about who was asking. A capability-matched peek does,
@@ -135,11 +143,11 @@ Fleet peek requires runner authentication. Eligibility is answered for the authe
 caller can never ask what some other runner is allowed to claim, and a hub that cannot identify its caller returns no
 entry rather than an unfiltered queue.
 
-The request carries what the hub needs to match and nothing more: the runner's available capabilities, and whether it
-wants to hold at the first entry it cannot work or pass over it. The hub walks the ready order, applies the eligibility
-calculation to each entry, and returns the first match — or, under hold, returns nothing once it reaches an entry the
-runner cannot work. Holding suits a machine bought to run one harness's work; passing over suits a mixed fleet, and is
-the default so a single unclaimable chunk cannot stall one by accident.
+The request carries what the hub needs to match and nothing more: the runner's available capabilities with their mapped
+tier ids, and whether it wants to hold at the first entry it cannot work or pass over it. The hub walks the ready order,
+applies the eligibility calculation to each entry, and returns the first match — or, under hold, returns nothing once it
+reaches an entry the runner cannot work. Holding suits a machine bought to run one harness's work; passing over suits a
+mixed fleet, and is the default so a single unclaimable chunk cannot stall one by accident.
 
 The hub explains nothing about a skip. It returns an entry or it returns none; it records no reason, derives no
 fleet-wide blocked diagnostic, and gives an unclaimable chunk no second status. A chunk no runner can carry keeps its
@@ -158,9 +166,9 @@ it can never meet the incompatibility denial it has no branch for. An upgraded r
 denial in the same act, which is what keeps a versioned endpoint unnecessary here: the change is additive in both
 directions, and the one behavior that could surprise an old client is reached only by clients that asked for it.
 
-Route claim repeats the eligibility calculation while installing the route, against the capabilities the runner
-registered. A capability that changed between peek and claim therefore returns a distinct incompatibility denial; the
-runner releases the environments it acquired and continues filling from a fresh peek.
+Route claim repeats the eligibility calculation while installing the route, against the capabilities and mapped tiers
+the runner registered. A capability or tier mapping that changed between peek and claim therefore returns a distinct
+incompatibility denial; the runner releases the environments it acquired and continues filling from a fresh peek.
 
 A bare lineage introduces no graph-specific requirement unless the chunk has `default_harnesses`; otherwise any runner
 with a valid default can satisfy it.
@@ -177,10 +185,10 @@ mutation.
 
 ## Provenance and failure
 
-Capabilities travel on runner registration, beside the environment capacity it already carries, and re-register when
-availability changes. They are deliberately not facts: the fact lane is buffered and forwarded, and eligibility read
-through it would be stale by as long as the buffer is deep. Registration is synchronous, so the record claim validates
-against is the one the runner last asserted.
+Capabilities travel on runner registration, beside the environment capacity it already carries, and include the tier ids
+each available binding can resolve. They re-register when availability or a tier mapping changes. They are deliberately
+not facts: the fact lane is buffered and forwarded, and eligibility read through it would be stale by as long as the
+buffer is deep. Registration is synchronous, so the record claim validates against is the one the runner last asserted.
 
 The session records harness id and mint-time version. Every runner-executed lease generation records the actual id and
 version invoked; every transcript segment records producing harness id and version beside its normalizer version.

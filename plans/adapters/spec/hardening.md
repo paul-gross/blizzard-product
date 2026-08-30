@@ -87,17 +87,18 @@ the board; this is provenance the fleet reports, not a knob the operator sets.
 
 ## Verification layers
 
-| Layer                    | Required proof                                                                                                                                                                                                                                    |
-| ------------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Adapter unit             | Command composition, tier resolution to model and variant, event parsing, session-id capture from the first record, usage deduplication, subscription-zero cost handling, verdict extraction, permission mapping, and unsupported-feature absence |
-| Fixture contract         | Every pinned OpenCode event, export, child-session, error, and usage shape used by production parsing                                                                                                                                             |
-| Generic selftest         | A real scratch repository through fresh work, commit, judgement, resume, takeover composition, and transcript read, under an identity assertion no harness family fails on shape alone                                                            |
-| Service integration      | A mock OpenCode binary plus mock hub and runner through capability-matched peek under both hold and pass-over, claim revalidation, spawn, exit, judgement, usage, transcript pumping, and completion                                              |
-| Crash verification       | Kill before session capture, after capture before spawn record, during a tool, between a transcript boundary write and its launch, during resume, and during judgement                                                                            |
-| Shared seam migration    | Two-phase spawn, range-based `read_raw_lines`, and the dropped sampling method leave Claude Code's observable behavior unchanged                                                                                                                  |
-| Mixed-harness acceptance | One runner advertising Claude Code and OpenCode executes a graph whose reachable session requirements need both and preserves correct dispatch across restart                                                                                     |
-| Live provider acceptance | `blizzard:manual-opencode-compatibility` proves the pinned OpenCode version and ChatGPT 5.6 Luna at `max` effort with provider-reported usage and cost                                                                                            |
-| Subscription sampling    | Two declared subscriptions each come due on their own interval and emit one slug-carrying fact independent of configured harnesses; a failed sample preserves the previous windows                                                                |
+| Layer                    | Required proof                                                                                                                                                                                                                                                                                                   |
+| ------------------------ | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Adapter unit             | Command composition, tier resolution to model and variant, event parsing, session-id capture from the first record, usage deduplication, subscription-zero cost handling, verdict extraction, permission mapping, and unsupported-feature absence                                                                |
+| Fixture contract         | Every pinned OpenCode event, export, child-session, error, and usage shape used by production parsing                                                                                                                                                                                                            |
+| Generic selftest         | A real scratch repository through fresh work, commit, judgement, resume, takeover composition, and transcript read, under an identity assertion no harness family fails on shape alone                                                                                                                           |
+| Service integration      | A mock OpenCode binary plus mock hub and runner through capability-matched peek for declared sessions, conflicting harness/model preference orders, and a bare lineage with chunk defaults, under both hold and pass-over, claim revalidation, spawn, exit, judgement, usage, transcript pumping, and completion |
+| Crash verification       | Kill before session capture, after capture before spawn record, during a tool, between a transcript boundary write and its launch, during resume, and during judgement                                                                                                                                           |
+| Shared seam migration    | Two-phase spawn, range-based `read_raw_lines`, and the dropped sampling method leave Claude Code's observable behavior unchanged                                                                                                                                                                                 |
+| Mixed-harness acceptance | One runner advertising Claude Code and OpenCode executes a graph whose reachable session requirements need both and preserves correct dispatch across restart                                                                                                                                                    |
+| Live provider acceptance | `blizzard:manual-opencode-compatibility` proves the pinned OpenCode version and ChatGPT 5.6 Luna at `max` effort with provider-reported usage and cost                                                                                                                                                           |
+| Subscription sampling    | Two declared subscriptions each come due on their own interval and emit one slug-carrying fact independent of configured harnesses; a failed sample preserves the previous windows                                                                                                                               |
+| Operator render          | A `web:shell-sweep` or browser e2e render mounts the runner panel and chunk provenance surfaces, proves each harness and subscription remains distinct, and covers narrow width where the surface is mobile-reachable                                                                                            |
 
 ## Companion repositories
 
@@ -107,6 +108,11 @@ matches capabilities against the ready order and revalidates claims by the same 
 supplies root and child sessions, lifecycle events, usage, exports, interruption, and distorted responses through its
 lever plane. Wire parity, mock unit tests, service tests, and the fleet end-to-end scenario land with the application
 change rather than after it.
+
+The subscription slice extends the companion in the same change. The mock runner emits slug-carrying per-subscription
+facts, the mock hub stores and serves more than one subscription per runner without collapsing their windows, and mock
+unit and service tests cover independent cadence, a failed sampler preserving earlier windows, and coexistence with the
+legacy single-subscription field during the skew window.
 
 The compatibility slice also adds `blizzard:manual-opencode-compatibility` to the application verifiability matrix and
 its manual-method detail. Hermetic fixture tests remain the ordinary gate; the named manual method is the repeatable
