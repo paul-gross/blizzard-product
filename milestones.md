@@ -4,11 +4,11 @@ What users will be able to do. A milestone is a destination stated in the user's
 where the product must reach, then ask what work the journey requires — the milestone demands its epics, never the other
 way around.
 
-| Milestone               | What users will be able to do                                                                                                                                                                                               |
-| ----------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `milestone:homeostasis` | Run a fleet that holds its own pace and quality: what the fleet learns, spends, and builds is watched by the fleet itself, decay becomes filed work instead of quiet debt — and the fleet begins to offer ideas of its own. |
-| `milestone:polyglot`    | Run the fleet on the coding harness of their choice — Claude Code, Codex, or OpenCode, first-class and mixable by node — with the safeties on: no worker runs with permissions dangerously bypassed.                        |
-| `milestone:projects`    | Run every project from one fleet: a single hub hosting many projects' sources and queues, and a single runner per machine working all of them — a workspace per project, not a stack per project.                           |
+| Milestone               | What users will be able to do                                                                                                                                                                                                                                                                                   |
+| ----------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `milestone:homeostasis` | Run a fleet that holds its own pace and quality: what the fleet learns, spends, and builds is watched by the fleet itself, decay becomes filed work instead of quiet debt, work that stands on unfinished work waits its turn without a human holding it back — and the fleet begins to offer ideas of its own. |
+| `milestone:polyglot`    | Run the fleet on the coding harness of their choice — Claude Code, Codex, or OpenCode, first-class and mixable by node — with the safeties on: no worker runs with permissions dangerously bypassed.                                                                                                            |
+| `milestone:projects`    | Run every project from one fleet: a single hub hosting many projects' sources and queues, and a single runner per machine working all of them — a workspace per project, not a stack per project.                                                                                                               |
 
 ## `milestone:homeostasis` — a fleet that keeps its own house
 
@@ -40,21 +40,31 @@ takes a terminal session and a throwaway script to retrieve is learned once and 
 someone wonders. So the evidence surfaces where the operator already looks — a page that opens on the week against the
 week before, and gives way to whatever dimension the question turns out to need.
 
+Quality collects its guards here — fitness checks that name drift while it is one commit old, mutation runs that prove a
+suite can fail — while pace has had none. Its costliest leak is work done twice: two chunks where the second stands on
+the first, the first parked at a human gate, and an agent that reaches for the ground it expected, finds it missing, and
+lays it again. The operator buys one idea twice and then pays a third time to reconcile the halves. Watching for that is
+vigilance no person should have to supply, so the queue gains its first relation — an edge the operator declares once
+and the queue honors from then on. A chunk that stands on another cannot be claimed until the one beneath it is done,
+and comes ready on its own the moment it is; the fleet flows around it in the meantime rather than idling. Pace stops
+depending on who happened to be watching the board.
+
 The milestone also carries one deliberate maybe: ideation. A fleet that reads its own code every night is well placed to
 notice what the product could become, not only what it should repair — so it offers the operator an occasional brief of
 high-level feature directions worth exploring, recommendations to weigh rather than work it files. Whether those briefs
 earn their reading is exactly what the exploration exists to find out.
 
-| Epic                     | Slice       | Status    |
-| ------------------------ | ----------- | --------- |
-| `epic:self-sourced-work` | full        | delivered |
-| `epic:garden`            | full        | horizon   |
-| `epic:transcripts`       | full        | delivered |
-| `epic:analytics`         | full        | delivered |
-| `epic:visual-analytics`  | full        | horizon   |
-| `epic:mutation-testing`  | full        | horizon   |
-| `epic:cost`              | attribution | horizon   |
-| `epic:ideation`          | full        | horizon   |
+| Epic                     | Slice        | Status    |
+| ------------------------ | ------------ | --------- |
+| `epic:self-sourced-work` | full         | delivered |
+| `epic:garden`            | full         | horizon   |
+| `epic:transcripts`       | full         | delivered |
+| `epic:analytics`         | full         | delivered |
+| `epic:visual-analytics`  | full         | horizon   |
+| `epic:mutation-testing`  | full         | horizon   |
+| `epic:cost`              | attribution  | horizon   |
+| `epic:queue`             | dependencies | horizon   |
+| `epic:ideation`          | full         | horizon   |
 
 ## `milestone:polyglot` — any harness, with the safeties on
 
