@@ -57,7 +57,7 @@ earn their reading is exactly what the exploration exists to find out.
 | Epic                     | Slice        | Status    |
 | ------------------------ | ------------ | --------- |
 | `epic:self-sourced-work` | full         | delivered |
-| `epic:garden`            | full         | horizon   |
+| `epic:garden`            | full         | delivered |
 | `epic:transcripts`       | full         | delivered |
 | `epic:analytics`         | full         | delivered |
 | `epic:visual-analytics`  | full         | horizon   |
