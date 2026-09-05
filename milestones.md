@@ -63,7 +63,7 @@ earn their reading is exactly what the exploration exists to find out.
 | `epic:visual-analytics`  | full         | horizon   |
 | `epic:mutation-testing`  | full         | horizon   |
 | `epic:cost`              | attribution  | horizon   |
-| `epic:queue`             | dependencies | horizon   |
+| `epic:queue`             | dependencies | delivered |
 | `epic:ideation`          | full         | horizon   |
 
 ## `milestone:polyglot` — any harness, with the safeties on
