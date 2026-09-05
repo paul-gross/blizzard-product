@@ -20,6 +20,11 @@ None of that arrives by breaking what already reports. The new per-subscription 
 the runner sends today, which keeps being sent, so a fleet mid-upgrade never has a blind night — and the operator meets
 the change as a panel that can finally show two plans at once rather than as a number that stopped arriving.
 
+The old window does not linger past its usefulness either. It can only ever carry one subscription, so leaving it in
+place would let an operator's second plan quietly go unreported to anything still reading it. Once the panel reads the
+per-slug view and nothing else reads the old field, this slice removes it — the last step of the same change, not a debt
+handed to whatever comes next.
+
 Hardening is also where unequal capabilities are made ordinary. OpenCode's model variants may not share one universal
 effort vocabulary, and its compaction controls may not express Blizzard's numeric window. Those absences are surfaced as
 unsupported, tested as such, and kept out of correctness paths.

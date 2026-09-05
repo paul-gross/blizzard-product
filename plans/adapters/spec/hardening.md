@@ -56,8 +56,14 @@ The new shape lands **beside** the old rather than replacing it. The runner keep
 single-subscription wire field from its Anthropic subscription while also emitting the per-subscription facts, so a hub
 and board that have not been upgraded keep working unchanged and no rolling upgrade has a broken window. The board
 renders subscriptions from the new per-slug view in a component of its own — the existing panel renders one window list
-flat and would collide two subscriptions' identically labelled windows against each other. The old field is retired only
-once nothing reads it, which is not this epic's business.
+flat and would collide two subscriptions' identically labelled windows against each other.
+
+Retiring the old field is this epic's business, at the end of it. The additive shape is a migration step, not a
+permanent second home for the same numbers: the legacy field can only ever carry one subscription, so an operator who
+declares two watches one of them silently vanish from every reader still on it. The epic therefore closes the
+duplication it opened — the field is removed once the board renders per-slug, every remaining reader is confirmed
+migrated, and the supported skew window has passed. Removal proceeds reader-first: stop reading, then stop populating,
+then drop the storage, so no deploy leaves a live reader consuming a field that stopped arriving.
 
 The runner's sampling diagnostic follows its sampler. `blizzard runner external-usage probe` builds a Claude Code
 adapter today and calls the very method this epic removes, so it is rebuilt around a declared subscription: it takes a
