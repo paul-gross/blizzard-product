@@ -26,10 +26,16 @@ Gardening is a top-level tab beside the board, not a panel inside it. The board 
 gardening is one they visit, and the two rhythms do not share a screen well. The app shell is untouched: same header,
 same nav strip, one more entry.
 
-Inside it, the tab divides along the machinery's own nouns — routines, runs and findings, proposals — because any other
-division would be one this fleet invented rather than one the domain has. Scopes get no sub-tab of their own: they are a
-vocabulary the other three are read through rather than a thing anybody visits, so they are managed where they are used.
-Only proposals carry an urgent count in the strip, since only proposals are waiting on somebody.
+Inside it, the tab divides along the machinery's own nouns — scopes, routines, runs, findings, proposals — because any
+other division would be one this fleet invented rather than one the domain has. Only proposals carry an urgent count in
+the strip, since only proposals are waiting on somebody.
+
+The first rollout gave runs and findings one shared sub-tab and scopes none, on the reasoning that a scope is a
+vocabulary the other nouns are read through rather than a thing anybody visits. Building it proved both halves wrong.
+Runs and findings turned out to be read on different occasions — a run is read once, when it lands; a finding is
+returned to until it is gone — and sharing a surface made each one's filters fight the other's. Scopes, meanwhile, are
+visited: retiring one, or reading which routines default to it, is a real errand with nowhere else to live. Five
+siblings, one per noun, is the shape that survived contact.
 
 ## Declaring and running a routine
 
@@ -78,10 +84,14 @@ exists and will drift from it.
 
 ## Reading what a run saw
 
-Every run owns a row, including the ones that found nothing and the ones that refused to start. A clean run's row is its
-whole product — the measurement and the revision it read — and an escalated run's row says plainly that nothing was
-written and why. Between them they are the trendline, itemized, and a surface that hid either would flatter the garden
+Every run owns a row, including the ones that found nothing and the ones that refused to start. Every row states its
+outcome in words, and what the run's sets summed to; an escalated run reads as escalated without relying on a colour to
+say so. Between them the rows are the trendline, itemized, and a surface that hid either would flatter the garden
 exactly where the truth is most useful.
+
+The measurement and the revisions a run read live one click away, in the delta beside the list, rather than on the row
+itself — the first rollout put them on the row, and thirty rows each carrying a paragraph of measurement made the list
+unscannable for the one job a list has.
 
 Drilling into a run shows what it delivered as a delta rather than as a state: what was added, what was seen again, what
 the run looked for and could not find. The distinction is worth spelling out on the surface itself, because it is the
@@ -94,9 +104,16 @@ tool.
 ## Triage, and the states a finding can reach
 
 A finding is one instance — one thing somebody could fix — and the surface has to honor that granularity without making
-it unusable. Seventeen instances in a package are seventeen rows, so triage is multi-select with a bulk action, and
-every state change carries a note that stays visible on the row afterward. A finding struck without a reason teaches the
-routine nothing, and the next run raises its twin.
+it unusable. Every state change carries a note: a finding struck without a reason teaches the routine nothing, and the
+next run raises its twin.
+
+Triage is dispatched one finding at a time, from the selected finding's own panel. The first rollout planned a
+multi-select bulk action for the seventeen-instances-in-a-package case, and the note was to stay visible on the row
+afterward; neither survived. A bulk strike wants one note covering every row it touches, which is the reason least
+likely to be true of all of them — the note that teaches the routine anything is the one written against a finding
+somebody actually read. The row lost its note for the same reason the list lost its checkboxes: the bucket is a place to
+find the finding you want, and the panel beside it is where the finding is read and answered. `supersede` stays a CLI
+and API verb, since it needs the absorbing finding's id and the panel collects no second id.
 
 The exits themselves need a decision this plan has not yet made. [machinery.md](./machinery.md) names three ways a
 finding leaves the live set: the work behind it lands, a person withdraws it, or a person accepts a run's report that it
@@ -156,9 +173,15 @@ It does not rebuild the board, the graph editor, or the backlog. Every one of th
 It does not schedule anything. No cadence field, no next-run time, no pause switch — manual kickoff is the only trigger
 this epic builds, and the strip says so rather than leaving a reader to wonder where the setting went.
 
-And it does not do anything a CLI verb cannot. Every act on these three sheets has one behind it, named on the surface
-that performs it, because the operator working from a terminal and the operator working from a browser should be doing
-the same things to the same entities.
+And it does not do anything a CLI verb cannot. Every act on these sheets has one behind it, because the operator working
+from a terminal and the operator working from a browser should be doing the same things to the same entities.
+
+Printing that verb on the surface was the first rollout's way of showing it, and it half-survived. Where the verb is a
+property of the thing being read — a proposal's own pass and accept — it sits on the panel beside the proposal it names
+and earns the room. Where it is a property of a form being filled, it did not: a run's verb changes under the operator's
+hands as they pick a scope and a mode, and a line restating the form somebody is already looking at is a second copy of
+that form rather than a second way into it. Those dialogs print nothing now. The guarantee is parity — every act has a
+verb, and the verb is documented where verbs are documented — not that every sheet recites one.
 
 ## Open questions the sheets raise
 
