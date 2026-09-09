@@ -7,7 +7,7 @@ throughout — going remote adds reach and roles to the board that exists, never
 
 ## What to build
 
-**Auth comes first.** A board on the open network needs a front door before it needs anything else:
+**Auth.** A board on the open network needs a front door before it needs anything else:
 
 - **Login and human identity.** Operators sign in; a hub that answers to the network stops being a hub that answers to
   anyone who finds it. Locally, the authless-behind-the-network-perimeter posture remains a supported configuration —
@@ -19,10 +19,6 @@ throughout — going remote adds reach and roles to the board that exists, never
   and an operator's controls follow their grant.
 - **Runner single sign-on.** The runner's own panel participates in the same identity, so a fleet with a signed-in board
   never has an unsigned back door.
-
-**Then reach.** The phone-friendly progressive-web-app shell — the board installed on a home screen, laid out for a
-thumb — and question notifications surfacing through it, with answers flowing back over the same routes as everywhere
-else (the notification fan-out seam is `epic:chat`'s to build).
 
 ## Artifacts
 
