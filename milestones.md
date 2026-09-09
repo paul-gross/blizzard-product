@@ -23,9 +23,7 @@ Through the charter's people: the harness engineer stops treating retrospectives
 becomes a filed item with a stated priority, entering the same intake as any feature, and next week's fleet is
 measurably different from last week's. The application architect's constraints hold while they sleep: fitness checks
 name architectural drift while it is one commit old, and mutation runs prove the suites can fail, so a green gate means
-behavior asserted rather than merely executed. And the operator learns what a feature cost, where before only a night
-had a price — spend rolled up to the work item that caused it, trending across weeks, so the factory's unit economics
-are a fact on the board rather than a feeling.
+behavior asserted rather than merely executed.
 
 None of that learning scales past one machine unless its raw material travels. Today a worker's conversation lives and
 dies as files on its own runner — workable for one runner, hopeless for twenty — so the milestone also centralizes the
@@ -62,7 +60,7 @@ earn their reading is exactly what the exploration exists to find out.
 | `epic:analytics`         | full         | delivered |
 | `epic:visual-analytics`  | full         | horizon   |
 | `epic:mutation-testing`  | full         | horizon   |
-| `epic:cost`              | attribution  | horizon   |
+| `epic:cost`              | attribution  | retired   |
 | `epic:queue`             | dependencies | delivered |
 | `epic:ideation`          | full         | horizon   |
 
