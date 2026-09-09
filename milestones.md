@@ -4,11 +4,12 @@ What users will be able to do. A milestone is a destination stated in the user's
 where the product must reach, then ask what work the journey requires — the milestone demands its epics, never the other
 way around.
 
-| Milestone               | What users will be able to do                                                                                                                                                                                                                                                                                   |
-| ----------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `milestone:homeostasis` | Run a fleet that holds its own pace and quality: what the fleet learns, spends, and builds is watched by the fleet itself, decay becomes filed work instead of quiet debt, work that stands on unfinished work waits its turn without a human holding it back — and the fleet begins to offer ideas of its own. |
-| `milestone:polyglot`    | Run the fleet on the coding harness of their choice — Claude Code, Codex, or OpenCode, first-class and mixable by node — with the safeties on: no worker runs with permissions dangerously bypassed.                                                                                                            |
-| `milestone:projects`    | Run every project from one fleet: a single hub hosting many projects' sources and queues, and a single runner per machine working all of them — a workspace per project, not a stack per project.                                                                                                               |
+| Milestone                 | What users will be able to do                                                                                                                                                                                                                                                                                              |
+| ------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `milestone:homeostasis`   | Run a fleet that holds its own pace and quality: what the fleet learns, spends, and builds is watched by the fleet itself, decay becomes filed work instead of quiet debt, work that stands on unfinished work waits its turn without a human holding it back — and the fleet begins to offer ideas of its own.            |
+| `milestone:polyglot`      | Run the fleet on the coding harness of their choice — Claude Code, Codex, or OpenCode, first-class and mixable by node — with the safeties on: no worker runs with permissions dangerously bypassed.                                                                                                                       |
+| `milestone:observability` | Answer any question about their own fleet with the instruments they already trust: the numbers leave as files any warehouse or BI tool reads, and every night narrates itself as traces to whichever observability backend they run — no new dashboard to learn, and no waiting on blizzard to build the view they wanted. |
+| `milestone:projects`      | Run every project from one fleet: a single hub hosting many projects' sources and queues, and a single runner per machine working all of them — a workspace per project, not a stack per project.                                                                                                                          |
 
 ## `milestone:homeostasis` — a fleet that keeps its own house
 
@@ -35,8 +36,8 @@ used? — overturned an assumption: agents constantly, skills nearly never. Aggr
 — skills fired, agents spawned, context files read — turns the tending of the corpus from taste into evidence: the file
 nobody reads gets reworded or removed on the numbers, not on a hunch. Counting is only half of it, though: a number that
 takes a terminal session and a throwaway script to retrieve is learned once and then paid for again the next time
-someone wonders. So the evidence surfaces where the operator already looks — a page that opens on the week against the
-week before, and gives way to whatever dimension the question turns out to need.
+someone wonders. Making those numbers legible is a destination of its own, and it is reached in
+`milestone:observability` rather than here.
 
 Quality collects its guards here — fitness checks that name drift while it is one commit old, mutation runs that prove a
 suite can fail — while pace has had none. Its costliest leak is work done twice: two chunks where the second stands on
@@ -58,7 +59,6 @@ earn their reading is exactly what the exploration exists to find out.
 | `epic:garden`            | full         | delivered |
 | `epic:transcripts`       | full         | delivered |
 | `epic:analytics`         | full         | delivered |
-| `epic:visual-analytics`  | full         | horizon   |
 | `epic:mutation-testing`  | full         | horizon   |
 | `epic:cost`              | attribution  | retired   |
 | `epic:queue`             | dependencies | delivered |
@@ -85,6 +85,44 @@ bad night.
 | --------------- | --------------- | ------- |
 | `epic:adapters` | breadth         | horizon |
 | `epic:security` | worker-lockdown | horizon |
+
+## `milestone:observability` — the fleet, in instruments you already trust
+
+A fleet that works through the night produces a great deal of evidence about itself and hands almost none of it over.
+The facts are all there — what each step cost and how long it took, what each gate decided, which files a worker
+actually opened — and reaching any one of them costs a terminal session and a script written for that question and no
+other. The reflex is to fix this by building somewhere to look. This milestone takes the opposite position: whoever runs
+the fleet already has somewhere to look, and what they lack is any way to get blizzard's data into it.
+
+That is the whole destination, and it is a deliberately modest one. Blizzard does not become an analytics product, does
+not host a dashboard, and never learns the name of a single vendor. It grows two exits, shaped for the two kinds of
+question people actually ask of a night's work.
+
+The first is a record. The fleet's facts leave as files — one row per step, per event, per attempt, carrying names
+rather than ids and nothing added up in advance — written wherever the operator asks for them. What receives them is not
+blizzard's concern: a warehouse, a bucket, a laptop. The application architect who wants Monday to open on the week
+against the week before builds that view once, in a tool they already know, and it goes on working without anyone
+shipping them an endpoint for it.
+
+The second is a narration. Each chunk's journey tells itself as it happens, in the protocol every observability backend
+already speaks: the steps, the gates and what they decided, the waits in the queue, the deliveries the hub performs
+itself. The harness engineer who suspects a gate rejects more than it should stops composing queries against a shape
+nobody designed for the question, and follows the suspicion in a tool built for precisely that.
+
+Neither exit substitutes for the other, because the questions differ in kind. One is about a moment — where six hours
+went on the night something went wrong — and answers best as a trace that can be walked. The other is about a season —
+whether the factory grows cheaper or dearer per thing shipped — and answers best as a table nobody has to reassemble. A
+fleet that offers only the first can debug last Tuesday and say nothing about the quarter; one that offers only the
+second can chart the quarter and lose every detail of the night that mattered.
+
+What happens downstream of either exit belongs entirely to the person running the fleet: which backend, how long a year
+is, whether anything is kept at all. Blizzard writes the files and sends the spans, and every decision after that is
+someone else's to make.
+
+| Epic               | Slice | Status  |
+| ------------------ | ----- | ------- |
+| `epic:fact-egress` | full  | horizon |
+| `epic:tracing`     | full  | horizon |
 
 ## `milestone:projects` — one fleet, every project
 
