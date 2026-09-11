@@ -25,7 +25,7 @@ executing work:
   sets it.
 - **Group** — merge unacquired chunks into one, the combined chunk carrying the union of their PM pointers. Grouping
   widens what a single agent takes on; it never parallelizes a chunk, and it is a human's judgment call — automated
-  bundling stays parked with `epic:batching`.
+  bundling is not the board's to invent.
 
 Gate decisions resolve from the board as well as the CLI, against the same hub route, from day one.
 

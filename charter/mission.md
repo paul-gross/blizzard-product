@@ -66,8 +66,9 @@ Blizzard succeeds when all of the following hold:
    one repo. Blizzard treats every one of those cardinalities as flexible: a chunk wraps one or more PM items; one agent
    works a chunk, optionally fanning out to subagents; a chunk may span one or more feature environments and one or more
    git repositories. Work touching four repos is one chunk; twenty small bugs may be one coordinator with subagents
-   across four environments (batching itself is parked in the [epic registry](../epics.md)). The rigid 1:1 mapping stays
-   available as the always-correct fallback — a floor, never a ceiling.
+   across four environments (how items are grouped into one chunk is the operator's call, reached with a model's help or
+   without one — blizzard executes the shape it is handed and never computes it). The rigid 1:1 mapping stays available
+   as the always-correct fallback — a floor, never a ceiling.
 
 ## Non-goals
 
