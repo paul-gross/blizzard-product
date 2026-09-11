@@ -10,7 +10,7 @@ way around.
 | `milestone:polyglot`           | Run the fleet on the coding harness of their choice — Claude Code, Codex, or OpenCode, first-class and mixable by node — with the safeties on: no worker runs with permissions dangerously bypassed.                                                                                                                       |
 | `milestone:observability`      | Answer any question about their own fleet with the instruments they already trust: the numbers leave as files any warehouse or BI tool reads, and every night narrates itself as traces to whichever observability backend they run — no new dashboard to learn, and no waiting on blizzard to build the view they wanted. |
 | `milestone:projects`           | Run every project from one fleet: a single hub hosting many projects' sources and queues, and a single runner per machine working all of them — a workspace per project, not a stack per project.                                                                                                                          |
-| `milestone:hardening`          | Change how the fleet behaves without changing its code — every operational constant theirs to set — and find each new surface of the board behaving the way the last one did.                                                                                                                                              |
+| `milestone:hardening`          | Decide for themselves how the fleet behaves: every operational constant theirs to set, what each runner will take and when and at what rate theirs to declare, a provider outage ridden out rather than slept through, and nothing growing without end underneath them.                                                    |
 | `milestone:human-in-the-loop`  | Stop being the wire between the fleet and everything it needs: it reaches them wherever they are when a decision is genuinely theirs, and settles CI's verdict itself when it is not.                                                                                                                                      |
 | `milestone:mobile`             | Carry the fleet in a pocket: watch the night, answer a question, and unblock a chunk from a phone, through notifications that arrive the way the phone's own do.                                                                                                                                                           |
 | `milestone:project-management` | Assemble what the fleet works on from inside blizzard — browse the backlog, take many items at once, and shape them into chunks — instead of handing over ids one at a time.                                                                                                                                               |
@@ -159,16 +159,35 @@ The harness engineer feels that most sharply, because their whole craft is compa
 variable moved and see what it cost. A constant they cannot reach is a variable they cannot move, and a question they
 are simply unable to ask.
 
+The same presumption runs past the numbers. A runner today takes any work, at any hour, at whatever it costs — the
+platform assuming an operator who wants everything immediately and at any price, and offering them no way to say
+otherwise. Two levers answer it. The first is pacing, which is spend understood as a rate rather than a ceiling: a
+weekly allowance spent evenly is an allowance that lasts the week, so a runner six days into seven with only a day's
+budget left should decline to start anything new, and a machine its owner wants back during working hours should stand
+down on a schedule rather than on a reminder. The second is routing. Work carries tags — a type, a risk, a project — and
+a runner declares which of them it will accept and which it refuses, so the operator who wants one machine kept to
+small, safe fixes says so once instead of watching the queue.
+
 The board has the same problem in a different material. Every small surface it grows — a form, a picker, a confirmation
 sheet — is invented, styled, and maintained by hand, and the count climbs with every epic that touches it. Hand-built
 parts drift: two dialogs written six months apart agree on nothing, and the operator learns each of them separately.
 Assembling the next one from a toolkit is faster to write, but the reason it matters is that it is quieter to use.
 
-Hardening is what a platform does after it works. Nothing here adds a capability. Everything here makes the capabilities
-already standing cheaper to change and steadier to meet.
+Two assumptions remain, and both concern what happens when things go badly or go on for a long time. The fleet presumes
+its model provider is reachable, so an outage or a rate limit at one in the morning becomes a queue of failures and a
+wedged morning, when what the operator wanted was a fleet that waited and picked up where it left off. And it presumes
+storage is free: every fact, transcript, artifact, and measurement is kept forever, which is comfortable for a year and
+then arrives without warning as a daemon that will not start.
+
+Hardening is what a platform does after it works. Little of it is a new capability. Almost all of it is an assumption
+the platform made on the operator's behalf, handed back to them as a decision.
 
 | Epic              | Slice | Status  |
 | ----------------- | ----- | ------- |
+| `epic:throttling` | full  | horizon |
+| `epic:tagging`    | full  | horizon |
+| `epic:resilience` | full  | horizon |
+| `epic:retention`  | full  | horizon |
 | `epic:config`     | full  | horizon |
 | `epic:ui-toolkit` | full  | horizon |
 
@@ -281,6 +300,13 @@ is idle through every hour that a person is asleep and something is going wrong 
 trouble first already know how to make an HTTP request; letting them raise work into a project's own backlog closes the
 last gap between an incident and a queued chunk without making blizzard the place either one is defined.
 
+One more absence belongs here, and it is the first thing a stranger meets. Everything blizzard can do today it can only
+show to someone who has already obtained a model key, a forge token, and a workspace, and who is willing to spend real
+money to watch a chunk move. A fleet that runs against mock harnesses and a mock forge — deterministic, free, and wired
+over the same seams the real one uses — lets a person configure a project, queue work, and watch it travel the graph
+before committing anything. It serves the author of a workflow graph just as directly, who today learns what a graph
+does by spending a night finding out.
+
 The milestone closes with two pieces of ordinary platform maturity. Settings that every graph node restates want a name
 to inherit instead, so an operator retunes the fleet's reviewers in one edit rather than nine. And the seams the mission
 is built on want to be reachable from outside the wheel: interoperability is proven at two live bindings, and today
@@ -295,3 +321,4 @@ prove against a conformance suite is what turns a well-drawn seam into an actual
 | `epic:preview`         | full  | horizon |
 | `epic:worker-profiles` | full  | horizon |
 | `epic:provider-kit`    | full  | horizon |
+| `epic:demo`            | full  | horizon |
