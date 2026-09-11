@@ -14,6 +14,7 @@ way around.
 | `milestone:human-in-the-loop`  | Stop being the wire between the fleet and everything it needs: it reaches them wherever they are when a decision is genuinely theirs, and settles CI's verdict itself when it is not.                                                                                                                                      |
 | `milestone:mobile`             | Carry the fleet in a pocket: watch the night, answer a question, and unblock a chunk from a phone, through notifications that arrive the way the phone's own do.                                                                                                                                                           |
 | `milestone:project-management` | Assemble what the fleet works on from inside blizzard — browse the backlog, take many items at once, and shape them into chunks — instead of handing over ids one at a time.                                                                                                                                               |
+| `milestone:future-state`       | Look inside the fleet while it works and steer it without stopping it — a live environment opened from the board, a word to a running chunk — over a fleet that keeps its own schedule, hears from the systems that notice trouble first, and bends to a shop blizzard's authors never saw.                                |
 
 ## `milestone:homeostasis` — a fleet that keeps its own house
 
@@ -248,3 +249,49 @@ changes the shape of the screen enough that building it first would mean buildin
 | Epic          | Slice | Status  |
 | ------------- | ----- | ------- |
 | `epic:intake` | full  | horizon |
+
+## `milestone:future-state` — the fleet you can reach into
+
+Everything before this milestone makes the fleet better at working unattended. This one is about the moments the
+operator is present — and about the fleet still behaving sensibly in the long stretches when nobody is.
+
+Presence is the weaker half of blizzard today. The fleet leases a whole environment for a chunk: every repository as a
+worktree on one branch, a port band, provisioned resources, services actually running. That environment is the product's
+strongest claim and no human can look at it. The operator judges a night's work from a diff, and
+[`persona:product-owner`](./charter/personas/product-owner.md), whose entire question is whether the thing built is the
+right thing, is asked to answer it from source. Opening the running application from the board turns that question back
+into the one it actually is: use the feature and say. The cost is a genuine architectural problem rather than a screen —
+the hub deliberately cannot reach into a runner, and preserving that is what keeps blizzard installable on a laptop
+behind a router nobody controls.
+
+The same absence shows up while work is moving. An operator watching a chunk drift has two levers, and both are bad: let
+the night finish wrong, or take the session over and end its autonomy. What is missing is the thing a colleague does
+across a desk — one sentence, said once, and the work carries on.
+
+The unattended half is a question of rhythm. Blizzard has learned to watch itself — findings, trends, measurements taken
+along named axes — and every one of those instruments waits for a person to start it. A fleet whose self-examination
+only happens when its owner remembers to ask is not keeping its own house, and the gap widens exactly when the operator
+is busiest. Scheduling is the small fix: a routine states how often it wants to run and how much breathing room it needs
+between runs, the hub mints the work when that comes due, and the queue decides when it actually gets done. The
+distinction matters — a fleet behind on real work should fall behind on its housekeeping first, not shoulder the
+operator's queue aside to keep a calendar appointment.
+
+Rhythm has an inbound side too. Work reaches blizzard today because a person went and fetched it, which means the fleet
+is idle through every hour that a person is asleep and something is going wrong in production. The systems that notice
+trouble first already know how to make an HTTP request; letting them raise work into a project's own backlog closes the
+last gap between an incident and a queued chunk without making blizzard the place either one is defined.
+
+The milestone closes with two pieces of ordinary platform maturity. Settings that every graph node restates want a name
+to inherit instead, so an operator retunes the fleet's reviewers in one edit rather than nine. And the seams the mission
+is built on want to be reachable from outside the wheel: interoperability is proven at two live bindings, and today
+writing the second one means writing it in blizzard's own repository. A provider someone else can build, install, and
+prove against a conformance suite is what turns a well-drawn seam into an actually open one.
+
+| Epic                   | Slice | Status  |
+| ---------------------- | ----- | ------- |
+| `epic:cadence`         | full  | horizon |
+| `epic:steering`        | full  | horizon |
+| `epic:signals`         | full  | horizon |
+| `epic:preview`         | full  | horizon |
+| `epic:worker-profiles` | full  | horizon |
+| `epic:provider-kit`    | full  | horizon |
