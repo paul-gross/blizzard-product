@@ -4,17 +4,17 @@ What users will be able to do. A milestone is a destination stated in the user's
 where the product must reach, then ask what work the journey requires — the milestone demands its epics, never the other
 way around.
 
-| Milestone                      | What users will be able to do                                                                                                                                                                                                                                                                                              |
-| ------------------------------ | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `milestone:homeostasis`        | Run a fleet that holds its own pace and quality: what the fleet learns, spends, and builds is watched by the fleet itself, decay becomes filed work instead of quiet debt, work that stands on unfinished work waits its turn without a human holding it back — and the fleet begins to offer ideas of its own.            |
-| `milestone:polyglot`           | Run the fleet on the coding harness of their choice — Claude Code, Codex, or OpenCode, first-class and mixable by node — with the safeties on: no worker runs with permissions dangerously bypassed.                                                                                                                       |
-| `milestone:observability`      | Answer any question about their own fleet with the instruments they already trust: the numbers leave as files any warehouse or BI tool reads, and every night narrates itself as traces to whichever observability backend they run — no new dashboard to learn, and no waiting on blizzard to build the view they wanted. |
-| `milestone:projects`           | Run every project from one fleet: a single hub hosting many projects' sources and queues, and a single runner per machine working all of them — a workspace per project, not a stack per project.                                                                                                                          |
-| `milestone:hardening`          | Decide for themselves how the fleet behaves: every operational constant theirs to set, what each runner will take and when and at what rate theirs to declare, a provider outage ridden out rather than slept through, and nothing growing without end underneath them.                                                    |
-| `milestone:human-in-the-loop`  | Stop being the wire between the fleet and everything it needs: it reaches them wherever they are when a decision is genuinely theirs, and settles CI's verdict itself when it is not.                                                                                                                                      |
-| `milestone:mobile`             | Carry the fleet in a pocket: watch the night, answer a question, and unblock a chunk from a phone, through notifications that arrive the way the phone's own do.                                                                                                                                                           |
-| `milestone:project-management` | Assemble what the fleet works on from inside blizzard — browse the backlog, take many items at once, and shape them into chunks — instead of handing over ids one at a time.                                                                                                                                               |
-| `milestone:future-state`       | Look inside the fleet while it works and steer it without stopping it — a live environment opened from the board, a word to a running chunk — over a fleet that keeps its own schedule, hears from the systems that notice trouble first, and bends to a shop blizzard's authors never saw.                                |
+| Milestone                      | What users will be able to do                                                                                                                                                                                                                                                                                                            |
+| ------------------------------ | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `milestone:homeostasis`        | Run a fleet that holds its own pace and quality: what the fleet learns, spends, and builds is watched by the fleet itself, decay becomes filed work instead of quiet debt, work that stands on unfinished work waits its turn without a human holding it back — and the fleet begins to offer ideas of its own.                          |
+| `milestone:polyglot`           | Run the fleet on the coding harness of their choice — Claude Code, Codex, or OpenCode, first-class and mixable by node — with the safeties on: no worker runs with permissions dangerously bypassed.                                                                                                                                     |
+| `milestone:observability`      | Answer any question about their own fleet with the instruments they already trust: the numbers leave as files any warehouse or BI tool reads, and every night narrates itself as traces to whichever observability backend they run — no new dashboard to learn, and no waiting on blizzard to build the view they wanted.               |
+| `milestone:projects`           | Run every project from one fleet: a single hub hosting many projects' sources and queues, and a single runner per machine working all of them — a workspace per project, not a stack per project.                                                                                                                                        |
+| `milestone:hardening`          | Decide for themselves how the fleet behaves: every operational constant theirs to set, what each runner will take and when and at what rate theirs to declare, a provider outage ridden out rather than slept through, nothing growing without end underneath them, and every question about the platform answerable without cloning it. |
+| `milestone:human-in-the-loop`  | Stop being the wire between the fleet and everything it needs: it reaches them wherever they are when a decision is genuinely theirs, and settles CI's verdict itself when it is not.                                                                                                                                                    |
+| `milestone:mobile`             | Carry the fleet in a pocket: watch the night, answer a question, and unblock a chunk from a phone, through notifications that arrive the way the phone's own do.                                                                                                                                                                         |
+| `milestone:project-management` | Assemble what the fleet works on from inside blizzard — browse the backlog, take many items at once, and shape them into chunks — instead of handing over ids one at a time.                                                                                                                                                             |
+| `milestone:future-state`       | Look inside the fleet while it works and steer it without stopping it — a live environment opened from the board, a word to a running chunk — over a fleet that keeps its own schedule, hears from the systems that notice trouble first, and bends to a shop blizzard's authors never saw.                                              |
 
 ## `milestone:homeostasis` — a fleet that keeps its own house
 
@@ -179,17 +179,24 @@ wedged morning, when what the operator wanted was a fleet that waited and picked
 storage is free: every fact, transcript, artifact, and measurement is kept forever, which is comfortable for a year and
 then arrives without warning as a daemon that will not start.
 
+The last assumption is about the reader. Blizzard is public and installable, and its README is the entire published
+surface — so the platform presumes that anyone with a question past the first one is willing to clone it and read. The
+operator standing a fleet up, the graph author deciding what a node may declare, and the engineer weighing whether
+blizzard fits their shop each arrive with a different question, and each pays the same entry fee to answer it. A
+published documentation site is what a platform owes a reader who has not committed to it yet.
+
 Hardening is what a platform does after it works. Little of it is a new capability. Almost all of it is an assumption
 the platform made on the operator's behalf, handed back to them as a decision.
 
-| Epic              | Slice | Status  |
-| ----------------- | ----- | ------- |
-| `epic:throttling` | full  | horizon |
-| `epic:tagging`    | full  | horizon |
-| `epic:resilience` | full  | horizon |
-| `epic:retention`  | full  | horizon |
-| `epic:config`     | full  | horizon |
-| `epic:ui-toolkit` | full  | horizon |
+| Epic                 | Slice | Status  |
+| -------------------- | ----- | ------- |
+| `epic:throttling`    | full  | horizon |
+| `epic:tagging`       | full  | horizon |
+| `epic:resilience`    | full  | horizon |
+| `epic:retention`     | full  | horizon |
+| `epic:config`        | full  | horizon |
+| `epic:ui-toolkit`    | full  | horizon |
+| `epic:documentation` | full  | horizon |
 
 ## `milestone:human-in-the-loop` — the operator stops being the wire
 
