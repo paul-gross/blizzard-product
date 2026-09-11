@@ -1,76 +1,55 @@
 # Contributing
 
-`blizzard-product` is the live product-intent repo — the charter, the epic and milestone registries, and the plans the
-rest of the blizzard ecosystem builds from.
+This repo holds blizzard's product intent: what is worth building next, and why. Contributions here are arguments and
+proposals rather than code, and they are welcome from anyone.
 
-## The promotion workflow
+Start with [README.md](./README.md) for what the repo is, and [index.md](./index.md) for where each kind of document
+lives.
 
-An epic moves from a registry row, to a plan, to filed issues — and each promotion is a deliberate act, not a drift:
+## What belongs here
 
-1. **A registry row** — think top-down: where a destination exists, declare it first in [milestones.md](./milestones.md)
-   as what users will be able to do, and let it demand its epics. Each piece of demanded work — plus any epic standing
-   on its own operational necessity — enters [epics.md](./epics.md) as a row with a stable `epic:<slug>` id, a paragraph
-   of capability, and a priority position. No requirements, no issues.
-2. **A plan** — when an epic (or a slice of one) comes within striking distance — work you would start in the next few
-   weeks — write its plan under `plans/`: detailed requirements, decided scope, resolved open questions. A lean plan is
-   a solo `plans/<slug>.md`; one with mocks or supporting pieces is a folder whose `index.md` routes to them. Link the
-   plan from the epic's row. This is what a planning agent reads before decomposing work. A plan states what to *build*,
-   never what is built — it freezes when the work ships, and the durable behavioral record lands elsewhere as part of
-   delivery.
-3. **Filed issues** — file the GitHub epic issue and its child issues (the `/wg-issue` flow), each citing `epic:<slug>`.
-   The epic's row stays put in [epics.md](./epics.md) — the registry carries no filed/ongoing state, so filing issues
-   neither moves nor annotates the row; the milestone epic charts and GitHub track where the work stands. The issue
-   tracker is the factory's intake queue, not its memory: file only work that is startable, keep the open count small.
+| Bring it here                                                  | Bring it to [blizzard](https://github.com/paul-gross/blizzard) |
+| -------------------------------------------------------------- | -------------------------------------------------------------- |
+| A capability blizzard does not have and someone needs          | A bug in blizzard as it behaves today                          |
+| A direction you think the product should take, or should not   | A question about running or configuring an existing release    |
+| A case that a planned capability is scoped wrongly             | A security report                                              |
+| Research or prior art on a problem blizzard is trying to solve | Anything that is already a fix rather than an intent           |
 
-Exceptions and the far end of the lifecycle:
+Blizzard's code is built by its own fleet and takes no outside pull requests, so a proposal accepted here travels
+further than a patch aimed at the code.
 
-- **Single-story plans** — smaller work that still deserves a written plan before decomposing gets one under `plans/`
-  the same way, with or without an epic row above it.
-- **Bugs and small chores skip the registry and the plan** and go straight to GitHub. They are not product intent.
-- **Closing issues is the execution record.** When an epic's slice completes, drop it from [epics.md](./epics.md) (a
-  partially-landed epic keeps its row, re-scoped to the slice that remains) and mark it `delivered` in the epic chart of
-  each [milestone](./milestones.md) it serves. The slice enters [delivered.md](./delivered.md) when that milestone is
-  reached — carried into the milestone's section — or immediately under the outside-the-milestones section if it served
-  no milestone. When a milestone is reached, its delivered.md section is the record and its row leaves milestones.md.
-  Delivered entries keep their links to plans.
-- Nothing files to GitHub as a feature without a plan behind it.
+## Raising a proposal
 
-## Epic and milestone ids
+Open an issue on this repo. A proposal is read for whether the capability is blizzard's to build, so make that case
+rather than a case for an implementation:
 
-`epic:<slug>` and `milestone:<slug>` ids are stable: citations in code and issues depend on them, so renaming or
-removing one is a breaking change. An id's single home is its row — in epics.md or milestones.md while the work is live,
-in delivered.md once it lands — there is no separate registry.
+- **Lead with the person and the problem.** Who hits this, and what does their day look like without it? A proposal that
+  opens with a mechanism is hard to judge, because the reader cannot tell what would count as solving it.
+- **Say what changes for them.** Describe the outcome you would be able to point at, not the feature you imagine
+  producing it.
+- **Name the boundary.** What is deliberately not included, and what would make this the wrong thing to build.
+- **Bring evidence where you have it.** A concrete moment it went wrong, a workaround you are maintaining, or prior art
+  worth reading is worth more than a strong adjective.
 
-Cite an epic by id, not by path: the epic's row carries the only deep link to its plan, so a plan can change shape — a
-solo file growing into a folder — with a one-line row edit and no broken citations.
+[charter/mission.md](./charter/mission.md) is the standard a proposal is measured against, and
+[charter/personas.md](./charter/personas.md) names the people the product is built for. Reading both first will tell you
+whether an idea is in scope, and will sharpen it if it is.
 
-## Commit messages
+## What happens next
 
-Conventional Commits with a scope, matching the sibling repos:
+An accepted proposal is promoted in steps. It enters [epics.md](./epics.md) as a capability area with a stable id and a
+position in priority order. When the work comes close enough to start, it earns a written plan under `plans/` with its
+scope decided. Only then is it filed to GitHub as startable issues, which the fleet picks up. Once it has landed, it
+leaves the registry and enters [delivered.md](./delivered.md).
 
-    <type>(<scope>): <description>
+Two things follow from that shape. Nothing here tracks status: a registry row says a capability is intended and where it
+ranks, never that someone is working on it, so a proposal can sit accepted and unstarted without that being an
+oversight. And the registries stay human-owned, which is why an idea has to be argued rather than filed.
 
-- Types: `feat`, `fix`, `docs`, `chore`. `docs` is the common case; use `feat` for a new epic row or plan, `chore` for
-  row moves and status updates.
-- Scope: the epic slug where one applies (`docs(security): …`), or `epics` / `milestones` for registry-wide changes.
-- The `/wf-commit` skill generates commits in this format — prefer it over hand-writing messages.
+[MAINTAINERS.md](./MAINTAINERS.md) documents the promotion workflow in full, along with the commit, formatting, and
+delivery conventions this repo is kept to.
 
-## Authoring conventions
+## Voice
 
-The repo's structure rules and the voice its product documents are written in live under [context/](./context/index.md)
-— read the relevant file before adding or editing anything here.
-
-## Markdown checks
-
-Every `.md` file is formatted with [dprint](https://dprint.dev/) and linted with
-[rumdl](https://github.com/rvben/rumdl), configured in `dprint.json` and `.rumdl.toml`.
-
-- Check: `dprint check` and `rumdl check .`
-- Fix: `dprint fmt` and `rumdl check . --fix`
-
-Run both checks before pushing.
-
-## Delivery
-
-- Default branch: `master`.
-- Push directly to `master` — no PR, no review. Rebase onto the latest `origin/master` first so history stays linear.
+Documents here are written in one voice, defined in [context/writing-guide.md](./context/writing-guide.md). An issue
+does not have to match it. A document you are proposing to add does.
