@@ -9,7 +9,7 @@ way around.
 | `milestone:homeostasis`        | Run a fleet that holds its own pace and quality: what the fleet learns, spends, and builds is watched by the fleet itself, decay becomes filed work instead of quiet debt, work that stands on unfinished work waits its turn without a human holding it back — and the fleet begins to offer ideas of its own.                          |
 | `milestone:polyglot`           | Run the fleet on the coding harness of their choice — Claude Code, Codex, or OpenCode, first-class and mixable by node — with the safeties on: no worker runs with permissions dangerously bypassed.                                                                                                                                     |
 | `milestone:observability`      | Answer any question about their own fleet with the instruments they already trust: the numbers leave as files any warehouse or BI tool reads, and every night narrates itself as traces to whichever observability backend they run — no new dashboard to learn, and no waiting on blizzard to build the view they wanted.               |
-| `milestone:projects`           | Run every project from one fleet: a single hub hosting many projects' sources and queues, and a single runner per machine working all of them — a workspace per project, not a stack per project.                                                                                                                                        |
+| `milestone:projects`           | Run every project from one fleet: a single hub hosting many projects' sources and queues, and a single runner per machine working all of them — a workspace per project, not a stack per project. Each project lands and deploys its finished work its own declared way.                                                                 |
 | `milestone:hardening`          | Decide for themselves how the fleet behaves: every operational constant theirs to set, what each runner will take and when and at what rate theirs to declare, a provider outage ridden out rather than slept through, nothing growing without end underneath them, and every question about the platform answerable without cloning it. |
 | `milestone:human-in-the-loop`  | Stop being the wire between the fleet and everything it needs: it reaches them wherever they are when a decision is genuinely theirs, and settles CI's verdict itself when it is not.                                                                                                                                                    |
 | `milestone:mobile`             | Carry the fleet in a pocket: watch the night, answer a question, and unblock a chunk from a phone, through notifications that arrive the way the phone's own do.                                                                                                                                                                         |
@@ -143,10 +143,20 @@ laptop means three workspaces and one runner — never three runners, and never 
 operator, a desk full of stacks collapses into one: queue work against any project, watch all of it on one board, and
 slice the view to a single project when only that one matters.
 
-| Epic            | Slice  | Status  |
-| --------------- | ------ | ------- |
-| `epic:projects` | hub    | horizon |
-| `epic:projects` | runner | horizon |
+A project also owns where its finished work goes and how it gets there. Each project names its repositories beside its
+sources, and each repository says how work lands in it and how it runs once landed. One project merges its own work
+while another waits for a human to merge every pull request; one repository fast-forwards while its neighbor rides a
+merge train; and a chunk that touched three repositories deploys all three in the order they depend on one another,
+proving each healthy, or rolling it back, before the next one moves. Delivery and deployment stop being one fleet-wide
+habit and become each project's own declared method, carried out deterministically, with an agent's judgement called in
+where the project asks for it.
+
+| Epic                       | Slice  | Status  |
+| -------------------------- | ------ | ------- |
+| `epic:projects`            | hub    | horizon |
+| `epic:projects`            | runner | horizon |
+| `epic:advanced-delivery`   | full   | horizon |
+| `epic:advanced-deployment` | full   | horizon |
 
 ## `milestone:hardening` — the platform stops guessing on your behalf
 
