@@ -67,6 +67,12 @@ make a retried deploy skip what is already live. What is new is the declaration,
 exclusivity in place of a single fleet-wide slot, dependency ordering, evidence gathering, and scripts that execute on a
 runner.
 
+The foundation is shared with `epic:advanced-delivery`: a deploy is a step holding a named resource, an environment, and
+it lives in a flow over that environment rather than in each chunk's graph. Deployment is many chunks to one deploy —
+several landings ride one pipeline run, one chunk's deploy is carried by a later one's, and a rollback undoes every
+chunk it carried — so an environment flow consumes what a branch flow landed, and reports deployed or rolled back to
+every chunk it carried.
+
 ## Principles the design holds to
 
 - **The pipeline keeps the privilege.** Blizzard needs permission to start a named pipeline and read its status, and
@@ -74,6 +80,16 @@ runner.
 - **Not every rollback is safe.** A deploy that ran a migration cannot always be undone by swapping the version back, as
   blizzard's own hub updater learned. A declaration states whether rollback is safe, needs a human, or is forbidden in
   favor of rolling forward, so no agent improvises the answer.
+- **Pipeline success is not deployment.** A pipeline can finish long before its output runs anywhere. A deploy is proven
+  only when the environment reports a version that contains the landed commit and its checks pass.
+- **Containment, not equality.** The target is the commit the branch actually moved to. A later commit that contains it
+  proves it deployed, and a run for a later commit may be the run that carried it; waiting for an exact match waits
+  forever the first time landings batch or a run is superseded.
+- **Every wait has its own clock and its own named outcome.** Queueing, running, awaiting approval, and converging keep
+  very different time, and none of them falls through to success: a run that never appears, a version that never
+  arrives, and a check that cannot run each route somewhere authored.
+- **Where a failure happened decides what it means.** A pipeline that failed before its deploy changed nothing and is
+  fixed forward; one that failed during it leaves the environment in doubt and goes to judgement.
 - **Deterministic first.** A step a script can decide is never handed to a model; a model is called where the project
   declared judgement, and a human where the pipeline or the rollback safety says so.
 
