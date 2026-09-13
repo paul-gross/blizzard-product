@@ -26,6 +26,15 @@ API, and runner seams and scopes more of them, so the two designs are settled to
 - **Per-project isolation on the machine.** Checkouts, environments, and credentials are separated by project; a worker
   in one project's workspace has no path into another's.
 
+## Where a project goes next
+
+A project here is what to do and who does it. It is headed toward also owning where finished work goes: its
+repositories, named beside its work sources, each bound to the forge it lives on and carrying how work lands in it and
+how it deploys once landed. `epic:advanced-delivery` and `epic:advanced-deployment` build that on top of this epic, and
+neither can start until a project can hold repositories. Nothing in this plan builds them, but its design should leave
+room for them: a project that can only ever be a label on work would have nowhere to keep a repository's forge, landing
+policy, or deployment declaration.
+
 ## Open questions
 
 - Whether project is a first-class column or expressed as a scoped tag once `epic:tagging` lands — the two designs make
