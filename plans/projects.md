@@ -6,7 +6,8 @@ installation itself. The platform has no concept of a project, so the operator s
 This epic makes project a first-class grouping of both what to do and who does it: three projects on a laptop should
 mean three workspaces and one runner, not three of everything.
 
-The work lands in two slices, hub then runner.
+The work lands in two slices, hub then runner. It is built alongside `epic:multi-tenancy`, which touches the same store,
+API, and runner seams and scopes more of them, so the two designs are settled together rather than one after the other.
 
 ## What to build — the hub slice
 

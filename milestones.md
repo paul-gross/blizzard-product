@@ -143,6 +143,13 @@ laptop means three workspaces and one runner — never three runners, and never 
 operator, a desk full of stacks collapses into one: queue work against any project, watch all of it on one board, and
 slice the view to a single project when only that one matters.
 
+A project organises one operator's world; it does not partition the hub. Graphs stay a shared library and the board
+still shows the whole fleet, so the boundary that holds for everything is a level above projects: the tenant. One hub
+can host several wholly separate worlds, each with its own graphs, projects, runners, and board, and none aware of the
+others. The first to need that is blizzard's own test suite, which wants hundreds of tests running against one hub, each
+in a world of its own. Tenancy threads through the same store, API, and runner seams that projects reshapes, so the two
+are designed together and built back to back rather than one reopening what the other just finished.
+
 A project also owns where its finished work goes and how it gets there. Each project names its repositories beside its
 sources, and each repository says how work lands in it and how it runs once landed. One project merges its own work
 while another waits for a human to merge every pull request; one repository fast-forwards while its neighbor rides a
@@ -155,6 +162,8 @@ where the project asks for it.
 | -------------------------- | ------ | ------- |
 | `epic:projects`            | hub    | horizon |
 | `epic:projects`            | runner | horizon |
+| `epic:multi-tenancy`       | hub    | horizon |
+| `epic:multi-tenancy`       | runner | horizon |
 | `epic:advanced-delivery`   | full   | horizon |
 | `epic:advanced-deployment` | full   | horizon |
 
@@ -195,18 +204,28 @@ operator standing a fleet up, the graph author deciding what a node may declare,
 blizzard fits their shop each arrive with a different question, and each pays the same entry fee to answer it. A
 published documentation site is what a platform owes a reader who has not committed to it yet.
 
+The platform's own suite makes the same presumption about time. Every chunk the fleet lands waits for the gate, and the
+gate has grown from a minute's check into nearly half an hour. The time is not spent on proving more: it goes to work
+repeated per test, tests run one at a time that could run side by side, and waits measured by a clock rather than by the
+system. The suite's upper tiers also presume their implementation. They describe how the running platform behaves, yet
+they reach into its Python to say so, which leaves them unable to hold a rewrite to the same promise. Faster tests, and
+tests that describe the platform from outside, are both hardening of the ground everything else stands on.
+
 Hardening is what a platform does after it works. Little of it is a new capability. Almost all of it is an assumption
 the platform made on the operator's behalf, handed back to them as a decision.
 
-| Epic                 | Slice | Status  |
-| -------------------- | ----- | ------- |
-| `epic:throttling`    | full  | horizon |
-| `epic:tagging`       | full  | horizon |
-| `epic:resilience`    | full  | horizon |
-| `epic:retention`     | full  | horizon |
-| `epic:config`        | full  | horizon |
-| `epic:ui-toolkit`    | full  | horizon |
-| `epic:documentation` | full  | horizon |
+| Epic                       | Slice | Status  |
+| -------------------------- | ----- | ------- |
+| `epic:throttling`          | full  | horizon |
+| `epic:tagging`             | full  | horizon |
+| `epic:resilience`          | full  | horizon |
+| `epic:retention`           | full  | horizon |
+| `epic:config`              | full  | horizon |
+| `epic:ui-toolkit`          | full  | horizon |
+| `epic:documentation`       | full  | horizon |
+| `epic:test-optimization`   | full  | horizon |
+| `epic:test-architecture`   | full  | horizon |
+| `epic:test-shared-service` | full  | horizon |
 
 ## `milestone:human-in-the-loop` — the operator stops being the wire
 
