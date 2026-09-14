@@ -34,10 +34,11 @@ Exceptions and the far end of the lifecycle:
 - **Closing issues is the execution record.** When an epic's slice completes, mark it `delivered` in its epic plan and
   in the epic chart of each [milestone](./milestones.md) it serves (a slice dropped unbuilt is marked `retired` the same
   way), and drop it from [epics.md](./epics.md) — a partially-landed epic keeps its row, its capability re-scoped to the
-  work that remains. The slice enters [delivered.md](./delivered.md) when that milestone is reached, carried into the
-  milestone's section, or immediately under the outside-the-milestones section if it served no milestone. When a
-  milestone is reached, its delivered.md section is the record and its row leaves milestones.md. Delivered entries keep
-  their links to plans.
+  work that remains. When that was the epic's last live slice, move its plan from `plans/` to [delivered/](./delivered/)
+  in the same change and grade it `pristine` ([the plan guide](./context/structure/plans.md) owns the move). The slice
+  enters [delivered.md](./delivered.md) when that milestone is reached, carried into the milestone's section, or
+  immediately under the outside-the-milestones section if it served no milestone. When a milestone is reached, its
+  delivered.md section is the record and its row leaves milestones.md. Delivered entries keep their links to plans.
 - Nothing files to GitHub as a feature without a plan behind it.
 
 ## Epic and milestone ids

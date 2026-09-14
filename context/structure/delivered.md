@@ -22,7 +22,8 @@ The record of what has made it into the product, organized the way the work was 
   that has fully landed *resolves* here (the live registries stay the single home for anything still in flight).
 - A Notes cell states what the slice comprises and, where a further slice remains live, links the remainder to the epic
   registry.
-- An entry keeps its link to the plan it was built from.
+- An entry keeps its link to the plan it was built from — under `delivered/` once the epic has fully landed, under
+  `plans/` while a slice of it is still live.
 - The ledger is append-mostly: entries arrive when work lands and are never reshaped retroactively — the record is the
   point (`canon:no-retro`).
 

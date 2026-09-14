@@ -19,7 +19,7 @@ milestone epic charts repeat it.
   `plans/<epic-slug>/<slice-slug>/index.md`, and everything specific to that slice lives inside it
   (`plans/adapters/opencode/`).
 - **Artifacts.** An epic's mocks and proofs-of-concept live in one `plans/<epic-slug>/artifacts/` at the top of the epic
-  folder, shared by every slice, never in a slice folder (`plans/board/artifacts/`).
+  folder, shared by every slice, never in a slice folder (`plans/queue/artifacts/`).
 - **Inline slices stand.** Epic plans written before this guide may carry their slices' requirements inline
   (`plans/multi-tenancy.md`); those slices carry no `plan` field. New slice plans follow the placement above.
 
@@ -84,3 +84,7 @@ the grade the owner gives it — but it makes sure every epic plan carries one.
 - **A slice plan freezes when its slice ships**; the epic plan's frontmatter stays live until the epic leaves
   `epics.md`, and then the whole plan freezes with it — frontmatter included, so a delivered epic still names its
   slices.
+- **A finished epic moves to `delivered/`.** In the change that marks its last slice `delivered` or `retired`, the
+  epic's plan — `plans/<epic-slug>.md`, or the whole `plans/<epic-slug>/` folder — moves to `delivered/` with its shape
+  intact, its grade becomes `pristine`, and every relative link to or from it is repointed. A partly-delivered epic
+  stays under `plans/`, its frozen slice plans included.
