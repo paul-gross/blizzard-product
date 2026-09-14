@@ -5,36 +5,39 @@ path every change goes through. Raising an idea from outside is [CONTRIBUTING.md
 
 ## The promotion workflow
 
-An epic moves from a registry row, to a plan, to filed issues, and each promotion is a deliberate act rather than a
-drift:
+An epic moves from a registry row and epic plan, to slice plans, to filed issues, and each promotion is a deliberate act
+rather than a drift. The epic plan's frontmatter is the per-epic view throughout — its refinement and each slice's
+status — and its shape is owned by [context/structure/plans.md](./context/structure/plans.md):
 
-1. **A registry row.** Think top-down: where a destination exists, declare it first in [milestones.md](./milestones.md)
-   as what users will be able to do, and let it demand its epics. Each piece of demanded work, plus any epic standing on
-   its own operational necessity, enters [epics.md](./epics.md) as a row with a stable `epic:<slug>` id, a paragraph of
-   capability, and a priority position. No requirements, no issues.
-2. **A plan.** When an epic (or a slice of one) comes within striking distance, meaning work you would start in the next
-   few weeks, write its plan under `plans/`: detailed requirements, decided scope, resolved open questions. A lean plan
-   is a solo `plans/<slug>.md`; one with mocks or supporting pieces is a folder whose `index.md` routes to them. Link
-   the plan from the epic's row. This is what a planning agent reads before decomposing work. A plan states what to
-   *build*, never what is built: it freezes when the work ships, and the durable behavioral record lands elsewhere as
-   part of delivery.
-3. **Filed issues.** File the GitHub epic issue and its child issues (the `/wg-issue` flow), each citing `epic:<slug>`.
-   The epic's row stays put in [epics.md](./epics.md), since the registry carries no filed or ongoing state, so filing
-   issues neither moves nor annotates the row; the milestone epic charts and GitHub track where the work stands. The
-   issue tracker is the factory's intake queue, not its memory: file only work that is startable, and keep the open
-   count small.
+1. **A registry row and its epic plan.** Think top-down: where a destination exists, declare it first in
+   [milestones.md](./milestones.md) as what users will be able to do, and let it demand its epics. Each piece of
+   demanded work, plus any epic standing on its own operational necessity, enters [epics.md](./epics.md) as a row with a
+   stable `epic:<slug>` id, a paragraph of capability, and a priority position — and, in the same change, gets its epic
+   plan `plans/<slug>.md`, linked from the row: frontmatter with `refinement: scaffolded` (or the grade the product
+   owner gives) and its slices as far as they are known, all at `horizon`, above a capability-level statement of intent.
+   No issues. Refinement is the owner's call: re-grade it only when they say so.
+2. **A slice plan.** When a slice comes within striking distance, meaning work you would start in the next few weeks,
+   write its plan: detailed requirements, decided scope, resolved open questions. It is its own file beside the epic
+   plan (the epic plan becomes `plans/<slug>/index.md` if it is not a folder yet), linked from the slice's `plan` field.
+   This is what a planning agent reads before decomposing work. A slice plan states what to *build*, never what is
+   built: it freezes when the slice ships, and the durable behavioral record lands elsewhere as part of delivery.
+3. **Filed issues.** File the GitHub epic issue and its child issues (the `/wg-issue` flow), each citing `epic:<slug>`,
+   and set the slice `in-progress` in the epic plan and in every milestone epic chart naming it. The epic's row stays
+   put in [epics.md](./epics.md) and is never annotated. The issue tracker is the factory's intake queue, not its
+   memory: file only work that is startable, and keep the open count small.
 
 Exceptions and the far end of the lifecycle:
 
 - **Single-story plans.** Smaller work that still deserves a written plan before decomposing gets one under `plans/` the
   same way, with or without an epic row above it.
 - **Bugs and small chores skip the registry and the plan** and go straight to GitHub. They are not product intent.
-- **Closing issues is the execution record.** When an epic's slice completes, drop it from [epics.md](./epics.md) (a
-  partially-landed epic keeps its row, re-scoped to the slice that remains) and mark it `delivered` in the epic chart of
-  each [milestone](./milestones.md) it serves. The slice enters [delivered.md](./delivered.md) when that milestone is
-  reached, carried into the milestone's section, or immediately under the outside-the-milestones section if it served no
-  milestone. When a milestone is reached, its delivered.md section is the record and its row leaves milestones.md.
-  Delivered entries keep their links to plans.
+- **Closing issues is the execution record.** When an epic's slice completes, mark it `delivered` in its epic plan and
+  in the epic chart of each [milestone](./milestones.md) it serves (a slice dropped unbuilt is marked `retired` the same
+  way), and drop it from [epics.md](./epics.md) — a partially-landed epic keeps its row, re-scoped to the slice that
+  remains. The slice enters [delivered.md](./delivered.md) when that milestone is reached, carried into the milestone's
+  section, or immediately under the outside-the-milestones section if it served no milestone. When a milestone is
+  reached, its delivered.md section is the record and its row leaves milestones.md. Delivered entries keep their links
+  to plans.
 - Nothing files to GitHub as a feature without a plan behind it.
 
 ## Epic and milestone ids

@@ -22,8 +22,11 @@ that reach it. Thinking flows milestone → epics, never the reverse.
   renaming or removing an id is a breaking change.
 - The "What users will be able to do" cell is written in the user's terms — a capability a person gains, never an
   implementation description. A milestone is *reached*; an epic is *built*.
-- The epic chart is the single home of the milestone's decomposition — the summary table never repeats it. Status is one
-  of `horizon`, `in flight`, or `delivered`, matching where the epic's slice actually stands.
+- The epic chart is the single home of the milestone's decomposition — the summary table never repeats it.
+- The Slice cell names a slice from the epic plan's `slices` frontmatter, and the Status cell repeats that slice's
+  status: `horizon`, `in-progress`, `delivered`, or `retired` ([structure/plans.md](./plans.md)). The repeat is
+  deliberate, so a milestone reads whole on its own; the epic plan is the source, and where the two disagree the chart
+  is the one corrected.
 - Every epic in a chart resolves to a row in `epics.md` or `delivered.md` — demanding new work and creating its epic row
   happen in the same change, never a dangling reference.
 - An epic may appear in more than one milestone's chart.
