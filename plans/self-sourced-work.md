@@ -1,3 +1,11 @@
+---
+epic: self-sourced-work
+refinement: pristine
+slices:
+  - name: full
+    status: delivered
+---
+
 # Plan — `epic:self-sourced-work`
 
 The forge stops being the only door work can arrive through. This epic builds the door itself: work items that live in

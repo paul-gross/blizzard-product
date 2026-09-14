@@ -1,3 +1,11 @@
+---
+epic: resilience
+refinement: scaffolded
+slices:
+  - name: full
+    status: horizon
+---
+
 # Plan — `epic:resilience`
 
 At one in the morning a model provider stops answering. Nobody is awake, and the fleet — which has no concept for "the

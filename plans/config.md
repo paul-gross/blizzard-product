@@ -1,3 +1,11 @@
+---
+epic: config
+refinement: scaffolded
+slices:
+  - name: full
+    status: horizon
+---
+
 # Plan — `epic:config`
 
 A young platform is full of numbers somebody chose once. How long a lease lives, how many times a node retries before

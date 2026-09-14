@@ -1,3 +1,13 @@
+---
+epic: projects
+refinement: scaffolded
+slices:
+  - name: hub
+    status: horizon
+  - name: runner
+    status: horizon
+---
+
 # Plan — `epic:projects`
 
 An operator with three repositories runs blizzard three times. Three hubs, three runners, three boards to keep an eye

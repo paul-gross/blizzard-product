@@ -1,3 +1,11 @@
+---
+epic: test-optimization
+refinement: refined
+slices:
+  - name: full
+    status: horizon
+---
+
 # Plan — `epic:test-optimization`
 
 Every chunk the fleet lands waits on the gate. Today a PR takes about 24 min and a push to `master` about 28. Since July

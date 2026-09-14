@@ -1,3 +1,11 @@
+---
+epic: delivery
+refinement: pristine
+slices:
+  - name: full
+    status: delivered
+---
+
 # Plan — `epic:delivery`
 
 > **Shipped.** This plan is frozen: it records what delivery was conceived to be, and its entry in

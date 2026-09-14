@@ -1,3 +1,11 @@
+---
+epic: forge-status
+refinement: pristine
+slices:
+  - name: full
+    status: delivered
+---
+
 # Plan — `epic:forge-status`
 
 An operator who runs their backlog from a forge tracker gets no answer there to the first question they have: has the

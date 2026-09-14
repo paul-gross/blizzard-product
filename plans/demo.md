@@ -1,3 +1,11 @@
+---
+epic: demo
+refinement: scaffolded
+slices:
+  - name: full
+    status: horizon
+---
+
 # Plan — `epic:demo`
 
 Everything blizzard does begins with a credential. A newcomer who wants to see what a fleet actually does must first

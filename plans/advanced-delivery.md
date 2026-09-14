@@ -1,3 +1,11 @@
+---
+epic: advanced-delivery
+refinement: refined
+slices:
+  - name: full
+    status: horizon
+---
+
 # Plan — `epic:advanced-delivery`
 
 Landing finished work is where a whole fleet converges on one branch, and the habit blizzard lands it with is a single

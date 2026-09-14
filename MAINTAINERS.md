@@ -33,11 +33,11 @@ Exceptions and the far end of the lifecycle:
 - **Bugs and small chores skip the registry and the plan** and go straight to GitHub. They are not product intent.
 - **Closing issues is the execution record.** When an epic's slice completes, mark it `delivered` in its epic plan and
   in the epic chart of each [milestone](./milestones.md) it serves (a slice dropped unbuilt is marked `retired` the same
-  way), and drop it from [epics.md](./epics.md) — a partially-landed epic keeps its row, re-scoped to the slice that
-  remains. The slice enters [delivered.md](./delivered.md) when that milestone is reached, carried into the milestone's
-  section, or immediately under the outside-the-milestones section if it served no milestone. When a milestone is
-  reached, its delivered.md section is the record and its row leaves milestones.md. Delivered entries keep their links
-  to plans.
+  way), and drop it from [epics.md](./epics.md) — a partially-landed epic keeps its row, its capability re-scoped to the
+  work that remains. The slice enters [delivered.md](./delivered.md) when that milestone is reached, carried into the
+  milestone's section, or immediately under the outside-the-milestones section if it served no milestone. When a
+  milestone is reached, its delivered.md section is the record and its row leaves milestones.md. Delivered entries keep
+  their links to plans.
 - Nothing files to GitHub as a feature without a plan behind it.
 
 ## Epic and milestone ids

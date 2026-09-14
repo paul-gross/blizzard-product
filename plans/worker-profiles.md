@@ -1,3 +1,11 @@
+---
+epic: worker-profiles
+refinement: scaffolded
+slices:
+  - name: full
+    status: horizon
+---
+
 # Plan — `epic:worker-profiles`
 
 A graph binds session settings per node, which is right — a reviewer and a builder should not run the same way. What is

@@ -1,4 +1,16 @@
-# Plan — `epic:cost`, core slice
+---
+epic: cost
+refinement: pristine
+slices:
+  - name: core
+    status: delivered
+  - name: model-routing
+    status: delivered
+  - name: attribution
+    status: retired
+---
+
+# Plan — `epic:cost`
 
 > **Shipped.** This plan is frozen: it records what cost controls were conceived to be, and its entry in
 > [delivered.md](../delivered.md) is the record of what landed. The epic is closed: model routing by cost landed as a

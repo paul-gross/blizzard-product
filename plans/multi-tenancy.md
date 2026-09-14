@@ -1,3 +1,13 @@
+---
+epic: multi-tenancy
+refinement: refined
+slices:
+  - name: hub
+    status: horizon
+  - name: runner
+    status: horizon
+---
+
 # Plan — `epic:multi-tenancy`
 
 A project and a tenant are easy to confuse, and they answer different questions. A project answers *what is this work

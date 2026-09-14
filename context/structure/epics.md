@@ -21,14 +21,13 @@ shape.
 
 ## Row rules
 
-- The Epic cell carries the stable `epic:<slug>` id, with a slice qualifier in parentheses when the row means one slice
-  (`` `epic:security` (worker-lockdown slice) ``).
+- The Epic cell carries the stable `epic:<slug>` id and nothing else — which slices remain is the epic plan's
+  frontmatter, never a qualifier on the row.
 - A live epic's row is its id's single home; renaming or removing an id is a breaking change (`canon:one-owner` applies
   to ids).
 - The row carries the repo's only deep link to the epic's epic plan — never to a slice plan, which the epic plan links
   in turn. Everything else cites the id, so a plan can change shape with a one-line row edit.
-- An epic is a capability area, not a version: slices land separately, and a slice-scoped row names its slice in the
-  Epic cell's parenthetical.
+- An epic is a capability area, not a version: slices land separately, and the row describes the capability as a whole.
 - The Notes cell holds durable reference only — plan links, cross-epic dependencies, and scope or priority intent (e.g.
   parked). It never states execution status ("shipped", "filed", "in flight", "landed") and never cites issue numbers.
 - An epic either appears in at least one milestone's epic chart or stands on stated operational necessity — a row with
@@ -38,7 +37,7 @@ shape.
 ## Lifecycle
 
 A row enters when a milestone demands the work (or operational necessity does), together with its epic plan, and leaves
-for `delivered.md` when its work fully lands — a partially-delivered epic keeps its row for the slice that remains, its
-Epic cell re-scoped to name it. Filing the epic's issues does not move or annotate the row: the row stays put and GitHub
-tracks the work. The cross-file integrity rules — every plan accounted for, every cited epic resolving to a row — live
-in [the structure hub](./index.md).
+for `delivered.md` when its work fully lands — a partially-delivered epic keeps its row, its capability re-scoped to the
+work that remains. Filing the epic's issues does not move or annotate the row: the row stays put and GitHub tracks the
+work. The cross-file integrity rules — every plan accounted for, every cited epic resolving to a row — live in
+[the structure hub](./index.md).

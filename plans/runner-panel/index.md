@@ -1,3 +1,11 @@
+---
+epic: runner-panel
+refinement: pristine
+slices:
+  - name: core
+    status: delivered
+---
+
 # Plan — `epic:runner-panel`
 
 > **Shipped.** This plan is frozen: it records what the runner panel was conceived to be, and its entry in

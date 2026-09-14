@@ -1,3 +1,11 @@
+---
+epic: chat
+refinement: scaffolded
+slices:
+  - name: full
+    status: horizon
+---
+
 # Plan — `epic:chat`
 
 The fleet's best questions arrive at the worst times: overnight, over a weekend, while
@@ -6,7 +14,7 @@ that is already in their pocket. This epic gives the fleet one: question notific
 that cost one tap, and a confirmation that the agent picked the answer up and went back to work.
 
 This epic owns the notification fan-out seam and builds it together with its first binding: the answer-back plumbing and
-the closed-loop confirmations live in `epic:ask-answer`'s remote slice ([plan](./ask-answer-remote.md)); carrying a
+the closed-loop confirmations live in `epic:ask-answer`'s remote slice ([plan](./ask-answer/remote.md)); carrying a
 question *out* to a channel — and deciding who subscribes to what — lands here, proven by the bot that first consumes
 it.
 

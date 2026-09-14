@@ -1,3 +1,11 @@
+---
+epic: intake
+refinement: scaffolded
+slices:
+  - name: full
+    status: horizon
+---
+
 # Plan — `epic:intake`
 
 Queuing work today means having the id in hand. The operator reads the backlog in the forge, copies an identifier, hands

@@ -1,3 +1,11 @@
+---
+epic: fact-egress
+refinement: refined
+slices:
+  - name: full
+    status: horizon
+---
+
 # Plan — `epic:fact-egress`
 
 An operator who wants to know what last week cost already has the numbers and still has no way to hold them.

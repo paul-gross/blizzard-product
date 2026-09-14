@@ -1,3 +1,11 @@
+---
+epic: ci-feedback
+refinement: scaffolded
+slices:
+  - name: full
+    status: horizon
+---
+
 # Plan — `epic:ci-feedback`
 
 When CI goes red or a reviewer asks for changes after a delivery is open, the news has to reach the agent that did the

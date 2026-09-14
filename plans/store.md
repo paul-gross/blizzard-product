@@ -1,3 +1,11 @@
+---
+epic: store
+refinement: pristine
+slices:
+  - name: full
+    status: delivered
+---
+
 # Plan — `epic:store`
 
 > **Shipped.** This plan is frozen: it records what the runner store was conceived to be, and its entry in

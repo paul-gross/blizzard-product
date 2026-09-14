@@ -1,3 +1,11 @@
+---
+epic: gates
+refinement: pristine
+slices:
+  - name: full
+    status: delivered
+---
+
 # Plan — `epic:gates`
 
 > **Shipped.** This plan is frozen: it records what human gates were conceived to be, and its entry in

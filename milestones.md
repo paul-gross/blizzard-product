@@ -64,7 +64,9 @@ reading is exactly what the exploration exists to find out.
 | `epic:garden`            | full         | delivered |
 | `epic:transcripts`       | full         | delivered |
 | `epic:analytics`         | full         | delivered |
-| `epic:mutation-testing`  | full         | horizon   |
+| `epic:mutation-testing`  | diff-scoped  | horizon   |
+| `epic:mutation-testing`  | corpus-sweep | horizon   |
+| `epic:mutation-testing`  | angular      | horizon   |
 | `epic:cost`              | attribution  | retired   |
 | `epic:queue`             | dependencies | delivered |
 | `epic:ideation`          | full         | horizon   |
@@ -88,7 +90,8 @@ bad night.
 
 | Epic            | Slice           | Status  |
 | --------------- | --------------- | ------- |
-| `epic:adapters` | breadth         | horizon |
+| `epic:adapters` | opencode        | horizon |
+| `epic:adapters` | codex           | horizon |
 | `epic:security` | worker-lockdown | horizon |
 
 ## `milestone:observability` — the fleet, in instruments you already trust
@@ -329,7 +332,9 @@ only happens when its owner remembers to ask is not keeping its own house, and t
 is busiest. Scheduling is the small fix: a routine states how often it wants to run and how much breathing room it needs
 between runs, the hub mints the work when that comes due, and the queue decides when it actually gets done. The
 distinction matters — a fleet behind on real work should fall behind on its housekeeping first, not shoulder the
-operator's queue aside to keep a calendar appointment.
+operator's queue aside to keep a calendar appointment. And once the fleet schedules its own work, arrival order stops
+being an honest way to rank it: the queue earns a priority the operator can state, and aging that keeps a chunk nobody
+champions from sinking forever.
 
 Rhythm has an inbound side too. Work reaches blizzard today because a person went and fetched it, which means the fleet
 is idle through every hour that a person is asleep and something is going wrong in production. The systems that notice
@@ -349,12 +354,13 @@ is built on want to be reachable from outside the wheel: interoperability is pro
 writing the second one means writing it in blizzard's own repository. A provider someone else can build, install, and
 prove against a conformance suite is what turns a well-drawn seam into an actually open one.
 
-| Epic                   | Slice | Status  |
-| ---------------------- | ----- | ------- |
-| `epic:cadence`         | full  | horizon |
-| `epic:steering`        | full  | horizon |
-| `epic:signals`         | full  | horizon |
-| `epic:preview`         | full  | horizon |
-| `epic:worker-profiles` | full  | horizon |
-| `epic:provider-kit`    | full  | horizon |
-| `epic:demo`            | full  | horizon |
+| Epic                   | Slice    | Status  |
+| ---------------------- | -------- | ------- |
+| `epic:cadence`         | full     | horizon |
+| `epic:steering`        | full     | horizon |
+| `epic:signals`         | full     | horizon |
+| `epic:preview`         | full     | horizon |
+| `epic:worker-profiles` | full     | horizon |
+| `epic:provider-kit`    | full     | horizon |
+| `epic:demo`            | full     | horizon |
+| `epic:queue`           | priority | horizon |

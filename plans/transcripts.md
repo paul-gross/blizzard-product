@@ -1,3 +1,11 @@
+---
+epic: transcripts
+refinement: pristine
+slices:
+  - name: full
+    status: delivered
+---
+
 # Plan — `epic:transcripts`
 
 A fleet that learns from its own conversations first has to be able to reach them. Today a worker's conversation lives
@@ -52,7 +60,8 @@ harness's mercy exactly as today.
 - **A per-harness transcript source behind the adapter seam.** The harness-specific knowledge — where transcripts live,
   what their records mean — moves behind the harness adapter seam as a single operation: normalized turns since a given
   position. Today that knowledge is Claude-Code-specific and sits outside the seam; moving it in is what lets
-  `epic:adapters`' breadth slice bring Codex and OpenCode workers whose conversations centralize the same way.
+  `epic:adapters`' OpenCode and Codex slices bring OpenCode and Codex workers whose conversations centralize the same
+  way.
 - **The transcript lane.** A second outbound buffer with its own sequence and hub high-water mark, so bulk never queues
   ahead of truth: a fat conversation delta must never delay a completion or a gate decision. Flush is opportunistic with
   a per-record cap; the lane's only promise is that a step's segments are complete, with final markers shipped, by step

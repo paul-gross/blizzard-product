@@ -1,3 +1,11 @@
+---
+epic: ui-toolkit
+refinement: scaffolded
+slices:
+  - name: full
+    status: horizon
+---
+
 # Plan — `epic:ui-toolkit`
 
 Every small surface the board grows — a form, a picker, a confirmation sheet — is invented, styled, and maintained by

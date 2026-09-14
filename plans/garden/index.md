@@ -1,3 +1,11 @@
+---
+epic: garden
+refinement: pristine
+slices:
+  - name: full
+    status: delivered
+---
+
 # Plan — `epic:garden`
 
 Standing tending of what a project accumulates. The name is the thesis: a garden is something growing, and growth is

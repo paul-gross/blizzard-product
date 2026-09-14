@@ -1,3 +1,11 @@
+---
+epic: steering
+refinement: scaffolded
+slices:
+  - name: full
+    status: horizon
+---
+
 # Plan — `epic:steering`
 
 The operator watches a chunk head somewhere wrong and has two options, both bad: watch the night go to waste, or take

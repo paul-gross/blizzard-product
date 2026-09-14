@@ -1,3 +1,15 @@
+---
+epic: mutation-testing
+refinement: refined
+slices:
+  - name: diff-scoped
+    status: horizon
+  - name: corpus-sweep
+    status: horizon
+  - name: angular
+    status: horizon
+---
+
 # Plan — `epic:mutation-testing`
 
 A fleet that ships while its owner sleeps acts on one signal: the suite went green. A human reviewer carries a private

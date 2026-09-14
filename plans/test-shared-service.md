@@ -1,3 +1,11 @@
+---
+epic: test-shared-service
+refinement: scaffolded
+slices:
+  - name: full
+    status: horizon
+---
+
 # Plan — `epic:test-shared-service`
 
 Each service test builds and tears down its own fixture, forge, and hub, because the hub has no unit below the

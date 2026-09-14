@@ -1,3 +1,11 @@
+---
+epic: pwa
+refinement: scaffolded
+slices:
+  - name: full
+    status: horizon
+---
+
 # Plan — `epic:pwa`
 
 The fleet's most time-sensitive moments happen when [`persona:product-owner`](../charter/personas/product-owner.md) is

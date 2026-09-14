@@ -1,3 +1,11 @@
+---
+epic: tracing
+refinement: refined
+slices:
+  - name: full
+    status: horizon
+---
+
 # Plan — `epic:tracing`
 
 A chunk that took six hours and cost four times what anyone expected leaves almost nothing behind that explains itself.

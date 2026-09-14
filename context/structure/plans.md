@@ -6,36 +6,41 @@ with no epic above them carry no frontmatter and are not governed here.
 
 ## Purpose
 
-Every live epic has exactly one epic plan, and it is the per-epic view: how refined the epic's intent is, which named
-slices it lands in, and where each slice stands. Its frontmatter is the source of slice status; the milestone epic
-charts repeat it.
+Every epic has exactly one epic plan, live or delivered, and it is the per-epic view: how refined the epic's intent is,
+which named slices it lands in, and where each slice stands. Its frontmatter is the source of slice status; the
+milestone epic charts repeat it.
 
 ## Placement
 
 - **Epic plan.** `plans/<epic-slug>.md` while no slice has a plan file of its own; `plans/<epic-slug>/index.md` once one
   does, with each slice plan beside it as `plans/<epic-slug>/<slice-slug>.md`.
 - **Slice plan.** A slice that earns written requirements gets its own file — never a section appended to the epic plan.
-- **Existing shapes stand.** Plans written before this guide may carry their slices' requirements inline, or sit flat
-  beside the epic plan under another name (`plans/worker-lockdown.md` for `epic:security`). They stay where they are;
-  the frontmatter links them as they are. New slice plans follow the placement above.
+  A slice plan with supporting pieces — part plans, a `spec/` — is a folder of its own,
+  `plans/<epic-slug>/<slice-slug>/index.md`, and everything specific to that slice lives inside it
+  (`plans/adapters/opencode/`).
+- **Artifacts.** An epic's mocks and proofs-of-concept live in one `plans/<epic-slug>/artifacts/` at the top of the epic
+  folder, shared by every slice, never in a slice folder (`plans/board/artifacts/`).
+- **Inline slices stand.** Epic plans written before this guide may carry their slices' requirements inline
+  (`plans/multi-tenancy.md`); those slices carry no `plan` field. New slice plans follow the placement above.
 
 ## Required frontmatter
 
-Every epic plan opens with a YAML frontmatter block — here, `plans/hub/index.md`:
+Every epic plan opens with a YAML frontmatter block — here, `plans/adapters/index.md`:
 
 ```yaml
 ---
-epic: hub
+epic: adapters
 refinement: refined
 slices:
-  - name: separation
+  - name: claude-code
     status: delivered
-    plan: ./separation.md
-  - name: remote
-    status: in-progress
-    plan: ./remote.md
-  - name: federation
+    plan: ./claude-code/index.md
+  - name: opencode
     status: horizon
+    plan: ./opencode/index.md
+  - name: codex
+    status: horizon
+    plan: ./codex/index.md
 ---
 ```
 
@@ -57,8 +62,9 @@ document can be checked for:
 - **`refined`** — the owner has gone back and forth on it to home in on what they want.
 - **`pristine`** — the owner has declared the intent finished.
 
-An agent never chooses the grade. It writes `scaffolded` when it creates an epic plan, and otherwise writes only the
-grade the owner gives it — but it makes sure every epic plan carries one.
+An epic whose every slice is `delivered` or `retired` is `pristine` — finishing the epic settles its grade. Short of
+that, an agent never chooses the grade. It writes `scaffolded` when it creates an epic plan, and otherwise writes only
+the grade the owner gives it — but it makes sure every epic plan carries one.
 
 ### Slice status
 
@@ -76,4 +82,5 @@ grade the owner gives it — but it makes sure every epic plan carries one.
   it sets `delivered` or `retired`. Each change updates the epic plan's frontmatter and the `Status` cell of every
   milestone epic chart naming that slice, together.
 - **A slice plan freezes when its slice ships**; the epic plan's frontmatter stays live until the epic leaves
-  `epics.md`, and then the whole plan freezes with it.
+  `epics.md`, and then the whole plan freezes with it — frontmatter included, so a delivered epic still names its
+  slices.

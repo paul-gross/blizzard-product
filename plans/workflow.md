@@ -1,3 +1,11 @@
+---
+epic: workflow
+refinement: pristine
+slices:
+  - name: full
+    status: delivered
+---
+
 # Plan — `epic:workflow`
 
 > **Shipped.** This plan is frozen: it records what the workflow engine was conceived to be, and its entry in

@@ -1,3 +1,11 @@
+---
+epic: preview
+refinement: scaffolded
+slices:
+  - name: full
+    status: horizon
+---
+
 # Plan — `epic:preview`
 
 A reviewer reads a diff and imagines the feature. That is the whole of what blizzard offers today, and it is a poor

@@ -1,3 +1,11 @@
+---
+epic: documentation
+refinement: scaffolded
+slices:
+  - name: full
+    status: horizon
+---
+
 # Plan — `epic:documentation`
 
 Blizzard is public and installable, and its README is the entire published surface — so every question past the first

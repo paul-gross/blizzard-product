@@ -1,3 +1,11 @@
+---
+epic: android
+refinement: scaffolded
+slices:
+  - name: full
+    status: horizon
+---
+
 # Plan — `epic:android`
 
 An operator who follows more than one fleet has no single place to see them. `epic:pwa` puts one hub on a home screen,

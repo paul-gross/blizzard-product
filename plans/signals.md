@@ -1,3 +1,11 @@
+---
+epic: signals
+refinement: scaffolded
+slices:
+  - name: full
+    status: horizon
+---
+
 # Plan — `epic:signals`
 
 Blizzard only ever finds work by being told to look. Everything it does begins with an operator naming an item, which

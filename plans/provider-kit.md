@@ -1,3 +1,11 @@
+---
+epic: provider-kit
+refinement: scaffolded
+slices:
+  - name: full
+    status: horizon
+---
+
 # Plan — `epic:provider-kit`
 
 Blizzard's seams are real, and every binding behind them ships inside the wheel — so someone who wants their own work

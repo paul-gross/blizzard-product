@@ -1,3 +1,11 @@
+---
+epic: test-architecture
+refinement: refined
+slices:
+  - name: full
+    status: horizon
+---
+
 # Plan — `epic:test-architecture`
 
 The service, e2e, crash-sweep, and journey tiers describe blizzard from the outside, but they reach into its Python to

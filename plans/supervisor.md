@@ -1,3 +1,11 @@
+---
+epic: supervisor
+refinement: pristine
+slices:
+  - name: full
+    status: delivered
+---
+
 # Plan — `epic:supervisor`
 
 > **Shipped.** This plan is frozen: it records what the runner's supervisor was conceived to be, and its entry in

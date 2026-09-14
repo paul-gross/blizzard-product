@@ -1,3 +1,11 @@
+---
+epic: tagging
+refinement: scaffolded
+slices:
+  - name: full
+    status: horizon
+---
+
 # Plan — `epic:tagging`
 
 An operator with three machines has three identical appetites, because a runner has no way to say what kind of work it

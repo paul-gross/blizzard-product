@@ -1,3 +1,11 @@
+---
+epic: advanced-deployment
+refinement: refined
+slices:
+  - name: full
+    status: horizon
+---
+
 # Plan — `epic:advanced-deployment`
 
 A chunk that lands has only finished being written. For an operator whose work has to run somewhere, the night is not

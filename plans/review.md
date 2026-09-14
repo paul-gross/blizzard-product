@@ -1,3 +1,11 @@
+---
+epic: review
+refinement: pristine
+slices:
+  - name: full
+    status: delivered
+---
+
 # Plan — `epic:review`
 
 > **Shipped.** This plan is frozen: it records what the review station was conceived to be, and its entry in

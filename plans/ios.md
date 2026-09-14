@@ -1,3 +1,11 @@
+---
+epic: ios
+refinement: scaffolded
+slices:
+  - name: full
+    status: horizon
+---
+
 # Plan — `epic:ios`
 
 The same promise as `epic:android`, on Apple's platform: every hub and runner the operator follows registered in one

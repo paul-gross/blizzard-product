@@ -1,3 +1,11 @@
+---
+epic: cadence
+refinement: scaffolded
+slices:
+  - name: full
+    status: horizon
+---
+
 # Plan — `epic:cadence`
 
 Four epics already promise the fleet a schedule — mutation testing's corpus pass, fact-egress's export, ideation's

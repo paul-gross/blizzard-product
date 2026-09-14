@@ -1,3 +1,11 @@
+---
+epic: throttling
+refinement: scaffolded
+slices:
+  - name: full
+    status: horizon
+---
+
 # Plan — `epic:throttling`
 
 A runner today takes any work, at any hour, at whatever it costs. The platform is assuming an operator who wants

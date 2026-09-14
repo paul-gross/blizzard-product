@@ -1,3 +1,11 @@
+---
+epic: ideation
+refinement: refined
+slices:
+  - name: full
+    status: horizon
+---
+
 # Plan — `epic:ideation`
 
 The operator decides what blizzard becomes, and they decide it largely from memory. They know the product they meant to

@@ -1,3 +1,11 @@
+---
+epic: retention
+refinement: scaffolded
+slices:
+  - name: full
+    status: horizon
+---
+
 # Plan — `epic:retention`
 
 The hub keeps everything. Every fact, transcript, artifact, question, and measurement it has ever received is still

@@ -1,3 +1,11 @@
+---
+epic: analytics
+refinement: pristine
+slices:
+  - name: full
+    status: delivered
+---
+
 # Plan — `epic:analytics`
 
 Counting what the fleet actually does. The first hand-run count — how often are skills used? — overturned an assumption

@@ -1,4 +1,16 @@
-# Plan — `epic:migration`, core slice
+---
+epic: migration
+refinement: pristine
+slices:
+  - name: core
+    status: delivered
+  - name: correctness
+    status: delivered
+  - name: follow-latest
+    status: delivered
+---
+
+# Plan — `epic:migration`
 
 > **Shipped.** This plan is frozen: it records what graph migration was conceived to be, and its entry in
 > [delivered.md](../delivered.md) is the record of what landed. The correctness tail — transition-keyed derivations and
