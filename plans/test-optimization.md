@@ -9,22 +9,22 @@ slices:
 # Plan — `epic:test-optimization`
 
 Every chunk the fleet lands waits on the gate. Since July the unit and component job has grown from about 1 min to 7,
-while the test count grew 3.5×. A PR now waits about 13 min and a push to `master` about 16. The goal is to cut that
-time without weakening any assertion, and to close the coverage gaps in the PR gate.
+while the test count grew 3.5×. A PR now waits about 8 min and a push to `master` about 12. The goal is to cut that time
+without weakening any assertion, and to close the coverage gaps in the PR gate.
 
 ## Baseline
 
-Three successful runs on `master`:
+Recent successful runs on `master`:
 
-| Job                            | Duration      | Shape                                                           |
-| ------------------------------ | ------------- | --------------------------------------------------------------- |
-| service tier                   | 10.5–13.5 min | 104 tests run one at a time, ~8 s each, each with its own stack |
-| crash sweep, CI profile        | 8.0–9.7 min   | 29 tests run one at a time, ~18 s each                          |
-| pytest unit + component        | 6.9–7.6 min   | ~5,750 tests, `-n auto` on 4 vCPU (~2 min on a 20-core laptop)  |
-| dev hub image                  | 3.2–4.0 min   | multi-arch QEMU build on every push to `master`                 |
-| eslint + vitest + client drift | 1.7 min       | four `ng test` projects run one after another                   |
+| Job                            | Duration    | Shape                                                          |
+| ------------------------------ | ----------- | -------------------------------------------------------------- |
+| pytest unit + component        | 6.9–7.6 min | ~5,750 tests, `-n auto` on 4 vCPU (~2 min on a 20-core laptop) |
+| service tier                   | 5.2–5.5 min | 103 tests, `-n auto` on 4 vCPU, each test with its own stack   |
+| crash sweep, CI profile        | 3.2–4.9 min | 29 tests, `-n auto` on 4 vCPU                                  |
+| dev hub image                  | 3.2–4.0 min | multi-arch QEMU build on every push to `master`                |
+| eslint + vitest + client drift | 1.7 min     | four `ng test` projects run one after another                  |
 
-Every check starts at once, so the PR critical path is the slowest single job, the service tier. Queue time is
+Every check starts at once, so the PR critical path is the slowest single job, pytest unit + component. Queue time is
 negligible, about 2 s.
 
 ## Work areas
@@ -80,20 +80,19 @@ token is needed.
   work.
 - **Local runs stay unpinned.** Add a `mise` task that fetches the pinned source, so CI failures can be reproduced.
 
-### 4. Upper tiers under xdist
+### 4. E2E under xdist
 
-Service, crash sweep, and e2e run serially. Ports already come from `_free_port()`, directories from `tmp_path`, and
-crash-sweep shared state lives in a session fixture, so each xdist worker can hold its own copy.
+E2E is the one upper tier still run serially. Its ports come from `tests.support.free_port()`, which hands each xdist
+worker a disjoint band, and its directories come from `tmp_path`, so most of its state is already per worker.
 
-- Run all three under `pytest-xdist`, with per-worker session fixtures (one crash-sweep fixture and forge per worker).
-- **Port race:** `_free_port()` releases the port before the daemon binds it. Either bind port `0` and report the
-  result, or retry on bind failure.
-- **`os.environ`:** `_drive_until_done` mutates the process environment. Pass the environment to the spawned harness
-  instead.
-- Choose worker counts by measurement, since 2 may beat 4 on a 4-vCPU runner. Shard across a job matrix if one runner
-  saturates.
+- Measure the serial e2e job first; its only CI run today is inside the tag `release` workflow.
+- Run it under `pytest-xdist`. Its session fixtures (`tests/e2e/conftest.py`) become one copy per worker; decide per
+  fixture whether that cost is acceptable or the fixture should be shared.
+- The Playwright browser scenario serves one built frontend. Confirm concurrent browser tests don't contend for it, or
+  group them onto one worker with `--dist loadgroup`.
+- Choose the worker count by measurement, since 4 may not beat 2 with Chromium on a 4-vCPU runner.
 
-Target: each upper-tier job ≤ 33% of current.
+Target: e2e job ≤ 33% of its serial time.
 
 ### 5. Per-test service cost (spike)
 
