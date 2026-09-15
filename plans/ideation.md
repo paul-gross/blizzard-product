@@ -3,7 +3,7 @@ epic: ideation
 refinement: refined
 slices:
   - name: full
-    status: horizon
+    status: in-progress
 ---
 
 # Plan — `epic:ideation`
@@ -30,63 +30,80 @@ Which is right, because a garden is grown as much as it is pruned, and blizzard'
 `mechanize` — author something new rather than remove anything. Ideation is not a sibling discipline to gardening. It is
 more of it, pointed at what the product could be instead of at what it has accumulated.
 
-So it lands in the same tab, as routines beside the others, producing proposals that wait on the same two verbs.
+So it lands in the same tab, as routines beside the others, producing proposals that wait on the same two verbs. A
+routine already points at whichever graph it names, and already offers only the scopes it has been given, so three new
+routines need nothing from the routine model itself.
 
-## The one thing the platform is missing
+## What the platform is missing
 
-A gardening pass observes ground and then says what to do about it, and the platform requires the second to name the
-first: a proposal carries at least one finding id, because a proposal with nothing behind it is an opinion the run was
-not asked for. That rule is right where a pass judges code against a written standard. The observation is the evidence,
-and a response with no evidence is preference dressed as a result.
+The garden platform was built for a pass that judges code against a written rule, and in four places that assumption
+reaches past the rule into the machinery. Each is small, and none of them is ideation-specific.
 
-An ideation pass has no such observation. "The board cannot tell you why a chunk is stuck" is not evidence for the idea
-— it *is* the idea, stated as a lack. Recording it as a finding and then again as a proposal files one sentence twice
-and calls the second one justified.
+**A proposal need not cite a finding.** Today the hub refuses a proposal with no findings behind it, on the grounds that
+an opinion with no evidence is preference dressed as a result. But an ideation pass has no observation to cite. "The
+board cannot tell you why a chunk is stuck" is not evidence for the idea — it *is* the idea, stated as a lack, and
+recording it twice to satisfy a check files one sentence and calls the second one justified.
 
-So the requirement becomes the routine's own: a proposal cites findings unless its routine is one whose strategy
-produces none. The wire shape drops its minimum and the delivery script asks the routine instead of asking every
-proposal. What kept the original rule honest survives intact, because the charge is what asked for the opinion — a
-routine declared to read the charter and propose directions asked for exactly this, and the platform can tell because
-the routine says so.
+The better home for that discipline is the graph's own prose, not a validator. The gardening graph's prompts tell its
+proposals to answer findings, and they keep doing so; the ideation graph's prompts do not. The hub stops counting. That
+is the whole change: a proposal's finding links already live in their own table and already default to none, and
+`introduced`, the per-repository revisions, and the run's measurement are all optional today, so a run that cites no
+finding, no commit, and no revision delivers the moment the minimum is gone.
 
-This is cheap. A proposal's finding links already live in their own table and already default to none, so the change is
-validation and nothing else. Nor does anything need loosening on the git side: `introduced`, the per-repository
-revisions, and the run's measurement are all optional today, so a run that cites no commit and names no revision already
-delivers.
+**A run can read what was declined.** A passed proposal carries the reason it was passed, and that reason is what keeps
+an idea rejected in March from arriving again in April in different words. The operator can read it; a run cannot. The
+fleet's own read of a routine's proposals serves only the open ones, closures stripped. It gains the closed ones,
+reasons and all, still scoped to the leased chunk's own routine.
+
+**A run can read the fleet's numbers.** Analytics already counts which skills fire, which files are opened, and which
+agent types are spawned, and spend is summed per node and per graph — but every one of those routes refuses a runner, so
+the routines that most need the numbers cannot reach them. They gain a lease-scoped read of the same summaries, served
+only to a chunk that is a routine run, the same way that chunk already reads its findings. Handing the worker an
+operator's credentials would be smaller, and would also hand it every transcript in the fleet.
+
+**The record can be counted, and a routine can be retired.** The epic's acceptance test is a count — proposals created,
+accepted, and passed, per routine and per class — and nothing reports it yet; the routine page draws a trend of findings
+and nothing of proposals. And the promise that a routine not worth waking up to costs one command to retire needs the
+command, which routines do not have. Scopes already retire; routines follow the same shape.
 
 ## What the graph does differently
 
 An ideation routine cannot point at the gardening graph, and the departures are worth stating because each one is a rule
 that graph holds deliberately.
 
-**Its survey judges intent, not a standard.** `garden-routine` stops and escalates when the charge names a standard that
-does not exist, on the grounds that a routine judging by an unwritten rule is judging by its own taste. Ideation has no
-rule by construction. It reads mission, vision, and personas — documents that say what the product is for, never what
-the code must look like — and its survey is written to judge against intent and to say so plainly, so that nobody later
-mistakes it for enforcement.
+**Its survey judges intent, not a standard.** `garden-routine` refuses any impression that cites no standard, and when
+the routine's axis is undeclared it records that gap as its only finding. Ideation has no rule by construction. It reads
+mission, vision, and personas — documents that say what the product is for, never what the code must look like — and its
+survey is written to judge against intent and to say so plainly, so that nobody later mistakes it for enforcement.
+
+It finds its charge the way gardening does: the routine's name is an axis in the target's gardening-axes registry, and
+the entry says what the routine reads and where the charter lives. The graph names no path of its own, so one packaged
+graph serves any deployment with a charter to read.
 
 **Its cross-reference reads proposals, not findings.** Gardening reconciles new observations against the routine's live
 findings. Ideation reconciles new ideas against what this routine has already proposed: the open ones, and more
-importantly the closed. A passed proposal carries the reason it was declined, and that reason is what keeps an idea
-rejected in March from arriving again in April in different words. The session doing the matching enters fresh, exactly
-as gardening's does — the mind that spent an hour convincing itself an idea is good should not be the one deciding it is
-new.
+importantly the closed. The session doing the matching enters fresh, exactly as gardening's does — the mind that spent
+an hour convincing itself an idea is good should not be the one deciding it is new.
 
 **Nothing is scoped to a revision.** An ideation run reads the product as it stands, so it runs full every time, records
 no revision, and cites no commit.
 
 ## The routines blizzard declares
 
-Three, each named for what it reads.
+Three, each named for what it reads, each declared as an axis in `blizzard-context`'s gardening registry beside the axes
+the garden already tends.
 
 **`ideation:usage`** reads the fleet's own numbers — which skills fire, which agents are spawned, which context files
 are ever opened — against what the fleet was built to do. It is the one running on evidence rather than taste, and the
-reason to build it first. `epic:transcripts` and `epic:analytics` both landed, and the single question anyone has put to
+reason to want it most. `epic:transcripts` and `epic:analytics` both landed, and the single question anyone has put to
 them so far overturned an assumption: agents constantly, skills nearly never. That was an ideation finding that arrived
-by accident. This routine is the apparatus for finding the rest on purpose.
+by accident. This routine is the apparatus for finding the rest on purpose — and it waits on the read of those numbers
+above, so it is not the one to run first.
 
 **`ideation:features`** reads one surface at a time — the board, the CLI, the hub API — against the charter, and asks
-what the people described in `charter/personas.md` still cannot do.
+what the people described in `charter/personas.md` still cannot do. It needs nothing but the code and the charter, which
+makes it the first routine to run: it proves the whole loop, from survey to a triaged proposal, before either data read
+exists.
 
 **`ideation:cost`** reads what the fleet spends against what it produces. The core slice of `epic:cost` landed with
 usage facts, budget caps, and model routing, so the numbers are all there; what nobody has done is ask them what to
@@ -98,17 +115,17 @@ those constraints — the same code read in the opposite direction — and two r
 confusion no routine name resolves. If the gardening axis leaves a real gap, that is the evidence for adding this one
 later.
 
-Their scopes — the charter, a named surface, the cost profile — join the deployment's single global scope list, which
-makes a refinement the machinery already anticipated come due sooner: whether a routine should be offered only the
-scopes it tends.
+Their scopes — the charter, a named surface, the cost profile — join the deployment's scope list, and each routine is
+offered only its own.
 
 ## The vocabulary
 
-Three classes, and the platform stores them without ever reading them.
+Three classes, declared by the ideation graph and stored by the platform without ever being read.
 
-**`direction`** is a capability worth exploring, larger than any single work item. Accepting one mints nothing; it earns
-a row in `epics.md`, written by hand. This is the class the epic's promise rests on — the registry stays the operator's,
-and the fleet earns a voice in it rather than a key to it.
+**`direction`** is a capability worth exploring, larger than any single work item. The operator accepts one without
+minting a work item — a choice accept already offers — and the accepted idea earns a row in `epics.md`, written by hand.
+This is the class the epic's promise rests on — the registry stays the operator's, and the fleet earns a voice in it
+rather than a key to it.
 
 **`tweak`** is a concrete change small enough to be work. Accepting mints an item carrying the proposal's own body.
 
@@ -127,9 +144,8 @@ that survive pile up where ideas ought to — in the registry, human-owned, in p
 
 ## What this epic is not
 
-**Not a scheduler.** Manual kickoff is the trigger, exactly as gardening's is. The cadence field and the sweep that
-reads it are the one small addition the gardening machinery already describes as its end state, and they arrive shared
-with `epic:garden` rather than built twice here.
+**Not a scheduler.** Manual kickoff is the trigger, exactly as gardening's is. The cadence a routine keeps is
+`epic:cadence`'s to build, shared with the garden rather than built twice here.
 
 **Not a briefing document.** The capability was first framed as a short brief of feature directions. A list of proposals
 that can be accepted, declined, counted, and cross-referenced by the next run is worth more than a document that can
@@ -138,12 +154,15 @@ only be read, and the epic's row is rewritten to say so.
 **Not authority over the registry.** Nothing here files an epic row, and the `direction` class exists precisely so that
 agreeing with an idea and commissioning it stay separate acts.
 
-**Not a general loosening of proposals.** Findings stay required for every routine that produces them. The relaxation is
-a property of the routine's declared strategy, not a hole in the format.
+**Not a class-aware hub.** Whether accepting mints work stays the operator's choice at the moment of accepting. The hub
+learns no class's meaning, and a deployment's vocabulary remains its own.
+
+**Not the transcripts.** The run reads the summaries analytics already computes, never a session's transcript.
 
 ## How it is proven
 
 The epic entered as a deliberate maybe, and it should decide itself on evidence rather than on how the first run reads.
-The store already answers the question: proposals created, accepted, and passed, per routine and per class. A routine
-whose proposals are passed month after month has told the operator plainly that it is not worth waking up to, and
-retiring it costs one command. That count is the entire acceptance test, and it exists the day the first run delivers.
+Once proposals can be counted, the store answers the question: proposals created, accepted, and passed, per routine and
+per class. A routine whose proposals are passed month after month has told the operator plainly that it is not worth
+waking up to, and retiring it costs one command. That count is the entire acceptance test, and it exists the day the
+first run delivers.

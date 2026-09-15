@@ -58,18 +58,17 @@ notice what the product could become, not only what it should repair — so it p
 direction worth exploring, a recommendation to weigh rather than work it files. Whether those proposals earn their
 reading is exactly what the exploration exists to find out.
 
-| Epic                     | Slice        | Status    |
-| ------------------------ | ------------ | --------- |
-| `epic:self-sourced-work` | full         | delivered |
-| `epic:garden`            | full         | delivered |
-| `epic:transcripts`       | full         | delivered |
-| `epic:analytics`         | full         | delivered |
-| `epic:mutation-testing`  | diff-scoped  | horizon   |
-| `epic:mutation-testing`  | corpus-sweep | horizon   |
-| `epic:mutation-testing`  | angular      | horizon   |
-| `epic:cost`              | attribution  | retired   |
-| `epic:queue`             | dependencies | delivered |
-| `epic:ideation`          | full         | horizon   |
+| Epic                     | Slice        | Status      |
+| ------------------------ | ------------ | ----------- |
+| `epic:self-sourced-work` | full         | delivered   |
+| `epic:garden`            | full         | delivered   |
+| `epic:transcripts`       | full         | delivered   |
+| `epic:analytics`         | full         | delivered   |
+| `epic:mutation-testing`  | diff-scoped  | horizon     |
+| `epic:mutation-testing`  | corpus-sweep | horizon     |
+| `epic:cost`              | attribution  | retired     |
+| `epic:queue`             | dependencies | delivered   |
+| `epic:ideation`          | full         | in-progress |
 
 ## `milestone:polyglot` — any harness, with the safeties on
 
@@ -348,19 +347,22 @@ over the same seams the real one uses — lets a person configure a project, que
 before committing anything. It serves the author of a workflow graph just as directly, who today learns what a graph
 does by spending a night finding out.
 
-The milestone closes with two pieces of ordinary platform maturity. Settings that every graph node restates want a name
-to inherit instead, so an operator retunes the fleet's reviewers in one edit rather than nine. And the seams the mission
-is built on want to be reachable from outside the wheel: interoperability is proven at two live bindings, and today
-writing the second one means writing it in blizzard's own repository. A provider someone else can build, install, and
-prove against a conformance suite is what turns a well-drawn seam into an actually open one.
+The milestone closes with three pieces of ordinary platform maturity. Settings that every graph node restates want a
+name to inherit instead, so an operator retunes the fleet's reviewers in one edit rather than nine. And the seams the
+mission is built on want to be reachable from outside the wheel: interoperability is proven at two live bindings, and
+today writing the second one means writing it in blizzard's own repository. A provider someone else can build, install,
+and prove against a conformance suite is what turns a well-drawn seam into an actually open one. Last, the board's own
+suites earn the proof the backend's will already carry: mutation runs over the Angular workspace, waiting on a seam in
+tooling blizzard does not own.
 
-| Epic                   | Slice    | Status  |
-| ---------------------- | -------- | ------- |
-| `epic:cadence`         | full     | horizon |
-| `epic:steering`        | full     | horizon |
-| `epic:signals`         | full     | horizon |
-| `epic:preview`         | full     | horizon |
-| `epic:worker-profiles` | full     | horizon |
-| `epic:provider-kit`    | full     | horizon |
-| `epic:demo`            | full     | horizon |
-| `epic:queue`           | priority | horizon |
+| Epic                    | Slice    | Status  |
+| ----------------------- | -------- | ------- |
+| `epic:cadence`          | full     | horizon |
+| `epic:steering`         | full     | horizon |
+| `epic:signals`          | full     | horizon |
+| `epic:preview`          | full     | horizon |
+| `epic:worker-profiles`  | full     | horizon |
+| `epic:provider-kit`     | full     | horizon |
+| `epic:demo`             | full     | horizon |
+| `epic:queue`            | priority | horizon |
+| `epic:mutation-testing` | angular  | horizon |
