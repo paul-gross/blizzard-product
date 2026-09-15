@@ -64,8 +64,8 @@ reading is exactly what the exploration exists to find out.
 | `epic:garden`            | full         | delivered   |
 | `epic:transcripts`       | full         | delivered   |
 | `epic:analytics`         | full         | delivered   |
-| `epic:mutation-testing`  | diff-scoped  | horizon     |
-| `epic:mutation-testing`  | corpus-sweep | horizon     |
+| `epic:mutation-testing`  | diff-scoped  | in-progress |
+| `epic:mutation-testing`  | corpus-sweep | in-progress |
 | `epic:cost`              | attribution  | retired     |
 | `epic:queue`             | dependencies | delivered   |
 | `epic:ideation`          | full         | in-progress |

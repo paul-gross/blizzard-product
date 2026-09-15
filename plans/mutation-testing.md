@@ -3,9 +3,9 @@ epic: mutation-testing
 refinement: refined
 slices:
   - name: diff-scoped
-    status: horizon
+    status: in-progress
   - name: corpus-sweep
-    status: horizon
+    status: in-progress
   - name: angular
     status: horizon
 ---
@@ -62,11 +62,11 @@ deletion, not a new test), or an equivalent mutant whose behavior is genuinely u
 run does not re-litigate it. The first three become the pass's proposals: strengthened assertions, new cases, removed
 code, each filed as ordinary work the fleet picks up. The pass itself edits nothing.
 
-This is its own axis, beside the `tests` axis the garden plan names: `tests` prunes what the suite carries in excess,
-this one finds what it fails to pin. The kill map a sweep leaves behind — which test kills which mutants — is also the
-measured evidence `tests` was promised, since a test that kills nothing another test does not is dead weight. Until
-`epic:cadence` lands, an operator starts a sweep the way they start any gardening pass; once it does, the axis's routine
-declares its interval there instead of this epic building a timer.
+This is its own axis, `mutation-testing`, beside the `tests` axis the garden plan names: `tests` prunes what the suite
+carries in excess, this one finds what it fails to pin. The kill map a sweep leaves behind — which test kills which
+mutants — is also the measured evidence `tests` was promised, since a test that kills nothing another test does not is
+dead weight. Until `epic:cadence` lands, an operator starts a sweep the way they start any gardening pass; once it does,
+the axis's routine declares its interval there instead of this epic building a timer.
 
 **Third slice — the Angular workspace.** Blocked on tooling outside this repo's control; the section below records the
 research and the stance.
