@@ -8,44 +8,33 @@ slices:
 
 # Plan — `epic:test-optimization`
 
-Every chunk the fleet lands waits on the gate. Today a PR takes about 24 min and a push to `master` about 28. Since July
-the unit and component job has gone from about 1 min to 10 min, while the test count grew 3.5× and the time grew 8.6×.
-The goal is to cut that time without weakening any assertion, and to close the coverage gaps in the PR gate.
+Every chunk the fleet lands waits on the gate. Since July the unit and component job has grown from about 1 min to 7,
+while the test count grew 3.5×. A PR now waits about 13 min and a push to `master` about 16. The goal is to cut that
+time without weakening any assertion, and to close the coverage gaps in the PR gate.
 
 ## Baseline
 
-Medians over 60 successful runs:
+Three successful runs on `master`:
 
-| Job                            | Median   | Shape                                                             |
-| ------------------------------ | -------- | ----------------------------------------------------------------- |
-| service tier                   | 13.7 min | 104 tests run one at a time, ~8 s each, each with its own stack   |
-| pytest unit + component        | 10.3 min | 5,443 tests, `-n auto` on 4 vCPU (2 min 32 s on a 20-core laptop) |
-| crash sweep, CI profile        | 8.9 min  | 29 tests run one at a time, ~18 s each                            |
-| dev hub image                  | 3.7 min  | multi-arch QEMU build on every push to `master`                   |
-| eslint + vitest + client drift | 1.7 min  | four `ng test` projects run one after another                     |
+| Job                            | Duration      | Shape                                                           |
+| ------------------------------ | ------------- | --------------------------------------------------------------- |
+| service tier                   | 10.5–13.5 min | 104 tests run one at a time, ~8 s each, each with its own stack |
+| crash sweep, CI profile        | 8.0–9.7 min   | 29 tests run one at a time, ~18 s each                          |
+| pytest unit + component        | 6.9–7.6 min   | ~5,750 tests, `-n auto` on 4 vCPU (~2 min on a 20-core laptop)  |
+| dev hub image                  | 3.2–4.0 min   | multi-arch QEMU build on every push to `master`                 |
+| eslint + vitest + client drift | 1.7 min       | four `ng test` projects run one after another                   |
 
-The PR critical path is the unit job followed by the service tier, because `upper-tiers` has `needs: [gate]`. Queue time
-is negligible, about 2 s.
+Every check starts at once, so the PR critical path is the slowest single job, the service tier. Queue time is
+negligible, about 2 s.
 
 ## Work areas
 
-Area 1's items are independent of each other. Areas 3 onward each contain a decision.
+Areas 4 onward each contain a decision.
 
-### 1. Pipeline quick wins
+### 1. Pipeline
 
-Workflow-only changes.
-
-- **Drop `needs: [gate]` from `upper-tiers`** in `pr.yml` and `push.yml`. `dev-image` still waits on every check. The
-  cost is upper-tier runner minutes spent on PRs that fail lint.
-- **Cache all installs.** Share the uv cache for `blizzard-mock`'s `uv sync`, keyed on both lockfiles. Use `cache: npm`
-  in `dev-build` and `release`. Persist the Angular build cache.
-- **Build arm64 only for releases.** `dev-image` becomes `linux/amd64` only. This requires the hosted hub, which follows
-  `edge`, to be on amd64 first.
-- **Split the release job.** Break `release.yml` `full-suite-tiers` into parallel service, full crash sweep, and e2e
-  jobs, with `release` needing all three.
-- **Mark the 9 unmarked files** (`test_runner_*_cli.py`, `test_runner_*_api.py`, `test_worker_settings.py`). They run by
-  default but `-m unit` and `-m component` both skip them. Add a guard that fails on any default-suite test that carries
-  neither marker.
+- **Build arm64 only for releases.** `dev-image` becomes `linux/amd64` only, saving most of its QEMU time on every push.
+  This requires the hosted hub, which follows `edge`, to be on amd64 first; `blizzard-infra` owns that answer.
 
 ### 2. PR gate coverage
 
@@ -53,7 +42,7 @@ Workflow-only changes.
   Hand the output to the e2e job.
 - **E2E on every PR.** Add a job in `upper-tiers.yml` with the three-repo checkout and Chromium, running against the
   frontend job's build. Measure its runtime before enabling it. Area 4 keeps it affordable.
-- **Real-winter tests in CI** against a pinned winter (area 2a).
+- **Real-winter tests in CI** against a pinned winter (area 3).
 - **Journey in CI.** It is currently red: a local run on `master` times out at its first wait, with the first chunk
   still `ready` after 300 s, 5 min into the run. First determine whether that is rot or the local environment, then make
   it green. Its CI needs match the crash sweep's: three-repo checkout, mise, both `uv sync`s, and a git identity, with
@@ -61,7 +50,7 @@ Workflow-only changes.
   between every PR and push/tag only. It is a single test that can't be parallelized, so it sets a floor on the pipeline
   it joins.
 
-### 2a. Pinned winter source
+### 3. Pinned winter source
 
 The fixture scaffold `git clone --local`s a *winter source*: any repo with `tools/winter-cli/`. It runs that CLI via
 `mise exec -- uv run`, so nothing is installed. Today the source is resolved inconsistently:
@@ -90,19 +79,6 @@ token is needed.
 - **Detached HEAD.** A SHA checkout has no named branch. Verify that the fixture clone and the minted workspace still
   work.
 - **Local runs stay unpinned.** Add a `mise` task that fetches the pinned source, so CI failures can be reproduced.
-
-### 3. Prototype database
-
-`build_hub()` (`tests/support.py`) runs all 89 hub migrations on a fresh SQLite file. That costs ~0.85 s per call across
-1,000+ call sites, before parametrization. The runner's `init_environment()` does the same for 39 revisions. This is
-likely more than half of the unit job's CPU.
-
-- Build a session-scoped prototype per xdist worker, one for the hub and one for the runner.
-- `build_hub()` and the runner equivalent copy the prototype into `tmp_path`.
-- Migration tests (`test_store_migrations.py` and its kin) still migrate from empty.
-- Add a guard that the prototype schema equals a freshly migrated schema.
-
-Target: unit job ≤ 50% of current.
 
 ### 4. Upper tiers under xdist
 
@@ -136,8 +112,8 @@ queue and feed, and register graphs by name; crash tests kill the hub. `epic:tes
 
 - Measure each phase first: mint, forge, init, ready, act, teardown.
 - Reuse a minted fixture per worker, by reset or copy. Absolute `file://` origins complicate copying.
-- Start the hub from a pre-migrated database (area 3 applied to a subprocess). This conflicts with
-  `epic:test-architecture`'s ban on touching store files, so state the trade-off explicitly.
+- Start the hub from a pre-migrated database (the unit tier's prototype database applied to a subprocess). This
+  conflicts with `epic:test-architecture`'s ban on touching store files, so state the trade-off explicitly.
 - Shorten teardown: expect a clean exit instead of spending the SIGTERM allowance.
 
 ### 6. Event-driven waits
@@ -166,7 +142,7 @@ intervals, the 10 s termination allowance, and the unit-tier sleeps in `test_cli
 - **`test_runner_harness_opencode_diagnostic.py`** takes ~164 s of CPU: one 35 s test and ~30 tests at 4–5 s, all
   spawning subprocesses. Decide per test whether the subprocess is what's under test. Share one fake binary per module
   where possible.
-- **`test_runner_winter_provider.py`'s real-winter tests** take 11–15 s each. Placement follows area 2a.
+- **`test_runner_winter_provider.py`'s real-winter tests** take 11–15 s each. Placement follows area 3.
 
 ## Out of scope
 

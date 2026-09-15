@@ -207,7 +207,7 @@ blizzard fits their shop each arrive with a different question, and each pays th
 published documentation site is what a platform owes a reader who has not committed to it yet.
 
 The platform's own suite makes the same presumption about time. Every chunk the fleet lands waits for the gate, and the
-gate has grown from a minute's check into nearly half an hour. The time is not spent on proving more: it goes to work
+gate has grown from a minute's check into a quarter of an hour. The time is not spent on proving more: it goes to work
 repeated per test, tests run one at a time that could run side by side, and waits measured by a clock rather than by the
 system. The suite's upper tiers also presume their implementation. They describe how the running platform behaves, yet
 they reach into its Python to say so, which leaves them unable to hold a rewrite to the same promise. Faster tests, and
