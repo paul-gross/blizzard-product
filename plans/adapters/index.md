@@ -6,7 +6,7 @@ slices:
     status: delivered
     plan: ./claude-code/index.md
   - name: opencode
-    status: horizon
+    status: delivered
     plan: ./opencode/index.md
   - name: codex
     status: horizon
@@ -26,13 +26,14 @@ default where the graph is silent; and the runner supplies the final default. Or
 first supported acceptable harness wins, never a random draw and never an undeclared substitute.
 
 The epic lands one harness at a time. The delivered Claude Code slice is the foundation rather than scope to rebuild.
-OpenCode is the second live binding and therefore the test of whether the seam is real. Codex follows the same contract
-after two occupants have forced every Claude-shaped assumption into the binding that owns it.
+OpenCode, delivered as the second live binding, was the test of whether the seam is real, and it built the harness
+selection every later occupant inherits. Codex follows the same contract after two occupants have forced every
+Claude-shaped assumption into the binding that owns it.
 
 | Where                                          | Read when                                                                                                                             |
 | ---------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------- |
 | [claude-code/](./claude-code/index.md)         | Looking up the delivered adapter foundation every later harness extends                                                               |
-| [opencode/](./opencode/index.md)               | Planning or implementing OpenCode as the second harness, and harness selection                                                        |
+| [opencode/](./opencode/index.md)               | Looking up the delivered OpenCode binding, the second harness, and how harness selection was built                                    |
 | [codex/](./codex/index.md)                     | Reasoning about Codex as the third harness                                                                                            |
 | [harness-selection.md](./harness-selection.md) | Changing how runners advertise harnesses or how graphs, chunks, and sessions constrain them — the contract every harness slice shares |
 

@@ -73,12 +73,12 @@ reading is exactly what the exploration exists to find out.
 ## `milestone:polyglot` — any harness, with the safeties on
 
 Blizzard was built around a harness seam — spawn, resume, verdict — precisely so that no single coding agent would ever
-be load-bearing. Today the seam has one occupant: every worker in every fleet is Claude Code, and every one of them runs
-with the permission gate switched off. This milestone completes the harness story in both directions. Breadth: Codex and
-OpenCode become first-class workers behind the same seam, chosen per fleet or mixed by node the way models already are.
-Safety: the operator decides in advance what any worker may touch — whichever harness it runs — and the platform
-enforces the decision rather than hoping. The name is what the fleet becomes: polyglot, fluent in more than one harness
-and trusting none of them blindly.
+be load-bearing. The seam now has two occupants — Claude Code and OpenCode, mixable by session lineage on one runner —
+but Codex is still outside it, and every worker, whichever harness it runs, still runs with the permission gate switched
+off. This milestone completes the harness story in both directions. Breadth: Codex and OpenCode become first-class
+workers behind the same seam, chosen per fleet or mixed by node the way models already are. Safety: the operator decides
+in advance what any worker may touch — whichever harness it runs — and the platform enforces the decision rather than
+hoping. The name is what the fleet becomes: polyglot, fluent in more than one harness and trusting none of them blindly.
 
 Through the charter's people: the harness engineer runs the same chunk through two harnesses and compares the runs on
 cost and quality, because harness choice has become a tunable rather than a fact of the platform. The application
@@ -87,11 +87,11 @@ structurally out of any worker's reach. And the operator stops lending the fleet
 least a chunk needs, and a worker gone wrong is contained by walls the operator chose, not by the agent's judgment on a
 bad night.
 
-| Epic            | Slice           | Status  |
-| --------------- | --------------- | ------- |
-| `epic:adapters` | opencode        | horizon |
-| `epic:adapters` | codex           | horizon |
-| `epic:security` | worker-lockdown | horizon |
+| Epic            | Slice           | Status    |
+| --------------- | --------------- | --------- |
+| `epic:adapters` | opencode        | delivered |
+| `epic:adapters` | codex           | horizon   |
+| `epic:security` | worker-lockdown | horizon   |
 
 ## `milestone:observability` — the fleet, in instruments you already trust
 
