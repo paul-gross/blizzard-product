@@ -68,7 +68,7 @@ reading is exactly what the exploration exists to find out.
 | `epic:mutation-testing`  | corpus-sweep | in-progress |
 | `epic:cost`              | attribution  | retired     |
 | `epic:queue`             | dependencies | delivered   |
-| `epic:ideation`          | full         | in-progress |
+| `epic:ideation`          | full         | delivered   |
 
 ## `milestone:polyglot` — any harness, with the safeties on
 

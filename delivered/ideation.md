@@ -1,9 +1,9 @@
 ---
 epic: ideation
-refinement: refined
+refinement: pristine
 slices:
   - name: full
-    status: in-progress
+    status: delivered
 ---
 
 # Plan — `epic:ideation`
