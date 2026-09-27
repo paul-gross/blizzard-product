@@ -74,24 +74,23 @@ reading is exactly what the exploration exists to find out.
 
 Blizzard was built around a harness seam — spawn, resume, verdict — precisely so that no single coding agent would ever
 be load-bearing. The seam now has two occupants — Claude Code and OpenCode, mixable by session lineage on one runner —
-but Codex is still outside it, and every worker, whichever harness it runs, still runs with the permission gate switched
-off. This milestone completes the harness story in both directions. Breadth: Codex and OpenCode become first-class
-workers behind the same seam, chosen per fleet or mixed by node the way models already are. Safety: the operator decides
-in advance what any worker may touch — whichever harness it runs — and the platform enforces the decision rather than
-hoping. The name is what the fleet becomes: polyglot, fluent in more than one harness and trusting none of them blindly.
+but Codex is still outside it, and unattended workers run with broad tool approval. This milestone completes the harness
+story in both directions. Breadth: Codex joins the same seam, chosen per fleet or mixed by node the way models already
+are. Control: each runner's operator brings a set of native harness configurations alongside the runner's own hooks and
+headless rules, and chooses one autonomy level that maps to each harness without leaving a headless run stuck on a
+prompt. The name is what the fleet becomes: polyglot, fluent in more than one harness and able to set terms for each.
 
 Through the charter's people: the harness engineer runs the same chunk through two harnesses and compares the runs on
 cost and quality, because harness choice has become a tunable rather than a fact of the platform. The application
-architect dials trust by station — a build node's hands looser than a deliver-adjacent one's — and force-push is
-structurally out of any worker's reach. And the operator stops lending the fleet their whole keyring: a worker holds the
-least a chunk needs, and a worker gone wrong is contained by walls the operator chose, not by the agent's judgment on a
-bad night.
+architect can bring harness extensions and tool rules into unattended work without editing a generated settings file.
+The operator chooses normal, auto, or dangerous once for the runner, knowing each harness maps that choice to its own
+capabilities and protected branches remain the forge's to guard, not the agent's to respect on a bad night.
 
 | Epic            | Slice           | Status    |
 | --------------- | --------------- | --------- |
 | `epic:adapters` | opencode        | delivered |
 | `epic:adapters` | codex           | horizon   |
-| `epic:security` | worker-lockdown | horizon   |
+| `epic:security` | worker-security | horizon   |
 
 ## `milestone:observability` — the fleet, in instruments you already trust
 
