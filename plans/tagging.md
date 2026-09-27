@@ -23,6 +23,9 @@ is makes the queue something they can partition instead of merely shuffle.
   refusal wins where both could match.
 - **The partitioned queue, visible.** The board and CLI show the queue as each runner sees it, so an operator can tell
   starvation from selectivity.
+- **Filters on the board and CLI, a work item among them.** The chunk list filters by tag, and by the work item a chunk
+  carries: someone who thinks in tracker items asks "where is issue 212?", and the board answers by jumping to its card,
+  Done lane included, instead of leaving them to scan every lane by eye.
 
 ## Open questions
 
