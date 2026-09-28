@@ -1,0 +1,526 @@
+{
+  "schema": 1,
+  "runner": {
+    "name": "tundra-02",
+    "config_path": "/srv/blizzard/runner/blizzard-runner.toml",
+    "source": "daemon",
+    "config_loaded_at": "2026-09-27T06:12:04Z",
+    "config_changed_on_disk": false
+  },
+  "hub": {
+    "url": "https://hub.example.net",
+    "status": "reachable"
+  },
+  "scope": {
+    "graph_name": "basic-harness-workflow",
+    "graph_id": "gr_01K4QX2N7P5R8S3T6V9W0Y1Z2A",
+    "chunk_id": "ch_01K5ZA7Q3M8T2W9R4B6N0C1D5E"
+  },
+  "harnesses": [
+    {
+      "id": "claude_code",
+      "version": "2.4.1",
+      "state": "available",
+      "default": true,
+      "fallback_model": {
+        "value": "claude-opus-5",
+        "source": "adapter-fallback"
+      }
+    },
+    {
+      "id": "opencode",
+      "version": "1.9.3",
+      "state": "available",
+      "default": false,
+      "fallback_model": {
+        "value": null,
+        "source": "adapter-fallback"
+      }
+    }
+  ],
+  "tiers": [
+    {
+      "tier": "blizzard:frontier",
+      "by_harness": [
+        {
+          "harness": "claude_code",
+          "adapter_default": "fable",
+          "runner_alias": "opus",
+          "model": "opus",
+          "source": "runner-alias"
+        },
+        {
+          "harness": "opencode",
+          "adapter_default": null,
+          "runner_alias": "anthropic/claude-opus-5",
+          "model": "anthropic/claude-opus-5",
+          "source": "runner-alias"
+        }
+      ]
+    },
+    {
+      "tier": "blizzard:advanced",
+      "by_harness": [
+        {
+          "harness": "claude_code",
+          "adapter_default": "opus",
+          "runner_alias": null,
+          "model": "opus",
+          "source": "adapter-default"
+        },
+        {
+          "harness": "opencode",
+          "adapter_default": null,
+          "runner_alias": "openai/gpt-6",
+          "model": "openai/gpt-6",
+          "source": "runner-alias"
+        }
+      ]
+    },
+    {
+      "tier": "blizzard:basic",
+      "by_harness": [
+        {
+          "harness": "claude_code",
+          "adapter_default": "sonnet",
+          "runner_alias": null,
+          "model": "sonnet",
+          "source": "adapter-default"
+        },
+        {
+          "harness": "opencode",
+          "adapter_default": null,
+          "runner_alias": null,
+          "model": null,
+          "source": "unmapped"
+        }
+      ]
+    }
+  ],
+  "efforts": [
+    {
+      "authored": "low",
+      "by_harness": [
+        {
+          "harness": "claude_code",
+          "runner_alias": null,
+          "value": "low",
+          "flag": "--effort",
+          "source": "as-authored"
+        },
+        {
+          "harness": "opencode",
+          "runner_alias": null,
+          "value": "low",
+          "flag": "--variant",
+          "source": "as-authored"
+        }
+      ]
+    },
+    {
+      "authored": "medium",
+      "by_harness": [
+        {
+          "harness": "claude_code",
+          "runner_alias": null,
+          "value": "medium",
+          "flag": "--effort",
+          "source": "as-authored"
+        },
+        {
+          "harness": "opencode",
+          "runner_alias": null,
+          "value": "medium",
+          "flag": "--variant",
+          "source": "as-authored"
+        }
+      ]
+    },
+    {
+      "authored": "high",
+      "by_harness": [
+        {
+          "harness": "claude_code",
+          "runner_alias": null,
+          "value": "high",
+          "flag": "--effort",
+          "source": "as-authored"
+        },
+        {
+          "harness": "opencode",
+          "runner_alias": null,
+          "value": "high",
+          "flag": "--variant",
+          "source": "as-authored"
+        }
+      ]
+    },
+    {
+      "authored": "max",
+      "by_harness": [
+        {
+          "harness": "claude_code",
+          "runner_alias": null,
+          "value": "max",
+          "flag": "--effort",
+          "source": "as-authored"
+        },
+        {
+          "harness": "opencode",
+          "runner_alias": "high",
+          "value": "high",
+          "flag": "--variant",
+          "source": "runner-alias"
+        }
+      ]
+    },
+    {
+      "authored": "xhigh",
+      "by_harness": [
+        {
+          "harness": "claude_code",
+          "runner_alias": null,
+          "value": null,
+          "flag": null,
+          "source": "dropped"
+        },
+        {
+          "harness": "opencode",
+          "runner_alias": null,
+          "value": null,
+          "flag": null,
+          "source": "dropped"
+        }
+      ]
+    }
+  ],
+  "pools": [
+    {
+      "graph_id": "gr_01K4QX2N7P5R8S3T6V9W0Y1Z2A",
+      "graph_name": "basic-harness-workflow",
+      "session": "code",
+      "fields": {
+        "model": {
+          "graph": [
+            "blizzard:frontier"
+          ],
+          "chunk": [],
+          "value": [
+            "blizzard:frontier"
+          ],
+          "source": "graph"
+        },
+        "effort": {
+          "graph": null,
+          "chunk": "xhigh",
+          "value": "xhigh",
+          "source": "chunk"
+        },
+        "harnesses": {
+          "graph": [],
+          "chunk": [
+            "opencode",
+            "claude_code"
+          ],
+          "value": [
+            "opencode",
+            "claude_code"
+          ],
+          "source": "chunk"
+        }
+      },
+      "selection_basis": "acceptable-set",
+      "candidates": [
+        {
+          "harness": "opencode",
+          "outcome": "selected",
+          "reason": null,
+          "model": {
+            "value": "anthropic/claude-opus-5",
+            "source": "runner-alias",
+            "via": "blizzard:frontier"
+          },
+          "effort": {
+            "authored": "xhigh",
+            "runner_alias": null,
+            "value": null,
+            "flag": null,
+            "source": "dropped"
+          }
+        },
+        {
+          "harness": "claude_code",
+          "outcome": "passed-over",
+          "reason": null,
+          "model": {
+            "value": "opus",
+            "source": "runner-alias",
+            "via": "blizzard:frontier"
+          },
+          "effort": {
+            "authored": "xhigh",
+            "runner_alias": null,
+            "value": null,
+            "flag": null,
+            "source": "dropped"
+          }
+        }
+      ],
+      "selected": "opencode",
+      "recorded": {
+        "harness": "opencode",
+        "model": "anthropic/claude-opus-4",
+        "effort": null,
+        "differs": true
+      }
+    },
+    {
+      "graph_id": "gr_01K4QX2N7P5R8S3T6V9W0Y1Z2A",
+      "graph_name": "basic-harness-workflow",
+      "session": "gate",
+      "fields": {
+        "model": {
+          "graph": [
+            "blizzard:advanced"
+          ],
+          "chunk": [],
+          "value": [
+            "blizzard:advanced"
+          ],
+          "source": "graph"
+        },
+        "effort": {
+          "graph": null,
+          "chunk": "xhigh",
+          "value": "xhigh",
+          "source": "chunk"
+        },
+        "harnesses": {
+          "graph": [],
+          "chunk": [
+            "opencode",
+            "claude_code"
+          ],
+          "value": [
+            "opencode",
+            "claude_code"
+          ],
+          "source": "chunk"
+        }
+      },
+      "selection_basis": "acceptable-set",
+      "candidates": [
+        {
+          "harness": "opencode",
+          "outcome": "selected",
+          "reason": null,
+          "model": {
+            "value": "openai/gpt-6",
+            "source": "runner-alias",
+            "via": "blizzard:advanced"
+          },
+          "effort": {
+            "authored": "xhigh",
+            "runner_alias": null,
+            "value": null,
+            "flag": null,
+            "source": "dropped"
+          }
+        },
+        {
+          "harness": "claude_code",
+          "outcome": "passed-over",
+          "reason": null,
+          "model": {
+            "value": "opus",
+            "source": "adapter-default",
+            "via": "blizzard:advanced"
+          },
+          "effort": {
+            "authored": "xhigh",
+            "runner_alias": null,
+            "value": null,
+            "flag": null,
+            "source": "dropped"
+          }
+        }
+      ],
+      "selected": "opencode",
+      "recorded": null
+    },
+    {
+      "graph_id": "gr_01K4QX2N7P5R8S3T6V9W0Y1Z2A",
+      "graph_name": "basic-harness-workflow",
+      "session": "iteration",
+      "fields": {
+        "model": {
+          "graph": [
+            "blizzard:advanced"
+          ],
+          "chunk": [],
+          "value": [
+            "blizzard:advanced"
+          ],
+          "source": "graph"
+        },
+        "effort": {
+          "graph": null,
+          "chunk": "xhigh",
+          "value": "xhigh",
+          "source": "chunk"
+        },
+        "harnesses": {
+          "graph": [],
+          "chunk": [
+            "opencode",
+            "claude_code"
+          ],
+          "value": [
+            "opencode",
+            "claude_code"
+          ],
+          "source": "chunk"
+        }
+      },
+      "selection_basis": "acceptable-set",
+      "candidates": [
+        {
+          "harness": "opencode",
+          "outcome": "selected",
+          "reason": null,
+          "model": {
+            "value": "openai/gpt-6",
+            "source": "runner-alias",
+            "via": "blizzard:advanced"
+          },
+          "effort": {
+            "authored": "xhigh",
+            "runner_alias": null,
+            "value": null,
+            "flag": null,
+            "source": "dropped"
+          }
+        },
+        {
+          "harness": "claude_code",
+          "outcome": "passed-over",
+          "reason": null,
+          "model": {
+            "value": "opus",
+            "source": "adapter-default",
+            "via": "blizzard:advanced"
+          },
+          "effort": {
+            "authored": "xhigh",
+            "runner_alias": null,
+            "value": null,
+            "flag": null,
+            "source": "dropped"
+          }
+        }
+      ],
+      "selected": "opencode",
+      "recorded": {
+        "harness": "opencode",
+        "model": "openai/gpt-6",
+        "effort": null,
+        "differs": false
+      }
+    },
+    {
+      "graph_id": "gr_01K4QX2N7P5R8S3T6V9W0Y1Z2A",
+      "graph_name": "basic-harness-workflow",
+      "session": "prepush",
+      "fields": {
+        "model": {
+          "graph": [
+            "blizzard:advanced"
+          ],
+          "chunk": [],
+          "value": [
+            "blizzard:advanced"
+          ],
+          "source": "graph"
+        },
+        "effort": {
+          "graph": null,
+          "chunk": "xhigh",
+          "value": "xhigh",
+          "source": "chunk"
+        },
+        "harnesses": {
+          "graph": [],
+          "chunk": [
+            "opencode",
+            "claude_code"
+          ],
+          "value": [
+            "opencode",
+            "claude_code"
+          ],
+          "source": "chunk"
+        }
+      },
+      "selection_basis": "acceptable-set",
+      "candidates": [
+        {
+          "harness": "opencode",
+          "outcome": "selected",
+          "reason": null,
+          "model": {
+            "value": "openai/gpt-6",
+            "source": "runner-alias",
+            "via": "blizzard:advanced"
+          },
+          "effort": {
+            "authored": "xhigh",
+            "runner_alias": null,
+            "value": null,
+            "flag": null,
+            "source": "dropped"
+          }
+        },
+        {
+          "harness": "claude_code",
+          "outcome": "passed-over",
+          "reason": null,
+          "model": {
+            "value": "opus",
+            "source": "adapter-default",
+            "via": "blizzard:advanced"
+          },
+          "effort": {
+            "authored": "xhigh",
+            "runner_alias": null,
+            "value": null,
+            "flag": null,
+            "source": "dropped"
+          }
+        }
+      ],
+      "selected": "opencode",
+      "recorded": null
+    }
+  ],
+  "notes": [
+    {
+      "kind": "unmapped-tier",
+      "harness": "opencode",
+      "tier": "blizzard:basic"
+    },
+    {
+      "kind": "dropped-effort",
+      "effort": "xhigh",
+      "harnesses": [
+        "claude_code",
+        "opencode"
+      ]
+    },
+    {
+      "kind": "recorded-differs",
+      "session": "code",
+      "recorded_model": "anthropic/claude-opus-4",
+      "fresh_model": "anthropic/claude-opus-5"
+    }
+  ]
+}

@@ -1,0 +1,97 @@
+Worked sample: `blizzard runner models --chunk …` on one illustrative runner.
+
+The runner has Claude Code and OpenCode enabled, with Claude Code as its default. Its blizzard-runner.toml carries:
+
+    [models.aliases]
+    "blizzard:frontier" = "opus"                      # cheaper than the built-in fable
+
+    [opencode.models.aliases]
+    "blizzard:frontier" = "anthropic/claude-opus-5"   # edited this morning; was claude-opus-4
+    "blizzard:advanced" = "openai/gpt-6"
+
+    [opencode.effort.aliases]
+    "max" = "high"
+
+The chunk runs basic-harness-workflow as the hub ships it: code on blizzard:frontier; gate, iteration, and prepush on
+blizzard:advanced; no effort or harnesses declared. Someone set the chunk's defaults to effort `xhigh` and harnesses
+`opencode, claude_code`. The runner has already minted the code and iteration pools for this chunk.
+
+────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
+
+$ blizzard runner models --chunk ch_01K5ZA7Q3M8T2W9R4B6N0C1D5E
+
+runner   tundra-02
+config   /srv/blizzard/runner/blizzard-runner.toml
+source   running daemon · config loaded 2026-09-27 06:12 · unchanged on disk
+hub      https://hub.example.net
+scope    chunk ch_01K5ZA7Q3M8T2W9R4B6N0C1D5E · graph basic-harness-workflow (gr_01K4QX2N7P5R8S3T6V9W0Y1Z2A)
+
+HARNESSES
+  harness       version   state       default   when nothing resolves
+  claude_code   2.4.1     available   yes       claude-opus-5
+  opencode      1.9.3     available   —         opencode's own configured model
+
+TIERS
+  tier               harness      adapter default  runner alias             runs                     from
+  blizzard:frontier  claude_code  fable            opus                     opus                     runner alias
+                     opencode     —                anthropic/claude-opus-5  anthropic/claude-opus-5  runner alias
+  blizzard:advanced  claude_code  opus             —                        opus                     adapter default
+                     opencode     —                openai/gpt-6             openai/gpt-6             runner alias
+  blizzard:basic     claude_code  sonnet           —                        sonnet                   adapter default
+                     opencode     —                —                        —                        unmapped
+  ! opencode cannot map blizzard:basic: a session asking only for that tier passes opencode over.
+
+EFFORT
+  authored   harness       runner alias   reaches harness   from
+  low        claude_code   —              --effort low      as authored
+             opencode      —              --variant low     as authored
+  medium     claude_code   —              --effort medium   as authored
+             opencode      —              --variant medium  as authored
+  high       claude_code   —              --effort high     as authored
+             opencode      —              --variant high    as authored
+  max        claude_code   —              --effort max      as authored
+             opencode      high           --variant high    runner alias
+  xhigh      claude_code   —              —                 dropped
+             opencode      —              —                 dropped
+  ! xhigh is not an effort either harness knows. It is dropped, and the session runs at the harness's own default.
+
+SESSION POOLS · basic-harness-workflow, with this chunk's defaults
+
+  code
+    model       blizzard:frontier       graph
+    effort      xhigh                   chunk default
+    harnesses   opencode, claude_code   chunk default
+    → opencode      selected      anthropic/claude-opus-5   runner alias via blizzard:frontier      effort dropped
+      claude_code   passed over   opus                      runner alias via blizzard:frontier      effort dropped
+    running     opencode · anthropic/claude-opus-4 · no effort
+    ! The running pool keeps anthropic/claude-opus-4 on every resume.
+      Its next fresh session runs anthropic/claude-opus-5.
+
+  gate
+    model       blizzard:advanced       graph
+    effort      xhigh                   chunk default
+    harnesses   opencode, claude_code   chunk default
+    → opencode      selected      openai/gpt-6              runner alias via blizzard:advanced      effort dropped
+      claude_code   passed over   opus                      adapter default via blizzard:advanced   effort dropped
+
+  iteration
+    model       blizzard:advanced       graph
+    effort      xhigh                   chunk default
+    harnesses   opencode, claude_code   chunk default
+    → opencode      selected      openai/gpt-6              runner alias via blizzard:advanced      effort dropped
+      claude_code   passed over   opus                      adapter default via blizzard:advanced   effort dropped
+    running     opencode · openai/gpt-6 · no effort
+
+  prepush
+    model       blizzard:advanced       graph
+    effort      xhigh                   chunk default
+    harnesses   opencode, claude_code   chunk default
+    → opencode      selected      openai/gpt-6              runner alias via blizzard:advanced      effort dropped
+      claude_code   passed over   opus                      adapter default via blizzard:advanced   effort dropped
+
+────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
+
+Reading it the morning after: every session is running with no effort at all, because the chunk's `xhigh` is not a
+value either harness knows. Every session lands on OpenCode rather than the runner's default, because the chunk put
+OpenCode first. And the code pool is still on the model it was minted with, because it has not rotated since the alias
+changed. Each of those three answers came from a different layer, and each is visible on one screen.

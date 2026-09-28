@@ -215,18 +215,19 @@ tests that describe the platform from outside, are both hardening of the ground 
 Hardening is what a platform does after it works. Little of it is a new capability. Almost all of it is an assumption
 the platform made on the operator's behalf, handed back to them as a decision.
 
-| Epic                       | Slice | Status  |
-| -------------------------- | ----- | ------- |
-| `epic:throttling`          | full  | horizon |
-| `epic:tagging`             | full  | horizon |
-| `epic:resilience`          | full  | horizon |
-| `epic:retention`           | full  | horizon |
-| `epic:config`              | full  | horizon |
-| `epic:ui-toolkit`          | full  | horizon |
-| `epic:documentation`       | full  | horizon |
-| `epic:test-optimization`   | full  | horizon |
-| `epic:test-architecture`   | full  | horizon |
-| `epic:test-shared-service` | full  | horizon |
+| Epic                       | Slice            | Status  |
+| -------------------------- | ---------------- | ------- |
+| `epic:throttling`          | full             | horizon |
+| `epic:tagging`             | full             | horizon |
+| `epic:resilience`          | full             | horizon |
+| `epic:retention`           | full             | horizon |
+| `epic:config`              | model-resolution | horizon |
+| `epic:config`              | sweep            | horizon |
+| `epic:ui-toolkit`          | full             | horizon |
+| `epic:documentation`       | full             | horizon |
+| `epic:test-optimization`   | full             | horizon |
+| `epic:test-architecture`   | full             | horizon |
+| `epic:test-shared-service` | full             | horizon |
 
 ## `milestone:human-in-the-loop` — the operator stops being the wire
 
