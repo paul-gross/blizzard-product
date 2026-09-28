@@ -9,7 +9,7 @@ way around.
 | `milestone:homeostasis`        | Run a fleet that holds its own pace and quality: what the fleet learns, spends, and builds is watched by the fleet itself, decay becomes filed work instead of quiet debt, work that stands on unfinished work waits its turn without a human holding it back — and the fleet begins to offer ideas of its own.                          |
 | `milestone:polyglot`           | Run the fleet on the coding harness of their choice — Claude Code, Codex, or OpenCode, first-class and mixable by node — with the safeties on: no worker runs with permissions dangerously bypassed.                                                                                                                                     |
 | `milestone:observability`      | Answer any question about their own fleet with the instruments they already trust: the numbers leave as files any warehouse or BI tool reads, and every night narrates itself as traces to whichever observability backend they run — no new dashboard to learn, and no waiting on blizzard to build the view they wanted.               |
-| `milestone:projects`           | Run every project from one fleet: a single hub hosting many projects' sources and queues, and a single runner per machine working all of them — a workspace per project, not a stack per project. Each project lands and deploys its finished work its own declared way.                                                                 |
+| `milestone:projects`           | Run every project from one fleet: a single hub hosting many projects' sources and queues, and a single runner host per machine working all of them — a workspace per project, not a stack per project. Each project lands and deploys its finished work its own declared way.                                                            |
 | `milestone:hardening`          | Decide for themselves how the fleet behaves: every operational constant theirs to set, what each runner will take and when and at what rate theirs to declare, a provider outage ridden out rather than slept through, nothing growing without end underneath them, and every question about the platform answerable without cloning it. |
 | `milestone:human-in-the-loop`  | Stop being the wire between the fleet and everything it needs: it reaches them wherever they are when a decision is genuinely theirs, and settles CI's verdict itself when it is not.                                                                                                                                                    |
 | `milestone:mobile`             | Carry the fleet in a pocket: watch the night, answer a question, and unblock a chunk from a phone, through notifications that arrive the way the phone's own do.                                                                                                                                                                         |
@@ -138,11 +138,12 @@ a whole second stack on the same desk, and none of the stacks know of each other
 first-class idea: a grouping of both what to do and who does it. One hub hosts many projects, each with its own sources,
 and a piece of work carries its project from ingest to landing.
 
-The runner is rearchitected to match. A runner stops being the extension of a single workspace and becomes a host of
-many: it configures a local workspace per project, and each workspace works for its project. Three projects on one
-laptop means three workspaces and one runner — never three runners, and never three of everything above them. For the
-operator, a desk full of stacks collapses into one: queue work against any project, watch all of it on one board, and
-slice the view to a single project when only that one matters.
+The machine is rearchitected to match. Its runner host — the one daemon a machine runs — stops being the extension of a
+single workspace and becomes a host of many: it configures a local workspace per project, and each workspace works for
+its project through whichever of the host's runners serve it. Three projects on one laptop means three workspaces and
+one host — never three installations, and never three of everything above them. For the operator, a desk full of stacks
+collapses into one: queue work against any project, watch all of it on one board, and slice the view to a single project
+when only that one matters.
 
 A project organises one operator's world; it does not partition the hub. Graphs stay a shared library and the board
 still shows the whole fleet, so the boundary that holds for everything is a level above projects: the tenant. One hub
@@ -217,6 +218,8 @@ the platform made on the operator's behalf, handed back to them as a decision.
 
 | Epic                       | Slice            | Status  |
 | -------------------------- | ---------------- | ------- |
+| `epic:runner-host`         | runner           | horizon |
+| `epic:runner-host`         | hub              | horizon |
 | `epic:throttling`          | full             | horizon |
 | `epic:tagging`             | full             | horizon |
 | `epic:resilience`          | full             | horizon |

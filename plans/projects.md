@@ -14,7 +14,7 @@ An operator with three repositories runs blizzard three times. Three hubs, three
 on, three sets of credentials to rotate — because blizzard's only notion of "everything I am working on" is the
 installation itself. The platform has no concept of a project, so the operator supplies one by duplicating the stack.
 This epic makes project a first-class grouping of both what to do and who does it: three projects on a laptop should
-mean three workspaces and one runner, not three of everything.
+mean three workspaces and one runner host, not three of everything.
 
 The work lands in two slices, hub then runner. It is built alongside `epic:multi-tenancy`, which touches the same store,
 API, and runner seams and scopes more of them, so the two designs are settled together rather than one after the other.
@@ -31,8 +31,9 @@ API, and runner seams and scopes more of them, so the two designs are settled to
 
 ## What to build — the runner slice
 
-- **A workspace per project, one daemon.** The runner hosts a local workspace for each project it serves and claims
-  across all of them, so the machine's capacity is shared rather than partitioned by installation.
+- **A workspace per project, one host.** The runner host `epic:runner-host` introduces holds a local workspace for each
+  project the machine serves, and its runners claim across all of them, so the machine's capacity is shared rather than
+  partitioned by installation.
 - **Per-project isolation on the machine.** Checkouts, environments, and credentials are separated by project; a worker
   in one project's workspace has no path into another's.
 
