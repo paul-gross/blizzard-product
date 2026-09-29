@@ -131,6 +131,14 @@ combination fails with the native setting's path. The operator can inspect what 
 editing generated files. The runner never writes harness config into a project worktree, and no hub-controlled input
 becomes a path to local harness config.
 
+Each harness binding owns its own mandatory denials; there is no shared, harness-neutral denial list. Claude Code's
+denials — `ScheduleWakeup`, `Monitor`, the `Cron*` tools, `RemoteTrigger`, and `EndConversation` — exist because those
+tools defer work to a later turn a headless Claude Code session never gets, or end it early; they name Claude Code tools
+and mean nothing to another harness. OpenCode's `question` denial exists because no one is attached to answer it. The
+Claude Code list moves out of the shared harness module into the Claude Code binding, beside the OpenCode binding's own
+document, so each composition adds only its own harness's denials and a new binding declares its own rather than
+inheriting another's.
+
 For each harness, prove with the real CLI that the effective config and its companion files load alongside the runner's
 mandatory wiring, and that user/project config, resumes, judgements, and subagents do not silently replace either side.
 The proof includes a tool denied by the operator in a mode that honors native denials, an operator-added MCP or plugin,

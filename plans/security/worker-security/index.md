@@ -23,6 +23,11 @@ to hooks, plugins, and permission rules rather than replacing whole sections. A 
 fails at runner startup instead of silently overriding either side. `blizzard runner init` may refresh generated files
 but must leave the operator's bundle intact.
 
+Those required denials belong to the harness that needs them. Claude Code's exist so a session does not schedule itself
+a later turn it will never get, or end early; OpenCode's exist so it does not ask a question no one is there to answer.
+Each harness's interface carries its own list, so an OpenCode worker never receives Claude Code's rules and the next
+harness declares its own rather than inheriting another's.
+
 Existing user and project settings still load. The runner-supplied configuration takes precedence for overlapping
 ordinary settings, while unrelated local settings remain. Native permission rules can combine, and managed settings
 retain the harness's own precedence; a clash that prevents blizzard's required worker behavior must be visible rather
