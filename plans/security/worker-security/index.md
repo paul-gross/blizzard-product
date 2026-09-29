@@ -37,11 +37,14 @@ than silently ignored.
 mode, and `Dangerous` grants the broadest available approval. Claude Code has distinct modes for all three; OpenCode
 uses `--auto` for both `Auto` and `Dangerous` because that is its broadest mode. A runner without the setting keeps its
 current behavior. This choice governs approval, while the operator's native configuration still carries tool rules.
+`Dangerous` is the operator's own call: if a harness's broadest mode skips the operator's deny rules, blizzard says so
+plainly and does not compensate, because the operator configured that harness and chose that mode.
 
-**Make normal mode usable without a silent stall.** A normal permission prompt in a headless run must resolve by an
-explicit route, be denied, or surface as an escalation; it cannot wait forever for a person who is not attached. Fresh
-sessions, resumes, judgements, and their subagents must get the intended configuration. Document the different behavior
-of interactive takeover, where an operator can answer prompts.
+**Make normal mode usable without a silent stall.** In `Normal`, the operator grants what a worker may do, and anything
+not granted is refused on the spot. The worker meets that refusal as an ordinary tool error and finds another way, the
+way a developer without production access asks a teammate rather than waiting at a locked door. No request waits for a
+person who is not attached. Fresh sessions, resumes, judgements, and their subagents must get the intended
+configuration. Document the different behavior of interactive takeover, where an operator can answer prompts.
 
 An operator should be able to deny a native tool, add a harness extension, restart the runner, and see both choices in
 the next worker without losing blizzard's heartbeat. Tool permissions govern harness behavior, not the authority of

@@ -60,9 +60,12 @@ The directory is an input to the runner, not something the harness discovers aut
 
 Changes to operator files require a runner restart; in-flight turns keep the snapshot they started with. Runner
 initialization (`blizzard runner init`) may regenerate runner-owned settings and plugin files, but never edits or
-replaces the operator's bundle. With no bundle, existing generated configuration remains the effective input. The
-OpenCode binding must prove its effective file and `OPENCODE_CONFIG_DIR` do not load the same plugin or setting twice;
-if its config loader does, use only the necessary native entry points while still making companion files available.
+replaces the operator's bundle. With no bundle, existing generated configuration remains the effective input.
+
+Loading anything twice is never the goal; it is a hazard of OpenCode reading the same composition through three entry
+points. A plugin both named in the composed JSON and present under `OPENCODE_CONFIG_DIR` could register twice — two
+heartbeats per tool call. Delivering OpenCode's configuration includes proving each plugin and setting loads exactly
+once; if the loader duplicates one, use only the entry points needed while still making companion files available.
 
 ## Existing local settings
 
@@ -100,26 +103,32 @@ translates the value for every unattended worker invocation, including a fresh s
 
 OpenCode's `--auto` is its broadest approval mode, so `auto` and `dangerous` have the same OpenCode launch behavior.
 This is an intentional many-to-one mapping, not a claim that OpenCode bypasses explicit denies the way Claude Code may.
-For headless Claude Code invocations, `--permission-prompts none` makes any request still requiring a person a definite
-denial, rather than a prompt awaiting a nonexistent host. A denied request must reach the runner as a usable failure or
-escalation signal. OpenCode's equivalent headless behavior must be proven and handled explicitly when `--auto` is
-absent. For an absent `autonomy` setting, existing installations retain today's effective default: Claude Code
-`bypassPermissions`, OpenCode `--auto`. The runner's current `harness_permission_mode` setting for Claude Code must have
-one unambiguous migration path: while a config still uses it without `autonomy`, preserve its existing behavior; if both
-are supplied, report the conflict and require the operator to choose the single runner-wide setting. A new config
+
+`normal` means the operator grants explicitly and everything else is refused immediately. For headless Claude Code
+invocations, `--permission-prompts none` makes any request still requiring a person a definite denial, rather than a
+prompt awaiting a nonexistent host. OpenCode gets the same outcome from its composed configuration rather than from
+whatever its headless run happens to do with a pending request: in `normal`, every permission that would resolve to
+`ask` — written by the operator, by local settings, or left to OpenCode's own default — is composed as `deny`. In both
+harnesses the refusal returns to the worker as an ordinary tool error, and the worker takes another route; the runner
+does not intervene. For an absent `autonomy` setting, existing installations retain today's effective default: Claude
+Code `bypassPermissions`, OpenCode `--auto`. The runner's current `harness_permission_mode` setting for Claude Code must
+have one unambiguous migration path: while a config still uses it without `autonomy`, preserve its existing behavior; if
+both are supplied, report the conflict and require the operator to choose the single runner-wide setting. A new config
 scaffolds `autonomy = "dangerous"` to preserve today's defaults.
 
 Autonomy decides how the harness handles approval requests; it does not remove native tool rules from the operator's
 bundle. `Dangerous` means the broadest native approval, not unrestricted host access: OpenCode `--auto` still refuses
-tools explicitly marked `deny`. Test whether Claude Code's `bypassPermissions` honors explicit native denies; if it does
-not, do not present those operator denies as enforced in `Dangerous`. Runner-owned headless denials must either stay
-effective through a harness-native mechanism or have an equivalent runner-owned outcome. If neither is possible for a
-mode, that binding cannot launch in that mode while claiming its required behavior. Apply the same scrutiny to user or
+tools explicitly marked `deny`. Whether Claude Code's `bypassPermissions` honors the operator's own deny rules is the
+operator's concern, not blizzard's: the operator configured the harness and chose the mode, so blizzard neither
+compensates nor claims those denies are enforced in `Dangerous`, and the operator documentation says so. Runner-owned
+headless denials are different — blizzard depends on them — and must stay effective in every mode through a
+harness-native mechanism or an equivalent runner-owned outcome. Today's default already pairs `bypassPermissions` and
+`--auto` with those denials; a regression test holds that for every autonomy value. Apply the same scrutiny to user or
 project settings that might weaken runner-owned requirements.
 
-In a headless run of any mode, a tool request that still needs a person cannot remain pending indefinitely: the runner
-must arrange an explicit deny or escalation outcome, tested for both CLIs. An interactive takeover can present prompts
-to its operator; the binding states separately which unattended flags, if any, its attended command retains.
+In a headless run of any mode, a tool request that still needs a person cannot remain pending indefinitely: it resolves
+as a definite denial, tested for both CLIs. An interactive takeover can present prompts to its operator; the binding
+states separately which unattended flags, if any, its attended command retains.
 
 ## Effective configuration
 
