@@ -3,9 +3,9 @@ epic: mutation-testing
 refinement: refined
 slices:
   - name: diff-scoped
-    status: in-progress
+    status: delivered
   - name: corpus-sweep
-    status: in-progress
+    status: delivered
   - name: angular
     status: horizon
 ---

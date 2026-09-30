@@ -6,7 +6,6 @@ way around.
 
 | Milestone                      | What users will be able to do                                                                                                                                                                                                                                                                                                            |
 | ------------------------------ | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `milestone:homeostasis`        | Run a fleet that holds its own pace and quality: what the fleet learns, spends, and builds is watched by the fleet itself, decay becomes filed work instead of quiet debt, work that stands on unfinished work waits its turn without a human holding it back — and the fleet begins to offer ideas of its own.                          |
 | `milestone:polyglot`           | Run the fleet on the coding harness of their choice — Claude Code, Codex, or OpenCode, first-class and mixable by node — with the safeties on: no worker runs with permissions dangerously bypassed.                                                                                                                                     |
 | `milestone:observability`      | Answer any question about their own fleet with the instruments they already trust: the numbers leave as files any warehouse or BI tool reads, and every night narrates itself as traces to whichever observability backend they run — no new dashboard to learn, and no waiting on blizzard to build the view they wanted.               |
 | `milestone:projects`           | Run every project from one fleet: a single hub hosting many projects' sources and queues, and a single runner host per machine working all of them — a workspace per project, not a stack per project. Each project lands and deploys its finished work its own declared way.                                                            |
@@ -15,60 +14,6 @@ way around.
 | `milestone:mobile`             | Carry the fleet in a pocket: watch the night, answer a question, and unblock a chunk from a phone, through notifications that arrive the way the phone's own do.                                                                                                                                                                         |
 | `milestone:project-management` | Assemble what the fleet works on from inside blizzard — browse the backlog, take many items at once, and shape them into chunks — instead of handing over ids one at a time.                                                                                                                                                             |
 | `milestone:future-state`       | Look inside the fleet while it works and steer it without stopping it — a live environment opened from the board, a word to a running chunk — over a fleet that keeps its own schedule, hears from the systems that notice trouble first, and bends to a shop blizzard's authors never saw.                                              |
-
-## `milestone:homeostasis` — a fleet that keeps its own house
-
-A fleet that ships every night can decay every night too, and the decay is quiet: a retrospective finding nobody turns
-into work, a feature that cost three times what anyone guessed, a suite that stays green while it stops asserting, an
-architecture bending one expedient commit at a time. Today the operator is the immune system — each of those signals
-waits for a human to notice it, weigh it, and file something. The milestone is named for what it installs instead:
-homeostasis, the way a living system holds its own vitals steady while the world outside changes. Pace and quality are
-the fleet's vitals, and holding them level becomes the fleet's own job.
-
-Through the charter's people: the harness engineer stops treating retrospectives as reading — a finding worth acting on
-becomes a filed item with a stated priority, entering the same intake as any feature, and next week's fleet is
-measurably different from last week's. The application architect's constraints hold while they sleep: fitness checks
-name architectural drift while it is one commit old, and mutation runs prove the suites can fail, so a green gate means
-behavior asserted rather than merely executed.
-
-None of that learning scales past one machine unless its raw material travels. Today a worker's conversation lives and
-dies as files on its own runner — workable for one runner, hopeless for twenty — so the milestone also centralizes the
-fleet's conversations: every transcript, from every harness on every runner, flowing into one store the retrospective
-sweeps read. A fleet can only learn from what it can reach.
-
-And what the fleet can reach, it should count. One question asked of the transcripts by hand — how often are skills
-used? — overturned an assumption: agents constantly, skills nearly never. Aggregated usage of the fleet's own machinery
-— skills fired, agents spawned, context files read — turns the tending of the corpus from taste into evidence: the file
-nobody reads gets reworded or removed on the numbers, not on a hunch. Counting is only half of it, though: a number that
-takes a terminal session and a throwaway script to retrieve is learned once and then paid for again the next time
-someone wonders. Making those numbers legible is a destination of its own, and it is reached in
-`milestone:observability` rather than here.
-
-Quality collects its guards here — fitness checks that name drift while it is one commit old, mutation runs that prove a
-suite can fail — while pace has had none. Its costliest leak is work done twice: two chunks where the second stands on
-the first, the first parked at a human gate, and an agent that reaches for the ground it expected, finds it missing, and
-lays it again. The operator buys one idea twice and then pays a third time to reconcile the halves. Watching for that is
-vigilance no person should have to supply, so the queue gains its first relation — an edge the operator declares once
-and the queue honors from then on. A chunk that stands on another cannot be claimed until the one beneath it is done,
-and comes ready on its own the moment it is; the fleet flows around it in the meantime rather than idling. Pace stops
-depending on who happened to be watching the board.
-
-The milestone also carries one deliberate maybe: ideation. A fleet that reads its own code every night is well placed to
-notice what the product could become, not only what it should repair — so it proposes the occasional high-level feature
-direction worth exploring, a recommendation to weigh rather than work it files. Whether those proposals earn their
-reading is exactly what the exploration exists to find out.
-
-| Epic                     | Slice        | Status      |
-| ------------------------ | ------------ | ----------- |
-| `epic:self-sourced-work` | full         | delivered   |
-| `epic:garden`            | full         | delivered   |
-| `epic:transcripts`       | full         | delivered   |
-| `epic:analytics`         | full         | delivered   |
-| `epic:mutation-testing`  | diff-scoped  | in-progress |
-| `epic:mutation-testing`  | corpus-sweep | in-progress |
-| `epic:cost`              | attribution  | retired     |
-| `epic:queue`             | dependencies | delivered   |
-| `epic:ideation`          | full         | delivered   |
 
 ## `milestone:polyglot` — any harness, with the safeties on
 

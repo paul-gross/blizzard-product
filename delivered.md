@@ -44,6 +44,26 @@ fleet.
 | `epic:ask-answer` | remote slice        | The closed answer loop: an answer from any device shows its delivery and the agent back at work, and a beaten answerer is told who won (#165). Built from its [plan](./delivered/ask-answer/remote.md).                                                                                                                                                          |
 | `epic:hub`        | remote slice        | The hub stands off-machine as a hosted deployment every runner reaches over the network. The plan's multi-runner proof and staged outage drill were retired by operator call: arbitration never assumed a runner count, and the reconnect-and-flush contract is exercised in production by every hub redeploy. Built from its [plan](./delivered/hub/remote.md). |
 
+## `milestone:homeostasis` — a fleet that keeps its own house
+
+The fleet took over its own vitals. Work can be born inside the hub rather than only at the forge, so a finding becomes
+a filed item instead of a paragraph; every conversation from every runner reaches one store, and what the fleet does is
+counted from it; gardening routines sweep the codebase along declared axes and turn decay into proposals the operator
+accepts into ordinary work; mutation runs prove the backend suites can fail; the queue holds a chunk until the one it
+stands on is done; and the fleet proposes product directions of its own. The `epic:cost` attribution slice the milestone
+once named was retired unbuilt.
+
+| Epic                     | Slice delivered    | Notes                                                                                                                                                                                                                                                                                       |
+| ------------------------ | ------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `epic:self-sourced-work` | full               | Work items in the hub's own store (`hub:42`), flowing through the same ingest → backlog → promote → deliver pipeline as forge-born chunks (#356). Built from its [plan](./delivered/self-sourced-work.md).                                                                                  |
+| `epic:garden`            | full               | Gardening routines, runs, findings, and proposals, with the board's gardening tab for finding triage and the proposal docket (#386, #387). Built from its [plan](./delivered/garden/index.md).                                                                                              |
+| `epic:transcripts`       | full               | Every worker conversation, from every harness on every runner, normalized and streamed to a durable home at the hub (#244). Built from its [plan](./delivered/transcripts.md).                                                                                                              |
+| `epic:analytics`         | full               | Fleet analytics derived from the transcripts — files read, skills fired, agents spawned, by node — beside the hub's operational numbers (#253). Built from its [plan](./delivered/analytics.md).                                                                                            |
+| `epic:queue`             | dependencies slice | Dependency edges an operator declares once: a chunk that stands on another cannot be claimed until the one beneath it is done (#455). Priority slice is in the [epic registry](./epics.md). Built from its [plan](./plans/queue/dependencies/index.md).                                     |
+| `epic:ideation`          | full               | A gardening routine that reads the product as built against the charter and proposes directions for the operator to accept or decline (#542). Built from its [plan](./delivered/ideation.md).                                                                                               |
+| `epic:mutation-testing`  | diff-scoped slice  | mutmut behind `mise run mutation <scope>` as the `blizzard:mutation` method, reporting surviving mutants on a change's own functions at delivery time and blocking nothing (#551). Angular slice is in the [epic registry](./epics.md). Built from its [plan](./plans/mutation-testing.md). |
+| `epic:mutation-testing`  | corpus-sweep slice | The `mutation-testing` gardening axis — backend scopes, a survivor-classification standard, and a measurement — run end to end on the fleet (#551). Built from its [plan](./plans/mutation-testing.md).                                                                                     |
+
 ## Outside the milestones
 
 | Epic                | Slice delivered     | Notes                                                                                                                                                                                                                                                                                                                                                   |
