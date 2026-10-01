@@ -107,8 +107,8 @@ The epic lands in three slices:
 | Slice                                       | What it builds                                                                                                                                                                                                                                |
 | ------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | [fleet-spans](./fleet-spans/index.md)       | The hub tells every node step from its own facts — queue waits, gates, asks, hub-executed nodes, bounces, and what each step cost.                                                                                                            |
-| [platform-spans](./platform-spans/index.md) | The calls a working agent makes — each `blizzard` command, the runner and hub requests behind it, and the queries those ran — nested inside the node step that made them, so a step's trace shows how the agent used the hub while it worked. |
 | [runner-spans](./runner-spans/index.md)     | The runner adds what only it saw: each harness invocation inside a step — spawn, resume, nudge, judgement — and the checks it ran.                                                                                                            |
+| [platform-spans](./platform-spans/index.md) | The calls a working agent makes — each `blizzard` command, the runner and hub requests behind it, and the queries those ran — nested inside the node step that made them, so a step's trace shows how the agent used the hub while it worked. |
 
 ## What this epic is not
 
