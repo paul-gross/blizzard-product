@@ -3,10 +3,10 @@ epic: fact-egress
 refinement: refined
 slices:
   - name: steps
-    status: horizon
+    status: in-progress
     plan: ./steps/index.md
   - name: events
-    status: horizon
+    status: in-progress
     plan: ./events/index.md
 ---
 
