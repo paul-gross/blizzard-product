@@ -31,11 +31,11 @@ architect can bring harness extensions and tool rules into unattended work witho
 The operator chooses normal, auto, or dangerous once for the runner, knowing each harness maps that choice to its own
 capabilities and protected branches remain the forge's to guard, not the agent's to respect on a bad night.
 
-| Epic            | Slice           | Status    |
-| --------------- | --------------- | --------- |
-| `epic:adapters` | opencode        | delivered |
-| `epic:adapters` | codex           | horizon   |
-| `epic:security` | worker-security | horizon   |
+| Epic            | Slice           | Status      |
+| --------------- | --------------- | ----------- |
+| `epic:adapters` | opencode        | delivered   |
+| `epic:adapters` | codex           | horizon     |
+| `epic:security` | worker-security | in-progress |
 
 ## `milestone:observability` — the fleet, in instruments you already trust
 

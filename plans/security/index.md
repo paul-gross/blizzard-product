@@ -5,7 +5,7 @@ slices:
   - name: runner-auth
     status: delivered
   - name: worker-security
-    status: horizon
+    status: in-progress
     plan: ./worker-security/index.md
 ---
 
