@@ -5,9 +5,9 @@
 Emission is a hub sweep, started from the hub's lifespan alongside its existing reconcilers, and only when fleet tracing
 is enabled. It follows the system shape the other sweeps already honor:
 
-- **Assembly is pure.** A domain function turns one closed step's facts into its span records — ids, times, attributes,
-  events, links — with no I/O. Every shape in [spans.md](./spans.md) is therefore a unit test over fact fixtures
-  (`bzh:domain-core`).
+- **Assembly is pure.** A domain function turns one closed step's facts into its step summary (spans.md §Identity), and
+  the summary into its span records — ids, times, attributes, events, links — with no I/O. Every shape in
+  [spans.md](./spans.md) is therefore a unit test over fact fixtures (`bzh:domain-core`).
 - **Reads go through a repository.** The sweep reads closed steps after the cursor through a read repository.
 - **Export goes through a seam.** An `ITraceExporter` protocol has an OTLP binding for production and an in-memory
   binding for tests (`bzh:pluggable-seams`).

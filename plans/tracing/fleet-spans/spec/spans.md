@@ -99,6 +99,14 @@ same trace without anything crossing the wire.
 
 The `v1` prefix is the contract version, and changing the derivation is a breaking change.
 
+Step identification, closing, the position fold and the id derivation live in one pure domain module with no hub storage
+dependency, and runner spans import it rather than restate it.
+
+The same module assembles each closed step's summary: every dimension and measure in §Attributes, computed once. That
+covers outcome, choice, destination, `preceded_by`, bounce cause, asks, waits by kind, and the token and cost totals,
+with billed and estimated cost kept apart until a span folds them. Spans are built from the summary, and the fact-egress
+step rows are built from the same one, so a trace and an exported row never disagree about a step.
+
 ## Spans in a step's trace
 
 Every span is `SpanKind.INTERNAL`. Children are parented on the root span: `step`, or `gate` for a gate step.

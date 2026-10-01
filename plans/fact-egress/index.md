@@ -2,8 +2,12 @@
 epic: fact-egress
 refinement: refined
 slices:
-  - name: full
+  - name: steps
     status: horizon
+    plan: ./steps/index.md
+  - name: events
+    status: horizon
+    plan: ./events/index.md
 ---
 
 # Plan — `epic:fact-egress`
@@ -63,15 +67,39 @@ dimension it could ever be grouped by present on the row itself, rather than wai
 else. Denormalization is not a shortcut here; it is what lets a tool with no join support answer the same questions as
 one with it.
 
+A step's row also sits one level above the finest grain the hub holds. A single step can run on two models, and a row
+that has already added their costs together can no longer say what each model cost. So beside the step rows goes one row
+per invocation, the hub's own record of each launch, resume and judgement and what it spent. The step row is there for
+the questions people ask most, and the invocation row is there for the one they ask next.
+
+**One definition of a step.** Tracing tells the same steps as spans, and a step that ended at one moment in a trace and
+another in a warehouse would leave the operator trusting neither. So the two epics share one definition: which facts
+make a step, when it closed and how, and where the chunk stood when it began. The export carries each step's trace id,
+so a row that looks wrong in a chart opens straight into the trace that explains it.
+
 **An exporter that writes files.** Parquet by preference, because it carries its own schema and lets a reader scan only
 the columns a question names; NDJSON where a plain-text stream is easier to consume, with a manifest supplying the
-schema Parquet would have carried itself. The destination is configured — a local directory, an object-storage prefix —
-and blizzard writes there and stops. No credentials to a warehouse, no vendor SDK, no loader. The tools that move files
-between systems already exist and are better at it than blizzard would be.
+schema Parquet would have carried itself. NDJSON needs nothing blizzard does not already carry, and Parquet arrives with
+an optional install, so a hub that never exports never pays for the library. The destination is a directory the operator
+names, and blizzard writes finished files there and never touches them again. Getting them into a bucket or a warehouse
+is a job for `rclone`, `aws s3 sync`, or whatever loader the operator already runs. No credentials to a warehouse, no
+vendor SDK, no loader. The tools that move files between systems already exist and are better at it than blizzard would
+be.
 
-**An incremental cursor.** The facts are append-only and already carry monotonic keys, so an export resumes where the
-last one ended rather than rewriting history every night. The cursor is persisted, so a restart costs nothing, and
-re-shipping a row twice is harmless by construction.
+**An incremental cursor.** An export resumes where the last one ended rather than rewriting history every night. The
+cursor is persisted, so a restart costs nothing, and re-shipping a row twice is harmless by construction: every row
+carries the identity a reader keeps the newest copy of.
+
+Not every fact holds still once written, and the export has to be honest about the ones that move. The events derived
+from a transcript are recomputed when the transcript changes or a better extractor arrives, and the rows they replace
+simply vanish from the store. Files are never rewritten, so the export says the same thing the way a ledger corrects
+itself: it writes the segment's events again, marked as the newer derivation, and a segment that disappears gets a row
+saying so. Reading the current truth is one documented view away, and the history of how it changed is still there for
+anyone who wants it.
+
+**Starting from now.** Turning the export on starts the record at that moment rather than pouring a year into someone's
+directory unasked. History is there for the asking: an operator backfills the window they want, deliberately, and gets
+the same rows the live export would have written.
 
 **A versioned contract.** The exported shape is a published interface, not an accident of the store's current schema. It
 lives with blizzard's other wire contracts, it carries a version, and it changes on a deprecation path — because the
@@ -82,12 +110,23 @@ tidy-up.
 requires reading blizzard's source is not a capability; it is a puzzle with a support burden attached. For this epic the
 documentation is a deliverable, not a follow-up.
 
+## How it lands
+
+The epic lands in two slices:
+
+| Slice                       | What it builds                                                                                                                                                               |
+| --------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| [steps](./steps/index.md)   | The exporter itself, with the first two datasets: a row per node step and a row per invocation, built on the step definition tracing uses, with the contract and dictionary. |
+| [events](./events/index.md) | The events derived from transcripts — files read, skills fired, agents spawned — exported as a ledger that stays honest when a transcript is derived again.                  |
+
 ## What must never be true
 
 **The export can never cost the fleet its liveness.** The charter promises crash-equivalence — a kill at any instant
 loses at most in-flight tokens — and an exporter sitting in the hub's critical path would trade that promise away to a
 storage backend having a bad afternoon. Facts land in the store the way they already do; a separate sweeper reads them
-forward and writes files. Nothing in the fleet's path ever waits on the exit.
+forward and writes files. Nothing in the fleet's path ever waits on the exit. And because the directory may sit on the
+same disk as the hub's own store, the export stops writing well before that disk runs short, rather than filling it and
+taking the fleet down with it.
 
 **Content never leaves by accident.** Transcripts hold prompts, file contents, and whatever a worker happened to read,
 and once a byte reaches somebody's warehouse it is beyond recall. What leaves is decided field by field rather than
