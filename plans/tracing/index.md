@@ -2,8 +2,15 @@
 epic: tracing
 refinement: refined
 slices:
-  - name: full
+  - name: fleet-spans
     status: horizon
+    plan: ./fleet-spans/index.md
+  - name: platform-spans
+    status: horizon
+    plan: ./platform-spans/index.md
+  - name: runner-spans
+    status: horizon
+    plan: ./runner-spans/index.md
 ---
 
 # Plan — `epic:tracing`
@@ -41,13 +48,20 @@ where two harnesses are comparable at all, and the only honest place for the fle
 ## What to build
 
 **Spans for the fleet layer**, which is precisely the layer no harness can see: the node step, the gate and what it
-decided, the queue and lease waits, the hub-executed deliver, the bounce that sent work backwards. These are coarse and
-few — a fleet produces them by the thousand, not the million — and they are the skeleton every other number hangs from.
+decided, the wait in the queue, the hub-executed deliver, the bounce that sent work backwards. These are coarse and few
+— a fleet produces them by the thousand, not the million — and they are the skeleton every other number hangs from.
 
-**Wide spans, carrying every dimension on the span itself**: chunk, graph name, node name, source, model, token counts,
-cost, resolved choice, epoch, how many times the work has been here before. The temptation is to lean on the
-parent-child structure to supply context and keep each span thin. Resist it. Some backends cannot join across spans at
-all, and a span that answers questions alone answers them everywhere.
+**The agent's own use of the platform, inside the step.** A worker spends its step talking to blizzard: asking, reading
+artifacts, writing them, reporting in. Each of those commands, the requests it made of the runner and the hub, and the
+queries they ran are traced too, nested inside the step that made them, so the flame graph of a step shows not only how
+long the agent worked but how it used the platform while it did.
+
+**Wide spans, carrying every dimension on the span itself**: chunk, graph name, node name, source, model, resolved
+choice, epoch, how many times the work has been here before. Tokens and cost are the one exception: they sit once on the
+step and once on each invocation, never copied onto every span, because a backend that sums over spans would otherwise
+count each dollar several times. The temptation is to lean on the parent-child structure to supply context and keep each
+span thin. Resist it. Some backends cannot join across spans at all, and a span that answers questions alone answers
+them everywhere.
 
 **One endpoint, configured by the operator, speaking OTLP.** This is the whole of the integration surface, and it is the
 reason this epic ships no adapters. OpenTelemetry is the interface; blizzard implements it once and every backend that
@@ -63,8 +77,10 @@ steps, is the shape to design against. It is expensive to change once anyone has
 to make on purpose and early.
 
 **Emission that cannot hurt the fleet.** The same rule the fact export lives under applies here with more force, because
-a trace exporter talks to the network on the hot path if you let it: spans are queued and dropped under pressure, never
-awaited. A backend that goes down is a gap in a chart, never a stalled chunk.
+a trace exporter talks to the network on the hot path if you let it. The fleet's steps are told from the record by a
+sweep that runs beside the fleet rather than inside it, once each step has closed. The calls an agent makes are traced
+as they happen, because a request exists only while it runs, and those spans are queued and dropped under pressure,
+never awaited. Either way, a backend that goes down is a gap in a chart, never a stalled chunk.
 
 ## Retention is the operator's problem, and that is the point
 
@@ -78,11 +94,21 @@ So blizzard ships one emit and no opinion about how long a year is.
 
 ## Why this earns priority over things that look more urgent
 
-Spans cannot be backfilled. The facts in the store can be exported whenever this is built and will faithfully describe
-the whole history; a trace of last Tuesday can only exist if something was emitting it last Tuesday. Every week this
-waits is a week that can never be examined this way. That argues for landing a modest version early rather than a
-complete one late — and, once the operator's collector is archiving spans, even an imperfect first shape is recoverable,
-because the raw stream survives to be replayed into whatever comes next.
+The hub already keeps a dated fact for nearly every moment a span would describe — the claim, the attempt, the gate's
+decision, the answer to an ask, the delivery and the bounce — so the fleet's history is not lost while this waits; it is
+only locked away. Every week without an exit is a week of questions that go unasked because asking costs an afternoon.
+That argues for landing a modest version early rather than a complete one late, and for building it so the same spans
+can be told again from the record: a first shape that turns out imperfect is then a replay, not a loss.
+
+## How it lands
+
+The epic lands in three slices:
+
+| Slice                                       | What it builds                                                                                                                                                                                                                                |
+| ------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| [fleet-spans](./fleet-spans/index.md)       | The hub tells every node step from its own facts — queue waits, gates, asks, hub-executed nodes, bounces, and what each step cost.                                                                                                            |
+| [platform-spans](./platform-spans/index.md) | The calls a working agent makes — each `blizzard` command, the runner and hub requests behind it, and the queries those ran — nested inside the node step that made them, so a step's trace shows how the agent used the hub while it worked. |
+| [runner-spans](./runner-spans/index.md)     | The runner adds what only it saw: each harness invocation inside a step — spawn, resume, nudge, judgement — and the checks it ran.                                                                                                            |
 
 ## What this epic is not
 

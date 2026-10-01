@@ -70,10 +70,12 @@ What happens downstream of either exit belongs entirely to the person running th
 is, whether anything is kept at all. Blizzard writes the files and sends the spans, and every decision after that is
 someone else's to make.
 
-| Epic               | Slice | Status  |
-| ------------------ | ----- | ------- |
-| `epic:fact-egress` | full  | horizon |
-| `epic:tracing`     | full  | horizon |
+| Epic               | Slice          | Status  |
+| ------------------ | -------------- | ------- |
+| `epic:fact-egress` | full           | horizon |
+| `epic:tracing`     | fleet-spans    | horizon |
+| `epic:tracing`     | platform-spans | horizon |
+| `epic:tracing`     | runner-spans   | horizon |
 
 ## `milestone:projects` — one fleet, every project
 
