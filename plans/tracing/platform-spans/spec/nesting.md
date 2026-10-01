@@ -44,7 +44,7 @@ Hooks such as `session-end` go through the same client and are traced the same w
 
 **`heartbeat` is never traced.** It runs after every tool call the agent makes, and spans inside a step are never
 sampled away. Tracing it would put thousands of spans into every step that say nothing more than that a tool ran. The
-CLI opens no span for it and injects no context, and both daemons leave its routes untraced (`instrumentation.md`).
+CLI opens no span for it and injects no context, and the runner leaves its route untraced (`instrumentation.md`).
 
 ## Out of the worker
 

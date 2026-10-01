@@ -86,8 +86,9 @@ Every runner span carries the fleet-spans dimension set for its step:
 - `blizzard.runner.id`
 
 These come from `lease_context`. It holds the graph and node ids and the node name today. This slice adds the graph name
-and the work refs to it, recorded from the envelope when the lease is minted, so a runner span carries the same names a
-hub span does.
+and the work refs to it, recorded from the node envelope when the lease is minted, so a runner span carries the same
+names a hub span does. The envelope already carries `work_refs`, but not the graph's name. The hub's envelope builder
+adds a `graph_name` field, which is an additive change to the envelope wire contract.
 
 `blizzard.step.visit` is the one dimension left off. Only the hub's history counts arrivals at a node, and a backend
 joins it from the step root.

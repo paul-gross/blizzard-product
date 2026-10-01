@@ -15,10 +15,12 @@ OpenTelemetry library at all, in either of its roles: see [The CLI never pays fo
 
 The harness, the model it calls and the tools it uses are not instrumented here.
 
-**Never traced.** Two routes are left out of the server instrumentation on both daemons:
+**Never traced.** Two runner routes are left out of its server instrumentation:
 
-- the `heartbeat` routes, on the runner and on the hub it forwards to, for the reason nesting.md gives
-- the runner's `/v1/traces` receiver, so that every export does not itself make a kept span
+- the worker's `POST /heartbeat`, for the reason nesting.md gives. It is answered by the runner alone and never reaches
+  the hub. The runner's own liveness heartbeat to the hub is a different request, and is traced as a sampled root like
+  any other.
+- the `/v1/traces` receiver, so that every export does not itself make a kept span
 
 ## Sampling
 
@@ -161,7 +163,7 @@ The verification below scans spans for known secret and content values.
   - the 5 ms p95 latency budget, measured over a run of `artifact get` calls against a live runner on the shared-client
     path
   - a worker command's spans chain command → runner request → hub request → queries under the derived step root
-  - `heartbeat` and `/v1/traces` requests make no server span on either daemon
+  - the worker's `heartbeat` and `/v1/traces` requests make no server span on the runner
   - the receiver replaces a planted resource and `blizzard.caller`, stamps chunk and lease from the presenting lease,
     and drops an attribute outside the CLI's set and one past the size cap
   - an `OTEL_*` name in `[worker] env_passthrough` is dropped while tracing is on

@@ -56,9 +56,10 @@ The cursor is ordered by:
 It is stored as an append-only fact row in the runner's store, one per advancing sweep, the same shape as the hub's.
 
 On first enable it starts at the current time, and re-enabling after a cursor older than the maximum lag jumps it the
-same way the hub's does. Skipped windows go to the runner's own event log, under the same kinds the hub uses:
-`trace-export-failed`, `trace-export-recovered`, `trace-window-skipped` and `trace-config-rejected`. They are registered
-in the runner's event-kind vocabulary alongside the hub's, through `domain/operations.md` §Event kinds.
+same way the hub's does. The runner keeps no event log of its own. It records these moments the way it records every
+other operational event: as event-log facts sent to the hub through its outbound buffer, under the same kinds the hub
+uses (`trace-export-failed`, `trace-export-recovered`, `trace-window-skipped` and `trace-config-rejected`) and
+attributed to the runner. The kinds are registered once, in the vocabulary fleet-spans extends.
 
 Runner retention prunes heartbeats, external usage samples, the outbound buffer and worker stdout. It prunes none of the
 tables this slice reads, so retention and the cursor need no coupling. A future retention lane over a table read here
