@@ -74,7 +74,7 @@ someone else's to make.
 | ------------------ | -------------- | ----------- |
 | `epic:fact-egress` | steps          | in-progress |
 | `epic:fact-egress` | events         | in-progress |
-| `epic:tracing`     | fleet-spans    | in-progress |
+| `epic:tracing`     | fleet-spans    | delivered   |
 | `epic:tracing`     | platform-spans | in-progress |
 | `epic:tracing`     | runner-spans   | in-progress |
 
