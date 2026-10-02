@@ -3,13 +3,13 @@ epic: tracing
 refinement: refined
 slices:
   - name: fleet-spans
-    status: in-progress
+    status: delivered
     plan: ./fleet-spans/index.md
   - name: platform-spans
     status: in-progress
     plan: ./platform-spans/index.md
   - name: runner-spans
-    status: in-progress
+    status: delivered
     plan: ./runner-spans/index.md
 ---
 
