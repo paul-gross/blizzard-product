@@ -1,0 +1,556 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>blizzard hub — gardening, per project</title>
+<style>
+  /* ── Tokens, verbatim from web/projects/fleet/src/lib/design/tokens.css ── */
+  :root{
+    --bg:#060a12; --ground:#080d17; --panel:#0b1120; --panel-deep:#080d19;
+    --panel-hover:#121b30; --panel-hi:#1a2748; --bezel:#1d2b44; --bezel-hi:#27395c;
+    --line:#131d30;
+    --amber:#f2b25c; --amber-hi:#ffcf8a; --amber-dim:#8f7548; --amber-faint:#4d4130;
+    --snow:#eef4fb; --cyan:#5cd1e5; --cyan-dim:#2b6675;
+    --red:#f05c6c; --red-dim:#7a3540; --red-wash-text:#ffd9dd;
+    --green:#4fc57e; --green-dim:#2b5c40;
+    --label:#5c7089; --label-dim:#3c4d63; --text:#b8c6d8;
+    --mono:ui-monospace,"SF Mono",SFMono-Regular,Menlo,Consolas,"Liberation Mono",monospace;
+    --header-hi:#0d1526; --header-lo:#080d18;
+    --fs-label:11px; --fs-xs:12px; --fs-sm:13px; --fs-base:15px; --fs-md:16px; --fs-lg:19px;
+    --overlay-20:rgba(0,0,0,.2); --overlay-25:rgba(0,0,0,.25); --overlay-30:rgba(0,0,0,.3);
+    --overlay-35:rgba(0,0,0,.35); --overlay-40:rgba(0,0,0,.4); --overlay-90:rgba(0,0,0,.9);
+    --surface-resting:var(--panel); --surface-hover:var(--panel-hover); --surface-selected:var(--panel-hi);
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  html,body{height:100%}
+  body{
+    background:var(--ground); color:var(--text);
+    font-family:var(--mono); font-size:var(--fs-base);
+    font-variant-numeric:tabular-nums; line-height:1.45; overflow:hidden;
+  }
+  button,input,select,textarea{font:inherit;color:inherit}
+  :focus-visible{outline:1px solid var(--cyan);outline-offset:1px}
+  .shell{display:flex;flex-direction:column;height:100%;min-height:0;overflow:hidden}
+
+  /* ── Header (fleet BoardHeader) ───────────────────────────── */
+  .mc-header{
+    display:flex;align-items:stretch;height:48px;flex:none;
+    border-bottom:1px solid var(--bezel);
+    background:linear-gradient(180deg,var(--header-hi),var(--header-lo));
+  }
+  .lbl,.stat-lbl{
+    font-size:var(--fs-label);letter-spacing:.18em;text-transform:uppercase;
+    color:var(--label);text-shadow:0 1px 0 var(--overlay-90);
+  }
+  .brand{display:flex;flex:none;align-items:center;gap:10px;padding:0 14px;border-right:1px solid var(--line);white-space:nowrap}
+  .brand-text{display:flex;flex-direction:column;justify-content:center;color:var(--amber-hi);font-size:var(--fs-lg);letter-spacing:.28em;text-transform:uppercase}
+  .brand small{color:var(--label);font-size:var(--fs-label);letter-spacing:.18em}
+  .cell{display:flex;flex:none;flex-direction:column;justify-content:center;padding:0 14px;border-right:1px solid var(--line);white-space:nowrap}
+  .cell .v{color:var(--amber);font-size:var(--fs-lg);line-height:1.1}
+  .cell[data-stat=needs] .v{color:var(--red)}
+  .cell[data-stat=waiting] .v{color:var(--amber-hi)}
+  .cell[data-stat=done] .v{color:var(--green)}
+  .stats{display:flex;align-items:stretch;overflow:hidden}
+  .spacer{flex:1;border-right:1px solid var(--line)}
+  .conn{border-right:none}
+  .conn .v{color:var(--cyan)}
+  .avatar{display:flex;align-items:center;padding:0 14px}
+  .avatar i{
+    display:block;width:26px;height:26px;border-radius:999px;
+    border:1px solid var(--bezel-hi);background:var(--panel-hi);
+    font-style:normal;font-size:var(--fs-xs);color:var(--amber);
+    display:flex;align-items:center;justify-content:center;
+  }
+  .flake{stroke:var(--snow);stroke-linecap:round}
+  .tip{fill:var(--cyan)} .hub{fill:var(--amber)}
+  .halo{fill:none;stroke:var(--amber);opacity:.45}
+
+  /* ── Tab strip (fleet KitTabStrip / KitTab) ───────────────── */
+  .tabstrip{
+    display:flex;align-items:stretch;height:32px;flex:none;
+    border-bottom:1px solid var(--bezel);background:var(--header-lo);
+    font-size:var(--fs-label);letter-spacing:.14em;text-transform:uppercase;
+  }
+  .tab{
+    display:flex;align-items:center;padding:0 16px;background:transparent;
+    border:none;border-right:1px solid var(--line);color:var(--label);
+    text-decoration:none;cursor:pointer;flex:none;white-space:nowrap;
+  }
+  .tab.active{color:var(--amber-hi);background:var(--header-hi)}
+  .tab:hover:not(.active){color:var(--text)}
+
+  /* The gardening tab's own second strip. Dimmer than the app strip so the
+     hierarchy reads at a glance: app surface, then surface-within-surface. */
+  .subnav{
+    display:flex;align-items:stretch;height:30px;flex:none;gap:0;
+    border-bottom:1px solid var(--bezel);background:var(--panel-deep);
+    font-size:var(--fs-label);letter-spacing:.14em;text-transform:uppercase;
+  }
+  .subnav .tab{border-right:1px solid var(--line)}
+  .subnav .tab.active{color:var(--cyan);background:var(--overlay-30);box-shadow:inset 0 -2px 0 var(--cyan-dim)}
+  .subnav .cnt{margin-left:8px;color:var(--snow);letter-spacing:.06em}
+  .subnav .cnt.hot{color:var(--amber-hi)}
+  .subnav-right{margin-left:auto;display:flex;align-items:center;gap:8px;padding:0 12px;color:var(--label-dim)}
+
+  /* ── Panels (fleet KitPanel) ──────────────────────────────── */
+  .layout{flex:1;min-height:0;display:grid;gap:6px;padding:6px}
+  .panel{
+    display:flex;flex-direction:column;min-height:0;min-width:0;
+    background:linear-gradient(180deg,var(--panel) 0%,var(--panel-deep) 100%);
+    border:1px solid var(--bezel);
+  }
+  .p-hdr{
+    display:flex;align-items:center;justify-content:space-between;gap:8px;
+    padding:4px 8px;border-bottom:1px solid var(--line);background:var(--overlay-25);flex:none;
+  }
+  .p-hdr .cnt{color:var(--snow);font-size:var(--fs-xs)}
+  .p-body{position:relative;overflow-y:auto;overflow-x:hidden;flex:1;min-height:0}
+  .p-foot{flex:none;border-top:1px solid var(--line);background:var(--overlay-25);padding:6px 8px;display:flex;align-items:center;gap:8px}
+  .hdr-actions{display:flex;align-items:center;gap:6px}
+
+  /* ── Rows ─────────────────────────────────────────────────── */
+  .row{
+    display:block;width:100%;text-align:left;background:var(--surface-resting);
+    border:none;border-bottom:1px solid var(--line);border-left:2px solid transparent;
+    padding:7px 10px;cursor:pointer;
+  }
+  .row:hover{background:var(--surface-hover)}
+  .row.active{background:var(--surface-selected);border-left-color:var(--cyan)}
+  .row-top{display:flex;align-items:baseline;gap:8px}
+  .row-name{color:var(--snow);font-size:var(--fs-md)}
+  .row-sub{color:var(--label);font-size:var(--fs-xs);margin-top:2px;display:flex;gap:10px;flex-wrap:wrap}
+  .row-right{margin-left:auto;display:flex;align-items:center;gap:8px}
+
+  /* ── Atoms ────────────────────────────────────────────────── */
+  .act{
+    font-family:inherit;background:var(--overlay-30);border:1px solid var(--line);
+    color:var(--text);cursor:pointer;padding:2px 7px;font-size:var(--fs-xs);
+  }
+  .act:hover:not(:disabled){border-color:var(--cyan)}
+  .act.primary{color:var(--cyan)}
+  .act.danger{color:var(--red)}
+  .act.danger:hover:not(:disabled){border-color:var(--red)}
+  .act:disabled{opacity:.4;cursor:default}
+  .act.big{padding:5px 14px;font-size:var(--fs-sm)}
+  .chip{
+    font-family:inherit;background:transparent;border:1px solid var(--line);border-radius:999px;
+    color:var(--text);cursor:pointer;padding:1px 8px;font-size:var(--fs-xs);letter-spacing:.04em;white-space:nowrap;
+  }
+  .chip:hover{border-color:var(--cyan)}
+  .chip.selected{border-color:var(--amber-hi);color:var(--amber-hi)}
+  .badge{
+    display:inline-block;border:1px solid currentcolor;border-radius:999px;padding:0 7px;
+    font-size:var(--fs-label);letter-spacing:.08em;text-transform:uppercase;
+  }
+  .t-cyan{color:var(--cyan)} .t-amber{color:var(--amber)} .t-amber-hi{color:var(--amber-hi)}
+  .t-green{color:var(--green)} .t-red{color:var(--red)} .t-label{color:var(--label)}
+  .t-snow{color:var(--snow)} .t-dim{color:var(--label-dim)}
+  .mono-id{font-size:var(--fs-xs);color:var(--label)}
+  .dot{width:8px;height:8px;border-radius:999px;display:inline-block;flex:none}
+  .dot.green{background:var(--green)} .dot.amber{background:var(--amber)}
+  .dot.red{background:var(--red)} .dot.grey{background:var(--label-dim)}
+  .xs{font-size:var(--fs-xs)} .sm{font-size:var(--fs-sm)}
+  .empty{display:flex;align-items:center;justify-content:center;height:100%;padding:24px;text-align:center;
+    color:var(--label);font-size:var(--fs-lg);letter-spacing:.1em;text-transform:uppercase}
+
+  /* Key/value definition grid — the shape every "what this record is" block uses. */
+  .kv{display:grid;grid-template-columns:auto 1fr;gap:3px 14px;padding:8px 10px;font-size:var(--fs-sm)}
+  .kv dt{color:var(--label);font-size:var(--fs-label);letter-spacing:.14em;text-transform:uppercase;align-self:center}
+  .kv dd{color:var(--text);min-width:0;overflow-wrap:anywhere}
+
+  .sect{border-bottom:1px solid var(--line)}
+  .sect-hdr{display:flex;align-items:center;gap:8px;padding:5px 10px;background:var(--overlay-20);border-bottom:1px solid var(--line)}
+  .sect-hdr .act{margin-left:auto}
+  .prose{padding:10px;font-size:var(--fs-sm);color:var(--text);max-width:78ch}
+  .prose p{margin-bottom:8px}
+  .prose code{color:var(--amber);background:var(--overlay-30);padding:0 3px}
+  .prose ul{margin:0 0 8px 18px}
+
+  table.grid{width:100%;border-collapse:collapse;font-size:var(--fs-sm)}
+  table.grid th{
+    text-align:left;padding:4px 10px;background:var(--overlay-35);color:var(--label);
+    font-size:var(--fs-label);letter-spacing:.14em;text-transform:uppercase;font-weight:400;
+    border-bottom:1px solid var(--line);position:sticky;top:0;
+  }
+  table.grid td{padding:5px 10px;border-bottom:1px solid var(--line);vertical-align:top}
+  table.grid tr:hover td{background:var(--overlay-20)}
+
+  /* ── Form controls ────────────────────────────────────────── */
+  .field{display:flex;flex-direction:column;gap:4px;margin-bottom:14px}
+  .field > .lbl{display:flex;align-items:center;gap:8px}
+  .hint{color:var(--label);font-size:var(--fs-xs);max-width:70ch}
+  input[type=text],select,textarea{
+    background:var(--overlay-40);border:1px solid var(--bezel);color:var(--snow);
+    padding:5px 8px;font-size:var(--fs-sm);width:100%;
+  }
+  textarea{resize:vertical;min-height:76px;line-height:1.5}
+  input[type=text]:focus,select:focus,textarea:focus{border-color:var(--cyan);outline:none}
+  .radio-set{display:flex;flex-direction:column;gap:6px}
+  .radio{
+    display:flex;gap:9px;align-items:flex-start;padding:8px 10px;cursor:pointer;
+    border:1px solid var(--bezel);background:var(--overlay-30);
+  }
+  .radio:hover{border-color:var(--bezel-hi);background:var(--panel-hover)}
+  .radio.on{border-color:var(--cyan);background:var(--panel-hi)}
+  .radio input{margin-top:3px;accent-color:#5cd1e5}
+  .radio .rt{display:block;color:var(--snow);font-size:var(--fs-sm)}
+  .radio .rh{display:block;color:var(--label);font-size:var(--fs-xs);margin-top:2px}
+
+  /* ── Modal ────────────────────────────────────────────────── */
+  .scrim{position:fixed;inset:0;background:rgba(3,6,12,.72);display:none;align-items:center;justify-content:center;z-index:40;padding:24px}
+  .scrim.open{display:flex}
+  .dialog{
+    width:min(700px,100%);max-height:100%;display:flex;flex-direction:column;
+    background:linear-gradient(180deg,var(--panel) 0%,var(--panel-deep) 100%);
+    border:1px solid var(--bezel-hi);box-shadow:0 24px 60px rgba(0,0,0,.6);
+  }
+  .dialog .d-hdr{display:flex;align-items:center;gap:10px;padding:8px 12px;border-bottom:1px solid var(--bezel);background:var(--overlay-35)}
+  .dialog .d-hdr .x{margin-left:auto}
+  .dialog .d-body{padding:14px 16px;overflow-y:auto}
+  .dialog .d-foot{display:flex;align-items:center;gap:10px;padding:10px 12px;border-top:1px solid var(--bezel);background:var(--overlay-35)}
+  .dialog .d-foot .grow{flex:1;color:var(--label);font-size:var(--fs-xs);max-width:52ch}
+
+  /* ── Toast ────────────────────────────────────────────────── */
+  .toast{
+    position:fixed;right:16px;bottom:16px;z-index:50;max-width:440px;
+    border:1px solid var(--cyan-dim);background:var(--panel-hi);
+    padding:10px 14px;font-size:var(--fs-sm);display:none;box-shadow:0 12px 32px rgba(0,0,0,.5);
+  }
+  .toast.open{display:block}
+  .toast .tl{color:var(--cyan);font-size:var(--fs-label);letter-spacing:.18em;text-transform:uppercase;display:block;margin-bottom:3px}
+
+  /* ── Trend sparkline ──────────────────────────────────────── */
+  .spark{display:flex;align-items:stretch;gap:4px;height:48px;padding:0 2px}
+  .spark .b{flex:1;min-width:3px;align-self:flex-end;background:var(--label-dim)}
+  .spark .b.in{background:var(--amber-dim)}
+  .spark .b.out{background:var(--green-dim)}
+  .spark-pair{display:flex;gap:2px;align-items:flex-end;flex:1;height:100%}
+  .legend{display:flex;gap:14px;flex-wrap:wrap;font-size:var(--fs-label);letter-spacing:.14em;text-transform:uppercase;color:var(--label);padding:6px 10px 0}
+  .legend b{font-weight:400;white-space:nowrap}
+  .swatch{display:inline-block;width:9px;height:9px;margin-right:5px;vertical-align:baseline}
+
+  /* ── Design-notes drawer (the sheet's own annotation, not the app's) ── */
+  .notes-toggle{
+    border:1px solid var(--amber-faint);background:var(--panel);color:var(--amber);
+    padding:1px 10px;font-size:var(--fs-label);letter-spacing:.18em;text-transform:uppercase;cursor:pointer;
+  }
+  .notes-toggle:hover{border-color:var(--amber)}
+  .notes{
+    position:fixed;inset:auto 0 0 0;z-index:31;max-height:62%;overflow-y:auto;display:none;
+    background:var(--panel-deep);border-top:2px solid var(--amber-faint);padding:14px 20px 60px;
+  }
+  .notes.open{display:block}
+  .notes h2{font-size:var(--fs-label);letter-spacing:.18em;text-transform:uppercase;color:var(--amber);margin-bottom:10px}
+  .notes .cards{display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:10px}
+  .notes .card{border:1px solid var(--bezel);background:var(--panel);padding:10px 12px}
+  .notes .card h3{font-size:var(--fs-xs);color:var(--cyan);letter-spacing:.1em;text-transform:uppercase;margin-bottom:5px}
+  .notes .card p{font-size:var(--fs-sm);color:var(--text);margin-bottom:6px}
+  .notes .card p:last-child{margin-bottom:0}
+  .notes .card.open-q{border-color:var(--amber-faint)}
+  .notes .card.open-q h3{color:var(--amber)}
+  .notes code{color:var(--amber);background:var(--overlay-30);padding:0 3px}
+
+  /* ══ Configuration surface — additions on top of the shared kit above ══ */
+  .subnav .tab .lock{margin-left:6px;color:var(--label-dim)}
+  .filters{display:flex;gap:6px;flex-wrap:wrap;padding:6px 8px;border-bottom:1px solid var(--line);background:var(--overlay-20)}
+  .row.retired .row-name{color:var(--label);text-decoration:line-through;text-decoration-color:var(--label-dim)}
+  .row.retired{opacity:.75}
+  .badge.file{color:var(--cyan)}
+  .badge.retired{color:var(--label)}
+  .badge.builtin{color:var(--amber-dim)}
+  .badge.unused{color:var(--amber)}
+  .rev{font-size:var(--fs-xs);color:var(--label)}
+  .rev b{color:var(--snow);font-weight:400}
+  .detail-hdr{display:flex;align-items:center;gap:10px;padding:10px 12px;border-bottom:1px solid var(--line)}
+  .detail-hdr h1{font-size:var(--fs-lg);color:var(--snow);font-weight:400;letter-spacing:.02em}
+  .detail-hdr .grow{flex:1}
+  .section-lbl{padding:10px 12px 4px;font-size:var(--fs-label);letter-spacing:.18em;text-transform:uppercase;color:var(--label)}
+  .kv dd{color:var(--snow);word-break:break-all}
+  .kv dd .t-label{word-break:normal}
+  .kv dd a,.link{color:var(--cyan);text-decoration:none;cursor:pointer}
+  .kv dd a:hover,.link:hover{text-decoration:underline}
+  .callout{margin:8px 12px;padding:8px 10px;border:1px solid var(--line);border-left:2px solid var(--cyan-dim);background:var(--overlay-20);font-size:var(--fs-sm)}
+  .callout.amber{border-left-color:var(--amber-dim)}
+  .callout code,.kv code,.diff code{color:var(--amber);background:var(--overlay-30);padding:0 3px}
+  .hist{list-style:none;padding:0 12px 12px}
+  .hist li{display:grid;grid-template-columns:44px 1fr auto;gap:10px;padding:6px 0;border-bottom:1px solid var(--line);font-size:var(--fs-sm)}
+  .hist li .r{color:var(--snow)}
+  .hist li .who{color:var(--label);font-size:var(--fs-xs);text-align:right;white-space:nowrap}
+  .hist li .via{color:var(--cyan-dim)}
+  .secret-val{letter-spacing:.3em;color:var(--label-dim)}
+  .uses{list-style:none;padding:0 12px 10px;display:flex;flex-direction:column;gap:4px;font-size:var(--fs-sm)}
+  .uses li{display:flex;gap:8px;align-items:baseline}
+  .diff{margin:8px 12px 12px;border:1px solid var(--line);background:var(--overlay-30);font-size:var(--fs-sm)}
+  .diff .dl{display:grid;grid-template-columns:22px 150px 1fr;gap:8px;padding:4px 10px;border-bottom:1px solid var(--line)}
+  .diff .dl:last-child{border-bottom:none}
+  .diff .op{text-align:center}
+  .diff .add .op,.diff .add .what{color:var(--green)}
+  .diff .chg .op,.diff .chg .what{color:var(--amber)}
+  .diff .ret .op,.diff .ret .what{color:var(--red)}
+  .diff .old{color:var(--label);text-decoration:line-through}
+  .diff .new{color:var(--snow)}
+  .field{display:flex;flex-direction:column;gap:3px;margin-bottom:12px}
+  .field label{font-size:var(--fs-label);letter-spacing:.14em;text-transform:uppercase;color:var(--label)}
+  .field input,.field select{background:var(--overlay-30);border:1px solid var(--bezel);padding:5px 8px;font-size:var(--fs-sm);color:var(--snow)}
+  .field input:focus,.field select:focus{border-color:var(--cyan);outline:none}
+  .field .hint{font-size:var(--fs-xs);color:var(--label)}
+  .field.changed input,.field.changed select{border-color:var(--amber-dim)}
+  .two{display:grid;grid-template-columns:1fr 1fr;gap:0 14px}
+  .toggle{display:flex;align-items:center;gap:8px;font-size:var(--fs-sm);cursor:pointer}
+  .toggle input{accent-color:var(--cyan)}
+  body.readonly .edit-only{display:none !important}
+  body:not(.readonly) .ro-only{display:none !important}
+  .mode{display:flex;align-items:center;gap:6px}
+  .mode .chip{cursor:pointer}
+
+  /* ══ Projects era — additions ══ */
+  .tenant{display:flex;align-items:center;gap:8px;padding:0 14px;border-left:1px solid var(--line);cursor:pointer;position:relative}
+  .tenant .v{color:var(--snow);font-size:var(--fs-md)}
+  .tenant .caret{color:var(--label)}
+  .menu{position:absolute;top:46px;right:0;min-width:240px;z-index:45;display:none;background:var(--panel-hi);border:1px solid var(--bezel-hi);box-shadow:0 12px 32px rgba(0,0,0,.5)}
+  .menu.open{display:block}
+  .menu .mi{display:flex;justify-content:space-between;gap:12px;padding:8px 12px;border-bottom:1px solid var(--line);font-size:var(--fs-sm);color:var(--text);cursor:pointer}
+  .menu .mi:hover{background:var(--panel-hover)}
+  .menu .mi.cur{color:var(--amber-hi)}
+  .menu .mh{padding:6px 12px;font-size:var(--fs-label);letter-spacing:.16em;text-transform:uppercase;color:var(--label)}
+  .lens{margin-left:auto;display:flex;align-items:center;gap:6px;padding:0 12px;border-left:1px solid var(--line)}
+  .lens .lbl{margin-right:4px}
+  .ptabs{display:flex;align-items:stretch;height:30px;flex:none;border-bottom:1px solid var(--bezel);background:var(--panel-deep);
+    font-size:var(--fs-label);letter-spacing:.14em;text-transform:uppercase}
+  .ptabs .tab.active{color:var(--cyan);background:var(--overlay-30);box-shadow:inset 0 -2px 0 var(--cyan-dim)}
+  .ptabs .cnt{margin-left:7px;color:var(--snow);letter-spacing:.06em}
+  .cards2{display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:8px;padding:8px 12px 14px}
+  .ocard{border:1px solid var(--bezel);background:var(--overlay-20)}
+  .ocard .oh{display:flex;align-items:center;justify-content:space-between;padding:5px 10px;border-bottom:1px solid var(--line);background:var(--overlay-25)}
+  .ocard ul{list-style:none}
+  .ocard li{display:flex;align-items:baseline;gap:8px;padding:5px 10px;border-bottom:1px solid var(--line);font-size:var(--fs-sm)}
+  .ocard li:last-child{border-bottom:none}
+  .ocard li .r{margin-left:auto;color:var(--label);font-size:var(--fs-xs)}
+  .ocard .none{padding:8px 10px;color:var(--label);font-size:var(--fs-sm)}
+  .pchip{display:inline-block;border:1px solid var(--bezel-hi);padding:0 6px;font-size:var(--fs-label);letter-spacing:.08em;color:var(--amber);text-transform:lowercase}
+  .split{display:grid;grid-template-columns:minmax(240px,320px) 1fr;min-height:0;flex:1}
+  .split .sl{border-right:1px solid var(--line);overflow-y:auto}
+  .split .sd{overflow-y:auto}
+  .stack{display:flex;flex-direction:column;height:100%;min-height:0}
+  .warn{color:var(--amber)}
+
+  /* ── Breadcrumbs: where you are, mirroring the URL ── */
+  .crumbs{display:flex;align-items:center;gap:8px;height:36px;flex:none;padding:0 14px;border-bottom:1px solid var(--bezel);
+    background:var(--header-lo);font-size:var(--fs-sm);position:relative}
+  .crumbs a{color:var(--cyan);text-decoration:none;cursor:pointer}
+  .crumbs a:hover{text-decoration:underline}
+  .crumbs .sep{color:var(--label-dim)}
+  .crumbs .cur{color:var(--snow)}
+  .crumbs .projsw{background:var(--overlay-30);border:1px solid var(--bezel-hi);color:var(--amber-hi);padding:1px 8px;cursor:pointer;font-size:var(--fs-sm)}
+  .crumbs .projsw:hover{border-color:var(--amber)}
+  .crumbs .url{margin-left:auto;color:var(--label-dim);font-size:var(--fs-xs)}
+  .crumbs .menu{top:34px;left:104px;right:auto}
+</style>
+</head>
+<body>
+<div class="shell">
+  <header class="mc-header">
+    <div class="brand">
+      <svg viewBox="0 0 32 32" width="30" height="30" aria-hidden="true">
+        <defs><g id="bz-spoke"><line x1="16" y1="11.5" x2="16" y2="6" class="flake" stroke-width="1.4"/>
+          <line x1="16" y1="8.5" x2="13.45" y2="7.05" class="flake" stroke-width="1.1"/><line x1="16" y1="8.5" x2="18.55" y2="7.05" class="flake" stroke-width="1.1"/>
+          <circle cx="16" cy="4" r="1.8" class="tip"/></g></defs>
+        <use href="#bz-spoke"/><use href="#bz-spoke" transform="rotate(60 16 16)"/><use href="#bz-spoke" transform="rotate(120 16 16)"/>
+        <use href="#bz-spoke" transform="rotate(180 16 16)"/><use href="#bz-spoke" transform="rotate(240 16 16)"/><use href="#bz-spoke" transform="rotate(300 16 16)"/>
+        <circle cx="16" cy="16" r="2.8" class="hub"/><circle cx="16" cy="16" r="4.4" class="halo" stroke-width="0.8"/></svg>
+      <div class="brand-text">blizzard<small>mission control</small></div>
+    </div>
+    <div class="stats">
+      <div class="cell" data-stat="ready"><span class="stat-lbl">Ready</span><span class="v" id="st-ready"></span></div>
+      <div class="cell" data-stat="running"><span class="stat-lbl">Running</span><span class="v" id="st-run"></span></div>
+      <div class="cell" data-stat="needs"><span class="stat-lbl">Needs human</span><span class="v">0</span></div>
+      <div class="cell" data-stat="done"><span class="stat-lbl">Done</span><span class="v" id="st-done"></span></div>
+    </div>
+    <div class="spacer"></div>
+    <div class="cell spend"><span class="stat-lbl">Today</span><span class="v t-amber-hi">$41.06</span></div>
+    <div class="tenant" onclick="document.getElementById('tmenu').classList.toggle('open')">
+      <div style="display:flex;flex-direction:column"><span class="stat-lbl">Tenant</span><span class="v">grosscode <span class="caret">▾</span></span></div>
+      <div class="menu" id="tmenu">
+        <div class="mh">Your tenants</div>
+        <div class="mi cur"><span>grosscode</span><span class="t-label xs">admin</span></div>
+        <div class="mi"><span>sandbox</span><span class="t-label xs">viewer</span></div>
+        <div class="mh xs">the tenant is part of the URL — /t/grosscode/admin/projects</div>
+      </div>
+    </div>
+    <div class="avatar"><i>PG</i></div>
+  </header>
+
+  <nav class="tabstrip">
+    <a class="tab" href="#">Board</a><a class="tab" href="#">Graphs</a><a class="tab" href="#">Events</a>
+    <a class="tab active" href="#">Gardening</a><a class="tab" href="./projects-admin.html">Admin</a>
+    <div class="lens"><span class="lbl">Project lens</span><span id="lens"></span></div>
+  </nav>
+
+  <nav class="crumbs" id="crumbs"></nav>
+  <nav class="subnav" id="subnav"></nav>
+  <div class="layout" id="layout"></div>
+  <div class="toast" id="toast"><span class="tl">note</span><span id="toast-text"></span></div>
+
+  <aside class="notes" id="notes">
+    <h2>Gardening, per project</h2>
+    <div class="cards">
+      <div class="card"><h3>Gardening is a project's own discipline</h3>
+        <p>Every noun on this tab &mdash; scopes, routines, runs, findings, proposals &mdash; belongs to exactly one
+        project. With the lens on a project, the tab is that project's garden. With the lens on <b>All</b>, there is no
+        tenant-wide garden to show, so the tab is a doorway: each project's standing at a glance, and a way in.</p></div>
+      <div class="card"><h3>Where am I</h3>
+        <p>The breadcrumb is the location and mirrors the URL: <code>Gardening › blizzard › Proposals</code> is
+        <code>/t/grosscode/gardening/blizzard/proposals</code>. <b>Gardening</b> goes back to the doorway; the project
+        crumb switches project in place and keeps you on the same surface. The four surfaces below it are tabs within
+        that one project.</p></div>
+      <div class="card"><h3>The lens and the crumb agree</h3>
+        <p>Choosing a project here sets the app-wide project lens, and setting the lens elsewhere opens that project here.
+        There is one notion of &ldquo;the project I am looking at&rdquo;, shown in two places.</p></div>
+      <div class="card"><h3>Same four surfaces as today</h3>
+        <p>Scopes, routines, runs &amp; findings, and proposals keep the shape the delivered gardening screens have.
+        What changes is that each list holds one project's records, and the strip says which project that is.</p></div>
+      <div class="card"><h3>Names only need to be unique inside a project</h3>
+        <p><code>hub-api</code> is a scope in both <b>blizzard</b> and <b>winter</b>, and both have a
+        <code>garden-weekly</code> routine. They are different records that happen to share a name.</p></div>
+      <div class="card"><h3>A routine runs a shared graph</h3>
+        <p>Graphs stay a tenant-wide library, so two projects' routines can run the same graph; each run is the
+        project's own, sweeps that project's repositories, and files its findings there.</p></div>
+      <div class="card"><h3>An accepted proposal becomes the project's work</h3>
+        <p>Accepting a proposal raises an item in the tenant's built-in <code>hub</code> source and ingests it into the
+        project the proposal was about, so the work it becomes is queued there.</p></div>
+      <div class="card open-q"><h3>Open &mdash; a cross-project glance</h3>
+        <p>Whether the <b>All</b> doorway is enough, or an operator wants one docket of every project's waiting
+        proposals.</p></div>
+    </div>
+  </aside>
+</div>
+
+<script>
+/* ═════════ seed — per-project gardening in tenant grosscode ═════════ */
+const projects = {
+  blizzard: { ready:3, run:2, done:9,
+    scopes:[
+      { slug:'hub-api', desc:'The hub\'s HTTP API and its wire models', routines:['garden-weekly','mutation-sweep'], last:'4 days ago' },
+      { slug:'runner-loop', desc:'The runner\'s claim, fill, and flush loop', routines:['garden-weekly'], last:'4 days ago' },
+      { slug:'web-board', desc:'The Angular board', routines:['garden-weekly'], last:'11 days ago' },
+      { slug:'harness', desc:'Agent-facing context and verification', routines:['garden-weekly'], last:'never' }],
+    routines:[
+      { name:'garden-weekly', graph:'garden-routine', scope:'hub-api', model:'opus · high', cadence:'every 7 days', next:'in 3 days', runs:14 },
+      { name:'mutation-sweep', graph:'mutation-routine', scope:'hub-api', model:'sonnet · medium', cadence:'every 14 days', next:'in 9 days', runs:4 }],
+    runs:[
+      { id:'run-212', routine:'garden-weekly', scope:'hub-api', mode:'delta', state:'done', when:'4 days ago', findings:[
+        ['high','Repository classes read the clock directly instead of through the injected Clock'],
+        ['medium','Three routes restate the same 404 translation inline'],
+        ['low','Stale comment names a removed reconciler']] },
+      { id:'run-211', routine:'mutation-sweep', scope:'hub-api', mode:'full', state:'done', when:'5 days ago', findings:[
+        ['medium','14 surviving mutants in eligibility.py — boundary of the harness capability check'],['low','2 surviving mutants in queue ordering ties']] },
+      { id:'run-213', routine:'garden-weekly', scope:'web-board', mode:'delta', state:'running', when:'started 20 min ago', findings:[] }],
+    proposals:[
+      { id:'pr-88', title:'Route every repository clock read through the injected Clock', from:'run-212', size:'small', waiting:'4 days' },
+      { id:'pr-89', title:'One 404 translation helper for hub routes', from:'run-212', size:'small', waiting:'4 days' },
+      { id:'pr-90', title:'Pin the eligibility boundary with property tests', from:'run-211', size:'medium', waiting:'5 days' }] },
+  winter: { ready:1, run:1, done:3,
+    scopes:[
+      { slug:'hub-api', desc:'winter\'s own service API — same name, different scope', routines:['garden-weekly'], last:'6 days ago' },
+      { slug:'cli', desc:'The winter command line', routines:['garden-weekly'], last:'6 days ago' }],
+    routines:[{ name:'garden-weekly', graph:'garden-routine', scope:'cli', model:'sonnet · medium', cadence:'every 7 days', next:'tomorrow', runs:3 }],
+    runs:[{ id:'run-031', routine:'garden-weekly', scope:'cli', mode:'delta', state:'done', when:'6 days ago', findings:[['medium','`winter ws init` and `winter provision` parse the env name twice, differently']] }],
+    proposals:[{ id:'pr-12', title:'Parse the env name once, in the CLI root', from:'run-031', size:'small', waiting:'6 days' }] },
+  celestial: { ready:2, run:0, done:0, scopes:[], routines:[], runs:[], proposals:[] },
+};
+
+let lens='all', gview='proposals', sel={};
+const $=id=>document.getElementById(id);
+const esc=s=>String(s).replace(/[&<>]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;'}[c]));
+function toggleNotes(){$('notes').classList.toggle('open')}
+function toast(t){$('toast-text').textContent=t;$('toast').classList.add('open');setTimeout(()=>$('toast').classList.remove('open'),3400)}
+function setLens(n){lens=n;sel={};render()}
+const names=Object.keys(projects);
+function renderLens(){$('lens').innerHTML=['all',...names].map(n=>`<button class="chip ${lens===n?'selected':''}" onclick="setLens('${n}')">${n==='all'?'All':n}</button>`).join('')}
+function renderStats(){const ps=names.filter(n=>lens==='all'||lens===n).map(n=>projects[n]);
+  $('st-ready').textContent=ps.reduce((a,p)=>a+p.ready,0);$('st-run').textContent=ps.reduce((a,p)=>a+p.run,0)+'/6';$('st-done').textContent=ps.reduce((a,p)=>a+p.done,0)}
+const sev={high:'t-red',medium:'t-amber',low:'t-label'};
+
+function render(){renderLens();renderStats();
+  if(lens==='all'){
+    renderCrumbs();$('subnav').style.display='none';
+    $('layout').style.gridTemplateColumns='1fr';
+    $('layout').innerHTML=`<section class="panel"><div class="p-hdr"><span class="lbl">Gardens in grosscode</span><span class="xs t-label">each project tends its own</span></div>
+      <div class="p-body"><div class="cards2" style="grid-template-columns:repeat(auto-fill,minmax(340px,1fr));padding:12px">${names.map(n=>{const p=projects[n];
+        const open=p.runs.reduce((a,r)=>a+r.findings.length,0), running=p.runs.filter(r=>r.state==='running').length;
+        return `<div class="ocard"><div class="oh"><span class="t-snow" style="font-size:var(--fs-md)">${n}</span>
+          ${p.proposals.length?`<span class="badge" style="color:var(--amber-hi)">${p.proposals.length} proposal${p.proposals.length===1?'':'s'} waiting</span>`:''}</div>
+          ${p.routines.length?`<ul><li><span class="t-label xs">routines</span>${p.routines.map(r=>esc(r.name)).join(', ')}<span class="r">next ${esc(p.routines[0].next)}</span></li>
+            <li><span class="t-label xs">scopes</span>${p.scopes.length}<span class="r">${running?'<span class="t-cyan">'+running+' run in progress</span>':'idle'}</span></li>
+            <li><span class="t-label xs">findings</span>${open} from the last runs<span class="r">last run ${esc(p.runs.filter(r=>r.state==='done')[0]?.when||'—')}</span></li></ul>`
+            :`<div class="none">Nothing planted yet — no scopes or routines. Gardening starts with a scope.</div>`}
+          <div style="padding:6px 10px;border-top:1px solid var(--line)"><button class="act primary" onclick="setLens('${n}')">Open ${n}'s garden</button></div></div>`}).join('')}</div></div></section>`;
+    return}
+  const p=projects[lens];
+  const tabs=[['scopes','Scopes',p.scopes.length],['routines','Routines',p.routines.length],['runs','Runs & findings',p.runs.length],['proposals','Proposals',p.proposals.length]];
+  $('subnav').style.display='';renderCrumbs();
+  $('subnav').innerHTML=tabs.map(([k,l,c])=>`<a class="tab ${gview===k?'active':''}" href="#" onclick="gview='${k}';render();return false">${l}<span class="cnt ${k==='proposals'&&c?'hot':''}">${c}</span></a>`).join('')+
+    `<div class="subnav-right xs"><span class="t-label">every record here belongs to <b class="t-snow">${lens}</b></span></div>`;
+  $('layout').style.gridTemplateColumns='minmax(300px,380px) 1fr';
+  const list=p[gview], key={scopes:'slug',routines:'name',runs:'id',proposals:'id'}[gview];
+  if(!list.length){$('layout').style.gridTemplateColumns='1fr';
+    $('layout').innerHTML=`<section class="panel"><div class="empty">${lens} has no ${gview==='runs'?'runs':gview} yet</div>
+      <div class="p-foot">${gview==='scopes'?`<button class="act primary" onclick="toast('New scope: a slug and a description, inside ${lens}.')">+ New scope</button><span class="xs t-label">gardening starts with a scope — a part of ${lens}'s code a routine can tend</span>`:'<span class="xs t-label">nothing to show until a routine has run</span>'}</div></section>`;return}
+  if(!list.find(x=>x[key]===sel[gview]))sel[gview]=list[0][key];
+  const x=list.find(i=>i[key]===sel[gview]);
+  const newBtn={scopes:'+ New scope',routines:'+ New routine',runs:'',proposals:''}[gview];
+  $('layout').innerHTML=`<section class="panel"><div class="p-hdr"><span class="lbl">${tabs.find(t=>t[0]===gview)[1]} · ${lens}</span>
+      ${newBtn?`<button class="act primary" onclick="toast('${newBtn.slice(2)} — created inside ${lens}.')">${newBtn}</button>`:''}</div>
+    <div class="p-body">${list.map(i=>`<button class="row ${i[key]===sel[gview]?'active':''}" onclick="sel['${gview}']='${i[key]}';render()">${row(i)}</button>`).join('')}</div>
+    <div class="p-foot xs t-label">${{scopes:'unique within '+lens,routines:'a routine runs a graph from the tenant\'s shared library',runs:'each run sweeps '+lens+'\'s repositories only',proposals:'accepting raises an item in the hub source, ingested into '+lens}[gview]}</div></section>
+  <section class="panel"><div class="p-body">${detail(x)}</div></section>`;
+  renderCrumbs();
+}
+function row(i){
+  if(gview==='scopes')return `<div class="row-top"><span class="row-name">${esc(i.slug)}</span><span class="row-right rev">${esc(i.last)}</span></div><div class="row-sub"><span>${esc(i.desc)}</span></div>`;
+  if(gview==='routines')return `<div class="row-top"><span class="row-name">${esc(i.name)}</span><span class="row-right rev">${esc(i.cadence)}</span></div><div class="row-sub"><span>graph ${esc(i.graph)}</span><span>next ${esc(i.next)}</span></div>`;
+  if(gview==='runs')return `<div class="row-top"><span class="row-name">${esc(i.routine)} · ${esc(i.scope)}</span><span class="row-right">${i.state==='running'?'<span class="dot amber"></span>':'<span class="dot green"></span>'}</span></div><div class="row-sub"><span>${esc(i.mode)}</span><span>${i.findings.length} findings</span><span>${esc(i.when)}</span></div>`;
+  return `<div class="row-top"><span class="row-name">${esc(i.title)}</span></div><div class="row-sub"><span>${esc(i.size)}</span><span>from ${esc(i.from)}</span><span class="t-amber">waiting ${esc(i.waiting)}</span></div>`;
+}
+function detail(x){const p=projects[lens];
+  if(gview==='scopes')return `<div class="detail-hdr"><h1>${esc(x.slug)}</h1><span class="pchip">${lens}</span><span class="grow"></span><button class="act">Edit</button><button class="act danger">Retire</button></div>
+    <dl class="kv"><dt>Description</dt><dd>${esc(x.desc)}</dd><dt>Last swept</dt><dd>${esc(x.last)}</dd></dl>
+    <div class="section-lbl">Tended by</div><ul class="uses">${x.routines.map(r=>`<li><a class="link" onclick="gview='routines';sel.routines='${r}';render()">${r}</a></li>`).join('')}</ul>
+    ${lens!=='celestial'&&names.filter(n=>n!==lens&&projects[n].scopes.some(s=>s.slug===x.slug)).map(n=>`<div class="callout xs">${n} also has a scope called <code>${x.slug}</code> — a different record; names are only unique within a project.</div>`).join('')}`;
+  if(gview==='routines')return `<div class="detail-hdr"><h1>${esc(x.name)}</h1><span class="pchip">${lens}</span><span class="grow"></span>
+      <button class="act primary" onclick="toast('Run ${x.name}: scope, mode (full or delta), and an optional charge note — inside ${lens}.')">Run…</button><button class="act">Edit</button></div>
+    <dl class="kv"><dt>Graph</dt><dd>${esc(x.graph)} <span class="t-label">· tenant-wide library</span></dd><dt>Default scope</dt><dd>${esc(x.scope)}</dd>
+      <dt>Model · effort</dt><dd>${esc(x.model)}</dd><dt>Cadence</dt><dd>${esc(x.cadence)} <span class="t-label">· next ${esc(x.next)}</span></dd><dt>Runs</dt><dd>${x.runs}</dd></dl>
+    <div class="section-lbl">Recent runs</div><ul class="hist">${p.runs.filter(r=>r.routine===x.name).map(r=>`<li><span class="r">${r.id}</span><span>${esc(r.scope)} · ${r.mode} · ${r.findings.length} findings</span><span class="who">${esc(r.when)}</span></li>`).join('')}</ul>`;
+  if(gview==='runs')return `<div class="detail-hdr"><h1>${esc(x.routine)} · ${esc(x.scope)}</h1><span class="pchip">${lens}</span><span class="grow"></span><span class="xs t-label">${x.id} · ${x.mode} · ${esc(x.when)}</span></div>
+    ${x.state==='running'?'<div class="callout">Running now — findings arrive when it delivers.</div>':''}
+    <div class="section-lbl">Findings</div>${x.findings.length?`<ul class="hist">${x.findings.map(([s,t])=>`<li><span class="${sev[s]}">${s}</span><span>${esc(t)}</span><span class="who"><button class="act">Triage</button></span></li>`).join('')}</ul>`:'<div class="callout xs">None yet.</div>'}`;
+  return `<div class="detail-hdr"><h1>${esc(x.title)}</h1><span class="grow"></span>
+      <button class="act primary" onclick="toast('Accepted — raised as an item in the hub source and ingested into ${lens}.')">Accept</button>
+      <button class="act danger" onclick="toast('Declined — recorded, and the finding it answered is closed.')">Decline</button></div>
+    <dl class="kv"><dt>Project</dt><dd>${lens}</dd><dt>From</dt><dd><a class="link" onclick="gview='runs';sel.runs='${x.from}';render()">${x.from}</a></dd><dt>Size</dt><dd>${esc(x.size)}</dd><dt>Waiting</dt><dd class="t-amber">${esc(x.waiting)}</dd></dl>
+    <div class="callout">Accepting raises a work item in the tenant's built-in <code>hub</code> source and ingests it into <b class="t-snow">${lens}</b>, so the work it becomes is queued in the project it was about.</div>`;
+}
+document.addEventListener('click',e=>{if(!e.target.closest('.tenant'))$('tmenu').classList.remove('open')});
+
+const viewLbl={scopes:'Scopes',routines:'Routines',runs:'Runs & findings',proposals:'Proposals'};
+function renderCrumbs(){
+  const notes='<button class="notes-toggle" onclick="toggleNotes()">Design notes</button>';
+  if(lens==='all'){$('crumbs').innerHTML=`<span class="cur">Gardening</span><span class="sep">›</span><span class="cur">All projects</span>
+    <span class="t-label xs" style="margin-left:10px">gardening belongs to a project — pick one to go in</span>
+    <span class="url">/t/grosscode/gardening</span>${notes}`;return}
+  const key={scopes:'slug',routines:'name',runs:'id',proposals:'id'}[gview];const item=sel[gview]||'';
+  $('crumbs').innerHTML=`<a onclick="setLens('all')">Gardening</a><span class="sep">›</span>
+    <button class="projsw" onclick="document.getElementById('pmenu').classList.toggle('open');event.stopPropagation()">${lens} ▾</button>
+    <span class="sep">›</span><span class="cur">${viewLbl[gview]}</span>
+    <div class="menu" id="pmenu"><div class="mh">Switch project — stays on ${viewLbl[gview]}</div>
+      ${names.map(n=>`<div class="mi ${n===lens?'cur':''}" onclick="setLens('${n}')"><span>${n}</span><span class="t-label xs">${projects[n].proposals.length} proposal${projects[n].proposals.length===1?'':'s'} waiting</span></div>`).join('')}
+      <div class="mi" onclick="setLens('all')"><span class="t-label">All projects</span></div></div>
+    <span class="url">/t/grosscode/gardening/${lens}/${gview}${item?'/'+item:''}</span>${notes}`;
+}
+document.addEventListener('click',e=>{const m=document.getElementById('pmenu');if(m&&!e.target.closest('.projsw'))m.classList.remove('open')});
+render();
+</script>
+</body>
+</html>

@@ -8,7 +8,7 @@ way around.
 | ------------------------------ | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | `milestone:polyglot`           | Run the fleet on the coding harness of their choice — Claude Code, Codex, or OpenCode, first-class and mixable by node — with the safeties on: no worker runs with permissions dangerously bypassed.                                                                                                                                     |
 | `milestone:observability`      | Answer any question about their own fleet with the instruments they already trust: the numbers leave as files any warehouse or BI tool reads, and every night narrates itself as traces to whichever observability backend they run — no new dashboard to learn, and no waiting on blizzard to build the view they wanted.               |
-| `milestone:projects`           | Run every project from one fleet: a single hub hosting many projects' sources and queues, and a single runner host per machine working all of them — a workspace per project, not a stack per project. Each project lands and deploys its finished work its own declared way.                                                            |
+| `milestone:projects`           | Run every project from one fleet: a single hub hosting many projects and the sources they draw from, and a single runner host per machine working all of them — a workspace per project, not a stack per project. Each project lands and deploys its finished work its own declared way.                                                 |
 | `milestone:hardening`          | Decide for themselves how the fleet behaves: every operational constant theirs to set, what each runner will take and when and at what rate theirs to declare, a provider outage ridden out rather than slept through, nothing growing without end underneath them, and every question about the platform answerable without cloning it. |
 | `milestone:human-in-the-loop`  | Stop being the wire between the fleet and everything it needs: it reaches them wherever they are when a decision is genuinely theirs, and settles CI's verdict itself when it is not.                                                                                                                                                    |
 | `milestone:mobile`             | Carry the fleet in a pocket: watch the night, answer a question, and unblock a chunk from a phone, through notifications that arrive the way the phone's own do.                                                                                                                                                                         |
@@ -83,37 +83,47 @@ someone else's to make.
 Today the platform is single-project by silent assumption: one hub, and every source feeding it belongs to blizzard. The
 operator who wants the same machinery working winter — or celestial frontier — stands up a second hub, a second runner,
 a whole second stack on the same desk, and none of the stacks know of each other. This milestone makes *project* a
-first-class idea: a grouping of both what to do and who does it. One hub hosts many projects, each with its own sources,
-and a piece of work carries its project from ingest to landing.
+first-class idea: a grouping of both what to do and who does it. One hub hosts many projects drawing on shared sources —
+one Jira can feed all of them — and a piece of work carries the project it was ingested into from ingest to landing.
 
 The machine is rearchitected to match. Its runner host — the one daemon a machine runs — stops being the extension of a
 single workspace and becomes a host of many: it configures a local workspace per project, and each workspace works for
 its project through whichever of the host's runners serve it. Three projects on one laptop means three workspaces and
 one host — never three installations, and never three of everything above them. For the operator, a desk full of stacks
 collapses into one: queue work against any project, watch all of it on one board, and slice the view to a single project
-when only that one matters.
+when only that one matters. That host is the one `epic:runner-host` builds for `milestone:hardening`, and this
+milestone's runner work waits on it.
+
+None of it can be grouped while it lives where it does today. A hub's work sources sit in a file on its machine, and its
+delivery target and tokens in its environment, so adding a source or rotating a token means a redeploy, and nothing in a
+file can belong to one project rather than another. The first step moves that configuration into the hub's store, behind
+a secret store that takes a credential once and never hands it back, where the operator can change it while the hub runs
+and the grouping that follows has something to own.
 
 A project organises one operator's world; it does not partition the hub. Graphs stay a shared library and the board
 still shows the whole fleet, so the boundary that holds for everything is a level above projects: the tenant. One hub
 can host several wholly separate worlds, each with its own graphs, projects, runners, and board, and none aware of the
 others. The first to need that is blizzard's own test suite, which wants hundreds of tests running against one hub, each
 in a world of its own. Tenancy threads through the same store, API, and runner seams that projects reshapes, so the two
-are designed together and built back to back rather than one reopening what the other just finished.
+are designed together and built back to back, tenancy first, so that every project is born inside a tenant rather than
+one reopening what the other just finished.
 
-A project also owns where its finished work goes and how it gets there. Each project names its repositories beside its
-sources, and each repository says how work lands in it and how it runs once landed. One project merges its own work
-while another waits for a human to merge every pull request; one repository fast-forwards while its neighbor rides a
-merge train; and a chunk that touched three repositories deploys all three in the order they depend on one another,
-proving each healthy, or rolling it back, before the next one moves. Delivery and deployment stop being one fleet-wide
-habit and become each project's own declared method, carried out deterministically, with an agent's judgement called in
-where the project asks for it.
+A project also owns where its finished work goes and how it gets there. Each project names its repositories, and each
+repository says how work lands in it and how it runs once landed. One project merges its own work while another waits
+for a human to merge every pull request; one repository fast-forwards while its neighbor rides a merge train; and a
+chunk that touched three repositories deploys all three in the order they depend on one another, proving each healthy,
+or rolling it back, before the next one moves. Delivery and deployment stop being one fleet-wide habit and become each
+project's own declared method, carried out deterministically, with an agent's judgement called in where the project asks
+for it.
 
 | Epic                       | Slice  | Status  |
 | -------------------------- | ------ | ------- |
-| `epic:projects`            | hub    | horizon |
-| `epic:projects`            | runner | horizon |
+| `epic:live-config`         | full   | horizon |
 | `epic:multi-tenancy`       | hub    | horizon |
+| `epic:projects`            | hub    | horizon |
+| `epic:runner-host`         | runner | horizon |
 | `epic:multi-tenancy`       | runner | horizon |
+| `epic:projects`            | runner | horizon |
 | `epic:advanced-delivery`   | full   | horizon |
 | `epic:advanced-deployment` | full   | horizon |
 
@@ -251,7 +261,7 @@ of what an item says; this is a surface for moving items into the fleet, not for
 platform is real, though, and worth naming: browsing means the work-source seam gains an optional capability to
 enumerate and search, a deliberate loosening of ingest-by-id that every future source binding will inherit.
 
-It arrives after `milestone:projects` for a plain reason — a hub serving many projects, each with its own sources,
+It arrives after `milestone:projects` for a plain reason — a hub serving many projects that draw on many sources,
 changes the shape of the screen enough that building it first would mean building it twice.
 
 | Epic          | Slice | Status  |
@@ -298,22 +308,25 @@ over the same seams the real one uses — lets a person configure a project, que
 before committing anything. It serves the author of a workflow graph just as directly, who today learns what a graph
 does by spending a night finding out.
 
-The milestone closes with three pieces of ordinary platform maturity. Settings that every graph node restates want a
-name to inherit instead, so an operator retunes the fleet's reviewers in one edit rather than nine. And the seams the
-mission is built on want to be reachable from outside the wheel: interoperability is proven at two live bindings, and
-today writing the second one means writing it in blizzard's own repository. A provider someone else can build, install,
-and prove against a conformance suite is what turns a well-drawn seam into an actually open one. Last, the board's own
-suites earn the proof the backend's will already carry: mutation runs over the Angular workspace, waiting on a seam in
-tooling blizzard does not own.
+The milestone closes with four pieces of ordinary platform maturity. Settings that every graph node restates want a name
+to inherit instead, so an operator retunes the fleet's reviewers in one edit rather than nine. And the seams the mission
+is built on want to be reachable from outside the wheel: interoperability is proven at two live bindings, and today
+writing the second one means writing it in blizzard's own repository. A provider someone else can build, install, and
+prove against a conformance suite is what turns a well-drawn seam into an actually open one. A hub's own configuration
+wants to be declared where the rest of the estate already is: a Terraform provider lets the plan that builds the hub's
+host also state its tenants, projects, sources, and repositories. Last, the board's own suites earn the proof the
+backend's will already carry: mutation runs over the Angular workspace, waiting on a seam in tooling blizzard does not
+own.
 
-| Epic                    | Slice    | Status  |
-| ----------------------- | -------- | ------- |
-| `epic:cadence`          | full     | horizon |
-| `epic:steering`         | full     | horizon |
-| `epic:signals`          | full     | horizon |
-| `epic:preview`          | full     | horizon |
-| `epic:worker-profiles`  | full     | horizon |
-| `epic:provider-kit`     | full     | horizon |
-| `epic:demo`             | full     | horizon |
-| `epic:queue`            | priority | horizon |
-| `epic:mutation-testing` | angular  | horizon |
+| Epic                      | Slice    | Status  |
+| ------------------------- | -------- | ------- |
+| `epic:cadence`            | full     | horizon |
+| `epic:steering`           | full     | horizon |
+| `epic:signals`            | full     | horizon |
+| `epic:preview`            | full     | horizon |
+| `epic:worker-profiles`    | full     | horizon |
+| `epic:provider-kit`       | full     | horizon |
+| `epic:terraform-provider` | full     | horizon |
+| `epic:demo`               | full     | horizon |
+| `epic:queue`              | priority | horizon |
+| `epic:mutation-testing`   | angular  | horizon |

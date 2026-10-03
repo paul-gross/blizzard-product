@@ -31,6 +31,4 @@ is makes the queue something they can partition instead of merely shuffle.
 
 - The scope vocabulary: a small set blizzard ships and documents, or scopes an operator defines — and whether an unknown
   scope is an error or ordinary.
-- Whether project is expressed as a tag once `epic:projects` gives projects a home, rather than as a parallel concept
-  with its own filters.
 - What a chunk with no tags means to a runner that accepts only some — taken by default, or left alone.

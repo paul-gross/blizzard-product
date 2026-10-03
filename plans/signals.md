@@ -16,15 +16,15 @@ and the item it raises is queued before morning.
 
 ## What to build
 
-- **An inbound endpoint, per project.** Configured against the project's own sources, which is why this follows
-  `epic:projects` rather than preceding it.
+- **An inbound endpoint, per project.** Configured per project, against a source that project links, which is why this
+  follows `epic:projects` rather than preceding it.
 - **Signed requests.** A push surface on a hub that is reachable from the internet is only safe if the hub can tell who
   is pushing.
 - **Rate bounds per source.** A flapping alert must flood nothing. A source that exceeds its bound is throttled rather
   than believed.
-- **The forge stays the only place work is defined.** A signal raises an item in the project's own work source, and
-  blizzard ingests it from there like any other item — so the non-goal holds by construction rather than by discipline.
-  This is the first push binding of a seam that has only ever pulled.
+- **The forge stays the only place work is defined.** A signal raises an item in a work source the project links, and
+  blizzard ingests it into that project like any other item — so the non-goal holds by construction rather than by
+  discipline. This is the first push binding of a seam that has only ever pulled.
 
 ## Open questions
 

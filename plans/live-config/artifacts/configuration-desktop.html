@@ -1,0 +1,685 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>blizzard hub — admin · configuration</title>
+<style>
+  /* ── Tokens, verbatim from web/projects/fleet/src/lib/design/tokens.css ── */
+  :root{
+    --bg:#060a12; --ground:#080d17; --panel:#0b1120; --panel-deep:#080d19;
+    --panel-hover:#121b30; --panel-hi:#1a2748; --bezel:#1d2b44; --bezel-hi:#27395c;
+    --line:#131d30;
+    --amber:#f2b25c; --amber-hi:#ffcf8a; --amber-dim:#8f7548; --amber-faint:#4d4130;
+    --snow:#eef4fb; --cyan:#5cd1e5; --cyan-dim:#2b6675;
+    --red:#f05c6c; --red-dim:#7a3540; --red-wash-text:#ffd9dd;
+    --green:#4fc57e; --green-dim:#2b5c40;
+    --label:#5c7089; --label-dim:#3c4d63; --text:#b8c6d8;
+    --mono:ui-monospace,"SF Mono",SFMono-Regular,Menlo,Consolas,"Liberation Mono",monospace;
+    --header-hi:#0d1526; --header-lo:#080d18;
+    --fs-label:11px; --fs-xs:12px; --fs-sm:13px; --fs-base:15px; --fs-md:16px; --fs-lg:19px;
+    --overlay-20:rgba(0,0,0,.2); --overlay-25:rgba(0,0,0,.25); --overlay-30:rgba(0,0,0,.3);
+    --overlay-35:rgba(0,0,0,.35); --overlay-40:rgba(0,0,0,.4); --overlay-90:rgba(0,0,0,.9);
+    --surface-resting:var(--panel); --surface-hover:var(--panel-hover); --surface-selected:var(--panel-hi);
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  html,body{height:100%}
+  body{
+    background:var(--ground); color:var(--text);
+    font-family:var(--mono); font-size:var(--fs-base);
+    font-variant-numeric:tabular-nums; line-height:1.45; overflow:hidden;
+  }
+  button,input,select,textarea{font:inherit;color:inherit}
+  :focus-visible{outline:1px solid var(--cyan);outline-offset:1px}
+  .shell{display:flex;flex-direction:column;height:100%;min-height:0;overflow:hidden}
+
+  /* ── Header (fleet BoardHeader) ───────────────────────────── */
+  .mc-header{
+    display:flex;align-items:stretch;height:48px;flex:none;
+    border-bottom:1px solid var(--bezel);
+    background:linear-gradient(180deg,var(--header-hi),var(--header-lo));
+  }
+  .lbl,.stat-lbl{
+    font-size:var(--fs-label);letter-spacing:.18em;text-transform:uppercase;
+    color:var(--label);text-shadow:0 1px 0 var(--overlay-90);
+  }
+  .brand{display:flex;flex:none;align-items:center;gap:10px;padding:0 14px;border-right:1px solid var(--line);white-space:nowrap}
+  .brand-text{display:flex;flex-direction:column;justify-content:center;color:var(--amber-hi);font-size:var(--fs-lg);letter-spacing:.28em;text-transform:uppercase}
+  .brand small{color:var(--label);font-size:var(--fs-label);letter-spacing:.18em}
+  .cell{display:flex;flex:none;flex-direction:column;justify-content:center;padding:0 14px;border-right:1px solid var(--line);white-space:nowrap}
+  .cell .v{color:var(--amber);font-size:var(--fs-lg);line-height:1.1}
+  .cell[data-stat=needs] .v{color:var(--red)}
+  .cell[data-stat=waiting] .v{color:var(--amber-hi)}
+  .cell[data-stat=done] .v{color:var(--green)}
+  .stats{display:flex;align-items:stretch;overflow:hidden}
+  .spacer{flex:1;border-right:1px solid var(--line)}
+  .conn{border-right:none}
+  .conn .v{color:var(--cyan)}
+  .avatar{display:flex;align-items:center;padding:0 14px}
+  .avatar i{
+    display:block;width:26px;height:26px;border-radius:999px;
+    border:1px solid var(--bezel-hi);background:var(--panel-hi);
+    font-style:normal;font-size:var(--fs-xs);color:var(--amber);
+    display:flex;align-items:center;justify-content:center;
+  }
+  .flake{stroke:var(--snow);stroke-linecap:round}
+  .tip{fill:var(--cyan)} .hub{fill:var(--amber)}
+  .halo{fill:none;stroke:var(--amber);opacity:.45}
+
+  /* ── Tab strip (fleet KitTabStrip / KitTab) ───────────────── */
+  .tabstrip{
+    display:flex;align-items:stretch;height:32px;flex:none;
+    border-bottom:1px solid var(--bezel);background:var(--header-lo);
+    font-size:var(--fs-label);letter-spacing:.14em;text-transform:uppercase;
+  }
+  .tab{
+    display:flex;align-items:center;padding:0 16px;background:transparent;
+    border:none;border-right:1px solid var(--line);color:var(--label);
+    text-decoration:none;cursor:pointer;flex:none;white-space:nowrap;
+  }
+  .tab.active{color:var(--amber-hi);background:var(--header-hi)}
+  .tab:hover:not(.active){color:var(--text)}
+
+  /* The gardening tab's own second strip. Dimmer than the app strip so the
+     hierarchy reads at a glance: app surface, then surface-within-surface. */
+  .subnav{
+    display:flex;align-items:stretch;height:30px;flex:none;gap:0;
+    border-bottom:1px solid var(--bezel);background:var(--panel-deep);
+    font-size:var(--fs-label);letter-spacing:.14em;text-transform:uppercase;
+  }
+  .subnav .tab{border-right:1px solid var(--line)}
+  .subnav .tab.active{color:var(--cyan);background:var(--overlay-30);box-shadow:inset 0 -2px 0 var(--cyan-dim)}
+  .subnav .cnt{margin-left:8px;color:var(--snow);letter-spacing:.06em}
+  .subnav .cnt.hot{color:var(--amber-hi)}
+  .subnav-right{margin-left:auto;display:flex;align-items:center;gap:8px;padding:0 12px;color:var(--label-dim)}
+
+  /* ── Panels (fleet KitPanel) ──────────────────────────────── */
+  .layout{flex:1;min-height:0;display:grid;gap:6px;padding:6px}
+  .panel{
+    display:flex;flex-direction:column;min-height:0;min-width:0;
+    background:linear-gradient(180deg,var(--panel) 0%,var(--panel-deep) 100%);
+    border:1px solid var(--bezel);
+  }
+  .p-hdr{
+    display:flex;align-items:center;justify-content:space-between;gap:8px;
+    padding:4px 8px;border-bottom:1px solid var(--line);background:var(--overlay-25);flex:none;
+  }
+  .p-hdr .cnt{color:var(--snow);font-size:var(--fs-xs)}
+  .p-body{position:relative;overflow-y:auto;overflow-x:hidden;flex:1;min-height:0}
+  .p-foot{flex:none;border-top:1px solid var(--line);background:var(--overlay-25);padding:6px 8px;display:flex;align-items:center;gap:8px}
+  .hdr-actions{display:flex;align-items:center;gap:6px}
+
+  /* ── Rows ─────────────────────────────────────────────────── */
+  .row{
+    display:block;width:100%;text-align:left;background:var(--surface-resting);
+    border:none;border-bottom:1px solid var(--line);border-left:2px solid transparent;
+    padding:7px 10px;cursor:pointer;
+  }
+  .row:hover{background:var(--surface-hover)}
+  .row.active{background:var(--surface-selected);border-left-color:var(--cyan)}
+  .row-top{display:flex;align-items:baseline;gap:8px}
+  .row-name{color:var(--snow);font-size:var(--fs-md)}
+  .row-sub{color:var(--label);font-size:var(--fs-xs);margin-top:2px;display:flex;gap:10px;flex-wrap:wrap}
+  .row-right{margin-left:auto;display:flex;align-items:center;gap:8px}
+
+  /* ── Atoms ────────────────────────────────────────────────── */
+  .act{
+    font-family:inherit;background:var(--overlay-30);border:1px solid var(--line);
+    color:var(--text);cursor:pointer;padding:2px 7px;font-size:var(--fs-xs);
+  }
+  .act:hover:not(:disabled){border-color:var(--cyan)}
+  .act.primary{color:var(--cyan)}
+  .act.danger{color:var(--red)}
+  .act.danger:hover:not(:disabled){border-color:var(--red)}
+  .act:disabled{opacity:.4;cursor:default}
+  .act.big{padding:5px 14px;font-size:var(--fs-sm)}
+  .chip{
+    font-family:inherit;background:transparent;border:1px solid var(--line);border-radius:999px;
+    color:var(--text);cursor:pointer;padding:1px 8px;font-size:var(--fs-xs);letter-spacing:.04em;white-space:nowrap;
+  }
+  .chip:hover{border-color:var(--cyan)}
+  .chip.selected{border-color:var(--amber-hi);color:var(--amber-hi)}
+  .badge{
+    display:inline-block;border:1px solid currentcolor;border-radius:999px;padding:0 7px;
+    font-size:var(--fs-label);letter-spacing:.08em;text-transform:uppercase;
+  }
+  .t-cyan{color:var(--cyan)} .t-amber{color:var(--amber)} .t-amber-hi{color:var(--amber-hi)}
+  .t-green{color:var(--green)} .t-red{color:var(--red)} .t-label{color:var(--label)}
+  .t-snow{color:var(--snow)} .t-dim{color:var(--label-dim)}
+  .mono-id{font-size:var(--fs-xs);color:var(--label)}
+  .dot{width:8px;height:8px;border-radius:999px;display:inline-block;flex:none}
+  .dot.green{background:var(--green)} .dot.amber{background:var(--amber)}
+  .dot.red{background:var(--red)} .dot.grey{background:var(--label-dim)}
+  .xs{font-size:var(--fs-xs)} .sm{font-size:var(--fs-sm)}
+  .empty{display:flex;align-items:center;justify-content:center;height:100%;padding:24px;text-align:center;
+    color:var(--label);font-size:var(--fs-lg);letter-spacing:.1em;text-transform:uppercase}
+
+  /* Key/value definition grid — the shape every "what this record is" block uses. */
+  .kv{display:grid;grid-template-columns:auto 1fr;gap:3px 14px;padding:8px 10px;font-size:var(--fs-sm)}
+  .kv dt{color:var(--label);font-size:var(--fs-label);letter-spacing:.14em;text-transform:uppercase;align-self:center}
+  .kv dd{color:var(--text);min-width:0;overflow-wrap:anywhere}
+
+  .sect{border-bottom:1px solid var(--line)}
+  .sect-hdr{display:flex;align-items:center;gap:8px;padding:5px 10px;background:var(--overlay-20);border-bottom:1px solid var(--line)}
+  .sect-hdr .act{margin-left:auto}
+  .prose{padding:10px;font-size:var(--fs-sm);color:var(--text);max-width:78ch}
+  .prose p{margin-bottom:8px}
+  .prose code{color:var(--amber);background:var(--overlay-30);padding:0 3px}
+  .prose ul{margin:0 0 8px 18px}
+
+  table.grid{width:100%;border-collapse:collapse;font-size:var(--fs-sm)}
+  table.grid th{
+    text-align:left;padding:4px 10px;background:var(--overlay-35);color:var(--label);
+    font-size:var(--fs-label);letter-spacing:.14em;text-transform:uppercase;font-weight:400;
+    border-bottom:1px solid var(--line);position:sticky;top:0;
+  }
+  table.grid td{padding:5px 10px;border-bottom:1px solid var(--line);vertical-align:top}
+  table.grid tr:hover td{background:var(--overlay-20)}
+
+  /* ── Form controls ────────────────────────────────────────── */
+  .field{display:flex;flex-direction:column;gap:4px;margin-bottom:14px}
+  .field > .lbl{display:flex;align-items:center;gap:8px}
+  .hint{color:var(--label);font-size:var(--fs-xs);max-width:70ch}
+  input[type=text],select,textarea{
+    background:var(--overlay-40);border:1px solid var(--bezel);color:var(--snow);
+    padding:5px 8px;font-size:var(--fs-sm);width:100%;
+  }
+  textarea{resize:vertical;min-height:76px;line-height:1.5}
+  input[type=text]:focus,select:focus,textarea:focus{border-color:var(--cyan);outline:none}
+  .radio-set{display:flex;flex-direction:column;gap:6px}
+  .radio{
+    display:flex;gap:9px;align-items:flex-start;padding:8px 10px;cursor:pointer;
+    border:1px solid var(--bezel);background:var(--overlay-30);
+  }
+  .radio:hover{border-color:var(--bezel-hi);background:var(--panel-hover)}
+  .radio.on{border-color:var(--cyan);background:var(--panel-hi)}
+  .radio input{margin-top:3px;accent-color:#5cd1e5}
+  .radio .rt{display:block;color:var(--snow);font-size:var(--fs-sm)}
+  .radio .rh{display:block;color:var(--label);font-size:var(--fs-xs);margin-top:2px}
+
+  /* ── Modal ────────────────────────────────────────────────── */
+  .scrim{position:fixed;inset:0;background:rgba(3,6,12,.72);display:none;align-items:center;justify-content:center;z-index:40;padding:24px}
+  .scrim.open{display:flex}
+  .dialog{
+    width:min(700px,100%);max-height:100%;display:flex;flex-direction:column;
+    background:linear-gradient(180deg,var(--panel) 0%,var(--panel-deep) 100%);
+    border:1px solid var(--bezel-hi);box-shadow:0 24px 60px rgba(0,0,0,.6);
+  }
+  .dialog .d-hdr{display:flex;align-items:center;gap:10px;padding:8px 12px;border-bottom:1px solid var(--bezel);background:var(--overlay-35)}
+  .dialog .d-hdr .x{margin-left:auto}
+  .dialog .d-body{padding:14px 16px;overflow-y:auto}
+  .dialog .d-foot{display:flex;align-items:center;gap:10px;padding:10px 12px;border-top:1px solid var(--bezel);background:var(--overlay-35)}
+  .dialog .d-foot .grow{flex:1;color:var(--label);font-size:var(--fs-xs);max-width:52ch}
+
+  /* ── Toast ────────────────────────────────────────────────── */
+  .toast{
+    position:fixed;right:16px;bottom:16px;z-index:50;max-width:440px;
+    border:1px solid var(--cyan-dim);background:var(--panel-hi);
+    padding:10px 14px;font-size:var(--fs-sm);display:none;box-shadow:0 12px 32px rgba(0,0,0,.5);
+  }
+  .toast.open{display:block}
+  .toast .tl{color:var(--cyan);font-size:var(--fs-label);letter-spacing:.18em;text-transform:uppercase;display:block;margin-bottom:3px}
+
+  /* ── Trend sparkline ──────────────────────────────────────── */
+  .spark{display:flex;align-items:stretch;gap:4px;height:48px;padding:0 2px}
+  .spark .b{flex:1;min-width:3px;align-self:flex-end;background:var(--label-dim)}
+  .spark .b.in{background:var(--amber-dim)}
+  .spark .b.out{background:var(--green-dim)}
+  .spark-pair{display:flex;gap:2px;align-items:flex-end;flex:1;height:100%}
+  .legend{display:flex;gap:14px;flex-wrap:wrap;font-size:var(--fs-label);letter-spacing:.14em;text-transform:uppercase;color:var(--label);padding:6px 10px 0}
+  .legend b{font-weight:400;white-space:nowrap}
+  .swatch{display:inline-block;width:9px;height:9px;margin-right:5px;vertical-align:baseline}
+
+  /* ── Design-notes drawer (the sheet's own annotation, not the app's) ── */
+  .notes-toggle{
+    border:1px solid var(--amber-faint);background:var(--panel);color:var(--amber);
+    padding:1px 10px;font-size:var(--fs-label);letter-spacing:.18em;text-transform:uppercase;cursor:pointer;
+  }
+  .notes-toggle:hover{border-color:var(--amber)}
+  .notes{
+    position:fixed;inset:auto 0 0 0;z-index:31;max-height:62%;overflow-y:auto;display:none;
+    background:var(--panel-deep);border-top:2px solid var(--amber-faint);padding:14px 20px 60px;
+  }
+  .notes.open{display:block}
+  .notes h2{font-size:var(--fs-label);letter-spacing:.18em;text-transform:uppercase;color:var(--amber);margin-bottom:10px}
+  .notes .cards{display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:10px}
+  .notes .card{border:1px solid var(--bezel);background:var(--panel);padding:10px 12px}
+  .notes .card h3{font-size:var(--fs-xs);color:var(--cyan);letter-spacing:.1em;text-transform:uppercase;margin-bottom:5px}
+  .notes .card p{font-size:var(--fs-sm);color:var(--text);margin-bottom:6px}
+  .notes .card p:last-child{margin-bottom:0}
+  .notes .card.open-q{border-color:var(--amber-faint)}
+  .notes .card.open-q h3{color:var(--amber)}
+  .notes code{color:var(--amber);background:var(--overlay-30);padding:0 3px}
+
+  /* ══ Configuration surface — additions on top of the shared kit above ══ */
+  .subnav .tab .lock{margin-left:6px;color:var(--label-dim)}
+  .filters{display:flex;gap:6px;flex-wrap:wrap;padding:6px 8px;border-bottom:1px solid var(--line);background:var(--overlay-20)}
+  .row.retired .row-name{color:var(--label);text-decoration:line-through;text-decoration-color:var(--label-dim)}
+  .row.retired{opacity:.75}
+  .badge.file{color:var(--cyan)}
+  .badge.retired{color:var(--label)}
+  .badge.builtin{color:var(--amber-dim)}
+  .badge.unused{color:var(--amber)}
+  .rev{font-size:var(--fs-xs);color:var(--label)}
+  .rev b{color:var(--snow);font-weight:400}
+  .detail-hdr{display:flex;align-items:center;gap:10px;padding:10px 12px;border-bottom:1px solid var(--line)}
+  .detail-hdr h1{font-size:var(--fs-lg);color:var(--snow);font-weight:400;letter-spacing:.02em}
+  .detail-hdr .grow{flex:1}
+  .section-lbl{padding:10px 12px 4px;font-size:var(--fs-label);letter-spacing:.18em;text-transform:uppercase;color:var(--label)}
+  .kv dd{color:var(--snow);word-break:break-all}
+  .kv dd .t-label{word-break:normal}
+  .kv dd a,.link{color:var(--cyan);text-decoration:none;cursor:pointer}
+  .kv dd a:hover,.link:hover{text-decoration:underline}
+  .callout{margin:8px 12px;padding:8px 10px;border:1px solid var(--line);border-left:2px solid var(--cyan-dim);background:var(--overlay-20);font-size:var(--fs-sm)}
+  .callout.amber{border-left-color:var(--amber-dim)}
+  .callout code,.kv code,.diff code{color:var(--amber);background:var(--overlay-30);padding:0 3px}
+  .hist{list-style:none;padding:0 12px 12px}
+  .hist li{display:grid;grid-template-columns:44px 1fr auto;gap:10px;padding:6px 0;border-bottom:1px solid var(--line);font-size:var(--fs-sm)}
+  .hist li .r{color:var(--snow)}
+  .hist li .who{color:var(--label);font-size:var(--fs-xs);text-align:right;white-space:nowrap}
+  .hist li .via{color:var(--cyan-dim)}
+  .secret-val{letter-spacing:.3em;color:var(--label-dim)}
+  .uses{list-style:none;padding:0 12px 10px;display:flex;flex-direction:column;gap:4px;font-size:var(--fs-sm)}
+  .uses li{display:flex;gap:8px;align-items:baseline}
+  .diff{margin:8px 12px 12px;border:1px solid var(--line);background:var(--overlay-30);font-size:var(--fs-sm)}
+  .diff .dl{display:grid;grid-template-columns:22px 150px 1fr;gap:8px;padding:4px 10px;border-bottom:1px solid var(--line)}
+  .diff .dl:last-child{border-bottom:none}
+  .diff .op{text-align:center}
+  .diff .add .op,.diff .add .what{color:var(--green)}
+  .diff .chg .op,.diff .chg .what{color:var(--amber)}
+  .diff .ret .op,.diff .ret .what{color:var(--red)}
+  .diff .old{color:var(--label);text-decoration:line-through}
+  .diff .new{color:var(--snow)}
+  .field{display:flex;flex-direction:column;gap:3px;margin-bottom:12px}
+  .field label{font-size:var(--fs-label);letter-spacing:.14em;text-transform:uppercase;color:var(--label)}
+  .field input,.field select{background:var(--overlay-30);border:1px solid var(--bezel);padding:5px 8px;font-size:var(--fs-sm);color:var(--snow)}
+  .field input:focus,.field select:focus{border-color:var(--cyan);outline:none}
+  .field .hint{font-size:var(--fs-xs);color:var(--label)}
+  .field.changed input,.field.changed select{border-color:var(--amber-dim)}
+  .two{display:grid;grid-template-columns:1fr 1fr;gap:0 14px}
+  .toggle{display:flex;align-items:center;gap:8px;font-size:var(--fs-sm);cursor:pointer}
+  .toggle input{accent-color:var(--cyan)}
+  body.readonly .edit-only{display:none !important}
+  body:not(.readonly) .ro-only{display:none !important}
+  .mode{display:flex;align-items:center;gap:6px}
+  .mode .chip{cursor:pointer}
+</style>
+</head>
+<body>
+<div class="shell">
+
+  <!-- ── fleet BoardHeader, unchanged ── -->
+  <header class="mc-header">
+    <div class="brand">
+      <svg viewBox="0 0 32 32" width="30" height="30" aria-hidden="true">
+        <defs>
+          <g id="bz-spoke">
+            <line x1="16" y1="11.5" x2="16" y2="6" class="flake" stroke-width="1.4"/>
+            <line x1="16" y1="8.5" x2="13.45" y2="7.05" class="flake" stroke-width="1.1"/>
+            <line x1="16" y1="8.5" x2="18.55" y2="7.05" class="flake" stroke-width="1.1"/>
+            <circle cx="16" cy="4" r="1.8" class="tip"/>
+          </g>
+        </defs>
+        <use href="#bz-spoke"/><use href="#bz-spoke" transform="rotate(60 16 16)"/>
+        <use href="#bz-spoke" transform="rotate(120 16 16)"/><use href="#bz-spoke" transform="rotate(180 16 16)"/>
+        <use href="#bz-spoke" transform="rotate(240 16 16)"/><use href="#bz-spoke" transform="rotate(300 16 16)"/>
+        <circle cx="16" cy="16" r="2.8" class="hub"/>
+        <circle cx="16" cy="16" r="4.4" class="halo" stroke-width="0.8"/>
+      </svg>
+      <div class="brand-text">blizzard<small>mission control</small></div>
+    </div>
+    <div class="stats">
+      <div class="cell" data-stat="ready"><span class="stat-lbl">Ready</span><span class="v">4</span></div>
+      <div class="cell" data-stat="running"><span class="stat-lbl">Running</span><span class="v">3/6</span></div>
+      <div class="cell" data-stat="waiting"><span class="stat-lbl">Waiting</span><span class="v">1</span></div>
+      <div class="cell" data-stat="needs"><span class="stat-lbl">Needs human</span><span class="v">0</span></div>
+      <div class="cell" data-stat="done"><span class="stat-lbl">Done</span><span class="v">12</span></div>
+    </div>
+    <div class="spacer"></div>
+    <div class="cell spend"><span class="stat-lbl">Today</span><span class="v t-amber-hi">$41.06</span></div>
+    <div class="cell conn"><span class="stat-lbl">Stream</span><span class="v">live</span></div>
+    <div class="avatar"><i>PG</i></div>
+  </header>
+
+  <!-- ── AppNav: configuration lives under the existing Admin tab ── -->
+  <nav class="tabstrip">
+    <a class="tab" href="#">Board</a>
+    <a class="tab" href="#">Graphs</a>
+    <a class="tab" href="#">Events</a>
+    <a class="tab" href="#">Gardening</a>
+    <a class="tab active" href="#">Admin</a>
+  </nav>
+
+  <!-- ── Admin's own strip: users (today's admin page) plus one surface per configured noun ── -->
+  <nav class="subnav" id="subnav">
+    <a class="tab" href="#" data-view="users">Users<span class="cnt">3</span></a>
+    <a class="tab" href="#" data-view="sources">Work sources<span class="cnt" id="cnt-sources"></span></a>
+    <a class="tab" href="#" data-view="repos">Repositories<span class="cnt" id="cnt-repos"></span></a>
+    <a class="tab" href="#" data-view="secrets">Secrets<span class="cnt" id="cnt-secrets"></span></a>
+    <a class="tab" href="#" data-view="changes">Changes<span class="cnt" id="cnt-changes"></span></a>
+    <div class="subnav-right xs">
+      <span class="mode">board edits
+        <button class="chip selected" id="mode-edit" onclick="setMode(false)">on</button>
+        <button class="chip" id="mode-ro" onclick="setMode(true)">off</button>
+      </span>
+      <button class="notes-toggle" onclick="toggleNotes()">Design notes</button>
+    </div>
+  </nav>
+
+  <div class="layout" style="grid-template-columns:minmax(300px,380px) 1fr">
+    <section class="panel">
+      <div class="p-hdr"><span class="lbl" id="list-title"></span>
+        <span class="hdr-actions"><button class="act primary edit-only" id="new-btn" onclick="openNew()"></button></span></div>
+      <div class="filters" id="filters">
+        <button class="chip selected" data-f="active">Active</button>
+        <button class="chip" data-f="retired">Retired</button>
+        <button class="chip" data-f="all">All</button>
+      </div>
+      <div class="p-body" id="list"></div>
+      <div class="p-foot xs t-label" id="list-foot"></div>
+    </section>
+    <section class="panel">
+      <div class="p-body" id="detail"></div>
+    </section>
+  </div>
+
+  <!-- ── Edit / create dialog ── -->
+  <div class="scrim" id="scrim" onclick="if(event.target===this)closeDialog()">
+    <div class="dialog" role="dialog" aria-modal="true">
+      <div class="d-hdr"><span class="lbl" id="d-title"></span><button class="act x" onclick="closeDialog()">esc</button></div>
+      <div class="d-body" id="d-body"></div>
+      <div class="d-foot"><span class="grow" id="d-note"></span>
+        <button class="act big" onclick="closeDialog()">Cancel</button>
+        <button class="act big primary" id="d-save" onclick="save()">Save</button></div>
+    </div>
+  </div>
+
+  <div class="toast" id="toast"><span class="tl">saved</span><span id="toast-text"></span></div>
+
+  <aside class="notes" id="notes">
+    <h2>Live configuration &mdash; what a hub is configured with, and who changed it</h2>
+    <div class="cards">
+      <div class="card">
+        <h3>Under Admin, not a new tab</h3>
+        <p>Configuration is set up rarely and read often by the one person who administers the hub. It joins today's
+          <b>Admin</b> page (users) as sibling surfaces, one per configured noun: <b>work sources</b>,
+          <b>repositories</b>, <b>secrets</b>, and the <b>changes</b> log across all of them.</p>
+      </div>
+      <div class="card">
+        <h3>Every record shows its revision</h3>
+        <p>Each record carries the revision that moves with every change, who made it, and through which door &mdash;
+          board, CLI, API, or a declarative file. The changes log is the same facts across every record, so
+          &ldquo;who pointed this source somewhere else?&rdquo; is answered by looking, not by asking.</p>
+      </div>
+      <div class="card">
+        <h3>Managed by a file</h3>
+        <p>A record a declarative file owns is marked <span class="badge file">file</span>. The board shows it but
+          sends edits back to the file, because the next <code>config apply</code> would quietly undo a board edit.
+          Records created on the board or CLI stay editable here.</p>
+      </div>
+      <div class="card">
+        <h3>Secrets by name, never by value</h3>
+        <p>A secret shows its name, when it was last replaced and by whom, and every record that refers to it. Its
+          value is never sent to the browser. <b>Replace</b> writes a new value; there is no reveal. A secret still
+          referred to cannot be retired.</p>
+      </div>
+      <div class="card">
+        <h3>Retire, never delete</h3>
+        <p>Retiring stops new work from a record and keeps its history; chunks already taken from it finish. Retired
+          records sit behind the <b>Retired</b> filter and can be re-enabled.</p>
+      </div>
+      <div class="card">
+        <h3>Changes take effect on next use</h3>
+        <p>Saving shows the exact difference first, then writes a new revision. There is no restart and no pinning:
+          work in flight sees the change the next time it uses the record.</p>
+      </div>
+      <div class="card open-q">
+        <h3>Open &mdash; does the board edit?</h3>
+        <p>Toggle <b>board edits</b> in the strip above to compare. <b>On</b>: create, edit, replace, and retire from
+          here. <b>Off</b>: the board is a window, and each record shows the CLI verb that changes it.</p>
+      </div>
+      <div class="card open-q">
+        <h3>Later &mdash; projects and tenants</h3>
+        <p>Once <code>epic:projects</code> lands, sources and repositories gain a project column and a project filter
+          chip; once <code>epic:multi-tenancy</code> lands, everything here is already inside the tenant in the URL.
+          Neither changes this layout.</p>
+      </div>
+    </div>
+  </aside>
+</div>
+
+<script>
+/* ═════════ seed — one hub, before projects or tenants exist ═════════ */
+const sources = [
+  { name:'blizzard', provider:'github', repo:'paul-gross/blizzard', api:'https://api.github.com', web:'https://github.com',
+    annotate:true, secret:'gh-blizzard', file:true, rev:7, when:'2 days ago', who:'pgross', via:'config apply',
+    hist:[[7,'annotate off → on','config apply','2 days ago'],[6,'secret gh-fleet → gh-blizzard','cli','12 days ago'],[1,'imported from blizzard-hub.toml','migration','3 weeks ago']] },
+  { name:'winter', provider:'github', repo:'paul-gross/winter', api:'https://api.github.com', web:'https://github.com',
+    annotate:false, secret:'gh-winter', file:false, rev:2, when:'5 hours ago', who:'pgross', via:'board',
+    hist:[[2,'web base set','board','5 hours ago'],[1,'created','board','yesterday']] },
+  { name:'celestial', provider:'github', repo:'paul-gross/celestial-frontier', api:'https://api.github.com', web:'https://github.com',
+    annotate:true, secret:'gh-celestial', file:true, rev:1, when:'2 days ago', who:'pgross', via:'config apply',
+    hist:[[1,'created','config apply','2 days ago']] },
+  { name:'hub', provider:'hub (built-in)', repo:'—', api:'—', web:'—', annotate:false, secret:null, builtin:true, rev:1,
+    when:'always', who:'hub', via:'built-in', hist:[[1,'the hub\'s own work source, always present','built-in','—']] },
+  { name:'discovery', provider:'github', repo:'paul-gross/blizzard-discovery', api:'https://api.github.com', web:'https://github.com',
+    annotate:false, secret:'gh-blizzard', file:false, retired:true, rev:3, when:'3 weeks ago', who:'pgross', via:'cli',
+    hist:[[3,'retired','cli','3 weeks ago'],[2,'annotate on → off','cli','1 month ago'],[1,'imported from blizzard-hub.toml','migration','1 month ago']] },
+];
+const repos = [
+  { name:'blizzard', forge:'https://github.com', owner:'paul-gross', repo:'blizzard', base:'master', secret:'gh-blizzard', file:true, rev:2,
+    when:'2 days ago', who:'pgross', via:'config apply', hist:[[2,'secret gh-fleet → gh-blizzard','config apply','2 days ago'],[1,'imported from BZ_FORGE_*','migration','3 weeks ago']] },
+  { name:'blizzard-context', forge:'https://github.com', owner:'paul-gross', repo:'blizzard-context', base:'master', secret:'gh-blizzard', file:true, rev:1,
+    when:'2 days ago', who:'pgross', via:'config apply', hist:[[1,'created','config apply','2 days ago']] },
+  { name:'winter', forge:'https://github.com', owner:'paul-gross', repo:'winter', base:'main', secret:'gh-winter', file:false, rev:3,
+    when:'5 hours ago', who:'pgross', via:'api', hist:[[3,'base branch master → main','api','5 hours ago'],[2,'secret set','board','yesterday'],[1,'created','board','yesterday']] },
+];
+const secrets = [
+  { name:'gh-blizzard', replaced:'12 days ago', who:'pgross', via:'cli', rev:3, file:false },
+  { name:'gh-winter', replaced:'yesterday', who:'pgross', via:'board', rev:1, file:false },
+  { name:'gh-celestial', replaced:'2 days ago', who:'pgross', via:'cli', rev:1, file:false },
+  { name:'gh-ci-readonly', replaced:'2 months ago', who:'pgross', via:'cli', rev:1, file:false },
+  { name:'gh-fleet', replaced:'3 weeks ago', who:'migration', via:'migration', rev:1, retired:true },
+];
+const changes = [
+  { id:'c-41', title:'config apply · hub.yaml', who:'pgross', via:'cli', when:'2 days ago', kind:'apply',
+    diff:[['add','source','celestial','','paul-gross/celestial-frontier'],['add','repository','blizzard-context','','paul-gross/blizzard-context'],
+          ['chg','source blizzard','annotate','off','on'],['chg','repository blizzard','secret','gh-fleet','gh-blizzard']],
+    note:'Applied after a dry run showed the same four lines. Records the file names but did not change were left untouched.' },
+  { id:'c-42', title:'repository winter · base branch', who:'pgross', via:'api', when:'5 hours ago', kind:'edit',
+    diff:[['chg','repository winter','base branch','master','main']], note:'Took effect on the next delivery to winter.' },
+  { id:'c-43', title:'source winter · web base', who:'pgross', via:'board', when:'5 hours ago', kind:'edit',
+    diff:[['chg','source winter','web base','—','https://github.com']], note:'' },
+  { id:'c-40', title:'secret gh-blizzard · replaced', who:'pgross', via:'cli', when:'12 days ago', kind:'secret',
+    diff:[['chg','secret gh-blizzard','value','r2','r3']], note:'Values are never recorded — only that a new one was written. The next forge call used it.' },
+  { id:'c-38', title:'source discovery · retired', who:'pgross', via:'cli', when:'3 weeks ago', kind:'retire',
+    diff:[['ret','source discovery','status','active','retired']], note:'No new items ingest from it; the two chunks already taken from it finished.' },
+];
+const usersOf = s => [
+  ...sources.filter(x=>x.secret===s && !x.retired).map(x=>['source',x.name]),
+  ...repos.filter(x=>x.secret===s && !x.retired).map(x=>['repository',x.name]),
+];
+
+/* ═════════ state ═════════ */
+let view='sources', filter='active', sel={sources:'blizzard',repos:'winter',secrets:'gh-blizzard',changes:'c-41'};
+const $=id=>document.getElementById(id);
+const esc=s=>String(s).replace(/[&<>]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;'}[c]));
+
+function setMode(ro){document.body.classList.toggle('readonly',ro);
+  $('mode-edit').classList.toggle('selected',!ro);$('mode-ro').classList.toggle('selected',ro);}
+function toggleNotes(){$('notes').classList.toggle('open')}
+function toast(t){$('toast-text').textContent=t;$('toast').classList.add('open');setTimeout(()=>$('toast').classList.remove('open'),3200)}
+
+document.querySelectorAll('#subnav [data-view]').forEach(a=>a.onclick=e=>{e.preventDefault();
+  if(a.dataset.view==='users'){toast('Users is today\'s admin page — unchanged.');return}
+  view=a.dataset.view;filter='active';render()});
+document.querySelectorAll('#filters .chip').forEach(c=>c.onclick=()=>{filter=c.dataset.f;render()});
+
+function items(){return view==='sources'?sources:view==='repos'?repos:view==='secrets'?secrets:changes}
+function visible(){const xs=items();if(view==='changes')return xs;
+  return xs.filter(x=>filter==='all'||(filter==='retired')===!!x.retired)}
+
+function badges(x){let b='';if(x.builtin)b+='<span class="badge builtin">built-in</span>';
+  if(x.file)b+='<span class="badge file">file</span>';if(x.retired)b+='<span class="badge retired">retired</span>';
+  if(view==='secrets'&&!x.retired&&usersOf(x.name).length===0)b+='<span class="badge unused">unused</span>';return b}
+
+function rowSub(x){
+  if(view==='sources')return `<span>${esc(x.provider)}</span><span>${esc(x.repo)}</span>${x.annotate?'<span class="t-cyan">annotates</span>':''}`;
+  if(view==='repos')return `<span>${esc(x.owner)}/${esc(x.repo)}</span><span>base <b class="t-snow">${esc(x.base)}</b></span>`;
+  if(view==='secrets'){const u=usersOf(x.name).length;return `<span>replaced ${esc(x.replaced)}</span><span>${u} reference${u===1?'':'s'}</span>`}
+  return `<span>${esc(x.who)}</span><span class="via">via ${esc(x.via)}</span><span>${esc(x.when)}</span>`;
+}
+
+function render(){
+  document.querySelectorAll('#subnav [data-view]').forEach(a=>a.classList.toggle('active',a.dataset.view===view));
+  $('cnt-sources').textContent=sources.filter(x=>!x.retired).length;
+  $('cnt-repos').textContent=repos.filter(x=>!x.retired).length;
+  $('cnt-secrets').textContent=secrets.filter(x=>!x.retired).length;
+  $('cnt-changes').textContent=changes.length;
+  $('list-title').textContent={sources:'Work sources',repos:'Repositories',secrets:'Secrets',changes:'Changes, newest first'}[view];
+  $('new-btn').textContent={sources:'+ New source',repos:'+ New repository',secrets:'+ New secret',changes:''}[view];
+  $('new-btn').style.display=view==='changes'?'none':'';
+  $('filters').style.display=view==='changes'?'none':'';
+  document.querySelectorAll('#filters .chip').forEach(c=>c.classList.toggle('selected',c.dataset.f===filter));
+  const xs=view==='changes'?[...changes].sort((a,b)=>b.id.localeCompare(a.id)):visible();
+  const key=view==='changes'?'id':'name';
+  if(!xs.find(x=>x[key]===sel[view]) && xs.length) sel[view]=xs[0][key];
+  $('list').innerHTML=xs.length?xs.map(x=>`
+    <button class="row ${x[key]===sel[view]?'active':''} ${x.retired?'retired':''}" onclick="pick('${x[key]}')">
+      <div class="row-top"><span class="row-name">${esc(view==='changes'?x.title:x.name)}</span>
+        <span class="row-right">${view==='changes'?'':badges(x)}${view==='changes'?'':`<span class="rev">r<b>${x.rev}</b></span>`}</span></div>
+      <div class="row-sub">${rowSub(x)}</div></button>`).join('')
+    :'<div class="empty">nothing retired</div>';
+  $('list-foot').textContent=view==='changes'?'every change to every record, from every door'
+    :view==='secrets'?'values are write-only — the board never receives one':'retire stops new work; nothing is deleted';
+  renderDetail();
+}
+function pick(k){sel[view]=k;render()}
+
+function hist(x){return `<div class="section-lbl">Revisions</div><ul class="hist">${x.hist.map(([r,t,via,when])=>
+  `<li><span class="r">r${r}</span><span>${esc(t)}</span><span class="who">${esc(when)} · <span class="via">${esc(via)}</span></span></li>`).join('')}</ul>`}
+
+function actions(x,kind){
+  if(x.builtin)return '<span class="xs t-label">built-in · not configurable</span>';
+  if(x.file)return `<span class="xs t-label edit-only">managed by <code>hub.yaml</code></span><button class="act edit-only" disabled title="Change it in the file">Edit</button>`;
+  const retire=x.retired?`<button class="act primary edit-only" onclick="toast('${kind} ${x.name} re-enabled as r${x.rev+1}.')">Enable</button>`
+    :`<button class="act danger edit-only" onclick="toast('${kind} ${x.name} retired as r${x.rev+1}. Work already taken from it will finish.')">Retire</button>`;
+  return `<button class="act edit-only" onclick="openEdit('${kind}','${x.name}')">${kind==='secret'?'Replace value':'Edit'}</button>${retire}`;
+}
+function roHint(cmd){return `<div class="callout ro-only">Changed from the CLI or a declarative file: <code>${cmd}</code></div>`}
+
+function renderDetail(){
+  const d=$('detail');
+  if(view==='sources'){const x=sources.find(s=>s.name===sel.sources);
+    d.innerHTML=`<div class="detail-hdr"><h1>${esc(x.name)}</h1>${badges(x)}<span class="grow"></span>${actions(x,'source')}</div>
+      ${x.file?`<div class="callout edit-only">This source is declared in <code>hub.yaml</code>. Edits made here would be undone by the next <code>blizzard hub config apply</code>, so change it in the file.</div>`:''}
+      ${x.retired?`<div class="callout amber">Retired ${esc(x.when)} by ${esc(x.who)}. No new items ingest from it; chunks already taken from it finished.</div>`:''}
+      <dl class="kv"><dt>Provider</dt><dd>${esc(x.provider)}</dd><dt>Repository</dt><dd>${esc(x.repo)}</dd>
+        <dt>API base</dt><dd>${esc(x.api)}</dd><dt>Web base</dt><dd>${esc(x.web)}</dd>
+        <dt>Annotates</dt><dd>${x.annotate?'<span class="t-cyan">yes</span> — writes status back to its items':'<span class="t-label">no</span>'}</dd>
+        <dt>Token</dt><dd>${x.secret?`<a onclick="jump('secrets','${x.secret}')">${esc(x.secret)}</a> <span class="secret-val">••••••</span>`:'<span class="t-label">none</span>'}</dd>
+        <dt>Ingest as</dt><dd><code>${esc(x.name)}:&lt;number&gt;</code></dd>
+        <dt>Revision</dt><dd>r${x.rev} <span class="t-label">· ${esc(x.when)} by ${esc(x.who)} via ${esc(x.via)}</span></dd></dl>
+      ${x.builtin?'':roHint(`blizzard hub source edit ${x.name} --annotate`)}${hist(x)}`;
+  }
+  if(view==='repos'){const x=repos.find(s=>s.name===sel.repos);
+    d.innerHTML=`<div class="detail-hdr"><h1>${esc(x.name)}</h1>${badges(x)}<span class="grow"></span>${actions(x,'repository')}</div>
+      ${x.file?`<div class="callout edit-only">Declared in <code>hub.yaml</code> — change it there.</div>`:''}
+      <dl class="kv"><dt>Forge</dt><dd>${esc(x.forge)}</dd><dt>Owner</dt><dd>${esc(x.owner)}</dd><dt>Repository</dt><dd>${esc(x.repo)}</dd>
+        <dt>Base branch</dt><dd>${esc(x.base)}</dd>
+        <dt>Lands by</dt><dd>fast-forward <span class="t-label">· the only landing today; policies arrive with advanced-delivery</span></dd>
+        <dt>Token</dt><dd><a onclick="jump('secrets','${x.secret}')">${esc(x.secret)}</a> <span class="secret-val">••••••</span></dd>
+        <dt>Revision</dt><dd>r${x.rev} <span class="t-label">· ${esc(x.when)} by ${esc(x.who)} via ${esc(x.via)}</span></dd></dl>
+      ${roHint(`blizzard hub repo edit ${x.name} --base-branch main`)}${hist(x)}`;
+  }
+  if(view==='secrets'){const x=secrets.find(s=>s.name===sel.secrets);const u=usersOf(x.name);
+    const ret=x.retired?'':(u.length?`<button class="act danger edit-only" disabled title="Still referred to">Retire</button>`
+      :`<button class="act danger edit-only" onclick="toast('secret ${x.name} retired.')">Retire</button>`);
+    d.innerHTML=`<div class="detail-hdr"><h1>${esc(x.name)}</h1>${badges(x)}<span class="grow"></span>
+        ${x.retired?'':`<button class="act edit-only" onclick="openEdit('secret','${x.name}')">Replace value</button>`}${ret}</div>
+      <dl class="kv"><dt>Value</dt><dd><span class="secret-val">••••••••••••</span> <span class="t-label">· write-only, never shown</span></dd>
+        <dt>Replaced</dt><dd>${esc(x.replaced)} <span class="t-label">by ${esc(x.who)} via ${esc(x.via)}</span></dd>
+        <dt>Revision</dt><dd>r${x.rev}</dd></dl>
+      <div class="section-lbl">Referred to by</div>
+      ${u.length?`<ul class="uses">${u.map(([k,n])=>`<li><span class="t-label xs">${k}</span><a class="link" onclick="jump('${k==='source'?'sources':'repos'}','${n}')">${esc(n)}</a></li>`).join('')}</ul>`
+        :`<div class="callout amber">Nothing refers to this secret. It can be retired.</div>`}
+      ${u.length&&!x.retired?`<div class="callout edit-only xs">Retire is unavailable while anything refers to it. Replacing the value takes effect on each record's next forge call.</div>`:''}
+      ${roHint(`blizzard hub secret set ${x.name}   # reads the value from stdin`)}`;
+  }
+  if(view==='changes'){const x=changes.find(c=>c.id===sel.changes);
+    const sym={add:'+',chg:'~',ret:'−'};
+    d.innerHTML=`<div class="detail-hdr"><h1>${esc(x.title)}</h1><span class="grow"></span><span class="xs t-label">${esc(x.when)} · ${esc(x.who)} via <span class="t-cyan">${esc(x.via)}</span></span></div>
+      <div class="section-lbl">What changed</div>
+      <div class="diff">${x.diff.map(([k,rec,f,o,n])=>`<div class="dl ${k}"><span class="op">${sym[k]}</span><span class="what">${esc(rec)}</span>
+        <span>${f?`<span class="t-label">${esc(f)}</span> `:''}${o?`<span class="old">${esc(o)}</span> → `:''}<span class="new">${esc(n)}</span></span></div>`).join('')}</div>
+      ${x.note?`<div class="callout">${esc(x.note)}</div>`:''}
+      ${x.kind==='apply'?`<div class="section-lbl">The same diff, before it was written</div>
+        <div class="callout"><code>blizzard hub config apply hub.yaml --dry-run</code> prints exactly these lines and writes nothing; the board shows what was applied.</div>`:''}`;
+  }
+}
+function jump(v,n){view=v;filter='all';sel[v]=n;render()}
+
+/* ═════════ dialogs ═════════ */
+let editing=null;
+function field(lbl,val,hint,id,type='text'){return `<div class="field" data-orig="${esc(val)}"><label>${lbl}</label>
+  <input id="${id}" type="${type}" value="${esc(val)}" oninput="dirty()">${hint?`<span class="hint">${hint}</span>`:''}</div>`}
+function secretSelect(cur){return `<div class="field" data-orig="${esc(cur||'')}"><label>Token</label><select id="f-secret" onchange="dirty()">
+  ${secrets.filter(s=>!s.retired).map(s=>`<option ${s.name===cur?'selected':''}>${s.name}</option>`).join('')}</select>
+  <span class="hint">a secret by name — the value is never shown here</span></div>`}
+function openEdit(kind,name){editing={kind,name};
+  if(kind==='source'){const x=sources.find(s=>s.name===name);
+    $('d-title').textContent=`Edit work source · ${name} · r${x.rev}`;
+    $('d-body').innerHTML=`<div class="two">${field('Name',x.name,'used in ingest tokens','f-name')}
+      <div class="field" data-orig="github"><label>Provider</label><select id="f-prov" onchange="dirty()"><option selected>github</option></select></div></div>
+      ${field('Repository',x.repo,'owner/name on the forge','f-repo')}
+      <div class="two">${field('API base',x.api,'','f-api')}${field('Web base',x.web,'only affects links','f-web')}</div>
+      ${secretSelect(x.secret)}
+      <label class="toggle"><input type="checkbox" id="f-ann" ${x.annotate?'checked':''} onchange="dirty()"> annotate — write status back to items</label>
+      <div class="section-lbl" style="padding-left:0">Will change</div><div class="diff" id="preview" style="margin:0"><div class="dl"><span></span><span class="t-label">nothing yet</span><span></span></div></div>`;
+  } else if(kind==='repository'){const x=repos.find(s=>s.name===name);
+    $('d-title').textContent=`Edit repository · ${name} · r${x.rev}`;
+    $('d-body').innerHTML=`<div class="two">${field('Name',x.name,'','f-name')}${field('Base branch',x.base,'','f-base')}</div>
+      ${field('Forge',x.forge,'','f-forge')}<div class="two">${field('Owner',x.owner,'','f-owner')}${field('Repository',x.repo,'','f-repo')}</div>
+      ${secretSelect(x.secret)}
+      <div class="section-lbl" style="padding-left:0">Will change</div><div class="diff" id="preview" style="margin:0"><div class="dl"><span></span><span class="t-label">nothing yet</span><span></span></div></div>`;
+  } else {
+    $('d-title').textContent=`Replace value · ${name}`;
+    $('d-body').innerHTML=`${field('New value','','written once; nobody — including you — can read it back','f-val','password')}
+      <div class="callout">Referred to by ${usersOf(name).map(([k,n])=>`${k} <b class="t-snow">${n}</b>`).join(', ')||'nothing'}. Each uses the new value on its next forge call.</div>`;
+  }
+  $('d-note').textContent='Takes effect on next use — no restart. Work in flight sees it the next time it uses this record.';
+  $('d-save').textContent=kind==='secret'?'Replace':'Save';
+  $('scrim').classList.add('open');dirty();
+}
+function openNew(){const kind={sources:'source',repos:'repository',secrets:'secret'}[view];editing={kind,name:null,isNew:true};
+  $('d-title').textContent=`New ${kind}`;
+  if(kind==='secret'){$('d-body').innerHTML=`${field('Name','','referred to by sources and repositories','f-name')}${field('Value','','written once; never shown again','f-val','password')}`}
+  else if(kind==='source'){$('d-body').innerHTML=`<div class="two">${field('Name','','used in ingest tokens, e.g. winter:212','f-name')}
+      <div class="field"><label>Provider</label><select><option>github</option></select></div></div>
+      ${field('Repository','','owner/name','f-repo')}<div class="two">${field('API base','https://api.github.com','','f-api')}${field('Web base','https://github.com','','f-web')}</div>${secretSelect('gh-blizzard')}
+      <label class="toggle"><input type="checkbox"> annotate — write status back to items</label>`}
+  else{$('d-body').innerHTML=`<div class="two">${field('Name','','','f-name')}${field('Base branch','main','','f-base')}</div>
+      ${field('Forge','https://github.com','','f-forge')}<div class="two">${field('Owner','paul-gross','','f-owner')}${field('Repository','','','f-repo')}</div>${secretSelect('gh-blizzard')}`}
+  $('d-note').textContent='Created as r1 and usable immediately — no restart.';$('d-save').textContent='Create';
+  $('scrim').classList.add('open');
+}
+function dirty(){const p=$('preview');if(!p)return;const lines=[];
+  document.querySelectorAll('#d-body .field').forEach(f=>{const el=f.querySelector('input,select');if(!el||el.type==='password')return;
+    const o=f.dataset.orig,n=el.value;f.classList.toggle('changed',o!==undefined&&o!==n);
+    if(o!==undefined&&o!==n)lines.push(`<div class="dl chg"><span class="op">~</span><span class="what">${f.querySelector('label').textContent.toLowerCase()}</span><span><span class="old">${esc(o)}</span> → <span class="new">${esc(n)}</span></span></div>`)});
+  const ann=$('f-ann');if(ann){const x=sources.find(s=>s.name===editing.name);if(ann.checked!==x.annotate)
+    lines.push(`<div class="dl chg"><span class="op">~</span><span class="what">annotate</span><span><span class="old">${x.annotate?'on':'off'}</span> → <span class="new">${ann.checked?'on':'off'}</span></span></div>`)}
+  p.innerHTML=lines.length?lines.join(''):'<div class="dl"><span></span><span class="t-label">nothing yet</span><span></span></div>';
+  $('d-save').disabled=!lines.length;
+}
+function closeDialog(){$('scrim').classList.remove('open');$('d-save').disabled=false}
+function save(){const e=editing;closeDialog();
+  if(e.isNew)toast(`${e.kind} created as r1.`);
+  else if(e.kind==='secret')toast(`secret ${e.name} replaced. Value not recorded anywhere it can be read.`);
+  else{const xs=e.kind==='source'?sources:repos;const x=xs.find(s=>s.name===e.name);toast(`${e.kind} ${e.name} saved as r${x.rev+1}. Takes effect on next use.`)}}
+document.addEventListener('keydown',e=>{if(e.key==='Escape')closeDialog()});
+
+render();
+</script>
+</body>
+</html>

@@ -17,8 +17,8 @@ different projects would still share them. The tenant is the boundary, and `epic
 
 ## Stays on a dedicated hub
 
-- **Hub-wide startup config** (auth mode, route-token mode, runner-auth mode, produces mode), unless multi-tenancy makes
-  it per-tenant. Handle this with a pool of shared hubs, one per config profile.
+- **Hub-wide startup config** (auth mode, route-token mode, runner-auth mode, produces mode), which multi-tenancy keeps
+  hub-wide. Handle this with a pool of shared hubs, one per config profile.
 - **Anything that stops, kills, restarts, or migrates the hub,** including the crash sweep and restart/resume tests.
 - **Tenant administration,** and whatever multi-tenancy leaves global.
 
@@ -50,3 +50,10 @@ Mark each test as shareable or dedicated, using the categories above. Migrate th
 - `epic:multi-tenancy`: the hub slice for hub-side tests, the runner slice for runner-side tests.
 - `epic:test-architecture`: a hub that outlives its tests can only be reached through public surfaces. As a side effect,
   the suite can run against any running hub.
+
+## Open questions
+
+- How many tests one SQLite hub can carry at once. Tenancy keys rows in one database rather than giving each tenant a
+  store of its own, so every tenant on a hub shares one writer, and the suite's parallelism is bounded by how long tests
+  queue behind each other's writes. That needs measuring before the epic promises hundreds of concurrent tests, and it
+  decides whether the shared hubs run on SQLite at all.

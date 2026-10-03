@@ -17,7 +17,8 @@ its turn.
 ## What to build
 
 - **A routine that declares its own rhythm.** An interval, and a minimum spacing between runs, stated once where the
-  routine is defined.
+  routine is defined. A routine belongs to a project once `epic:projects` gives projects a home, so each project keeps
+  its own housekeeping on its own clock.
 - **Minting at the hub when due.** The hub creates the work; the queue decides when it runs. A fleet behind on work
   falls behind on its own housekeeping rather than displacing an operator's.
 - **Spacing measured from the last finished run.** A routine an operator ran by hand on Saturday does not run again on
@@ -29,6 +30,5 @@ its turn.
 
 - What a missed window does: skip quietly, or catch up — and how many catch-up runs a fleet that was off for a week
   owes.
-- Whether a routine is per project or per hub once `epic:projects` gives projects a home.
 - Where an operator's manual run is recorded so that spacing can see it, since a hand-run pass that the scheduler does
   not know about defeats the whole point.
