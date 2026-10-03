@@ -34,7 +34,7 @@ view, carrying its `revision`. Writes require `CONFIG_EDIT`, a new permission in
 `--json`, and sends `X-Blizzard-Door: cli`; the board sends `board`.
 
 Status codes are fixed across kinds: 404 for an unknown key, 422 naming the offending field for a validation failure or
-a reference to a missing or retired record, 409 for a revision mismatch or a write to a record a document manages.
+a reference to a missing or retired record, 409 for a revision mismatch.
 
 ## What a patch means
 
@@ -93,27 +93,27 @@ repositories:
     secret: gh-paul-gross
 ```
 
-`POST /api/config/apply?label=<label>&dry_run=<bool>` takes the document in any codec.
-`blizzard hub config apply FILE
-[--label L] [--dry-run]` sends it, the label defaulting to the file name. The reconcile
-follows `graph sync`'s rule that nothing is written unless it changed:
+`POST /api/config/apply?dry_run=<bool>` takes the document in any codec. `blizzard hub config apply FILE [--dry-run]`
+sends it. The reconcile follows `graph sync`'s rule that nothing is written unless it changed:
 
-| In the document | In the store                                | Result                              |
-| --------------- | ------------------------------------------- | ----------------------------------- |
-| named           | absent                                      | create, `managed_by = label`        |
-| named           | present, differing                          | sparse edit of the differing fields |
-| named           | present, equal                              | untouched — no revision moves       |
-| named           | retired                                     | enable, then edit what differs      |
-| not named       | `managed_by = label`                        | retire                              |
-| not named       | managed by another label, or by no document | untouched                           |
+| In the document | In the store       | Result                              |
+| --------------- | ------------------ | ----------------------------------- |
+| named           | absent             | create                              |
+| named           | present, differing | sparse edit of the differing fields |
+| named           | present, equal     | untouched — no revision moves       |
+| named           | retired            | enable, then edit what differs      |
+| not named       | any                | untouched                           |
+
+An apply never retires: a document states records that should exist, not the whole of a hub, so one that names some of a
+hub's records leaves the rest as they are, and retirement is always the explicit `retire` verb. A document is a door,
+not an owner — a record an apply wrote takes edits through every other door, and the next apply of a document that still
+states the old value restores it, which its dry run shows first.
 
 `secrets` lists names that must exist and be active; values never appear in a document. The apply is one transaction:
-any refusal — a validation failure, a missing secret, a record managed by another label — writes nothing. Its outcome is
-a list of `{kind, key, op, diff}`, identical in shape under `dry_run`, which writes nothing. The rows it writes share
-one `apply_id` and carry `door = apply`.
+any refusal — a validation failure, a missing secret — writes nothing. Its outcome is a list of `{kind, key, op, diff}`,
+identical in shape under `dry_run`, which writes nothing. The rows it writes share one `apply_id` and carry
+`door = apply`.
 
-A record whose `managed_by` is set refuses edits, retirement, and enabling through any other door with 409 naming the
-label. `blizzard hub config release KIND KEY` clears `managed_by`, handing the record back to the other doors.
 `blizzard hub config export [--format yaml|json]` encodes the hub's current records as a document, and
 `blizzard hub config changes` pages the change log.
 

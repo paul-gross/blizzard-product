@@ -256,7 +256,6 @@
   .filters{display:flex;gap:6px;flex-wrap:wrap;padding:6px 8px;border-bottom:1px solid var(--line);background:var(--overlay-20)}
   .row.retired .row-name{color:var(--label);text-decoration:line-through;text-decoration-color:var(--label-dim)}
   .row.retired{opacity:.75}
-  .badge.file{color:var(--cyan)}
   .badge.retired{color:var(--label)}
   .badge.builtin{color:var(--amber-dim)}
   .badge.unused{color:var(--amber)}
@@ -299,10 +298,6 @@
   .two{display:grid;grid-template-columns:1fr 1fr;gap:0 14px}
   .toggle{display:flex;align-items:center;gap:8px;font-size:var(--fs-sm);cursor:pointer}
   .toggle input{accent-color:var(--cyan)}
-  body.readonly .edit-only{display:none !important}
-  body:not(.readonly) .ro-only{display:none !important}
-  .mode{display:flex;align-items:center;gap:6px}
-  .mode .chip{cursor:pointer}
 </style>
 </head>
 <body>
@@ -358,10 +353,6 @@
     <a class="tab" href="#" data-view="secrets">Secrets<span class="cnt" id="cnt-secrets"></span></a>
     <a class="tab" href="#" data-view="changes">Changes<span class="cnt" id="cnt-changes"></span></a>
     <div class="subnav-right xs">
-      <span class="mode">board edits
-        <button class="chip selected" id="mode-edit" onclick="setMode(false)">on</button>
-        <button class="chip" id="mode-ro" onclick="setMode(true)">off</button>
-      </span>
       <button class="notes-toggle" onclick="toggleNotes()">Design notes</button>
     </div>
   </nav>
@@ -369,7 +360,7 @@
   <div class="layout" style="grid-template-columns:minmax(300px,380px) 1fr">
     <section class="panel">
       <div class="p-hdr"><span class="lbl" id="list-title"></span>
-        <span class="hdr-actions"><button class="act primary edit-only" id="new-btn" onclick="openNew()"></button></span></div>
+        <span class="hdr-actions"><button class="act primary" id="new-btn" onclick="openNew()"></button></span></div>
       <div class="filters" id="filters">
         <button class="chip selected" data-f="active">Active</button>
         <button class="chip" data-f="retired">Retired</button>
@@ -412,10 +403,10 @@
           &ldquo;who pointed this source somewhere else?&rdquo; is answered by looking, not by asking.</p>
       </div>
       <div class="card">
-        <h3>Managed by a file</h3>
-        <p>A record a declarative file owns is marked <span class="badge file">file</span>. The board shows it but
-          sends edits back to the file, because the next <code>config apply</code> would quietly undo a board edit.
-          Records created on the board or CLI stay editable here.</p>
+        <h3>Edited here, or anywhere</h3>
+        <p>Create, edit, replace, retire, and enable all happen from this screen. A record is the same record whichever
+          door wrote it &mdash; one created by <code>config apply</code> is as editable here as one created here, and
+          the changes log says which door each revision came through.</p>
       </div>
       <div class="card">
         <h3>Secrets by name, never by value</h3>
@@ -434,11 +425,6 @@
           work in flight sees the change the next time it uses the record.</p>
       </div>
       <div class="card open-q">
-        <h3>Open &mdash; does the board edit?</h3>
-        <p>Toggle <b>board edits</b> in the strip above to compare. <b>On</b>: create, edit, replace, and retire from
-          here. <b>Off</b>: the board is a window, and each record shows the CLI verb that changes it.</p>
-      </div>
-      <div class="card open-q">
         <h3>Later &mdash; projects and tenants</h3>
         <p>Once <code>epic:projects</code> lands, each project links the sources it draws from and the repositories it lands in, and the lists gain a
           project filter chip; once <code>epic:multi-tenancy</code> lands, everything here is already inside the tenant in the URL.
@@ -452,37 +438,37 @@
 /* ═════════ seed — one hub, before projects or tenants exist ═════════ */
 const sources = [
   { name:'blizzard', provider:'github', repo:'paul-gross/blizzard', api:'https://api.github.com', web:'https://github.com',
-    annotate:true, secret:'gh-blizzard', file:true, rev:7, when:'2 days ago', who:'pgross', via:'config apply',
+    annotate:true, secret:'gh-blizzard', rev:7, when:'2 days ago', who:'pgross', via:'config apply',
     hist:[[7,'annotate off → on','config apply','2 days ago'],[6,'secret gh-fleet → gh-blizzard','cli','12 days ago'],[1,'imported from blizzard-hub.toml','migration','3 weeks ago']] },
   { name:'winter', provider:'github', repo:'paul-gross/winter', api:'https://api.github.com', web:'https://github.com',
-    annotate:false, secret:'gh-winter', file:false, rev:2, when:'5 hours ago', who:'pgross', via:'board',
+    annotate:false, secret:'gh-winter', rev:2, when:'5 hours ago', who:'pgross', via:'board',
     hist:[[2,'web base set','board','5 hours ago'],[1,'created','board','yesterday']] },
   { name:'celestial', provider:'github', repo:'paul-gross/celestial-frontier', api:'https://api.github.com', web:'https://github.com',
-    annotate:true, secret:'gh-celestial', file:true, rev:1, when:'2 days ago', who:'pgross', via:'config apply',
+    annotate:true, secret:'gh-celestial', rev:1, when:'2 days ago', who:'pgross', via:'config apply',
     hist:[[1,'created','config apply','2 days ago']] },
   { name:'hub', provider:'hub (built-in)', repo:'—', api:'—', web:'—', annotate:false, secret:null, builtin:true, rev:1,
     when:'always', who:'hub', via:'built-in', hist:[[1,'the hub\'s own work source, always present','built-in','—']] },
   { name:'discovery', provider:'github', repo:'paul-gross/blizzard-discovery', api:'https://api.github.com', web:'https://github.com',
-    annotate:false, secret:'gh-blizzard', file:false, retired:true, rev:3, when:'3 weeks ago', who:'pgross', via:'cli',
+    annotate:false, secret:'gh-blizzard', retired:true, rev:3, when:'3 weeks ago', who:'pgross', via:'cli',
     hist:[[3,'retired','cli','3 weeks ago'],[2,'annotate on → off','cli','1 month ago'],[1,'imported from blizzard-hub.toml','migration','1 month ago']] },
 ];
 const repos = [
-  { name:'blizzard', forge:'https://github.com', owner:'paul-gross', repo:'blizzard', base:'master', secret:'gh-blizzard', file:true, rev:2,
+  { name:'blizzard', forge:'https://github.com', owner:'paul-gross', repo:'blizzard', base:'master', secret:'gh-blizzard', rev:2,
     when:'2 days ago', who:'pgross', via:'config apply', hist:[[2,'secret gh-fleet → gh-blizzard','config apply','2 days ago'],[1,'imported from BZ_FORGE_*','migration','3 weeks ago']] },
-  { name:'blizzard-context', forge:'https://github.com', owner:'paul-gross', repo:'blizzard-context', base:'master', secret:'gh-blizzard', file:true, rev:1,
+  { name:'blizzard-context', forge:'https://github.com', owner:'paul-gross', repo:'blizzard-context', base:'master', secret:'gh-blizzard', rev:1,
     when:'2 days ago', who:'pgross', via:'config apply', hist:[[1,'created','config apply','2 days ago']] },
-  { name:'winter', forge:'https://github.com', owner:'paul-gross', repo:'winter', base:'main', secret:'gh-winter', file:false, rev:3,
+  { name:'winter', forge:'https://github.com', owner:'paul-gross', repo:'winter', base:'main', secret:'gh-winter', rev:3,
     when:'5 hours ago', who:'pgross', via:'api', hist:[[3,'base branch master → main','api','5 hours ago'],[2,'secret set','board','yesterday'],[1,'created','board','yesterday']] },
 ];
 const secrets = [
-  { name:'gh-blizzard', replaced:'12 days ago', who:'pgross', via:'cli', rev:3, file:false },
-  { name:'gh-winter', replaced:'yesterday', who:'pgross', via:'board', rev:1, file:false },
-  { name:'gh-celestial', replaced:'2 days ago', who:'pgross', via:'cli', rev:1, file:false },
-  { name:'gh-ci-readonly', replaced:'2 months ago', who:'pgross', via:'cli', rev:1, file:false },
+  { name:'gh-blizzard', replaced:'12 days ago', who:'pgross', via:'cli', rev:3 },
+  { name:'gh-winter', replaced:'yesterday', who:'pgross', via:'board', rev:1 },
+  { name:'gh-celestial', replaced:'2 days ago', who:'pgross', via:'cli', rev:1 },
+  { name:'gh-ci-readonly', replaced:'2 months ago', who:'pgross', via:'cli', rev:1 },
   { name:'gh-fleet', replaced:'3 weeks ago', who:'migration', via:'migration', rev:1, retired:true },
 ];
 const changes = [
-  { id:'c-41', title:'config apply · hub.yaml', who:'pgross', via:'cli', when:'2 days ago', kind:'apply',
+  { id:'c-41', title:'config apply', who:'pgross', via:'cli', when:'2 days ago', kind:'apply',
     diff:[['add','source','celestial','','paul-gross/celestial-frontier'],['add','repository','blizzard-context','','paul-gross/blizzard-context'],
           ['chg','source blizzard','annotate','off','on'],['chg','repository blizzard','secret','gh-fleet','gh-blizzard']],
     note:'Applied after a dry run showed the same four lines. Records the file names but did not change were left untouched.' },
@@ -505,8 +491,6 @@ let view='sources', filter='active', sel={sources:'blizzard',repos:'winter',secr
 const $=id=>document.getElementById(id);
 const esc=s=>String(s).replace(/[&<>]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;'}[c]));
 
-function setMode(ro){document.body.classList.toggle('readonly',ro);
-  $('mode-edit').classList.toggle('selected',!ro);$('mode-ro').classList.toggle('selected',ro);}
 function toggleNotes(){$('notes').classList.toggle('open')}
 function toast(t){$('toast-text').textContent=t;$('toast').classList.add('open');setTimeout(()=>$('toast').classList.remove('open'),3200)}
 
@@ -520,7 +504,7 @@ function visible(){const xs=items();if(view==='changes')return xs;
   return xs.filter(x=>filter==='all'||(filter==='retired')===!!x.retired)}
 
 function badges(x){let b='';if(x.builtin)b+='<span class="badge builtin">built-in</span>';
-  if(x.file)b+='<span class="badge file">file</span>';if(x.retired)b+='<span class="badge retired">retired</span>';
+  if(x.retired)b+='<span class="badge retired">retired</span>';
   if(view==='secrets'&&!x.retired&&usersOf(x.name).length===0)b+='<span class="badge unused">unused</span>';return b}
 
 function rowSub(x){
@@ -561,18 +545,15 @@ function hist(x){return `<div class="section-lbl">Revisions</div><ul class="hist
 
 function actions(x,kind){
   if(x.builtin)return '<span class="xs t-label">built-in · not configurable</span>';
-  if(x.file)return `<span class="xs t-label edit-only">managed by <code>hub.yaml</code></span><button class="act edit-only" disabled title="Change it in the file">Edit</button>`;
-  const retire=x.retired?`<button class="act primary edit-only" onclick="toast('${kind} ${x.name} re-enabled as r${x.rev+1}.')">Enable</button>`
-    :`<button class="act danger edit-only" onclick="toast('${kind} ${x.name} retired as r${x.rev+1}. Work already taken from it will finish.')">Retire</button>`;
-  return `<button class="act edit-only" onclick="openEdit('${kind}','${x.name}')">${kind==='secret'?'Replace value':'Edit'}</button>${retire}`;
+  const retire=x.retired?`<button class="act primary" onclick="toast('${kind} ${x.name} re-enabled as r${x.rev+1}.')">Enable</button>`
+    :`<button class="act danger" onclick="toast('${kind} ${x.name} retired as r${x.rev+1}. Work already taken from it will finish.')">Retire</button>`;
+  return `<button class="act" onclick="openEdit('${kind}','${x.name}')">${kind==='secret'?'Replace value':'Edit'}</button>${retire}`;
 }
-function roHint(cmd){return `<div class="callout ro-only">Changed from the CLI or a declarative file: <code>${cmd}</code></div>`}
 
 function renderDetail(){
   const d=$('detail');
   if(view==='sources'){const x=sources.find(s=>s.name===sel.sources);
     d.innerHTML=`<div class="detail-hdr"><h1>${esc(x.name)}</h1>${badges(x)}<span class="grow"></span>${actions(x,'source')}</div>
-      ${x.file?`<div class="callout edit-only">This source is declared in <code>hub.yaml</code>. Edits made here would be undone by the next <code>blizzard hub config apply</code>, so change it in the file.</div>`:''}
       ${x.retired?`<div class="callout amber">Retired ${esc(x.when)} by ${esc(x.who)}. No new items ingest from it; chunks already taken from it finished.</div>`:''}
       <dl class="kv"><dt>Provider</dt><dd>${esc(x.provider)}</dd><dt>Repository</dt><dd>${esc(x.repo)}</dd>
         <dt>API base</dt><dd>${esc(x.api)}</dd><dt>Web base</dt><dd>${esc(x.web)}</dd>
@@ -580,31 +561,30 @@ function renderDetail(){
         <dt>Token</dt><dd>${x.secret?`<a onclick="jump('secrets','${x.secret}')">${esc(x.secret)}</a> <span class="secret-val">••••••</span>`:'<span class="t-label">none</span>'}</dd>
         <dt>Ingest as</dt><dd><code>${esc(x.name)}:&lt;number&gt;</code></dd>
         <dt>Revision</dt><dd>r${x.rev} <span class="t-label">· ${esc(x.when)} by ${esc(x.who)} via ${esc(x.via)}</span></dd></dl>
-      ${x.builtin?'':roHint(`blizzard hub source edit ${x.name} --annotate`)}${hist(x)}`;
+      ${hist(x)}`;
   }
   if(view==='repos'){const x=repos.find(s=>s.name===sel.repos);
     d.innerHTML=`<div class="detail-hdr"><h1>${esc(x.name)}</h1>${badges(x)}<span class="grow"></span>${actions(x,'repository')}</div>
-      ${x.file?`<div class="callout edit-only">Declared in <code>hub.yaml</code> — change it there.</div>`:''}
       <dl class="kv"><dt>Forge</dt><dd>${esc(x.forge)}</dd><dt>Owner</dt><dd>${esc(x.owner)}</dd><dt>Repository</dt><dd>${esc(x.repo)}</dd>
         <dt>Base branch</dt><dd>${esc(x.base)}</dd>
         <dt>Lands by</dt><dd>fast-forward <span class="t-label">· the only landing today; policies arrive with advanced-delivery</span></dd>
         <dt>Token</dt><dd><a onclick="jump('secrets','${x.secret}')">${esc(x.secret)}</a> <span class="secret-val">••••••</span></dd>
         <dt>Revision</dt><dd>r${x.rev} <span class="t-label">· ${esc(x.when)} by ${esc(x.who)} via ${esc(x.via)}</span></dd></dl>
-      ${roHint(`blizzard hub repo edit ${x.name} --base-branch main`)}${hist(x)}`;
+      ${hist(x)}`;
   }
   if(view==='secrets'){const x=secrets.find(s=>s.name===sel.secrets);const u=usersOf(x.name);
-    const ret=x.retired?'':(u.length?`<button class="act danger edit-only" disabled title="Still referred to">Retire</button>`
-      :`<button class="act danger edit-only" onclick="toast('secret ${x.name} retired.')">Retire</button>`);
+    const ret=x.retired?'':(u.length?`<button class="act danger" disabled title="Still referred to">Retire</button>`
+      :`<button class="act danger" onclick="toast('secret ${x.name} retired.')">Retire</button>`);
     d.innerHTML=`<div class="detail-hdr"><h1>${esc(x.name)}</h1>${badges(x)}<span class="grow"></span>
-        ${x.retired?'':`<button class="act edit-only" onclick="openEdit('secret','${x.name}')">Replace value</button>`}${ret}</div>
+        ${x.retired?'':`<button class="act" onclick="openEdit('secret','${x.name}')">Replace value</button>`}${ret}</div>
       <dl class="kv"><dt>Value</dt><dd><span class="secret-val">••••••••••••</span> <span class="t-label">· write-only, never shown</span></dd>
         <dt>Replaced</dt><dd>${esc(x.replaced)} <span class="t-label">by ${esc(x.who)} via ${esc(x.via)}</span></dd>
         <dt>Revision</dt><dd>r${x.rev}</dd></dl>
       <div class="section-lbl">Referred to by</div>
       ${u.length?`<ul class="uses">${u.map(([k,n])=>`<li><span class="t-label xs">${k}</span><a class="link" onclick="jump('${k==='source'?'sources':'repos'}','${n}')">${esc(n)}</a></li>`).join('')}</ul>`
         :`<div class="callout amber">Nothing refers to this secret. It can be retired.</div>`}
-      ${u.length&&!x.retired?`<div class="callout edit-only xs">Retire is unavailable while anything refers to it. Replacing the value takes effect on each record's next forge call.</div>`:''}
-      ${roHint(`blizzard hub secret set ${x.name}   # reads the value from stdin`)}`;
+      ${u.length&&!x.retired?`<div class="callout xs">Retire is unavailable while anything refers to it. Replacing the value takes effect on each record's next forge call.</div>`:''}
+      `;
   }
   if(view==='changes'){const x=changes.find(c=>c.id===sel.changes);
     const sym={add:'+',chg:'~',ret:'−'};

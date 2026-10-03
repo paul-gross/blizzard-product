@@ -30,7 +30,6 @@ retirable.
 | `web_base`    | String NULL | Web origin override; derived from `api_base` when null, as `GithubEntry.web_base` does now.                                                      |
 | `annotate`    | Boolean     | Opts into the forge-status sweep.                                                                                                                |
 | `secret_name` | String NULL | FK `secrets.name`. Null only for a provider that needs no credential.                                                                            |
-| `managed_by`  | String NULL | The label of the declarative document that owns the row ([api.md](./api.md) §Apply); null when created by any other door.                        |
 | `revision`    | Integer     | 1 at create, incremented by every committed change to the row.                                                                                   |
 | `created_at`  | UtcDateTime | `bzh:utc-instants`.                                                                                                                              |
 | `created_by`  | String      | The acting user id, or `migration`.                                                                                                              |
@@ -55,7 +54,6 @@ two identities.
 | `repo`          | String      | The repository's name on the forge.                                               |
 | `base_branch`   | String      | Today's `BZ_FORGE_BASE_BRANCH`.                                                   |
 | `secret_name`   | String      | FK `secrets.name`; today's `BZ_FORGE_TOKEN`.                                      |
-| `managed_by`    | String NULL | As on `work_sources`.                                                             |
 | `revision`      | Integer     | As on `work_sources`.                                                             |
 | `created_at`    | UtcDateTime |                                                                                   |
 | `created_by`    | String      |                                                                                   |

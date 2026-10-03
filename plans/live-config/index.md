@@ -47,16 +47,17 @@ partitioning them in one stroke.
   something that can only be clicked together. A declarative file, applied by the CLI, states the sources and
   repositories a hub should hold and reconciles the store to it, so an operator who versions their hub's configuration
   keeps doing so. It reconciles the way `graph sync` does, writing only what changed, and a dry run shows that
-  difference before anything is written. It reconciles strictly: a record the file once declared and no longer names is
-  retired, and while a file owns a record, every other door refuses to change it until the record is released from the
-  file.
+  difference before anything is written. A file is a door like any other, not an owner: it creates and edits the records
+  it names and leaves every other record alone, so a file that names only some of a hub's records never retires the
+  rest, and a record a file wrote stays editable through the board and the CLI. Retiring a record is always an explicit
+  act.
 - **Configuration you can see.** The board gains a place to look at what a hub is configured with: its sources and
-  repositories, its secrets by name and never by value, what each record last changed and who changed it, which records
-  are retired, and which a declarative file manages. It is designed as mockups before it is built and proven by looking
-  at it, because a configuration screen that reads wrong is a configuration screen nobody trusts. The mockups —
+  repositories, its secrets by name and never by value, what each record last changed and who changed it, and which
+  records are retired. On a desktop it edits them too — create, edit, replace a secret, retire, enable — while on a
+  phone it only shows them. It is designed as mockups before it is built and proven by looking at it, because a
+  configuration screen that reads wrong is a configuration screen nobody trusts. The mockups —
   [desktop](./artifacts/configuration-desktop.html) and [mobile](./artifacts/configuration-mobile.html) — put it under
-  Admin beside today's users page, one surface per configured noun plus a log of every change, and carry a switch that
-  compares the board editing configuration against only showing it.
+  Admin beside today's users page, one surface per configured noun plus a log of every change.
 - **One way to change a configured thing.** The hub already has several, and they disagree. Editing a routine restates
   every field and calls it a patch; editing a work item replaces only the fields it names; editing a scope changes its
   one field. Graphs arrive as YAML while the hub's own file is TOML. Every configured record this epic adds would
@@ -111,5 +112,3 @@ and never read back, so no client, file, or state ever holds one it did not send
 - Where the secret store's key comes from and how it is rotated — the hub's environment, a file, or an external key
   service — and what an operator does when it is lost.
 - How the split between file and store sits within the single resolution order `epic:config` declares for every setting.
-- Whether the board edits configuration as well as showing it, or leaves changes to the CLI and the declarative file;
-  the mockups are where this is decided.

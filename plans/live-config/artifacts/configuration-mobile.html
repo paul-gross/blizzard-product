@@ -256,7 +256,6 @@
   .filters{display:flex;gap:6px;flex-wrap:wrap;padding:6px 8px;border-bottom:1px solid var(--line);background:var(--overlay-20)}
   .row.retired .row-name{color:var(--label);text-decoration:line-through;text-decoration-color:var(--label-dim)}
   .row.retired{opacity:.75}
-  .badge.file{color:var(--cyan)}
   .badge.retired{color:var(--label)}
   .badge.builtin{color:var(--amber-dim)}
   .badge.unused{color:var(--amber)}
@@ -358,7 +357,7 @@
     <button class="chip selected" data-f="active">Active</button><button class="chip" data-f="retired">Retired</button><button class="chip" data-f="all">All</button>
   </div>
   <div class="m-list" id="list"></div>
-  <div class="m-foot">read-only on a phone · change it from the CLI or the file</div>
+  <div class="m-foot">read-only on a phone · change it from a desktop or the CLI</div>
   <div class="sheet-scrim" id="sheet-scrim" onclick="closeSheet()"></div>
   <div class="sheet" id="sheet" role="dialog" aria-modal="true"><div class="grab"></div><div id="sheet-body"></div></div>
 
@@ -378,37 +377,37 @@
 /* ═════════ seed — one hub, before projects or tenants exist ═════════ */
 const sources = [
   { name:'blizzard', provider:'github', repo:'paul-gross/blizzard', api:'https://api.github.com', web:'https://github.com',
-    annotate:true, secret:'gh-blizzard', file:true, rev:7, when:'2 days ago', who:'pgross', via:'config apply',
+    annotate:true, secret:'gh-blizzard', rev:7, when:'2 days ago', who:'pgross', via:'config apply',
     hist:[[7,'annotate off → on','config apply','2 days ago'],[6,'secret gh-fleet → gh-blizzard','cli','12 days ago'],[1,'imported from blizzard-hub.toml','migration','3 weeks ago']] },
   { name:'winter', provider:'github', repo:'paul-gross/winter', api:'https://api.github.com', web:'https://github.com',
-    annotate:false, secret:'gh-winter', file:false, rev:2, when:'5 hours ago', who:'pgross', via:'board',
+    annotate:false, secret:'gh-winter', rev:2, when:'5 hours ago', who:'pgross', via:'board',
     hist:[[2,'web base set','board','5 hours ago'],[1,'created','board','yesterday']] },
   { name:'celestial', provider:'github', repo:'paul-gross/celestial-frontier', api:'https://api.github.com', web:'https://github.com',
-    annotate:true, secret:'gh-celestial', file:true, rev:1, when:'2 days ago', who:'pgross', via:'config apply',
+    annotate:true, secret:'gh-celestial', rev:1, when:'2 days ago', who:'pgross', via:'config apply',
     hist:[[1,'created','config apply','2 days ago']] },
   { name:'hub', provider:'hub (built-in)', repo:'—', api:'—', web:'—', annotate:false, secret:null, builtin:true, rev:1,
     when:'always', who:'hub', via:'built-in', hist:[[1,'the hub\'s own work source, always present','built-in','—']] },
   { name:'discovery', provider:'github', repo:'paul-gross/blizzard-discovery', api:'https://api.github.com', web:'https://github.com',
-    annotate:false, secret:'gh-blizzard', file:false, retired:true, rev:3, when:'3 weeks ago', who:'pgross', via:'cli',
+    annotate:false, secret:'gh-blizzard', retired:true, rev:3, when:'3 weeks ago', who:'pgross', via:'cli',
     hist:[[3,'retired','cli','3 weeks ago'],[2,'annotate on → off','cli','1 month ago'],[1,'imported from blizzard-hub.toml','migration','1 month ago']] },
 ];
 const repos = [
-  { name:'blizzard', forge:'https://github.com', owner:'paul-gross', repo:'blizzard', base:'master', secret:'gh-blizzard', file:true, rev:2,
+  { name:'blizzard', forge:'https://github.com', owner:'paul-gross', repo:'blizzard', base:'master', secret:'gh-blizzard', rev:2,
     when:'2 days ago', who:'pgross', via:'config apply', hist:[[2,'secret gh-fleet → gh-blizzard','config apply','2 days ago'],[1,'imported from BZ_FORGE_*','migration','3 weeks ago']] },
-  { name:'blizzard-context', forge:'https://github.com', owner:'paul-gross', repo:'blizzard-context', base:'master', secret:'gh-blizzard', file:true, rev:1,
+  { name:'blizzard-context', forge:'https://github.com', owner:'paul-gross', repo:'blizzard-context', base:'master', secret:'gh-blizzard', rev:1,
     when:'2 days ago', who:'pgross', via:'config apply', hist:[[1,'created','config apply','2 days ago']] },
-  { name:'winter', forge:'https://github.com', owner:'paul-gross', repo:'winter', base:'main', secret:'gh-winter', file:false, rev:3,
+  { name:'winter', forge:'https://github.com', owner:'paul-gross', repo:'winter', base:'main', secret:'gh-winter', rev:3,
     when:'5 hours ago', who:'pgross', via:'api', hist:[[3,'base branch master → main','api','5 hours ago'],[2,'secret set','board','yesterday'],[1,'created','board','yesterday']] },
 ];
 const secrets = [
-  { name:'gh-blizzard', replaced:'12 days ago', who:'pgross', via:'cli', rev:3, file:false },
-  { name:'gh-winter', replaced:'yesterday', who:'pgross', via:'board', rev:1, file:false },
-  { name:'gh-celestial', replaced:'2 days ago', who:'pgross', via:'cli', rev:1, file:false },
-  { name:'gh-ci-readonly', replaced:'2 months ago', who:'pgross', via:'cli', rev:1, file:false },
+  { name:'gh-blizzard', replaced:'12 days ago', who:'pgross', via:'cli', rev:3 },
+  { name:'gh-winter', replaced:'yesterday', who:'pgross', via:'board', rev:1 },
+  { name:'gh-celestial', replaced:'2 days ago', who:'pgross', via:'cli', rev:1 },
+  { name:'gh-ci-readonly', replaced:'2 months ago', who:'pgross', via:'cli', rev:1 },
   { name:'gh-fleet', replaced:'3 weeks ago', who:'migration', via:'migration', rev:1, retired:true },
 ];
 const changes = [
-  { id:'c-41', title:'config apply · hub.yaml', who:'pgross', via:'cli', when:'2 days ago', kind:'apply',
+  { id:'c-41', title:'config apply', who:'pgross', via:'cli', when:'2 days ago', kind:'apply',
     diff:[['add','source','celestial','','paul-gross/celestial-frontier'],['add','repository','blizzard-context','','paul-gross/blizzard-context'],
           ['chg','source blizzard','annotate','off','on'],['chg','repository blizzard','secret','gh-fleet','gh-blizzard']],
     note:'Applied after a dry run showed the same four lines. Records the file names but did not change were left untouched.' },
@@ -434,7 +433,7 @@ function toggleNotes(){$('notes').classList.toggle('open')}
 document.querySelectorAll('#seg button').forEach(b=>b.onclick=()=>{view=b.dataset.view;filter='active';render()});
 document.querySelectorAll('#filters .chip').forEach(c=>c.onclick=()=>{filter=c.dataset.f;render()});
 const coll=()=>({sources,repos,secrets,changes})[view];
-function badges(x){let b='';if(x.builtin)b+='<span class="badge builtin">built-in</span>';if(x.file)b+='<span class="badge file">file</span>';
+function badges(x){let b='';if(x.builtin)b+='<span class="badge builtin">built-in</span>';
   if(x.retired)b+='<span class="badge retired">retired</span>';if(view==='secrets'&&!x.retired&&!usersOf(x.name).length)b+='<span class="badge unused">unused</span>';return b}
 function sub(x){if(view==='sources')return `<span>${esc(x.repo)}</span>${x.annotate?'<span class="t-cyan">annotates</span>':''}`;
   if(view==='repos')return `<span>${esc(x.owner)}/${esc(x.repo)}</span><span>base <b class="t-snow">${esc(x.base)}</b></span>`;
@@ -461,12 +460,12 @@ function openSheet(k){let h='';
       <dl class="kv"><dt>Repository</dt><dd>${esc(x.repo)}</dd><dt>API base</dt><dd>${esc(x.api)}</dd>
       <dt>Annotates</dt><dd>${x.annotate?'yes':'no'}</dd><dt>Token</dt><dd>${x.secret?esc(x.secret)+' <span class="secret-val">••••</span>':'none'}</dd>
       <dt>Revision</dt><dd>r${x.rev} <span class="t-label">· ${esc(x.when)} · ${esc(x.via)}</span></dd></dl>
-      ${x.builtin?'':cli(x.file?'edit hub.yaml, then config apply':'blizzard hub source edit '+x.name)}${hist(x)}`}
+      ${x.builtin?'':cli('blizzard hub source edit '+x.name)}${hist(x)}`}
   else if(view==='repos'){const x=repos.find(s=>s.name===k);
     h=`<div class="detail-hdr"><h1>${esc(x.name)}</h1>${badges(x)}</div>
       <dl class="kv"><dt>Repository</dt><dd>${esc(x.owner)}/${esc(x.repo)}</dd><dt>Base</dt><dd>${esc(x.base)}</dd><dt>Lands by</dt><dd>fast-forward</dd>
       <dt>Token</dt><dd>${esc(x.secret)} <span class="secret-val">••••</span></dd><dt>Revision</dt><dd>r${x.rev} <span class="t-label">· ${esc(x.when)} · ${esc(x.via)}</span></dd></dl>
-      ${cli(x.file?'edit hub.yaml, then config apply':'blizzard hub repo edit '+x.name)}${hist(x)}`}
+      ${cli('blizzard hub repo edit '+x.name)}${hist(x)}`}
   else if(view==='secrets'){const x=secrets.find(s=>s.name===k);const u=usersOf(x.name);
     h=`<div class="detail-hdr"><h1>${esc(x.name)}</h1>${badges(x)}</div>
       <dl class="kv"><dt>Value</dt><dd><span class="secret-val">••••••••</span> <span class="t-label">never shown</span></dd>
