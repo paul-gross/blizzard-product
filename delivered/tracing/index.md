@@ -1,12 +1,12 @@
 ---
 epic: tracing
-refinement: refined
+refinement: pristine
 slices:
   - name: fleet-spans
     status: delivered
     plan: ./fleet-spans/index.md
   - name: platform-spans
-    status: in-progress
+    status: delivered
     plan: ./platform-spans/index.md
   - name: runner-spans
     status: delivered

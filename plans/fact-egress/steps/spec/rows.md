@@ -2,12 +2,12 @@
 
 ## Steps come from tracing's definition
 
-A step is exactly what the fleet-spans [span contract](../../../tracing/fleet-spans/spec/spans.md) says it is: a runner
-step, a hub step or a gate step. When it closes, how it closed, and where the chunk stood at its start all follow that
-contract's §Steps, §Closing a step and §Where a step stood. Every column below that is not an identity or a time is
-taken from the step summary that contract's §Identity describes: the same pure domain module, assembling the same
-outcome, waits, asks, bounce cause and totals that a step's root span reports. This slice computes none of them a second
-time. A change to what counts as a step, or to how a measure is summed, changes both exports together.
+A step is exactly what the fleet-spans [span contract](../../../../delivered/tracing/fleet-spans/spec/spans.md) says it
+is: a runner step, a hub step or a gate step. When it closes, how it closed, and where the chunk stood at its start all
+follow that contract's §Steps, §Closing a step and §Where a step stood. Every column below that is not an identity or a
+time is taken from the step summary that contract's §Identity describes: the same pure domain module, assembling the
+same outcome, waits, asks, bounce cause and totals that a step's root span reports. This slice computes none of them a
+second time. A change to what counts as a step, or to how a measure is summed, changes both exports together.
 
 So this slice depends on that module landing first. It does not depend on tracing being enabled: the module is pure, and
 an operator can export steps with no trace endpoint set.

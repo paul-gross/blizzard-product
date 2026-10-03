@@ -75,7 +75,7 @@ someone else's to make.
 | `epic:fact-egress` | steps          | in-progress |
 | `epic:fact-egress` | events         | in-progress |
 | `epic:tracing`     | fleet-spans    | delivered   |
-| `epic:tracing`     | platform-spans | in-progress |
+| `epic:tracing`     | platform-spans | delivered   |
 | `epic:tracing`     | runner-spans   | delivered   |
 
 ## `milestone:projects` — one fleet, every project
