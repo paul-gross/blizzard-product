@@ -22,6 +22,10 @@ hub as it is today, lets our own fleet prove the new source of truth before eith
 that follow add a key to tables that already exist rather than creating them, moving configuration into them, and
 partitioning them in one stroke.
 
+| Where                    | Read when                                                             |
+| ------------------------ | --------------------------------------------------------------------- |
+| [spec/](./spec/index.md) | Implementing any part of the epic or resolving its technical contract |
+
 ## What to build
 
 - **Work sources as data.** Each work source the hub reads — its provider, its repository, whether it annotates, its API
@@ -31,8 +35,9 @@ partitioning them in one stroke.
   that came from it.
 - **The delivery target as data.** The forge address, owner, base branch, and token that delivery reads from the hub's
   environment today become repository records of their own. The hard-coded fallback owner goes with them, so a bare
-  repository name resolves against a declared repository rather than a name baked into the hub. `epic:projects` later
-  moves these records under a project, and nothing here may assume there is only one.
+  repository name resolves against a declared repository rather than a name baked into the hub. Repositories stay
+  records of the whole hub — of the tenant, once `epic:multi-tenancy` lands — and `epic:projects` later lets each
+  project link the ones its work lands in, so nothing here may assume there is only one.
 - **A secret store the hub holds.** A credential is written once through the API and never read back, and is encrypted
   at rest under a key the hub's own configuration supplies. Work sources and repositories refer to a secret by name
   instead of naming a variable the hub resolves from its own environment, so rotating a token is an API call rather than
@@ -42,7 +47,9 @@ partitioning them in one stroke.
   something that can only be clicked together. A declarative file, applied by the CLI, states the sources and
   repositories a hub should hold and reconciles the store to it, so an operator who versions their hub's configuration
   keeps doing so. It reconciles the way `graph sync` does, writing only what changed, and a dry run shows that
-  difference before anything is written.
+  difference before anything is written. It reconciles strictly: a record the file once declared and no longer names is
+  retired, and while a file owns a record, every other door refuses to change it until the record is released from the
+  file.
 - **Configuration you can see.** The board gains a place to look at what a hub is configured with: its sources and
   repositories, its secrets by name and never by value, what each record last changed and who changed it, which records
   are retired, and which a declarative file manages. It is designed as mockups before it is built and proven by looking
@@ -103,8 +110,6 @@ and never read back, so no client, file, or state ever holds one it did not send
 
 - Where the secret store's key comes from and how it is rotated — the hub's environment, a file, or an external key
   service — and what an operator does when it is lost.
-- Whether the declarative file reconciles strictly, retiring what it does not name, or only adds and updates; and what
-  the board shows of a record the file owns.
 - How the split between file and store sits within the single resolution order `epic:config` declares for every setting.
 - Whether the board edits configuration as well as showing it, or leaves changes to the CLI and the declarative file;
   the mockups are where this is decided.

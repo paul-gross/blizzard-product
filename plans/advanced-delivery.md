@@ -46,10 +46,11 @@ its own.
   once it merges, and join the forge's queue are policies, chosen per repository with a project default. Every policy
   reports the same outcomes — landed, pending, conflict, failure, awaiting a human — so a graph written for one runs
   unchanged under another.
-- **Repositories bound through their project.** A chunk's commits resolve to repositories in its project, each bound to
-  its forge, so a chunk spanning forges lands through each repository's own binding. Its combined outcome is landed only
-  when every repository has landed, a declared order puts a library before its consumer, and a partial land is either
-  accepted and reconciled, as today, or held until every repository is ready.
+- **Repositories linked by their project.** Repositories belong to the tenant and a project links the ones its work may
+  land in, so a chunk's commits resolve only to repositories its project links, each bound to its forge, so a chunk
+  spanning forges lands through each repository's own binding. Its combined outcome is landed only when every repository
+  has landed, a declared order puts a library before its consumer, and a partial land is either accepted and reconciled,
+  as today, or held until every repository is ready.
 - **Merge trains.** Mechanical rebasing comes first, waking an agent only for a textual conflict no machine can settle.
   Beyond it, a flow batches the ready work onto the base and proves the combination once, splitting a failing batch to
   find the chunk responsible, or builds speculatively along the queue; where the forge offers its own merge train or
@@ -66,7 +67,6 @@ its own.
   script holds a token and there is one adapter implementation, or through a self-contained adapter it carries.
 - Whether the landing seam grows out of today's work-source bindings, or a forge binding becomes its own configuration
   that work sources and repositories both reference.
-- Whether a repository may belong to more than one project.
 - What "done" means for a chunk: landed, or live. If live, a chunk waiting on its deploy must release its environments
   before it waits.
 - How a merge made by a human is noticed at scale — polling every parked change, or forge events that wake the hub — and

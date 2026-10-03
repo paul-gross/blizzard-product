@@ -108,13 +108,13 @@ in a world of its own. Tenancy threads through the same store, API, and runner s
 are designed together and built back to back, tenancy first, so that every project is born inside a tenant rather than
 one reopening what the other just finished.
 
-A project also owns where its finished work goes and how it gets there. Each project names its repositories, and each
-repository says how work lands in it and how it runs once landed. One project merges its own work while another waits
-for a human to merge every pull request; one repository fast-forwards while its neighbor rides a merge train; and a
-chunk that touched three repositories deploys all three in the order they depend on one another, proving each healthy,
-or rolling it back, before the next one moves. Delivery and deployment stop being one fleet-wide habit and become each
-project's own declared method, carried out deterministically, with an agent's judgement called in where the project asks
-for it.
+A project also decides where its finished work goes and how it gets there. Repositories belong to the tenant and each
+project links the ones its work may land in — a shared library can serve two projects — while each repository says how
+work lands in it and how it runs once landed. One project merges its own work while another waits for a human to merge
+every pull request; one repository fast-forwards while its neighbor rides a merge train; and a chunk that touched three
+repositories deploys all three in the order they depend on one another, proving each healthy, or rolling it back, before
+the next one moves. Delivery and deployment stop being one fleet-wide habit and become each project's own declared
+method, carried out deterministically, with an agent's judgement called in where the project asks for it.
 
 | Epic                       | Slice  | Status  |
 | -------------------------- | ------ | ------- |
@@ -308,15 +308,16 @@ over the same seams the real one uses — lets a person configure a project, que
 before committing anything. It serves the author of a workflow graph just as directly, who today learns what a graph
 does by spending a night finding out.
 
-The milestone closes with four pieces of ordinary platform maturity. Settings that every graph node restates want a name
+The milestone closes with five pieces of ordinary platform maturity. Settings that every graph node restates want a name
 to inherit instead, so an operator retunes the fleet's reviewers in one edit rather than nine. And the seams the mission
 is built on want to be reachable from outside the wheel: interoperability is proven at two live bindings, and today
 writing the second one means writing it in blizzard's own repository. A provider someone else can build, install, and
 prove against a conformance suite is what turns a well-drawn seam into an actually open one. A hub's own configuration
 wants to be declared where the rest of the estate already is: a Terraform provider lets the plan that builds the hub's
-host also state its tenants, projects, sources, and repositories. Last, the board's own suites earn the proof the
-backend's will already carry: mutation runs over the Angular workspace, waiting on a seam in tooling blizzard does not
-own.
+host also state its tenants, projects, sources, and repositories. And a hub shared by several tenants should narrate
+each of them to that tenant's own observability backend, not only to the one its operator chose. Last, the board's own
+suites earn the proof the backend's will already carry: mutation runs over the Angular workspace, waiting on a seam in
+tooling blizzard does not own.
 
 | Epic                      | Slice    | Status  |
 | ------------------------- | -------- | ------- |
@@ -327,6 +328,7 @@ own.
 | `epic:worker-profiles`    | full     | horizon |
 | `epic:provider-kit`       | full     | horizon |
 | `epic:terraform-provider` | full     | horizon |
+| `epic:tenant-telemetry`   | full     | horizon |
 | `epic:demo`               | full     | horizon |
 | `epic:queue`              | priority | horizon |
 | `epic:mutation-testing`   | angular  | horizon |

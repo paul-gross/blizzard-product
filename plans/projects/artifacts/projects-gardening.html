@@ -401,7 +401,7 @@
         tenant-wide garden to show, so the tab is a doorway: each project's standing at a glance, and a way in.</p></div>
       <div class="card"><h3>Where am I</h3>
         <p>The breadcrumb is the location and mirrors the URL: <code>Gardening › blizzard › Proposals</code> is
-        <code>/t/grosscode/gardening/blizzard/proposals</code>. <b>Gardening</b> goes back to the doorway; the project
+        <code>/t/grosscode/p/blizzard/gardening/proposals</code>. <b>Gardening</b> goes back to the doorway; the project
         crumb switches project in place and keeps you on the same surface. The four surfaces below it are tabs within
         that one project.</p></div>
       <div class="card"><h3>The lens and the crumb agree</h3>
@@ -547,7 +547,7 @@ function renderCrumbs(){
     <div class="menu" id="pmenu"><div class="mh">Switch project — stays on ${viewLbl[gview]}</div>
       ${names.map(n=>`<div class="mi ${n===lens?'cur':''}" onclick="setLens('${n}')"><span>${n}</span><span class="t-label xs">${projects[n].proposals.length} proposal${projects[n].proposals.length===1?'':'s'} waiting</span></div>`).join('')}
       <div class="mi" onclick="setLens('all')"><span class="t-label">All projects</span></div></div>
-    <span class="url">/t/grosscode/gardening/${lens}/${gview}${item?'/'+item:''}</span>${notes}`;
+    <span class="url">/t/grosscode/p/${lens}/gardening/${gview}${item?'/'+item:''}</span>${notes}`;
 }
 document.addEventListener('click',e=>{const m=document.getElementById('pmenu');if(m&&!e.target.closest('.projsw'))m.classList.remove('open')});
 render();

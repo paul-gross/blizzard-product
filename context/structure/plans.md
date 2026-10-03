@@ -21,7 +21,7 @@ milestone epic charts repeat it.
 - **Artifacts.** An epic's mocks and proofs-of-concept live in one `plans/<epic-slug>/artifacts/` at the top of the epic
   folder, shared by every slice, never in a slice folder (`plans/queue/artifacts/`).
 - **Inline slices stand.** Epic plans written before this guide may carry their slices' requirements inline
-  (`plans/multi-tenancy.md`); those slices carry no `plan` field. New slice plans follow the placement above.
+  (`plans/runner-host.md`); those slices carry no `plan` field. New slice plans follow the placement above.
 
 ## Required frontmatter
 

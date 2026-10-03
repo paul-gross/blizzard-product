@@ -35,9 +35,9 @@ whatever set the deploy in motion.
 
 ## What to build
 
-- **A deployment declaration per repository, per environment, owned by the project.** It names the environment, the
-  environments it must follow, the driver that moves it, how to read its live version, the smoke checks that prove it
-  healthy, the rollback procedure, and how safe that rollback is.
+- **A deployment declaration per repository, per environment.** It belongs to the repository, which the tenant holds and
+  projects link. It names the environment, the environments it must follow, the driver that moves it, how to read its
+  live version, the smoke checks that prove it healthy, the rollback procedure, and how safe that rollback is.
 - **Drivers, each declaring what it can do.** A driver starts or finds a run, reports its state (queued, running,
   awaiting approval, succeeded, failed), hands over the evidence a judging agent reads, and optionally approves,
   promotes, or rolls back natively. A policy that asks for a capability a driver lacks is refused when it is declared,

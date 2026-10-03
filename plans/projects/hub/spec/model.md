@@ -1,0 +1,135 @@
+# Model contract
+
+## The project record
+
+A project is a configured record inside a tenant. It follows `epic:live-config`'s convention for configured records
+([records.md](../../../live-config/spec/records.md)): a stable id, a revision that moves with every change, the create /
+read / edit / retire verb set, and change facts that record who changed it and through which door.
+
+```text
+projects
+  project_id    String  PK          proj_<ulid>
+  tenant_id     String  NOT NULL    the tenant key (multi-tenancy store.md)
+  name          String  NOT NULL    display name; editable
+  description   Text    NOT NULL
+  revision      Integer NOT NULL
+  created_at    UtcDateTime NOT NULL
+  project_former_names                   a name a project was renamed away from
+  name          String  NOT NULL
+  project_id    String  FK projects NOT NULL
+  tenant_id     String  NOT NULL
+  retired_at    UtcDateTime NOT NULL
+  PRIMARY KEY (tenant_id, name)        at most one project holds a given former name
+
+project_lifecycle_facts               append-only; retired derives from the newest fact
+  id, project_id FK, retired Boolean, set_at, set_by
+```
+
+`project_id` is the project's identity: every `project_id` column, link, runner declaration, change fact, and internal
+reference uses it, and nothing stores a project's name in its place. `name` is a display name the operator chooses and
+may change at any time; the board suggests a slug (lowercase letters, digits, hyphens) but does not require one, and a
+name only needs to be unique, case-insensitively, among the tenant's live projects. Liveness derives from lifecycle
+facts (`bzh:facts-not-status`), so no index can express that rule; create and rename check it inside the tenant's
+exclusive write (`bzh:store-exclusive-write`). A rename records the name it leaves in `project_former_names`, replacing
+any earlier holder of that former name, and taking a name removes it from `project_former_names`. Renaming changes
+nothing that references the project. Where a name is accepted as input — a URL, a CLI flag, an API path, a runner
+declaration — it is resolved to the id at the boundary ([surfaces.md](./surfaces.md) §Resolving a project). Retirement
+follows the retired brake scopes and routines already carry (`bzh:facts-not-status`): a retired project accepts no new
+ingest, is offered to no runner as new work, and keeps everything recorded under it readable; chunks already in it
+finish.
+
+## Links to work sources and repositories
+
+Work sources and repositories are tenant records owned by live-config
+([records.md](../../../live-config/spec/records.md)); this slice adds no column to either. A project draws from a
+source, and may land in a repository, through a link. A project draws from a source through a source link:
+
+```text
+project_source_links
+  project_id    String  FK projects   NOT NULL
+  source_name   String  FK work_sources.name NOT NULL   immutable (live-config records.md)
+  narrowing     Text    NULL          JSON {kind, value}; provider-defined; null = the whole source
+  revision      Integer NOT NULL
+  PRIMARY KEY (project_id, source_name)
+
+project_source_link_facts             append-only; linked/unlinked derives from the newest fact
+  id, project_id, source_name, linked Boolean, narrowing Text NULL, set_at, set_by
+```
+
+A link is a configured record of its own: it carries a revision and its own change facts, and unlinking is the link's
+retirement. `narrowing.kind` is declared by the source's binding — `jira-project` (value: a project key) for a Jira
+binding, `repository` (value: `owner/name`) for a GitHub binding — and a binding that declares no narrowing kinds
+refuses a link that names one. Narrowing never restricts what may be ingested; it sets the defaults ingest and browsing
+use ([ingest.md](./ingest.md)). The built-in `hub` source is linked to every project at creation and its link cannot be
+unlinked ([ingest.md](./ingest.md) §The built-in source).
+
+A project may land in a repository through a repository link:
+
+```text
+project_repository_links
+  project_id       String  FK projects            NOT NULL
+  repository_name  String  FK repositories.name   NOT NULL   immutable (live-config records.md)
+  revision         Integer NOT NULL
+  PRIMARY KEY (project_id, repository_name)
+
+project_repository_link_facts          append-only; linked/unlinked derives from the newest fact
+  id, project_id, repository_name, linked Boolean, set_at, set_by
+```
+
+A repository link carries no narrowing: it grants exactly one thing, that the project's chunks may land in the
+repository ([delivery.md](./delivery.md)). Like a source link it is a configured record with a revision and change
+facts, and unlinking is its retirement. A repository linked by no project is legal and receives nothing. The link is
+where `epic:advanced-delivery` may attach a project-level default over the repository's own landing policy, should one
+earn its place.
+
+## Which tables carry the project
+
+Every table carries `tenant_id` under the multi-tenancy contract. `project_id` is added only where a record's project
+cannot be reached through a chunk, or where a hot read filters on it:
+
+| Table                                       | `project_id`          | Why                                                                                 |
+| ------------------------------------------- | --------------------- | ----------------------------------------------------------------------------------- |
+| `chunks`                                    | NOT NULL              | Set once at mint ([ingest.md](./ingest.md)); every chunk-owned fact derives from it |
+| `scopes`                                    | NOT NULL              | Project-owned; `(project_id, slug)` unique                                          |
+| `routines`                                  | NOT NULL              | Project-owned; `(project_id, name)` unique                                          |
+| `findings`                                  | NOT NULL              | A routine finding has no chunk; a review finding's chunk agrees with it             |
+| `finding_sets`                              | NOT NULL              | Read by `(project_id, routine_name, scope_slug)`, not via its chunk                 |
+| `garden_proposals`                          | NOT NULL              | An operator-origin proposal has no chunk                                            |
+| `work_item_runs`                            | NOT NULL              | A run's routine name and scope label only mean something inside a project           |
+| `work_items` (`routine_name`, `scope_slug`) | NULL                  | Set only on a routine run's item, beside the pair it records                        |
+| `runner_registrations`                      | — (`projects` column) | The served declaration ([eligibility.md](./eligibility.md))                         |
+
+Everything else that hangs off a chunk — `chunk_work_refs`, `transitions`, `artifacts`, `lease_facts`, `usage_facts`,
+`questions`, `decisions`, `escalations`, the delivery and closure facts, transcripts, and `event_log` rows that name a
+chunk — reaches its project through `chunks.project_id` and gains no column. A read that filters such rows by project
+joins through `chunks`, using the `(tenant_id, project_id, minted_at, chunk_id)` index this slice adds beside
+`ix_chunks_minted_at_chunk_id`. A hot read that proves the join too costly earns a denormalized column in its own
+change, never speculatively.
+
+## Scope and routine identity
+
+`scopes` already carries the surrogate `scope_id` the multi-tenancy
+[store contract](../../../multi-tenancy/hub/spec/store.md) gives it, with every scope foreign key pointing at that id.
+This slice only narrows uniqueness: `uq_scopes_tenant_slug (tenant_id, slug)` becomes `(project_id, slug)`, and
+`uq_routines_tenant_name (tenant_id, name)` becomes `(project_id, name)`. A routine's default scope and every
+`routine_scopes` row must name a scope of the routine's own project, enforced on write. Columns that carry a scope slug
+or routine name as a denormalized label — `findings.scope_slug`, `findings.routine_name`, `finding_sets`,
+`garden_proposals.routine_name`, `work_items.routine_name` — keep the label and resolve it within the row's own
+`project_id`.
+
+Mint-on-name holds within the project (`domain/routines-and-scopes.md` §Mint-on-name): naming a slug no scope of that
+project holds mints it there, and the same slug in another project is a different scope. A review round's deferred
+finding mints its scope in the reviewed chunk's project.
+
+## Invariants
+
+The invariant checker (`bzh:invariant-checker`) gains:
+
+- every chunk's `project_id` names a project of the chunk's tenant;
+- every `routine_scopes` row and every routine's default scope join a routine and a scope of the same project, and every
+  finding and finding set names a scope of its own `project_id`;
+- a review-sourced finding's `project_id` equals its `raised_by_chunk_id` chunk's;
+- every source a chunk's work refs name is linked to the chunk's project, or was when the chunk was minted — the link's
+  facts answer which.
+- every `delivery_repo_landed` row names a repository the chunk's project linked when the row was written — the link's
+  facts answer which.

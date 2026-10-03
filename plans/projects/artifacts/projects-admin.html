@@ -379,6 +379,7 @@
     <a class="tab" href="#" data-view="members">Members<span class="cnt">3</span></a>
     <a class="tab" href="#" data-view="projects">Projects<span class="cnt" id="cnt-projects"></span></a>
     <a class="tab" href="#" data-view="sources">Work sources<span class="cnt" id="cnt-sources"></span></a>
+    <a class="tab" href="#" data-view="repos">Repositories<span class="cnt" id="cnt-repos"></span></a>
     <a class="tab" href="#" data-view="secrets">Secrets<span class="cnt" id="cnt-secrets"></span></a>
     <a class="tab" href="#" data-view="changes">Changes<span class="cnt" id="cnt-changes"></span></a>
     <div class="subnav-right xs">
@@ -405,13 +406,17 @@
     <div class="cards">
       <div class="card"><h3>Three levels, each in its place</h3>
         <p><b>Tenant</b> (header): who you are working as, part of the URL. <b>Tenant-wide</b> (Admin strip):
-        members, projects, work sources, secrets, and the changes log. <b>Project</b> (inside a project): the sources it
-        links, the repositories it owns, and who serves it. Gardening is per project too, under its own tab.</p></div>
+        members, projects, work sources, repositories, secrets, and the changes log. <b>Project</b> (inside a project): the
+        sources and repositories it links, and who serves it. Gardening is per project too, under its own tab.</p></div>
       <div class="card"><h3>Work sources are shared; projects link them</h3>
         <p>A work source is a connection to a tracker &mdash; one Jira site with a hundred projects&rsquo; tickets, one
         GitHub repository&rsquo;s issues. It is configured once, for the tenant. Each project <b>links</b> the sources it
         draws from, optionally narrowed to a Jira key or a repository, and an item joins a project when it is
         <b>ingested into</b> it.</p></div>
+      <div class="card"><h3>Repositories are shared too</h3>
+        <p>A repository is configured once for the tenant. A project <b>links</b> the repositories its work may land in,
+        and the hub refuses to land anywhere else. <i>grosscode-ui-kit</i> is linked by winter and celestial: both land
+        on its one base branch, taking turns. <i>infra-archive</i> is linked by nothing, so nothing lands there.</p></div>
       <div class="card"><h3>Ingest chooses the project</h3>
         <p>From inside a project, ingest is already pointed at it. Elsewhere, ingest names both the source and the
         project &mdash; unless the source is linked to only one project, which settles it.</p></div>
@@ -419,11 +424,11 @@
         <p>The <b>project lens</b> in the app strip narrows every tab to one project; <b>All</b> shows the whole tenant.
         With the lens on a project, Work sources shows only the sources that project links.</p></div>
       <div class="card"><h3>Overview answers &ldquo;is this project wired?&rdquo;</h3>
-        <p>Work comes in (a linked source), goes out (a repository), and gets done (a runner serving it). A project
+        <p>Work comes in (a linked source), goes out (a linked repository), and gets done (a runner serving it). A project
         missing one says so &mdash; <i>celestial</i> has no runner, so its work waits.</p></div>
       <div class="card"><h3>Secrets stay tenant-wide</h3>
-        <p>A source&rsquo;s credential is the tenant&rsquo;s, like the source. Repositories&rsquo; tokens are referred
-        to from inside projects, so a secret lists every project and record that uses it.</p></div>
+        <p>Sources and repositories are the tenant&rsquo;s, and so are the credentials they name; a secret lists every
+        record that uses it.</p></div>
       <div class="card open-q"><h3>Open &mdash; the hub source</h3>
         <p>Shown as one built-in <code>hub</code> source for the tenant, linked to every project, with an accepted
         garden proposal ingested into the project it was about. The alternative is one per project.</p></div>
@@ -441,21 +446,28 @@ const sources = [
   { name:'blizzard-issues', provider:'github', where:'paul-gross/blizzard', span:'one repository', secret:'gh-paul-gross', annotate:true, rev:7, file:true },
   { name:'hub', provider:'hub (built-in)', where:'this hub', span:'work the hub raises itself', builtin:true, rev:1 },
 ];
+const repos = [
+  { name:'blizzard', owner:'paul-gross', repo:'blizzard', base:'master', secret:'gh-paul-gross', file:true, rev:2 },
+  { name:'blizzard-context', owner:'paul-gross', repo:'blizzard-context', base:'master', secret:'gh-paul-gross', file:true, rev:1 },
+  { name:'blizzard-mock', owner:'paul-gross', repo:'blizzard-mock', base:'master', secret:'gh-paul-gross', rev:1 },
+  { name:'winter', owner:'paul-gross', repo:'winter', base:'main', secret:'gh-paul-gross', rev:3 },
+  { name:'winter-ext-github', owner:'paul-gross', repo:'winter-ext-github', base:'main', secret:'gh-paul-gross', rev:1 },
+  { name:'celestial-frontier', owner:'paul-gross', repo:'celestial-frontier', base:'main', secret:'gh-celestial', file:true, rev:1 },
+  { name:'grosscode-ui-kit', owner:'paul-gross', repo:'grosscode-ui-kit', base:'main', secret:'gh-paul-gross', rev:2 },
+  { name:'infra-archive', owner:'paul-gross', repo:'infra-archive', base:'main', secret:'gh-paul-gross', rev:1 },
+];
 const projects = [
   { name:'blizzard', desc:'The orchestration platform itself', rev:4, created:'3 weeks ago (carried over)', ready:3, run:2, done:9,
     links:[['blizzard-issues',''],['jira-grosscode','Jira project BLZ'],['hub','']],
-    repos:[{ name:'blizzard', owner:'paul-gross', repo:'blizzard', base:'master', secret:'gh-paul-gross', file:true, rev:2 },
-      { name:'blizzard-context', owner:'paul-gross', repo:'blizzard-context', base:'master', secret:'gh-paul-gross', file:true, rev:1 },
-      { name:'blizzard-mock', owner:'paul-gross', repo:'blizzard-mock', base:'master', secret:'gh-paul-gross', rev:1 }],
+    repoLinks:['blizzard','blizzard-context','blizzard-mock'],
     runners:[{ id:'r-claude', host:'desk', state:'running 2' },{ id:'r-chatgpt', host:'desk', state:'idle' }] },
   { name:'winter', desc:'Workspace and worktree framework', rev:2, created:'yesterday', ready:1, run:1, done:3,
     links:[['jira-grosscode','Jira project WIN'],['hub','']],
-    repos:[{ name:'winter', owner:'paul-gross', repo:'winter', base:'main', secret:'gh-paul-gross', rev:3 },
-      { name:'winter-ext-github', owner:'paul-gross', repo:'winter-ext-github', base:'main', secret:'gh-paul-gross', rev:1 }],
+    repoLinks:['winter','winter-ext-github','grosscode-ui-kit'],
     runners:[{ id:'r-claude', host:'desk', state:'running 1' }] },
   { name:'celestial', desc:'Celestial Frontier', rev:1, created:'2 days ago', ready:2, run:0, done:0,
     links:[['jira-grosscode','Jira project CEL'],['hub','']],
-    repos:[{ name:'celestial-frontier', owner:'paul-gross', repo:'celestial-frontier', base:'main', secret:'gh-celestial', file:true, rev:1 }],
+    repoLinks:['celestial-frontier','grosscode-ui-kit'],
     runners:[] },
 ];
 const secrets = [
@@ -465,18 +477,20 @@ const secrets = [
 ];
 const changes = [
   { id:'c-58', proj:'celestial', title:'project celestial · created, linked jira-grosscode', who:'pgross', via:'config apply', when:'2 days ago',
-    diff:[['add','project','celestial','','Celestial Frontier'],['add','link','jira-grosscode','','Jira project CEL'],['add','repository','celestial-frontier','','paul-gross/celestial-frontier']] },
+    diff:[['add','project','celestial','','Celestial Frontier'],['add','link','jira-grosscode','','Jira project CEL'],['add','repository link','celestial-frontier','','paul-gross/celestial-frontier'],['add','repository link','grosscode-ui-kit','','shared with winter']] },
   { id:'c-60', proj:null, title:'source jira-grosscode · created', who:'pgross', via:'cli', when:'9 days ago',
     diff:[['add','source','jira-grosscode','','grosscode.atlassian.net']] },
   { id:'c-61', proj:'winter', title:'project winter · linked jira-grosscode', who:'pgross', via:'board', when:'yesterday',
     diff:[['add','link','jira-grosscode','','Jira project WIN']] },
   { id:'c-62', proj:'blizzard', title:'project blizzard · linked jira-grosscode', who:'pgross', via:'board', when:'yesterday',
     diff:[['add','link','jira-grosscode','','Jira project BLZ']] },
+  { id:'c-49', proj:'blizzard', title:'project default · renamed blizzard', who:'pgross', via:'board', when:'3 weeks ago',
+    diff:[['chg','project proj_01J9…','name','default','blizzard']] },
   { id:'c-50', proj:'blizzard', title:'projects · carried over', who:'migration', via:'migration', when:'3 weeks ago',
-    diff:[['add','project','blizzard','','every existing repository, chunk, scope, routine'],['add','link','blizzard-issues','','every existing source, linked']] },
+    diff:[['add','project','default','','every existing chunk, scope, routine'],['add','link','blizzard-issues','','every existing source, linked'],['add','repository link','blizzard','','every existing repository, linked']] },
 ];
 
-let view='projects', lens='all', sel='blizzard', ptab='overview', selSource='jira-grosscode', selSecret='jira-grosscode', selChange=null;
+let view='projects', lens='all', sel='blizzard', ptab='overview', selSource='jira-grosscode', selRepo='grosscode-ui-kit', selSecret='jira-grosscode', selChange=null;
 const $=id=>document.getElementById(id);
 const esc=s=>String(s).replace(/[&<>]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;'}[c]));
 function toggleNotes(){$('notes').classList.toggle('open')}
@@ -488,35 +502,38 @@ const P=n=>projects.find(p=>p.name===n), S=n=>sources.find(s=>s.name===n);
 const inLens=n=>lens==='all'||lens===n;
 const linkers=s=>projects.filter(p=>p.links.some(l=>l[0]===s)).map(p=>[p.name,p.links.find(l=>l[0]===s)[1]]);
 function secretUses(s){const out=[];sources.forEach(x=>x.secret===s&&out.push(['tenant','source',x.name]));
-  projects.forEach(p=>p.repos.forEach(x=>x.secret===s&&out.push([p.name,'repository',x.name])));return out}
+  repos.forEach(x=>x.secret===s&&out.push(['tenant','repository',x.name]));return out}
+const Rp=n=>repos.find(r=>r.name===n);
+const repoLinkers=r=>projects.filter(p=>p.repoLinks.includes(r)).map(p=>p.name);
+const pRepos=p=>p.repoLinks.map(Rp);
 function setLens(n){lens=n;if(n!=='all')sel=n;render()}
 function renderLens(){$('lens').innerHTML=['all',...projects.map(p=>p.name)].map(n=>`<button class="chip ${lens===n?'selected':''}" onclick="setLens('${n}')">${n==='all'?'All':n}</button>`).join('')}
 function renderStats(){const ps=projects.filter(p=>inLens(p.name));
   $('st-ready').textContent=ps.reduce((a,p)=>a+p.ready,0);$('st-run').textContent=ps.reduce((a,p)=>a+p.run,0)+'/6';$('st-done').textContent=ps.reduce((a,p)=>a+p.done,0)}
-function wiring(p){const m=[];if(!p.links.some(l=>l[0]!=='hub'))m.push('source');if(!p.repos.length)m.push('repository');if(!p.runners.length)m.push('runner');return m}
+function wiring(p){const m=[];if(!p.links.some(l=>l[0]!=='hub'))m.push('source');if(!p.repoLinks.length)m.push('repository');if(!p.runners.length)m.push('runner');return m}
 function badges(x){let b='';if(x.builtin)b+='<span class="badge builtin">built-in</span>';if(x.file)b+='<span class="badge file">file</span>';return b}
 
 function render(){
   document.querySelectorAll('#subnav [data-view]').forEach(a=>a.classList.toggle('active',a.dataset.view===view));
-  $('cnt-projects').textContent=projects.length;$('cnt-sources').textContent=lens==='all'?sources.length:P(lens).links.length;
+  $('cnt-projects').textContent=projects.length;$('cnt-repos').textContent=lens==='all'?repos.length:P(lens).repoLinks.length;$('cnt-sources').textContent=lens==='all'?sources.length:P(lens).links.length;
   $('cnt-secrets').textContent=secrets.length;$('cnt-changes').textContent=changes.filter(c=>!c.proj||inLens(c.proj)).length;
   renderLens();renderStats();
-  ({projects:renderProjects,sources:renderSources,secrets:renderSecrets,changes:renderChanges})[view]();
+  ({projects:renderProjects,sources:renderSources,repos:renderRepos,secrets:renderSecrets,changes:renderChanges})[view]();
 }
 
 function renderProjects(){
   const ps=projects.filter(p=>inLens(p.name));if(!ps.find(p=>p.name===sel))sel=ps[0].name;const p=P(sel);
   $('layout').style.gridTemplateColumns='minmax(280px,340px) 1fr';
   $('layout').innerHTML=`<section class="panel"><div class="p-hdr"><span class="lbl">Projects in grosscode</span>
-      <button class="act primary" onclick="toast('New project: a name and a description. Link sources and add repositories inside it.')">+ New project</button></div>
+      <button class="act primary" onclick="toast('New project: a name and a description. Link sources and repositories inside it.')">+ New project</button></div>
     <div class="p-body">${ps.map(q=>{const m=wiring(q);return `<button class="row ${q.name===sel?'active':''}" onclick="sel='${q.name}';ptab='overview';render()">
       <div class="row-top"><span class="row-name">${esc(q.name)}</span><span class="row-right">${m.length?'<span class="badge unused">needs a '+m.join(', a ')+'</span>':'<span class="dot green"></span>'}<span class="rev">r<b>${q.rev}</b></span></span></div>
-      <div class="row-sub"><span>${q.links.length} linked sources</span><span>${q.repos.length} repos</span><span>${q.ready+q.run} in queue</span></div></button>`}).join('')}</div>
+      <div class="row-sub"><span>${q.links.length} linked sources</span><span>${q.repoLinks.length} linked repos</span><span>${q.ready+q.run} in queue</span></div></button>`}).join('')}</div>
     <div class="p-foot xs t-label">a project is a lens over the tenant — retire, never delete</div></section>
   <section class="panel"><div class="stack">
     <div class="detail-hdr"><h1>${esc(p.name)}</h1><span class="t-label sm">${esc(p.desc)}</span><span class="grow"></span>
-      <button class="act" onclick="toast('Edit project: name and description.')">Edit</button><button class="act danger" onclick="toast('Retiring a project stops new ingest into it; chunks in flight finish.')">Retire</button></div>
-    <nav class="ptabs">${[['overview','Overview'],['links','Linked sources',p.links.length],['repos','Repositories',p.repos.length]]
+      <button class="act" onclick="toast('Edit project: name and description. Renaming changes nothing that references it — links using the old name keep working until another project takes it.')">Edit</button><button class="act danger" onclick="toast('Retiring a project stops new ingest into it; chunks in flight finish.')">Retire</button></div>
+    <nav class="ptabs">${[['overview','Overview'],['links','Linked sources',p.links.length],['repos','Linked repositories',p.repoLinks.length]]
       .map(([k,l,c])=>`<a class="tab ${ptab===k?'active':''}" href="#" onclick="ptab='${k}';render();return false">${l}${c!==undefined?`<span class="cnt">${c}</span>`:''}</a>`).join('')}</nav>
     <div class="p-body" style="flex:1">${projectTab(p)}</div></div></section>`;
 }
@@ -533,7 +550,7 @@ function projectTab(p){
     <dl class="kv"><dt>Tenant</dt><dd>grosscode</dd><dt>Created</dt><dd>${esc(p.created)}</dd><dt>Queue</dt><dd>${p.ready} ready · ${p.run} running · ${p.done} done today</dd><dt>Revision</dt><dd>r${p.rev}</dd></dl>
     <div class="cards2">
       ${ocard('Draws work from',p.links.map(([s,n])=>[s,n||S(s).span]),'links')}
-      ${ocard('Lands in',p.repos.map(r=>[r.name,r.owner+'/'+r.repo+' · '+r.base]),'repos')}
+      ${ocard('May land in',pRepos(p).map(r=>[r.name,r.owner+'/'+r.repo+' · '+r.base]),'repos')}
       ${ocard('Served by',p.runners.map(r=>[r.id,'host '+r.host+' · '+r.state]),null,'No runner serves this project.')}
     </div>${ingestBox(p)}
     <div class="callout">Gardening — this project's scopes, routines, runs, findings and proposals — lives under <a class="link" href="./projects-gardening.html">Gardening</a> with the lens on <b class="t-snow">${p.name}</b>.</div>`}
@@ -544,10 +561,11 @@ function projectTab(p){
       <div class="row-sub"><span>${esc(x.provider)}</span><span>${esc(x.where)}</span>${n?`<span class="t-cyan">narrowed to ${esc(n)}</span>`:''}<span>${others.length?'also linked by '+others.map(o=>o[0]).join(', '):'linked only here'}</span>
       <a class="link" onclick="view='sources';selSource='${s}';render()">source settings →</a></div></div>`}).join('')}
     ${ingestBox(p)}`;
-  return `<div class="callout">A chunk in <b class="t-snow">${p.name}</b> lands only in these repositories. Landing policies and deployment declarations attach here when advanced delivery and deployment arrive.</div>
-    <div class="p-hdr"><span class="lbl">${p.repos.length} records</span><button class="act primary">+ New repository</button></div>
-    ${p.repos.map(r=>`<div class="row"><div class="row-top"><span class="row-name">${r.name}</span><span class="row-right">${badges(r)}<span class="rev">r<b>${r.rev}</b></span></span></div>
-      <div class="row-sub"><span>${r.owner}/${r.repo}</span><span>base <b class="t-snow">${r.base}</b></span><span>token <a class="link" onclick="view='secrets';selSecret='${r.secret}';render()">${r.secret}</a></span></div></div>`).join('')}`;
+  return `<div class="callout">Repositories belong to the tenant. A chunk in <b class="t-snow">${p.name}</b> may land <b>only</b> in the repositories linked here — a commit to any other repository is refused before anything is pushed (<code>repository-not-linked</code>). Unlinking stops landings from the next step; nothing already landed moves.</div>
+    <div class="p-hdr"><span class="lbl">${p.repoLinks.length} linked</span><button class="act primary" onclick="openRepoLink('${p.name}')">+ Link a repository</button></div>
+    ${pRepos(p).map(r=>{const others=repoLinkers(r.name).filter(n=>n!==p.name);return `<div class="row"><div class="row-top"><span class="row-name">${r.name}</span><span class="row-right">${badges(r)}<button class="act danger" onclick="toast('Unlinked from ${p.name}. Its chunks can no longer land in ${r.name}.')">Unlink</button></span></div>
+      <div class="row-sub"><span>${r.owner}/${r.repo}</span><span>base <b class="t-snow">${r.base}</b></span><span>${others.length?'also linked by '+others.join(', '):'linked only here'}</span>
+      <a class="link" onclick="view='repos';selRepo='${r.name}';render()">repository settings →</a></div></div>`}).join('')}`;
 }
 function openLink(pn){const p=P(pn);const avail=sources.filter(s=>!p.links.some(l=>l[0]===s.name));
   $('d-title').textContent='Link a source to '+pn;
@@ -557,6 +575,29 @@ function openLink(pn){const p=P(pn);const avail=sources.filter(s=>!p.links.some(
   $('d-note').textContent='Linking changes nothing in the source and nothing already ingested.';$('d-save').dataset.msg='Linked to '+pn+'.';$('scrim').classList.add('open')}
 function closeDialog(){$('scrim').classList.remove('open')}
 
+function openRepoLink(pn){const p=P(pn);const avail=repos.filter(r=>!p.repoLinks.includes(r.name));
+  $('d-title').textContent='Link a repository to '+pn;
+  $('d-body').innerHTML=avail.length?`<div class="field"><label>Repository</label><select>${avail.map(r=>`<option>${r.name} — ${r.owner}/${r.repo}${repoLinkers(r.name).length?' · linked by '+repoLinkers(r.name).join(', '):''}</option>`).join('')}</select><span class="hint">repositories are configured once for the tenant, under Admin → Repositories</span></div>
+    <div class="callout xs">Linking gives ${pn}'s chunks permission to land here. Projects that share a repository land on the same branch and take turns.</div>`
+    :`<div class="callout">${pn} already links every repository in the tenant.</div>`;
+  $('d-note').textContent='Linking changes nothing in the repository.';$('d-save').dataset.msg='Linked to '+pn+'.';$('scrim').classList.add('open')}
+function renderRepos(){const xs=repos.filter(r=>lens==='all'||P(lens).repoLinks.includes(r.name));
+  if(!xs.find(r=>r.name===selRepo))selRepo=xs[0].name;const x=Rp(selRepo);const ls=repoLinkers(x.name);
+  $('layout').style.gridTemplateColumns='minmax(280px,360px) 1fr';
+  $('layout').innerHTML=`<section class="panel"><div class="p-hdr"><span class="lbl">Repositories — tenant-wide${lens!=='all'?' · linked by '+lens:''}</span><button class="act primary" style="white-space:nowrap">+ New</button></div>
+    <div class="p-body">${xs.map(r=>{const l=repoLinkers(r.name);return `<button class="row ${r.name===selRepo?'active':''}" onclick="selRepo='${r.name}';render()">
+      <div class="row-top"><span class="row-name">${r.name}</span><span class="row-right">${badges(r)}<span class="rev">r<b>${r.rev}</b></span></span></div>
+      <div class="row-sub"><span>${r.owner}/${r.repo}</span><span>base <b class="t-snow">${r.base}</b></span></div>
+      <div class="row-sub">${l.map(pn=>`<span class="pchip">${pn}</span>`).join('')||'<span class="t-amber">linked by no project</span>'}</div></button>`}).join('')}</div>
+    <div class="p-foot xs t-label">configured once; projects link the ones they may land in</div></section>
+  <section class="panel"><div class="p-body"><div class="detail-hdr"><h1>${x.name}</h1>${badges(x)}<span class="grow"></span><button class="act">Edit</button><button class="act danger">Retire</button></div>
+    <dl class="kv"><dt>Forge</dt><dd>https://github.com</dd><dt>Repository</dt><dd>${x.owner}/${x.repo}</dd><dt>Base branch</dt><dd>${x.base}</dd>
+      <dt>Lands by</dt><dd>fast-forward <span class="t-label">· the repository's own landing policy arrives with advanced delivery</span></dd>
+      <dt>Credential</dt><dd><a class="link" onclick="view='secrets';selSecret='${x.secret}';render()">${x.secret}</a> <span class="secret-val">••••••</span></dd><dt>Revision</dt><dd>r${x.rev}</dd></dl>
+    <div class="section-lbl">Linked by</div>
+    ${ls.length?`<ul class="uses">${ls.map(pn=>`<li><span class="pchip">${pn}</span><span class="t-label">may land here</span><a class="link" onclick="view='projects';sel='${pn}';ptab='repos';render()">open link</a></li>`).join('')}</ul>`:'<div class="callout amber">No project links this repository, so nothing lands in it.</div>'}
+    ${ls.length>1?`<div class="callout xs">${ls.join(' and ')} both land on <b class="t-snow">${x.base}</b> here, so their landings take turns on this one branch.</div>`:''}
+  </div></section>`}
 function renderSources(){const xs=sources.filter(s=>lens==='all'||P(lens).links.some(l=>l[0]===s.name));
   if(!xs.find(s=>s.name===selSource))selSource=xs[0].name;const x=S(selSource);const ls=linkers(x.name);
   $('layout').style.gridTemplateColumns='minmax(280px,360px) 1fr';
