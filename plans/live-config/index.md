@@ -3,7 +3,7 @@ epic: live-config
 refinement: scaffolded
 slices:
   - name: full
-    status: horizon
+    status: in-progress
 ---
 
 # Plan — `epic:live-config`

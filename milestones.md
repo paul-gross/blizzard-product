@@ -116,16 +116,16 @@ repositories deploys all three in the order they depend on one another, proving 
 the next one moves. Delivery and deployment stop being one fleet-wide habit and become each project's own declared
 method, carried out deterministically, with an agent's judgement called in where the project asks for it.
 
-| Epic                       | Slice  | Status  |
-| -------------------------- | ------ | ------- |
-| `epic:live-config`         | full   | horizon |
-| `epic:multi-tenancy`       | hub    | horizon |
-| `epic:projects`            | hub    | horizon |
-| `epic:runner-host`         | runner | horizon |
-| `epic:multi-tenancy`       | runner | horizon |
-| `epic:projects`            | runner | horizon |
-| `epic:advanced-delivery`   | full   | horizon |
-| `epic:advanced-deployment` | full   | horizon |
+| Epic                       | Slice  | Status      |
+| -------------------------- | ------ | ----------- |
+| `epic:live-config`         | full   | in-progress |
+| `epic:multi-tenancy`       | hub    | horizon     |
+| `epic:projects`            | hub    | horizon     |
+| `epic:runner-host`         | runner | horizon     |
+| `epic:multi-tenancy`       | runner | horizon     |
+| `epic:projects`            | runner | horizon     |
+| `epic:advanced-delivery`   | full   | horizon     |
+| `epic:advanced-deployment` | full   | horizon     |
 
 ## `milestone:hardening` — the platform stops guessing on your behalf
 
