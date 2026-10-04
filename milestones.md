@@ -72,7 +72,7 @@ someone else's to make.
 
 | Epic               | Slice          | Status      |
 | ------------------ | -------------- | ----------- |
-| `epic:fact-egress` | steps          | in-progress |
+| `epic:fact-egress` | steps          | delivered   |
 | `epic:fact-egress` | events         | in-progress |
 | `epic:tracing`     | fleet-spans    | delivered   |
 | `epic:tracing`     | platform-spans | delivered   |
