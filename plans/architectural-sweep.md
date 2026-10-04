@@ -16,15 +16,15 @@ the next. The runner is sliced by what code does rather than what it is about, s
 lives in three packages at once. The code still passes every gate, and that is exactly the trouble: nothing tells anyone
 the structure has drifted until a change that should touch one place touches six.
 
-This epic makes the structure say what blizzard does, and keeps it saying so. Every concept in both daemons gets one
-package named for it. Within each daemon, packages depend on one another in one direction only, so the ground floor
-never reaches up into the rooms built on top of it. Every data class says what kind of thing it is — a domain model that
-carries rules, a database row, or a plain carrier of data between two places. And every business rule moves onto the
-model it governs, leaving the services around it to do only the sequencing.
+This epic makes the structure say what blizzard does, and keeps it saying so. Every concept in both daemons and the
+board gets one place named for it. Within each daemon, packages depend on one another in one direction only, so the
+ground floor never reaches up into the rooms built on top of it. Every data class says what kind of thing it is — a
+domain model that carries rules, a database row, or a plain carrier of data between two places. And every business rule
+moves onto the model it governs, leaving the services around it to do only the sequencing.
 
 ## How it lands
 
-The work is six sweeps, landed one after another and never side by side, because each reshapes ground the next one
+The work is nine sweeps, landed one after another and never side by side, because each reshapes ground the next one
 builds on:
 
 1. Every data class declares its role, so later sweeps know which types are the models.
@@ -33,6 +33,9 @@ builds on:
 4. The runner's harness adapters move into packages of their own, behind a single module that knows them both.
 5. The runner is regrouped into concept packages with its own one-way dependency graph.
 6. Business rules move onto their models across both daemons, now that every model has its final home.
+7. The wire becomes the board's complete domain model, so the board stops re-deriving what the backend already decided.
+8. The board is regrouped into feature folders with its own one-way dependency graph.
+9. The board's containers stop deciding things, and what they derived moves into small pure models beside each feature.
 
 Each sweep is a single change that reshapes all of the code it governs and, in the same delivery, writes down the rule
 and adds the test that enforces it. A rule never exists before the code obeys it, and once it lands, the test refuses
@@ -42,4 +45,4 @@ anyone's memory.
 ## Out of scope
 
 Moving each concept's stores, API routes, and CLI verbs into its package is the end state this points toward, and is
-left for later. The Angular board and `blizzard-mock` are untouched.
+left for later. `blizzard-mock` is untouched.
