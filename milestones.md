@@ -171,24 +171,32 @@ system. The suite's upper tiers also presume their implementation. They describe
 they reach into its Python to say so, which leaves them unable to hold a rewrite to the same promise. Faster tests, and
 tests that describe the platform from outside, are both hardening of the ground everything else stands on.
 
+The code makes one presumption of its own: that whoever reads it already knows where everything is. Most of blizzard is
+now written by agents meeting it for the first time, and they find a behavior from its name only when the layout
+announces it. A hub domain of sixty-odd modules in one directory, and a runner sliced by what its code does rather than
+what it is about, both ask the reader to carry a map the code no longer draws. Giving every concept one package, every
+package a one-way place in the order, and every rule a home on the model it governs is the same hardening turned inward
+— and it holds only if the build refuses the drift, not if someone remembers to.
+
 Hardening is what a platform does after it works. Little of it is a new capability. Almost all of it is an assumption
 the platform made on the operator's behalf, handed back to them as a decision.
 
-| Epic                       | Slice            | Status  |
-| -------------------------- | ---------------- | ------- |
-| `epic:runner-host`         | runner           | horizon |
-| `epic:runner-host`         | hub              | horizon |
-| `epic:throttling`          | full             | horizon |
-| `epic:tagging`             | full             | horizon |
-| `epic:resilience`          | full             | horizon |
-| `epic:retention`           | full             | horizon |
-| `epic:config`              | model-resolution | horizon |
-| `epic:config`              | sweep            | horizon |
-| `epic:ui-toolkit`          | full             | horizon |
-| `epic:documentation`       | full             | horizon |
-| `epic:test-optimization`   | full             | horizon |
-| `epic:test-architecture`   | full             | horizon |
-| `epic:test-shared-service` | full             | horizon |
+| Epic                       | Slice            | Status      |
+| -------------------------- | ---------------- | ----------- |
+| `epic:runner-host`         | runner           | horizon     |
+| `epic:runner-host`         | hub              | horizon     |
+| `epic:throttling`          | full             | horizon     |
+| `epic:tagging`             | full             | horizon     |
+| `epic:resilience`          | full             | horizon     |
+| `epic:retention`           | full             | horizon     |
+| `epic:config`              | model-resolution | horizon     |
+| `epic:config`              | sweep            | horizon     |
+| `epic:ui-toolkit`          | full             | horizon     |
+| `epic:documentation`       | full             | horizon     |
+| `epic:test-optimization`   | full             | horizon     |
+| `epic:test-architecture`   | full             | horizon     |
+| `epic:test-shared-service` | full             | horizon     |
+| `epic:architectural-sweep` | full             | in-progress |
 
 ## `milestone:human-in-the-loop` — the operator stops being the wire
 
