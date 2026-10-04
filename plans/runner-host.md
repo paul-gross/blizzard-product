@@ -32,8 +32,8 @@ the runners, and subscriptions as a concept of their own that runners draw on ra
 
 ## What to build — the runner slice
 
-- **One host, many runners.** A single daemon runs every runner the operator declares on the machine, each registering
-  with the hub under its own id, so a machine that runs two installations today runs one.
+- **One host, many runners.** A single daemon runs every runner the operator declares on the machine, each holding the
+  id and token the hub issued when the runner was added, so a machine that runs two installations today runs one.
 - **Subscriptions as the host's own concept.** The operator declares each plan once on the host, and each runner names
   the subscription it spends. Several runners may spend the same subscription — one OpenAI plan feeding an OpenCode
   runner and a Codex runner — and the host samples each subscription once, however many runners draw on it.
@@ -55,8 +55,8 @@ the runners, and subscriptions as a concept of their own that runners draw on ra
   as one thing with its runners inside it rather than as unrelated peers that happen to share a desk.
 - **Subscriptions shown once, where they live.** A plan's usage appears on its host, with each runner that draws on it
   named, rather than repeated on every runner that spends it.
-- **Enrollment at the host.** Bringing a new runner onto an enrolled host is a configuration change on the machine,
-  never a window in which the hub relaxes its enforcement for the whole fleet.
+- **Adding a runner at the host.** The hub adds every runner, minting its id and issuing its token; a host never creates
+  an identity of its own. Bringing a new runner onto a host is that addition plus a configuration entry on the machine.
 
 ## Where the runner goes next
 
@@ -78,3 +78,5 @@ problem to ride out, not this epic's.
   narrow enough that lifting it wrongly costs one runner's night rather than the machine's.
 - Whether the runner panel on the machine becomes a host panel with a view per runner, or each runner keeps a panel of
   its own.
+- Whether an enrolled host may ask the hub for a new runner under the host's own credential, or the operator adds each
+  runner with `hub runner add` and places its token in the host's configuration.

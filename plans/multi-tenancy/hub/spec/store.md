@@ -136,7 +136,7 @@ Every uniqueness rule a tenant can observe becomes unique per tenant. Rules keye
 | `work_item_sequence`       | PK `source`                                                                                                    | PK `(tenant_id, source)` — each tenant's built-in `hub` source numbers from 1                                  |
 | `garden_proposal_closures` | `ix_garden_proposal_closures_source_ref (source, ref)` unique                                                  | `(tenant_id, source, ref)` unique                                                                              |
 | `chunk_work_refs`          | `ix_chunk_work_refs_source_ref (source, ref)`                                                                  | `(tenant_id, source, ref)`                                                                                     |
-| `runner_registrations`     | PK `runner_id`                                                                                                 | unchanged — runner ids stay hub-unique (below)                                                                 |
+| `runner_registrations`     | PK `runner_id`                                                                                                 | unchanged — runner ids are hub-minted (below)                                                                  |
 
 `scopes` takes a surrogate key because its natural key is a primary key four foreign keys point at; rescoping a natural
 primary key would force composite foreign keys onto every child, and `epic:projects` rescopes the slug again. With a
@@ -144,9 +144,11 @@ surrogate, each later rescoping is a change to one unique constraint. Columns th
 a denormalized label (`findings.scope_slug`, `finding_sets`, `work_items.routine_name`, …) keep their label and resolve
 it within the row's tenant.
 
-**Runner ids stay hub-unique.** `runner_id` is the primary key of `runner_registrations` and the key of the runner
-high-water, pause, usage, and transcript tables. Enrolling an id already registered in any tenant is refused with a
-neutral `409 runner id unavailable` that names no tenant. Tenants created for tests mint random runner ids.
+**Runner ids are hub-minted.** `runner_id` is the primary key of `runner_registrations` and the key of the runner
+high-water, pause, usage, and transcript tables. It is an `rn_<ulid>` the hub mints when a runner is added, so it is
+unique across every tenant by construction and there is no collision to refuse. A runner's tenant is the one it was
+added in. Its name is display only and unique nowhere, so two runners may share one, in one tenant or across several.
+Tenants created for tests add their runners like any other.
 
 Identity uniqueness — `users.username`, `uq_users_email`, `uq_identities_provider_subject` — stays hub-wide.
 

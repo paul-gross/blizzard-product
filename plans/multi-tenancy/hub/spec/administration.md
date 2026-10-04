@@ -5,21 +5,23 @@ by a tenant's admins in their own. There is no self-service path.
 
 ## Verbs
 
-| Verb                   | API                                          | CLI                                                         | Permission                              |
-| ---------------------- | -------------------------------------------- | ----------------------------------------------------------- | --------------------------------------- |
-| Create a tenant        | `POST /api/admin/tenants` `{name}`           | `blizzard hub tenant create <name> [--admin <user>]`        | `TENANT_ADMIN`                          |
-| List tenants           | `GET /api/admin/tenants`                     | `blizzard hub tenant list`                                  | `TENANT_ADMIN`                          |
-| Rename a tenant        | `PATCH /api/admin/tenants/{tenant}` `{name}` | `blizzard hub tenant rename <tenant> <name>`                | `TENANT_ADMIN`                          |
-| Delete a tenant        | `DELETE /api/admin/tenants/{tenant}`         | `blizzard hub tenant delete <tenant>`                       | `TENANT_ADMIN`                          |
-| List members           | `GET /api/members`                           | `blizzard hub member list --tenant <tenant>`                | `USER_MANAGE`                           |
-| Grant or change a role | `PUT /api/members/{user_id}` `{role}`        | `blizzard hub member grant <user> <role> --tenant <tenant>` | `USER_MANAGE` or `MEMBERSHIP_GRANT_ANY` |
-| Revoke                 | `DELETE /api/members/{user_id}`              | `blizzard hub member revoke <user> --tenant <tenant>`       | `USER_MANAGE` or `MEMBERSHIP_GRANT_ANY` |
-| Enroll a runner        | `POST /api/runners/{runner_id}/enrollments`  | `blizzard hub runner enroll <id> --tenant <tenant>`         | `RUNNER_PAUSE`, as today                |
+| Verb                    | API                                          | CLI                                                         | Permission                              |
+| ----------------------- | -------------------------------------------- | ----------------------------------------------------------- | --------------------------------------- |
+| Create a tenant         | `POST /api/admin/tenants` `{name}`           | `blizzard hub tenant create <name> [--admin <user>]`        | `TENANT_ADMIN`                          |
+| List tenants            | `GET /api/admin/tenants`                     | `blizzard hub tenant list`                                  | `TENANT_ADMIN`                          |
+| Rename a tenant         | `PATCH /api/admin/tenants/{tenant}` `{name}` | `blizzard hub tenant rename <tenant> <name>`                | `TENANT_ADMIN`                          |
+| Delete a tenant         | `DELETE /api/admin/tenants/{tenant}`         | `blizzard hub tenant delete <tenant>`                       | `TENANT_ADMIN`                          |
+| List members            | `GET /api/members`                           | `blizzard hub member list --tenant <tenant>`                | `USER_MANAGE`                           |
+| Grant or change a role  | `PUT /api/members/{user_id}` `{role}`        | `blizzard hub member grant <user> <role> --tenant <tenant>` | `USER_MANAGE` or `MEMBERSHIP_GRANT_ANY` |
+| Revoke                  | `DELETE /api/members/{user_id}`              | `blizzard hub member revoke <user> --tenant <tenant>`       | `USER_MANAGE` or `MEMBERSHIP_GRANT_ANY` |
+| Add a runner            | `POST /api/runners` `{name}`                 | `blizzard hub runner add <name> --tenant <tenant>`          | the runner-add permission               |
+| Rotate a runner's token | `POST /api/runners/{runner_id}/enrollments`  | `blizzard hub runner enroll <id> --tenant <tenant>`         | `RUNNER_PAUSE`, as today                |
 
-Member and enrollment routes act in the request's tenant ([api.md](./api.md) §Resolution order). Grants are
-`membership_facts` rows ([identity.md](./identity.md)); a grant whose role equals the one in force writes nothing. A
-tenant must keep at least one `admin` member once it has one: revoking or demoting the last admin is refused. Today's
-users page (`/api/users`, `/api/users/{user_id}/role`) becomes the members page of the tenant it is opened in.
+Member and runner routes act in the request's tenant ([api.md](./api.md) §Resolution order), and a runner belongs to the
+tenant it was added in. Grants are `membership_facts` rows ([identity.md](./identity.md)); a grant whose role equals the
+one in force writes nothing. A tenant must keep at least one `admin` member once it has one: revoking or demoting the
+last admin is refused. Today's users page (`/api/users`, `/api/users/{user_id}/role`) becomes the members page of the
+tenant it is opened in.
 
 ## Creating a tenant
 

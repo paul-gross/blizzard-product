@@ -78,21 +78,15 @@ class TenantRequest:
   order, checks the membership, expands the membership role, and only then checks `permission`, which answers `403` as
   today.
 - **Fleet.** `require_runner_principal` (`hub/api/auth.py`) resolves the bearer token through `HubScopedReads` to
-  `(runner_id, workspace_id, tenant_id)`; `RunnerPrincipal` gains `tenant_id`, and `FleetRequest` builds its services
-  from that tenant's `TenantStores`. Route-token and marker-token resolution do the same through the chunk their token
-  is bound to.
+  `(runner_id, workspace_id, tenant_id)`, where `runner_id` is the id the hub minted when the runner was added;
+  `RunnerPrincipal` gains `tenant_id`, and `FleetRequest` builds its services from that tenant's `TenantStores`.
+  Route-token and marker-token resolution do the same through the chunk their token is bound to.
 - **Handlers never see an unscoped store.** A handler reads `TenantRequest.services`; nothing on `app.state` exposes a
   store that is not opened for a scope. `bzh:controller-read-only` holds as today — the services a controller is handed
   are read repositories opened for its tenant.
 - **The resolved tenant is recorded on every request.** Because no URL carries it, the dependency binds `tenant_id` into
   the request's structured-log context and sets it as the `blizzard.tenant` attribute on the request's span, beside the
   caller attributes `annotate_caller` already sets. Every log line and span a request produces names its tenant's id.
-
-### Runners under `runner_auth_mode = "warn"`
-
-Under `warn`, an unauthenticated fleet call proceeds today as an anonymous runner. With tenancy it carries no credential
-to decide its tenant, so it proceeds only on a hub holding exactly one tenant and is placed there; on a hub holding more
-than one it is refused `401` under every mode. `warn` remains a single-tenant rollout brake, as it was built to be.
 
 ## The event stream
 

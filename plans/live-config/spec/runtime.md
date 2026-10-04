@@ -49,9 +49,9 @@ Retirement stops new work only:
 ## What stays in the file
 
 These remain `HubConfig` fields or process settings, read at start and changed by a restart: `root`, `db_url`, `host`,
-`port`, `trusted_proxies`, `auth`, `runner_auth_mode`, `route_token_mode`, `produces_mode`, `follow_latest`,
-`annotation_interval_seconds`, `close_forge_writes_enabled`, `transcripts`, `tracing`, and the hub secret key
-([secrets.md](./secrets.md) §The hub key).
+`port`, `trusted_proxies`, `auth`, `route_token_mode`, `produces_mode`, `follow_latest`, `annotation_interval_seconds`,
+`close_forge_writes_enabled`, `transcripts`, `tracing`, and the hub secret key ([secrets.md](./secrets.md) §The hub
+key).
 
 ## The rule
 
