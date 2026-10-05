@@ -28,9 +28,14 @@ clears.
   the queue's order, until the chokepoint is done.
 - **Everything ahead of it finishes first.** The chokepoint itself is not claimable while any chunk ranked ahead of it
   is still open; it starts only once the fleet has drained the work in front of it.
+- **A chokepoint belongs to its project.** Once `epic:projects` gives the hub more than one project, a chokepoint
+  narrows only the project its chunk belongs to. Ahead and behind are counted within that project's queue, and runners
+  go on claiming every other project's work as if nothing had happened. A rewrite of one codebase has no reason to stall
+  a project that shares none of it. Until projects land, the hub holds a single project, and a chokepoint narrows the
+  whole fleet.
 - **The narrowing is visible.** The board shows that the fleet is narrowing toward a chokepoint, which chunks it is
-  still waiting on, and why idle runners are taking nothing — an operator should never mistake a deliberate drain for a
-  wedged fleet.
+  still waiting on, and why runners are taking nothing from that project — an operator should never mistake a deliberate
+  drain for a wedged fleet.
 
 ## Open questions
 
@@ -38,7 +43,5 @@ clears.
   jump in front of it and push it back, or wait behind it; letting it in risks a chokepoint that never starts.
 - What a chokepoint does about work ahead of it that is not moving — paused, parked at a gate, waiting on a human. It
   should not wait in silence forever, and it should name exactly who it is waiting on.
-- Its scope once `epic:projects` lands. A rewrite of the hub need not stall a project that shares nothing with it, which
-  suggests a chokepoint narrows its own project rather than the whole fleet.
 - How it composes with dependencies: whether a chunk that names the chokepoint as a prerequisite is simply behind it,
   and whether a chokepoint may itself stand on a chunk ranked below it.
