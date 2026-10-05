@@ -304,6 +304,20 @@ operator's queue aside to keep a calendar appointment. And once the fleet schedu
 being an honest way to rank it: the queue earns a priority the operator can state, and aging that keeps a chunk nobody
 champions from sinking forever.
 
+Some work no ranking can place well, because it cannot share the road at all. A rewrite from one language into another,
+a framework swapped out from under the board, a dependency upgrade, a tech-debt sweep across the whole codebase — each
+touches so much that any chunk running beside it lands on ground that moved underneath it, and the merge that reconciles
+the two is exactly where functionality quietly goes missing. Today the operator who knows this can only stop the fleet
+by hand and wait for it to drain. A chokepoint lets them say it once: the fleet finishes everything ranked ahead of the
+chunk, passes through it alone, and spreads back out only once it clears.
+
+Clearing the road is half of it; the other half is a lane built for what drives down it. Every development workflow the
+fleet has today puts one agent at a time on a chunk, and the change behind `epic:architectural-sweep` reached its tens
+of thousands of lines only because dozens of agents worked it in parallel, driven by hand from outside the fleet. An
+`epic-dwf` graph brings that inside: epic-level development of twenty thousand lines or more, planned whole and built by
+a swarm, and the broad work of thousands of small adjustments, each made by an agent looking only at its own corner —
+landed as one change, through a chokepoint.
+
 Rhythm has an inbound side too. Work reaches blizzard today because a person went and fetched it, which means the fleet
 is idle through every hour that a person is asleep and something is going wrong in production. The systems that notice
 trouble first already know how to make an HTTP request; letting them raise work into a project's own backlog closes the
@@ -327,16 +341,18 @@ each of them to that tenant's own observability backend, not only to the one its
 suites earn the proof the backend's will already carry: mutation runs over the Angular workspace, waiting on a seam in
 tooling blizzard does not own.
 
-| Epic                      | Slice    | Status  |
-| ------------------------- | -------- | ------- |
-| `epic:cadence`            | full     | horizon |
-| `epic:steering`           | full     | horizon |
-| `epic:signals`            | full     | horizon |
-| `epic:preview`            | full     | horizon |
-| `epic:worker-profiles`    | full     | horizon |
-| `epic:provider-kit`       | full     | horizon |
-| `epic:terraform-provider` | full     | horizon |
-| `epic:tenant-telemetry`   | full     | horizon |
-| `epic:demo`               | full     | horizon |
-| `epic:queue`              | priority | horizon |
-| `epic:mutation-testing`   | angular  | horizon |
+| Epic                      | Slice      | Status  |
+| ------------------------- | ---------- | ------- |
+| `epic:cadence`            | full       | horizon |
+| `epic:steering`           | full       | horizon |
+| `epic:signals`            | full       | horizon |
+| `epic:preview`            | full       | horizon |
+| `epic:worker-profiles`    | full       | horizon |
+| `epic:provider-kit`       | full       | horizon |
+| `epic:terraform-provider` | full       | horizon |
+| `epic:tenant-telemetry`   | full       | horizon |
+| `epic:demo`               | full       | horizon |
+| `epic:queue`              | priority   | horizon |
+| `epic:chokepoint`         | chokepoint | horizon |
+| `epic:chokepoint`         | epic-dwf   | horizon |
+| `epic:mutation-testing`   | angular    | horizon |
