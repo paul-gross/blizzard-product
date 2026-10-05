@@ -19,7 +19,7 @@ milestone epic charts repeat it.
   `plans/<epic-slug>/<slice-slug>/index.md`, and everything specific to that slice lives inside it
   (`plans/adapters/opencode/`).
 - **Artifacts.** An epic's mocks and proofs-of-concept live in one `plans/<epic-slug>/artifacts/` at the top of the epic
-  folder, shared by every slice, never in a slice folder (`plans/queue/artifacts/`).
+  folder, shared by every slice, never in a slice folder (`plans/chokepoint/artifacts/`).
 - **Inline slices stand.** Epic plans written before this guide may carry their slices' requirements inline
   (`plans/runner-host.md`); those slices carry no `plan` field. New slice plans follow the placement above.
 

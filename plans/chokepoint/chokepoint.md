@@ -16,7 +16,7 @@ clears.
 ## What to build
 
 - **A chunk the operator can mark as a chokepoint.** Marking is a property of the chunk, set and cleared from the board
-  and from the CLI like priority.
+  and from the CLI like urgency.
 - **A chokepoint you can see coming.** The board marks a chokepoint chunk with an indicator of its own — an icon, a
   color, a flag — that no ordinary chunk carries, on its card wherever it appears and from the moment it is marked, not
   only once it starts. An operator scanning the queue should spot the chokepoint ahead the way a driver spots a lane
@@ -38,10 +38,9 @@ clears.
 
 ## How it behaves
 
-A chokepoint never freezes the queue in front of it. Anyone can put work ahead of it — minting a chunk at higher
-priority, or moving one past it — and the chokepoint simply waits for that work too. Whether the big change happens now
-or later is the operator's to decide by where they place it; the fleet only keeps the rules each time it reaches for
-work.
+A chokepoint never freezes the queue in front of it. Anyone can put work ahead of it — minting a chunk ranked ahead of
+it, or moving one past it — and the chokepoint simply waits for that work too. Whether the big change happens now or
+later is the operator's to decide by where they place it; the fleet only keeps the rules each time it reaches for work.
 
 Anything open ahead of a chokepoint holds it back, whatever state it is in. A chunk that is running, paused, parked at a
 gate, or waiting on an answer is still ahead, and the chokepoint waits for it. The board names each one, so the operator

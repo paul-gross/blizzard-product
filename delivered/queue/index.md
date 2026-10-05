@@ -1,16 +1,20 @@
 ---
 epic: queue
-refinement: scaffolded
+refinement: pristine
 slices:
   - name: dependencies
     status: delivered
     plan: ./dependencies/index.md
   - name: priority
-    status: horizon
+    status: retired
     plan: ./priority/index.md
 ---
 
 # Plan — `epic:queue`
+
+> **Shipped.** This plan is frozen: it records what the queue was conceived to be, and its entry in
+> [delivered.md](../../delivered.md) is the record of what landed. The epic is closed: the priority slice was retired
+> unbuilt, and the operator-stated ordering it promised is `epic:urgency`'s.
 
 A queue that hands out work in the order it arrived is honest about one thing and blind to two others. It cannot hear
 that a second chunk stands on a first — the API before the screen that calls it, the migration before the code that

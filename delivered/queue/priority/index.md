@@ -1,5 +1,7 @@
 # Plan — `epic:queue`, priority slice
 
+> **Retired.** This slice was dropped unbuilt; the operator-stated ordering it promised is `epic:urgency`'s.
+
 The ready queue is ordered by the accident of arrival. An operator who knows one chunk matters more than the four ahead
 of it has no way to say so, and a chunk nobody champions sinks a little further every time newer work arrives. Arrival
 order is honest only while the queue drains as fast as it fills, and a fleet working through the night will outrun the

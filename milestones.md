@@ -300,9 +300,10 @@ only happens when its owner remembers to ask is not keeping its own house, and t
 is busiest. Scheduling is the small fix: a routine states how often it wants to run and how much breathing room it needs
 between runs, the hub mints the work when that comes due, and the queue decides when it actually gets done. The
 distinction matters — a fleet behind on real work should fall behind on its housekeeping first, not shoulder the
-operator's queue aside to keep a calendar appointment. And once the fleet schedules its own work, arrival order stops
-being an honest way to rank it: the queue earns a priority the operator can state, and aging that keeps a chunk nobody
-champions from sinking forever.
+operator's queue aside to keep a calendar appointment. And once the fleet schedules its own work, not all of the queue
+is the same kind: a production fix should not wait behind forty features, and the housekeeping the schedule mints should
+take only the runners nobody else wants. Urgency lets a chunk say which, and the fleet reaches for the most urgent work
+first, in the order the operator ranked it.
 
 Some work no ranking can place well, because it cannot share the road at all. A rewrite from one language into another,
 a framework swapped out from under the board, a dependency upgrade, a tech-debt sweep across the whole codebase — each
@@ -357,7 +358,8 @@ tooling blizzard does not own.
 | `epic:terraform-provider`  | full           | horizon |
 | `epic:tenant-telemetry`    | full           | horizon |
 | `epic:demo`                | full           | horizon |
-| `epic:queue`               | priority       | horizon |
+| `epic:queue`               | priority       | retired |
+| `epic:urgency`             | full           | horizon |
 | `epic:chokepoint`          | chokepoint     | horizon |
 | `epic:chokepoint`          | epic-dwf       | horizon |
 | `epic:code-harness-window` | agent-observer | horizon |
