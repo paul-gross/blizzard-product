@@ -4,16 +4,16 @@ What users will be able to do. A milestone is a destination stated in the user's
 where the product must reach, then ask what work the journey requires — the milestone demands its epics, never the other
 way around.
 
-| Milestone                      | What users will be able to do                                                                                                                                                                                                                                                                                                            |
-| ------------------------------ | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `milestone:polyglot`           | Run the fleet on the coding harness of their choice — Claude Code, Codex, or OpenCode, first-class and mixable by node — with the safeties on: no worker runs with permissions dangerously bypassed.                                                                                                                                     |
-| `milestone:observability`      | Answer any question about their own fleet with the instruments they already trust: the numbers leave as files any warehouse or BI tool reads, and every night narrates itself as traces to whichever observability backend they run — no new dashboard to learn, and no waiting on blizzard to build the view they wanted.               |
-| `milestone:projects`           | Run every project from one fleet: a single hub hosting many projects and the sources they draw from, and a single runner host per machine working all of them — a workspace per project, not a stack per project. Each project lands and deploys its finished work its own declared way.                                                 |
-| `milestone:hardening`          | Decide for themselves how the fleet behaves: every operational constant theirs to set, what each runner will take and when and at what rate theirs to declare, a provider outage ridden out rather than slept through, nothing growing without end underneath them, and every question about the platform answerable without cloning it. |
-| `milestone:human-in-the-loop`  | Stop being the wire between the fleet and everything it needs: it reaches them wherever they are when a decision is genuinely theirs, and settles CI's verdict itself when it is not.                                                                                                                                                    |
-| `milestone:mobile`             | Carry the fleet in a pocket: watch the night, answer a question, and unblock a chunk from a phone, through notifications that arrive the way the phone's own do.                                                                                                                                                                         |
-| `milestone:project-management` | Assemble what the fleet works on from inside blizzard — browse the backlog, take many items at once, and shape them into chunks — instead of handing over ids one at a time.                                                                                                                                                             |
-| `milestone:future-state`       | Look inside the fleet while it works and steer it without stopping it — a live environment opened from the board, a word to a running chunk — over a fleet that keeps its own schedule, hears from the systems that notice trouble first, and bends to a shop blizzard's authors never saw.                                              |
+| Milestone                      | What users will be able to do                                                                                                                                                                                                                                                                                                                                              |
+| ------------------------------ | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `milestone:polyglot`           | Run the fleet on the coding harness of their choice — Claude Code, Codex, or OpenCode, first-class and mixable by node — with the safeties on: no worker runs with permissions dangerously bypassed.                                                                                                                                                                       |
+| `milestone:observability`      | Answer any question about their own fleet with the instruments they already trust: the numbers leave as files any warehouse or BI tool reads, and every night narrates itself as traces to whichever observability backend they run — no new dashboard to learn, and no waiting on blizzard to build the view they wanted.                                                 |
+| `milestone:projects`           | Run every project from one fleet: a single hub hosting many projects and the sources they draw from, and a single runner host per machine working all of them — a workspace per project, not a stack per project. Each project lands and deploys its finished work its own declared way.                                                                                   |
+| `milestone:hardening`          | Decide for themselves how the fleet behaves: every operational constant theirs to set, what each runner will take and when and at what rate theirs to declare, a provider outage ridden out rather than slept through, nothing growing without end underneath them, and every question about the platform answerable without cloning it.                                   |
+| `milestone:human-in-the-loop`  | Stop being the wire between the fleet and everything it needs: it reaches them wherever they are when a decision is genuinely theirs, and settles CI's verdict itself when it is not.                                                                                                                                                                                      |
+| `milestone:mobile`             | Carry the fleet in a pocket: watch the night, answer a question, and unblock a chunk from a phone, through notifications that arrive the way the phone's own do.                                                                                                                                                                                                           |
+| `milestone:project-management` | Assemble what the fleet works on from inside blizzard — browse the backlog, take many items at once, and shape them into chunks — instead of handing over ids one at a time.                                                                                                                                                                                               |
+| `milestone:future-state`       | Look inside the fleet while it works and steer it without stopping it — a live environment opened from the board, a word to a running chunk — over a fleet that keeps its own schedule, hears from the systems that notice trouble first, bends to a shop blizzard's authors never saw, and settles by experiment rather than by feel which way of working serves it best. |
 
 ## `milestone:polyglot` — any harness, with the safeties on
 
@@ -336,6 +336,16 @@ over the same seams the real one uses — lets a person configure a project, que
 before committing anything. It serves the author of a workflow graph just as directly, who today learns what a graph
 does by spending a night finding out.
 
+A fleet that tunes itself needs a way to know whether a change helped. Today the harness engineer rewrites a reviewer's
+prompt or moves a node to another model and judges the result from a few nights that felt better, nights that ran
+different work with every node free to vary at once. A lab gives them a real experiment at the grain the question lives
+in: it takes a graph the fleet already runs, keeps only the stretch under study, seeds everything upstream from a chunk
+the fleet once ran, and stops each trial where `build` or `deliver` would have begun, so two configurations meet the
+same input and differ in exactly one respect. The fleet's own history becomes its benchmark, and a proposal to change
+how the fleet works can arrive carrying its evidence. The lab earns its place in the fleet the slow way first: run by
+hand, as a winter lab outside blizzard, until a few experiments have changed a decision someone would otherwise have
+made by feel.
+
 The milestone closes with five pieces of ordinary platform maturity. Settings that every graph node restates want a name
 to inherit instead, so an operator retunes the fleet's reviewers in one edit rather than nine. And the seams the mission
 is built on want to be reachable from outside the wheel: interoperability is proven at two live bindings, and today
@@ -365,3 +375,11 @@ tooling blizzard does not own.
 | `epic:code-harness-window` | agent-observer | horizon |
 | `epic:code-harness-window` | swarm-view     | horizon |
 | `epic:mutation-testing`    | angular        | horizon |
+| `epic:lab`                 | bench          | horizon |
+| `epic:lab`                 | experiment     | horizon |
+| `epic:lab`                 | lab-runner     | horizon |
+| `epic:lab`                 | specimen       | horizon |
+| `epic:lab`                 | verdict        | horizon |
+| `epic:lab`                 | lab-board      | horizon |
+| `epic:lab`                 | seeded-defects | horizon |
+| `epic:lab`                 | evidence       | horizon |
