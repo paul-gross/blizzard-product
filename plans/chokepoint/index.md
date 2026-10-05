@@ -1,6 +1,6 @@
 ---
 epic: chokepoint
-refinement: scaffolded
+refinement: refined
 slices:
   - name: chokepoint
     status: horizon
