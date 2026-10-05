@@ -1,9 +1,9 @@
 ---
 epic: architectural-sweep
-refinement: scaffolded
+refinement: pristine
 slices:
   - name: full
-    status: in-progress
+    status: delivered
 ---
 
 # Plan — `epic:architectural-sweep`
