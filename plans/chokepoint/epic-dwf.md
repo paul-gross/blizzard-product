@@ -75,4 +75,5 @@ orchestrate parallel agents inside one session, and well enough to carry a chang
   pauses the runner from claiming more work without stopping the session already running. A swarm spends its whole
   budget inside one node, over the better part of a day — the architectural sweep ran some four hundred and fifty agents
   — so neither control would interrupt it once it started. The lane needs a ceiling that reaches inside the node, set by
-  the operator before the swarm starts and honored while it runs.
+  the operator before the swarm starts and honored while it runs. The agent observer of `epic:code-harness-window` is
+  what would let that ceiling see the spend at all.

@@ -323,6 +323,11 @@ is idle through every hour that a person is asleep and something is going wrong 
 trouble first already know how to make an HTTP request; letting them raise work into a project's own backlog closes the
 last gap between an incident and a queued chunk without making blizzard the place either one is defined.
 
+A swarm also needs to be watched while it runs. Behind one chunk's card, one session may be running dozens of agents,
+and the board today shows only the card. An agent observer on the runner reads the session's transcripts and reports how
+many agents are live, how much context each is carrying, and what they have spent, so the operator sees a swarm's vital
+signs where they already look — and the fleet can finally see spend that happens inside a single node.
+
 One more absence belongs here, and it is the first thing a stranger meets. Everything blizzard can do today it can only
 show to someone who has already obtained a model key, a forge token, and a workspace, and who is willing to spend real
 money to watch a chunk move. A fleet that runs against mock harnesses and a mock forge — deterministic, free, and wired
@@ -341,18 +346,20 @@ each of them to that tenant's own observability backend, not only to the one its
 suites earn the proof the backend's will already carry: mutation runs over the Angular workspace, waiting on a seam in
 tooling blizzard does not own.
 
-| Epic                      | Slice      | Status  |
-| ------------------------- | ---------- | ------- |
-| `epic:cadence`            | full       | horizon |
-| `epic:steering`           | full       | horizon |
-| `epic:signals`            | full       | horizon |
-| `epic:preview`            | full       | horizon |
-| `epic:worker-profiles`    | full       | horizon |
-| `epic:provider-kit`       | full       | horizon |
-| `epic:terraform-provider` | full       | horizon |
-| `epic:tenant-telemetry`   | full       | horizon |
-| `epic:demo`               | full       | horizon |
-| `epic:queue`              | priority   | horizon |
-| `epic:chokepoint`         | chokepoint | horizon |
-| `epic:chokepoint`         | epic-dwf   | horizon |
-| `epic:mutation-testing`   | angular    | horizon |
+| Epic                       | Slice          | Status  |
+| -------------------------- | -------------- | ------- |
+| `epic:cadence`             | full           | horizon |
+| `epic:steering`            | full           | horizon |
+| `epic:signals`             | full           | horizon |
+| `epic:preview`             | full           | horizon |
+| `epic:worker-profiles`     | full           | horizon |
+| `epic:provider-kit`        | full           | horizon |
+| `epic:terraform-provider`  | full           | horizon |
+| `epic:tenant-telemetry`    | full           | horizon |
+| `epic:demo`                | full           | horizon |
+| `epic:queue`               | priority       | horizon |
+| `epic:chokepoint`          | chokepoint     | horizon |
+| `epic:chokepoint`          | epic-dwf       | horizon |
+| `epic:code-harness-window` | agent-observer | horizon |
+| `epic:code-harness-window` | swarm-view     | horizon |
+| `epic:mutation-testing`    | angular        | horizon |
