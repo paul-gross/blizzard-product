@@ -42,7 +42,9 @@ One write transaction:
 2. Mint the packaged graphs into the tenant — the same reconciliation `blizzard hub graph sync` performs, scoped to the
    new tenant — so every tenant starts with the library a fresh hub starts with.
 3. Seed the tenant's built-in `hub` work source: its `work_item_sequence` row at 1.
-4. Grant `admin` to the user named by `--admin`, when one is named.
+4. Create the tenant's `default` project, so the tenant can ingest from its first moment (`epic:projects`
+   [model.md](../../../projects/hub/spec/model.md) §Every tenant starts with a project).
+5. Grant `admin` to the user named by `--admin`, when one is named.
 
 A tenant is usable the moment the transaction commits. `graph sync` after a deploy reconciles packaged graphs into every
 tenant.

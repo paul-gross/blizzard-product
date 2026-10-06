@@ -43,12 +43,14 @@ A membership grants one user one role in one tenant. It is recorded as facts (`b
 
 ### Permissions
 
-`auth_core` gains two hub-level permissions, held by the hub administrator only and never expanded from a membership
+`auth_core` gains three hub-level permissions, held by the hub administrator only and never expanded from a membership
 role:
 
 - `TENANT_ADMIN` — create, list, and delete tenants;
 - `MEMBERSHIP_GRANT_ANY` — grant or revoke a membership in any tenant, and issue, list, and revoke any tenant's
-  invitations.
+  invitations;
+- `EXPORT_ADMIN` — read the fact-egress export's status and move or backfill its cursor, which every tenant's rows share
+  ([store.md](./store.md) §Fact egress).
 
 `USER_MANAGE` keeps its place in the `admin` bundle and narrows to the tenant: a tenant's admin changes and revokes the
 roles of their tenant's existing members, and brings people in by inviting them (§Invitations). Bringing someone into a

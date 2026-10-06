@@ -79,6 +79,9 @@ hard to write rather than merely wrong:
 - **The single-tenant hub, carried over.** An existing installation becomes one tenant holding all of its state, every
   existing user a member of it in the role they hold today, every runner registration inside it, with no re-ingest and
   no configuration change. An operator who never creates a second tenant never notices the concept.
+- **Exports stay the hub's.** Trace export and fact egress keep the one destination whoever runs the hub chose, and stay
+  theirs to operate. Every span and every exported row names its tenant, so each tenant's share can be told apart today
+  and routed to the tenant itself later, by `epic:tenant-telemetry`.
 - **Startup configuration stays hub-wide.** Auth mode is hub-wide because a person signs in before choosing a tenant.
   Route-token mode and produces mode are rollout brakes on the code's own security posture rather than anyone's
   preference, so they are hub-wide too. No startup setting varies by tenant.

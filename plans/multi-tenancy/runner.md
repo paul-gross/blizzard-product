@@ -23,12 +23,25 @@ filter.
 
 ## What to build
 
-- **The store remembers whose it is.** The first time a runner registers, it records the id and tenant the hub answers
-  with. On every start after that it checks them, and a token that resolves to a different runner refuses to start,
-  naming what the store holds and what the token resolved to, before a single buffered event is replayed or a lease is
-  driven. Without that check, a runner handed another runner's token would replay yesterday's undelivered events into a
-  world that never produced them, and keep working chunks that world has never heard of. Clearing the store is the
-  operator's deliberate act, never the runner's quiet one.
+- **A runner refuses a store that is not its own.** The store keeps the id of the runner that wrote it, and beside it
+  the tenant the hub answered with, for display. At its first contact with the hub after each start, the runner checks
+  that its token still resolves to that id. When the token resolves to a different runner, the runner refuses to work:
+  it delivers no buffered event, claims nothing, and drives no lease further. Its status and log name the id the store
+  holds, the id the token resolved to, and the command that clears the store. It keeps running so its status stays
+  readable, and checks again at each contact, so restoring the right token resumes it with nothing lost. Before that
+  first contact it does only what it already does while the hub is unreachable, so an outage never reads as a mismatch.
+  The check is on the runner's id, not its tenant: ids are unique across the hub and a runner never changes tenant, so a
+  matching id settles the tenant too. Without it, a runner handed another runner's token would deliver yesterday's
+  events as a runner that never produced them, and keep working chunks it does not own.
+- **The runner never discards its store.** A mismatch most often means a wrong token or a hub URL pointing somewhere
+  else, and then the undelivered events and in-flight leases in the store belong to the hub the runner should have
+  reached; throwing them away would lose work that hub is still waiting on. Clearing is the operator's deliberate act:
+  `blizzard runner store reset <dir>` moves the store aside under a timestamped name and never deletes it.
+- **Throwaway environments opt in.** `runner init` re-adds a runner whose token the hub does not know only under
+  `--allow-readd`, and when it does, it also sets the old store aside, as after a feature environment's hub data is
+  reset. A plain restart reuses the token and keeps the store. The feature-environment runner service, blizzard-mock's
+  fleet, and the end-to-end and test harnesses that recycle directories pass the flag; a production runner never does,
+  so a runner pointed at the wrong hub stops at `init`, or refuses to work, rather than starting over.
 - **Setting up a runner names its tenant.** Where `runner init` adds the runner at its hub, it adds it in the tenant the
   operator names, and needs no name only when there is one tenant to choose from — which, on a carried-over hub, is
   always. A test that brings up a runner in a tenant of its own does it with the same command the operator uses.
@@ -53,9 +66,3 @@ specified with the hub slice, in its [API contract](./hub/spec/api.md).
 The runner-side tests `epic:test-shared-service` wants need only what this slice and the hub slice give them: each test
 adds a runner in its own tenant, starts it on a store of its own, and cannot reach another test's world, because the hub
 refuses the crossing and the runner refuses the confusion.
-
-## Open questions
-
-- **Refuse or set aside.** A mismatched store could instead be moved aside and a fresh one started, which suits a test
-  harness that recycles directories. The leaning is to refuse, since a quiet fresh start on a production runner strands
-  every chunk it was driving.

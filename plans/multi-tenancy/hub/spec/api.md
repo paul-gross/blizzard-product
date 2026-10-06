@@ -6,11 +6,11 @@ path, not in it. The runner-reached wire only gains fields.
 
 ## Route families
 
-| Family    | Paths                                                                        | Tenant comes from                                                    |
-| --------- | ---------------------------------------------------------------------------- | -------------------------------------------------------------------- |
-| Hub-level | `/api/health`, `/api/ready`, `/api/me`, `/api/auth/*`, `/api/admin/tenants*` | none — these routes hold no `TenantStores`                           |
-| People    | `/api/…` — every operator router, at its current path                        | the request's resolution order below                                 |
-| Fleet     | `/api/fleet/*` — unchanged paths and requests; responses only gain fields    | the machine credential the call already carries, never anything else |
+| Family    | Paths                                                                                         | Tenant comes from                                                    |
+| --------- | --------------------------------------------------------------------------------------------- | -------------------------------------------------------------------- |
+| Hub-level | `/api/health`, `/api/ready`, `/api/me`, `/api/auth/*`, `/api/admin/tenants*`, `/api/egress/*` | none — these routes hold no `TenantStores`                           |
+| People    | `/api/…` — every operator router, at its current path                                         | the request's resolution order below                                 |
+| Fleet     | `/api/fleet/*` — unchanged paths and requests; responses only gain fields                     | the machine credential the call already carries, never anything else |
 
 `/api/fleet/system-artifacts*` serves blizzard's packaged documents — the finding and proposal formats agents write to —
 which are read from the installed package and are the same in every tenant. It stays in the fleet family, so its
