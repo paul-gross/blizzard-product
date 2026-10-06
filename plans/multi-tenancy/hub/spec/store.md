@@ -78,7 +78,7 @@ class StoreScope:
   - credential and token resolution — runner bearer hash → registration, route token, marker token, session hash,
     invitation token → invitation — each returning the tenant it resolves to beside its principal;
   - the hub sweeps' corpus reads (below);
-  - tenant administration (listing tenants, listing invitations across tenants, teardown);
+  - tenant administration (listing tenants, teardown);
   - the identity store.
 
   Nothing else may hold it. An ast-grep rule (`blizzard:structural-gate`) refuses an import of `HubScopedReads` outside

@@ -47,14 +47,15 @@ A membership grants one user one role in one tenant. It is recorded as facts (`b
 role:
 
 - `TENANT_ADMIN` — create, list, and delete tenants;
-- `MEMBERSHIP_GRANT_ANY` — grant or revoke a membership in any tenant, and issue, list, and revoke invitations.
+- `MEMBERSHIP_GRANT_ANY` — grant or revoke a membership in any tenant, and issue, list, and revoke any tenant's
+  invitations.
 
 `USER_MANAGE` keeps its place in the `admin` bundle and narrows to the tenant: a tenant's admin changes and revokes the
-roles of their tenant's existing members. Bringing someone into a tenant — new to the hub or already on it — is an
-invitation, which only the hub administrator issues (§Invitations), or the hub administrator's own direct grant under
-`MEMBERSHIP_GRANT_ANY`. A tenant's admin never searches the hub's users, so no tenant learns who belongs to another.
-Creating a tenant grants its creator nothing unless the creator names themselves as its first admin
-([administration.md](./administration.md)).
+roles of their tenant's existing members, and brings people in by inviting them (§Invitations). Bringing someone into a
+tenant — new to the hub or already on it — is always an invitation, or the hub administrator's own direct grant under
+`MEMBERSHIP_GRANT_ANY`. A tenant's admin invites by email address and never searches the hub's users, so no tenant
+learns who else is on the hub, or whether the address they invited already has an account. Creating a tenant grants its
+creator nothing unless the creator names themselves as its first admin ([administration.md](./administration.md)).
 
 ## Invitations
 
@@ -67,10 +68,12 @@ rule — invitations change who can arrive, not how a returning person is recogn
 
 ### What an invitation is
 
-An invitation admits one email address into one tenant with one role. The hub administrator issues it from the CLI
-([administration.md](./administration.md)); there is no board surface for it, and a tenant's own admins cannot issue
-one. The CLI prints a link once — `https://<hub>/invite/<token>` — and the administrator hands it to the person by
-whatever channel they already use; the hub sends no mail.
+An invitation belongs to one tenant: it admits one email address into that tenant with one role. The tenant's admins
+issue it — anyone holding `USER_MANAGE` there — and so does the hub administrator, for any tenant, which is how a new
+tenant gets its first admin. It is issued from the CLI ([administration.md](./administration.md)); there is no board
+surface for it yet. The CLI prints a link once — `https://<hub>/invite/<token>` — and whoever issued it hands it to the
+person by whatever channel they already use; the hub sends no mail. An invitation is a tenant-owned record, so it lives
+and dies with its tenant.
 
 | Column          | Meaning                                                                     |
 | --------------- | --------------------------------------------------------------------------- |
@@ -79,12 +82,12 @@ whatever channel they already use; the hub sends no mail.
 | `email`         | the one address that may accept it, stored lowercased                       |
 | `role`          | the membership role accepting it grants: `guest`, `contributor`, or `admin` |
 | `token_hash`    | sha256 of the link's token; the token itself is shown once and never stored |
-| `created_by`    | the hub administrator's user id                                             |
+| `created_by`    | the inviting user's id                                                      |
 | `created_at`    | from the injected clock                                                     |
 | `expires_at`    | `created_at` plus the lifetime asked for: 7 days by default, at most 30     |
 
 What became of it is recorded as one fact beside it (`bzh:facts-not-status`): `accepted` with the accepting user and
-time, or `revoked` with the revoking administrator and time. An invitation is live while it has neither fact and has not
+time, or `revoked` with the revoking admin and time. An invitation is live while it has neither fact and has not
 expired; it is used at most once.
 
 ### Accepting one
@@ -149,7 +152,9 @@ The full resolution order, the rule that only an id names a tenant, and why the 
 owned by [api.md](./api.md) §Resolution order. A person's request is admitted when the named tenant exists and the
 caller holds a membership in it; otherwise it is answered `404` — a tenant the caller cannot enter is indistinguishable
 from one that does not exist. The hub administrator is admitted to hub-level routes regardless of membership, and to a
-tenant's routes only through a membership of their own.
+tenant's routes only through a membership of their own — with one exception: the invitation routes, which they may use
+in any tenant so that a tenant with no admin yet can be given one. Those routes read and write invitations and nothing
+else of the tenant's.
 
 ## Under `auth.mode = "none"`
 

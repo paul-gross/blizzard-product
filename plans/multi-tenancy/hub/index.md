@@ -47,10 +47,10 @@ hard to write rather than merely wrong:
   choose and never sees a tenant in a link. Machines never choose at all: a runner's credentials belong to exactly one
   tenant, and the credential settles it.
 - **Invite-only.** Signing in proves who someone is; it never lets them in. A person arrives only through an invitation
-  the hub administrator issues from the CLI for one email address, one tenant, and one role, and hands over as a link.
-  Whatever account the person signs in with must carry that address, so a forwarded link admits nobody else. Anyone who
-  signs in uninvited, or who holds no membership, is told to reach out to their administrator — and the hub keeps no
-  record of a stranger who merely tried.
+  to one tenant: one of that tenant's admins, or the hub administrator, issues it from the CLI for one email address and
+  one role, and hands it over as a link. Whatever account the person signs in with must carry that address, so a
+  forwarded link admits nobody else. Anyone who signs in uninvited, or who holds no membership, is told to reach out to
+  their administrator — and the hub keeps no record of a stranger who merely tried.
 - **Secrets inside the boundary.** The secret store `epic:live-config` builds becomes tenant-scoped, so a work source or
   repository can name only its own tenant's secrets.
 - **One tenant per view.** The board shows one tenant at a time: every page, list, and live stream belongs to the tenant
