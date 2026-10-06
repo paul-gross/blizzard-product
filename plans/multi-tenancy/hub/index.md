@@ -79,6 +79,9 @@ hard to write rather than merely wrong:
 - **The single-tenant hub, carried over.** An existing installation becomes one tenant holding all of its state, every
   existing user a member of it in the role they hold today, every runner registration inside it, with no re-ingest and
   no configuration change. An operator who never creates a second tenant never notices the concept.
+- **Startup configuration stays hub-wide.** Auth mode is hub-wide because a person signs in before choosing a tenant.
+  Route-token mode and produces mode are rollout brakes on the code's own security posture rather than anyone's
+  preference, so they are hub-wide too. No startup setting varies by tenant.
 - **The runners already deployed keep working.** A hub redeploys ahead of the runners that talk to it, so this slice
   must serve a runner built before it: a runner's credential resolves its tenant, its routes keep their paths, and the
   hub's responses only ever gain fields.
@@ -89,10 +92,3 @@ A hub on Postgres could back the store seam with the database's own row-level se
 through is still caught. That second guard is worth having, but it follows this slice rather than belonging to it, and
 it can only ever be a second guard. SQLite stays a supported store, so the seam remains the boundary on both, and the
 isolation a tenant gets never depends on which database its hub happens to run on.
-
-## Open questions
-
-- **Hub-wide startup configuration.** Auth mode stays hub-wide, because a person signs in before choosing a tenant.
-  Route-token mode, runner-auth mode, and produces mode are rollout brakes on the code's own security posture rather
-  than anyone's preference, and are expected to stay hub-wide too; whether any setting genuinely needs to vary by tenant
-  is still to be shown.

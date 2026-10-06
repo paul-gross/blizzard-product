@@ -17,8 +17,8 @@ different projects would still share them. The tenant is the boundary, and `epic
 
 ## Stays on a dedicated hub
 
-- **Hub-wide startup config** (auth mode, route-token mode, runner-auth mode, produces mode), which multi-tenancy keeps
-  hub-wide. Handle this with a pool of shared hubs, one per config profile.
+- **Hub-wide startup config** (auth mode, route-token mode, produces mode), which multi-tenancy keeps hub-wide. Handle
+  this with a pool of shared hubs, one per config profile.
 - **Anything that stops, kills, restarts, or migrates the hub,** including the crash sweep and restart/resume tests.
 - **Tenant administration,** and whatever multi-tenancy leaves global.
 
