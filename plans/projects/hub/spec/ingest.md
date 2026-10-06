@@ -58,9 +58,11 @@ repositories its commits resolved to ([delivery.md](./delivery.md)), not through
 
 ## The built-in source
 
-The built-in `hub` source is one tenant source, linked to every project at the project's creation; its link carries no
-narrowing and refuses unlinking. Every path that mints a hub work item and ingests it in one act names the project
-explicitly, never relying on resolution step 3:
+The built-in `hub` source is one tenant source, and every project is linked to it without a stored link. The source has
+no `work_sources` row to point a link at — it is seated in the hub's code and its name is reserved — so the hub treats
+it as linked to every live project: resolution counts it among each project's sources, a project's source links list it
+as linked and unnarrowed, and unlinking it is refused. Every path that mints a hub work item and ingests it in one act
+names the project explicitly, never relying on resolution step 3:
 
 - `RunService` (`hub/domain/routine_run.py`) ingests a run's item into the routine's own project;
 - accepting a garden proposal ingests the minted item into the proposal's project;

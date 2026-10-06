@@ -14,6 +14,10 @@ on `epic:runner-host`. This slice needs neither.
   usually one, sometimes several that share its workspace, as `blizzard` and `blizzard-context` share one workspace that
   holds both their repositories. The runner sends the list at every registration, and the hub slice narrows its queue
   and rechecks its claims against it, so declaring is all the runner has to do to be offered the right work.
+- **A new runner starts out serving `default`.** `runner init` writes `projects = ["default"]` into the configuration it
+  scaffolds unless told otherwise, and every tenant holds a project of that slug from its creation. A freshly set-up
+  runner — a feature environment's, the mock fleet's, a test's — is offered work on its first registration with no edit,
+  and an operator with a second project changes one line.
 - **Everything else about the runner stays as it is.** It keeps its one workspace, its own list of repositories, its
   environments, and its prompt. Which repositories a chunk's work may land in is decided where it always is, at landing,
   where the hub refuses to deliver into a repository the chunk's project does not link.

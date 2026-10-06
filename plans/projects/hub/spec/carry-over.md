@@ -8,13 +8,13 @@ repository, and secret records ([carry-over.md](../../../../delivered/live-confi
 ## The migration
 
 One manual migration (`bzh:manual-migrations`), frozen once released (`bzh:frozen-revisions`), inside the portable
-surface (`bzh:sql-portable`). Within each tenant that holds any state, it:
+surface (`bzh:sql-portable`). Within every tenant, whether or not it holds any state, it:
 
 1. **Creates the project.** A fresh `proj_<ulid>` id, slug `default`, display name `Default`; description empty;
    revision 1; a change fact attributed to `migration`. The operator changes its slug and name afterwards like any other
    project's.
-2. **Links every work source.** One `project_source_links` row per work-source record, unnarrowed, including the
-   built-in `hub` source.
+2. **Links every work source.** One `project_source_links` row per work-source record, unnarrowed. The built-in `hub`
+   source needs no row: every project is linked to it already ([ingest.md](./ingest.md) §The built-in source).
 3. **Links every repository.** One `project_repository_links` row per repository record, so every repository the hub
    delivers into today stays a repository its chunks may land in.
 4. **Stamps the project-owned tables.** `chunks`, `scopes`, `routines`, `findings`, `finding_sets`, `garden_proposals`,

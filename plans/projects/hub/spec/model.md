@@ -50,6 +50,16 @@ resolved to the id at the boundary ([surfaces.md](./surfaces.md) §Resolving a p
 brake scopes and routines already carry (`bzh:facts-not-status`): a retired project accepts no new ingest, is offered to
 no runner as new work, and keeps everything recorded under it readable; chunks already in it finish.
 
+## Every tenant starts with a project
+
+A tenant holds a `default` project from the moment it exists, so it can ingest, hold a routine, and give a runner a
+project to declare before anyone has configured anything. Creating a tenant creates it in the same transaction
+(multi-tenancy [administration.md](../../../multi-tenancy/hub/spec/administration.md) §Creating a tenant): slug
+`default`, display name `Default`, attributed to whoever created the tenant, and linked to the built-in `hub` source as
+every project is, with no stored link. The carry-over gives the same project to every tenant that exists when this slice
+lands ([carry-over.md](./carry-over.md)), so a fresh hub's empty `default` tenant holds one too. Nothing else sets it
+apart: its slug and name change like any other project's, and it retires like any other.
+
 ## Links to work sources and repositories
 
 Work sources and repositories are tenant records owned by live-config
@@ -58,11 +68,13 @@ from a source, and may land in a repository, through a link. A project draws fro
 
 ```text
 project_source_links
+  tenant_id     String  NOT NULL      the tenant key (multi-tenancy store.md)
   project_id    String  FK projects   NOT NULL
-  source_name   String  FK work_sources.name NOT NULL   immutable (live-config records.md)
+  source_name   String  NOT NULL      immutable (live-config records.md)
   narrowing     Text    NULL          JSON {kind, value}; provider-defined; null = the whole source
   revision      Integer NOT NULL
   PRIMARY KEY (project_id, source_name)
+  FOREIGN KEY (tenant_id, source_name) REFERENCES work_sources (tenant_id, name)
 
 project_source_link_facts             append-only; linked/unlinked derives from the newest fact
   id, project_id, source_name, linked Boolean, narrowing Text NULL, set_at, set_by
@@ -72,17 +84,19 @@ A link is a configured record of its own: it carries a revision and its own chan
 retirement. `narrowing.kind` is declared by the source's binding — `jira-project` (value: a project key) for a Jira
 binding, `repository` (value: `owner/name`) for a GitHub binding — and a binding that declares no narrowing kinds
 refuses a link that names one. Narrowing never restricts what may be ingested; it sets the defaults ingest and browsing
-use ([ingest.md](./ingest.md)). The built-in `hub` source is linked to every project at creation and its link cannot be
-unlinked ([ingest.md](./ingest.md) §The built-in source).
+use ([ingest.md](./ingest.md)). The built-in `hub` source has no row here: it has no `work_sources` row for the foreign
+key to name, and every project is linked to it without one ([ingest.md](./ingest.md) §The built-in source).
 
 A project may land in a repository through a repository link:
 
 ```text
 project_repository_links
-  project_id       String  FK projects            NOT NULL
-  repository_name  String  FK repositories.name   NOT NULL   immutable (live-config records.md)
+  tenant_id        String  NOT NULL      the tenant key (multi-tenancy store.md)
+  project_id       String  FK projects   NOT NULL
+  repository_name  String  NOT NULL      immutable (live-config records.md)
   revision         Integer NOT NULL
   PRIMARY KEY (project_id, repository_name)
+  FOREIGN KEY (tenant_id, repository_name) REFERENCES repositories (tenant_id, name)
 
 project_repository_link_facts          append-only; linked/unlinked derives from the newest fact
   id, project_id, repository_name, linked Boolean, set_at, set_by

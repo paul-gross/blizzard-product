@@ -110,3 +110,12 @@ lens and keeps the surface. The [projects-era admin mockup](../../artifacts/proj
 [per-project gardening mockup](../../artifacts/projects-gardening.html) are the visual baseline; each view's empty and
 loading states follow `bzh:frontend-empty-state-gated`, and a change to any of them is proven by a render
 (`bzh:visual-change-needs-a-render`).
+
+## Fact egress
+
+Every `epic:fact-egress` row that belongs to a chunk — each `steps`, `invocations`, and `events` row, a `dropped` row
+included — gains `project_id`, and beside it `project_slug` and `project_name` as the project was known when the row was
+written, read from the chunk's project. The columns sit beside the tenant columns the multi-tenancy
+[store contract](../../../multi-tenancy/hub/spec/store.md) §Fact egress adds; they are additive, and the contract
+version moves with them. A loader groups or filters by project from the rows alone, as it does by graph and node; a
+script that must survive a slug change keys on `project_id`.
