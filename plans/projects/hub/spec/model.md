@@ -3,8 +3,8 @@
 ## The project record
 
 A project is a configured record inside a tenant. It follows `epic:live-config`'s convention for configured records
-([records.md](../../../live-config/spec/records.md)): a stable id, a revision that moves with every change, the create /
-read / edit / retire verb set, and change facts that record who changed it and through which door.
+([records.md](../../../../delivered/live-config/spec/records.md)): a stable id, a revision that moves with every change,
+the create / read / edit / retire verb set, and change facts that record who changed it and through which door.
 
 ```text
 projects
@@ -41,8 +41,8 @@ finish.
 ## Links to work sources and repositories
 
 Work sources and repositories are tenant records owned by live-config
-([records.md](../../../live-config/spec/records.md)); this slice adds no column to either. A project draws from a
-source, and may land in a repository, through a link. A project draws from a source through a source link:
+([records.md](../../../../delivered/live-config/spec/records.md)); this slice adds no column to either. A project draws
+from a source, and may land in a repository, through a link. A project draws from a source through a source link:
 
 ```text
 project_source_links

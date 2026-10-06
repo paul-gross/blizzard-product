@@ -3,7 +3,7 @@
 An installation that predates this slice becomes a tenant holding one project, in one migration, with nothing
 re-ingested and nothing that runs reconfigured. It runs after the multi-tenancy carry-over has placed every row in the
 default tenant, and after `epic:live-config`'s carry-over has turned the hub's file and environment into work-source,
-repository, and secret records ([carry-over.md](../../../live-config/spec/carry-over.md)).
+repository, and secret records ([carry-over.md](../../../../delivered/live-config/spec/carry-over.md)).
 
 ## The migration
 

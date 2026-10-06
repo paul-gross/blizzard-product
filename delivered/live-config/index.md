@@ -1,9 +1,9 @@
 ---
 epic: live-config
-refinement: scaffolded
+refinement: pristine
 slices:
   - name: full
-    status: in-progress
+    status: delivered
 ---
 
 # Plan — `epic:live-config`

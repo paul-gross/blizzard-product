@@ -36,7 +36,7 @@ current name; the CLI saves a default project by id, so a rename never breaks a 
 ## API
 
 Projects follow `epic:live-config`'s configured-record verbs and patch semantics
-([api.md](../../../live-config/spec/api.md)):
+([api.md](../../../../delivered/live-config/spec/api.md)):
 
 | Route                                                                           | Verbs                                                      |
 | ------------------------------------------------------------------------------- | ---------------------------------------------------------- |

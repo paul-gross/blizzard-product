@@ -3,17 +3,17 @@
 ## Repositories are the tenant's; projects link them
 
 A repository is a tenant-wide configured record `epic:live-config` introduces
-([records.md](../../../live-config/spec/records.md)): an immutable `name`, the forge's API address, owner, repository
-name, base branch, and the secret its token is read from. This slice adds no column to it. A project is given a
-repository by a `project_repository_links` row ([model.md](./model.md) §Links to work sources and repositories), and any
-number of projects may link one repository.
+([records.md](../../../../delivered/live-config/spec/records.md)): an immutable `name`, the forge's API address, owner,
+repository name, base branch, and the secret its token is read from. This slice adds no column to it. A project is given
+a repository by a `project_repository_links` row ([model.md](./model.md) §Links to work sources and repositories), and
+any number of projects may link one repository.
 
 ## A chunk lands only where its project links
 
 Live-config owns resolution: each of a chunk's latest commit pointers resolves to one repository row by its exact
-`forge` + `owner/repo` match, else by a bare name, else not at all ([records.md](../../../live-config/spec/records.md)
-§Resolving a chunk's commits). This slice narrows the rows resolution considers to the repositories the chunk's project
-links, as of the moment the hub step starts.
+`forge` + `owner/repo` match, else by a bare name, else not at all
+([records.md](../../../../delivered/live-config/spec/records.md) §Resolving a chunk's commits). This slice narrows the
+rows resolution considers to the repositories the chunk's project links, as of the moment the hub step starts.
 
 A pointer that resolves to no repository in that set refuses the hub step before its command runs. When the pointer
 would have resolved to a tenant repository the project does not link, the outcome is `repository-not-linked`, its detail

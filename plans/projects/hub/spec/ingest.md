@@ -41,8 +41,8 @@ The chunk is minted by `mint_chunk` with the resolved `project_id`, and `chunks.
 
 `chunk_work_refs`, `work_items`, `work_item_closures`, and every other table that stores a work ref keep the
 `{source, ref}` shape, keyed by the source's name — which `epic:live-config` makes immutable
-([records.md](../../../live-config/spec/records.md)) — so a pointer never comes to mean another source. Projects add
-nothing to a pointer: the project is the chunk's.
+([records.md](../../../../delivered/live-config/spec/records.md)) — so a pointer never comes to mean another source.
+Projects add nothing to a pointer: the project is the chunk's.
 
 ## Grouping
 
