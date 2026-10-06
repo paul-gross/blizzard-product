@@ -2,15 +2,19 @@
 
 Every route resolves a tenant before it touches tenant-owned state, and it resolves it in exactly one place: a router
 dependency, never a handler. No API route changes shape and nothing is mounted twice; the tenant travels beside the
-path, not in it. The runner-reached wire does not change.
+path, not in it. The runner-reached wire only gains fields.
 
 ## Route families
 
-| Family    | Paths                                                                                                  | Tenant comes from                                                    |
-| --------- | ------------------------------------------------------------------------------------------------------ | -------------------------------------------------------------------- |
-| Hub-level | `/api/health`, `/api/ready`, `/api/me`, `/api/auth/*`, `/api/system-artifacts*`, `/api/admin/tenants*` | none — these routes hold no `TenantStores`                           |
-| People    | `/api/…` — every operator router, at its current path                                                  | the request's resolution order below                                 |
-| Fleet     | `/api/fleet/*` — unchanged paths, requests, and responses                                              | the machine credential the call already carries, never anything else |
+| Family    | Paths                                                                        | Tenant comes from                                                    |
+| --------- | ---------------------------------------------------------------------------- | -------------------------------------------------------------------- |
+| Hub-level | `/api/health`, `/api/ready`, `/api/me`, `/api/auth/*`, `/api/admin/tenants*` | none — these routes hold no `TenantStores`                           |
+| People    | `/api/…` — every operator router, at its current path                        | the request's resolution order below                                 |
+| Fleet     | `/api/fleet/*` — unchanged paths and requests; responses only gain fields    | the machine credential the call already carries, never anything else |
+
+`/api/fleet/system-artifacts*` serves blizzard's packaged documents — the finding and proposal formats agents write to —
+which are read from the installed package and are the same in every tenant. It stays in the fleet family, so its
+caller's credential still resolves a tenant, but it reads no tenant-owned state.
 
 ## Resolution order
 
@@ -20,9 +24,9 @@ Each request resolves its tenant by the first rule that applies:
    bound to exactly one tenant, resolved through `HubScopedReads`. The credential's tenant is the request's tenant. A
    request that also carries an `X-Blizzard-Tenant` header naming a different tenant is refused `400`; one naming the
    same tenant is accepted.
-2. **A person names it.** An `X-Blizzard-Tenant: <id or name>` header is resolved by the naming rule below and checked
-   against the caller's memberships. A value that resolves to nothing, or to a tenant the caller cannot enter, answers
-   `404` — the two are indistinguishable.
+2. **A person names it.** An `X-Blizzard-Tenant: <tenant_id>` header is checked against the caller's memberships. A
+   value that is no live tenant's id, or the id of a tenant the caller cannot enter, answers `404` — the two are
+   indistinguishable.
 3. **One membership settles it.** With no header, a caller holding exactly one membership acts in that tenant.
 4. **Otherwise** the request answers `409 tenant_required`.
 
@@ -31,18 +35,11 @@ applies only while the hub holds exactly one tenant.
 
 ### Naming a tenant
 
-The header value, the stream's query parameter, the board's `/t/{tenant}/…` route, and the CLI's `--tenant` accept
-either form:
-
-1. **An id.** A value beginning `ten_` is looked up as a `tenant_id`. The id is always accepted, everywhere, for as long
-   as the tenant exists.
-2. **A current name.** Otherwise the value is matched, case-insensitively, against live tenants' names.
-3. **A former name.** Failing that, it is matched against `tenant_former_names`. A former name keeps resolving to the
-   tenant that last held it until another tenant takes that name, or the tenant is deleted. The board answers a former
-   name in its page route with a `308` redirect to the current name; the API serves the request against the resolved
-   tenant, so a script written against an old name keeps working.
-
-Whatever form was presented, resolution yields the `tenant_id`, and nothing after this point sees the name.
+The header value, the stream's query parameter, the board's `/t/{tenant_id}/…` route, the CLI's `--tenant`, and every
+`/api/admin/tenants/{tenant_id}` path take the tenant's id, `ten_<ulid>`, and nothing else. A tenant's name is never
+accepted in its place: names are labels, unique nowhere ([store.md](./store.md) §The tenant record), so there is no name
+to resolve, no former name to honor, and no way for a stale name to land on a different tenant. An id stays valid for as
+long as its tenant exists.
 
 ### Why the session holds no current tenant
 
@@ -54,12 +51,12 @@ route, the CLI's own context — and two tabs on two tenants never interfere.
 
 ### Where people's clients get the header
 
-- **The board** keeps shareable page URLs of the form `/t/{name}/…`. The SPA resolves its route's `{tenant}` once per
-  navigation and sends the tenant's id as `X-Blizzard-Tenant` on every API call that page makes, from one HTTP
-  interceptor. Links it writes use the tenant's current name. `/` redirects to the caller's only tenant, to a tenant
-  picker when they hold several, or to a "no tenants yet" page when they hold none.
-- **The CLI** sends the header from `--tenant`, else from the context's saved default tenant, which it stores by id so a
-  rename never breaks it.
+- **The board** keeps shareable page URLs of the form `/t/{tenant_id}/…` and sends that id as `X-Blizzard-Tenant` on
+  every API call the page makes, from one HTTP interceptor. It shows the tenant's name, from `/api/me`, wherever a
+  person reads it. `/` redirects to the caller's only tenant, to a tenant picker when they hold several, or to a "no
+  tenants yet" page when they hold none.
+- **The CLI** sends the header from `--tenant <tenant_id>`, else from the context's saved default tenant. It lists the
+  caller's tenants, ids beside names, from `/api/me`, so a person finds an id without leaving the terminal.
 
 ## The dependency
 
@@ -70,7 +67,7 @@ dependency that produces one value per request:
 @dataclass(frozen=True)
 class TenantRequest:
     identity: ResolvedIdentity        # identity.tenant == scope.tenant
-    scope: StoreScope                 # the tenant, plus the project lens a projects route adds
+    scope: StoreScope                 # the request's tenant
     services: TenantServices          # built over HubCore.open(scope)
 ```
 
@@ -101,16 +98,45 @@ The in-process `EventBroker` (`hub/events/broker.py` over `foundation/events/bro
 
 **The one exception to header-only naming.** The board subscribes with the browser's native `EventSource`
 (`web/projects/fleet/src/lib/sse/sse.service.ts`), which cannot send custom headers. The stream endpoint, and no other
-route, therefore also accepts `?tenant=<id or name>`, resolved by the same naming rule and slotted into the resolution
-order where the header would be. When both the header and the parameter are present and resolve to different tenants,
-the request answers `400`.
+route, therefore also accepts `?tenant=<tenant_id>`, checked as the header would be and slotted into the resolution
+order where the header would be. When both the header and the parameter are present and name different tenants, the
+request answers `400`.
+
+## Runner-facing additions
+
+Two things a runner sees grow a tenant, both additively, so that a runner can bind its local store to its tenant and
+check a person's sign-in against it. What the runner does with them is the [runner slice](../../runner.md)'s.
+
+### What registration answers
+
+`RunnerRegistrationResponse` (`wire/runner.py`), which already carries the runner's hub-minted `runner_id`, gains
+`tenant_id` and `tenant_name`, read from the registration the runner's token resolved to. Registration doubles as the
+heartbeat, so a runner learns of a tenant's rename on its next tick. Nothing a runner sends changes, and a runner built
+before this slice ignores both fields.
+
+### Signing in to a runner
+
+`GET /api/auth/authorize?client=<runner_id>` (`hub/api/idp.py::authorize`) mints the short-lived token a person presents
+to a runner's own web surface. It stays a hub-level route, and the tenant it signs the person into is the runner's,
+never one the person names:
+
+- **The client settles the tenant.** `client` resolves through `HubScopedReads` to the runner's registration and its
+  `tenant_id`, as the runner's own bearer token does.
+- **The person must be a member there.** A signed-in person with no membership in the runner's tenant is answered with
+  the same undifferentiated `400` as an unknown client or an unregistered redirect URI, so probing `client` reveals
+  nothing about runners in tenants the caller cannot enter. The hub administrator is no exception
+  ([identity.md](./identity.md) §Naming the tenant). Under `auth.mode = "none"` the implicit operator is a member of
+  every tenant and always passes.
+- **The claims carry the membership.** `role` becomes the person's membership role in the runner's tenant, since
+  `users.role` no longer exists to supply it, and the claims gain `tenant`, the `tenant_id`. `sub`, `username`, `email`,
+  `aud` (the runner's id), and `jti` are unchanged, and a runner built before this slice ignores the new claim.
 
 ## Compatibility
 
-- **The fleet wire is untouched** (`bzh:fleet-wire-additive`). No `/api/fleet/*` path, request, response, or enum
-  changes, and runners send nothing new; a runner built before this slice registers, claims, reports, and streams
-  transcripts against a tenanted hub unchanged, its tenant settled by its token. `blizzard:wire-compat` passes without
-  an acknowledged break.
+- **The fleet wire only gains fields** (`bzh:fleet-wire-additive`). No `/api/fleet/*` path, request, or enum changes,
+  runners send nothing new, and the only response that grows is registration's (§Runner-facing additions). A runner
+  built before this slice registers, claims, reports, and streams transcripts against a tenanted hub unchanged, its
+  tenant settled by its token. `blizzard:wire-compat` passes without an acknowledged break.
 - **Operator routes keep their paths, and responses only gain fields.** `/api/me` gains
   `tenants: [{tenant_id, name, role}]` and `hub_admin`; nothing is removed or renamed. A client that sends no header
   keeps working for any caller with one membership, which is every caller of a carried-over hub.

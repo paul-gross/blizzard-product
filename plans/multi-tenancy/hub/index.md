@@ -24,8 +24,9 @@ itself, but SQLite — the default store, and the one the tests run on — canno
 hard to write rather than merely wrong:
 
 - **Scoping lives in the store seam.** A repository is opened for a tenant, and every read and write it issues carries
-  that tenant. Domain code never writes the filter by hand, so it cannot forget it. The same seam narrows to a project
-  when a caller asks, because a project is a lens over a tenant's state where a tenant is a wall around it.
+  that tenant. Domain code never writes the filter by hand, so it cannot forget it. The seam keeps the tenant and
+  nothing narrower: a project is a lens over a tenant's state where a tenant is a wall around it, so narrowing to a
+  project is an ordinary filter a read takes, not a boundary the seam keeps.
 - **Every table is accounted for.** Each table either carries the tenant or appears on the named list of what stays
   global, and a check fails the build when a table is neither.
 - **Names are unique within a tenant.** Graph names and every other uniqueness rule a tenant can see becomes unique per
@@ -47,13 +48,28 @@ hard to write rather than merely wrong:
   tenant, and the credential settles it.
 - **Secrets inside the boundary.** The secret store `epic:live-config` builds becomes tenant-scoped, so a work source or
   repository can name only its own tenant's secrets.
-- **A tenant has an id and a name.** Everything that refers to a tenant holds its id, which never changes; people know
-  it by a name the tenant chooses and may change at will — slug style by convention, not by rule. The carried-over
-  tenant is named `default`. A link written with an old name keeps working until another tenant takes that name, and a
-  link written with the id always works.
-- **Tenant administration.** Create, rename, list, and delete tenants, and grant memberships, from the CLI and API, for
-  the hub's administrator. Deleting a tenant removes everything it owns. Test suites depend on that teardown, so it must
-  be complete and fast enough to run after every test.
+- **One tenant per view.** The board shows one tenant at a time: every page, list, and live stream belongs to the tenant
+  its link names. A person with several memberships moves between their tenants, and can hold two of them open in two
+  windows, but nothing on the board gathers several tenants into one view.
+- **A tenant has an id and a name.** Everything that refers to a tenant — every link, request, and command — holds its
+  id, which never changes and is never reused. The name is only for people to read: the hub administrator may change it
+  at will, two tenants may share one, and since nothing ever looks a tenant up by name, a rename breaks nothing. The
+  carried-over tenant is named `default`.
+- **Two kinds of administrator.** The hub administrator — today's superuser — stands above every tenant: they alone
+  create, rename, and delete tenants, and they may grant a membership in any of them. A tenant's own admins manage who
+  belongs to their tenant and nothing beyond it, so a tenant can be handed to someone to run without handing them the
+  hub. Standing above every tenant is not the same as seeing inside one: the hub administrator reads a tenant's state
+  only through a membership of their own, like anyone else. The one membership the role brings with it is the first:
+  whoever claims it on a hub whose only tenant has no admin yet becomes that tenant's admin, so the person who sets up a
+  fresh hub is not locked out of the only world it holds.
+- **Tenant administration.** Create, rename, list, and delete tenants, and grant memberships, from the CLI and API.
+  Deleting a tenant removes everything it owns. Test suites depend on that teardown, so it must be complete and fast
+  enough to run after every test.
+- **A test needs no person only while auth is off.** On a hub whose auth is off, a test claims a tenant and acts inside
+  it by naming the tenant on each request, with no user and no session. A hub that requires sign-in has no such
+  shortcut: every caller there is a person with a membership or a machine with a credential, and a test mints a user and
+  a session like anyone else. Whether a hub may keep running with auth off is not this epic's to settle; if that option
+  goes, the shortcut goes with it.
 - **The single-tenant hub, carried over.** An existing installation becomes one tenant holding all of its state, every
   existing user a member of it in the role they hold today, every runner registration inside it, with no re-ingest and
   no configuration change. An operator who never creates a second tenant never notices the concept.
@@ -61,17 +77,16 @@ hard to write rather than merely wrong:
   must serve a runner built before it: a runner's credential resolves its tenant, its routes keep their paths, and the
   hub's responses only ever gain fields.
 
+## Left for later
+
+A hub on Postgres could back the store seam with the database's own row-level security, so that a mistake the seam lets
+through is still caught. That second guard is worth having, but it follows this slice rather than belonging to it, and
+it can only ever be a second guard. SQLite stays a supported store, so the seam remains the boundary on both, and the
+isolation a tenant gets never depends on which database its hub happens to run on.
+
 ## Open questions
 
-- **What the hub administrator sees.** The administrator stands above every tenant: they create and delete tenants and
-  grant memberships. Whether that role also reads inside a tenant, or must hold a membership there like anyone else, is
-  undecided; the leaning is that administering a tenant does not mean reading it.
-- **Whether a test needs a person.** A test could claim a tenant and act inside it with no sign-in at all, naming the
-  tenant on each request, on a hub whose auth is off; otherwise every test first mints a user and a session. The leaning
-  is to allow the shortcut only while auth is off.
 - **Hub-wide startup configuration.** Auth mode stays hub-wide, because a person signs in before choosing a tenant.
   Route-token mode, runner-auth mode, and produces mode are rollout brakes on the code's own security posture rather
   than anyone's preference, and are expected to stay hub-wide too; whether any setting genuinely needs to vary by tenant
   is still to be shown.
-- **Postgres as a second guard.** Whether a hub running on Postgres should back the store seam with the database's own
-  row-level security, catching a mistake the seam lets through.

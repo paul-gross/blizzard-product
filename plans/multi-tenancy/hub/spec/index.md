@@ -2,8 +2,7 @@
 
 The technical contracts behind the hub slice of `epic:multi-tenancy`. Product intent begins at the
 [slice plan](../index.md); implementation enters at the concern below. The secret store a tenant scopes is owned by
-`epic:live-config`'s [secrets contract](../../../../delivered/live-config/spec/secrets.md); the project lens the store
-seam narrows to is owned by `epic:projects`' [model contract](../../../projects/hub/spec/model.md).
+`epic:live-config`'s [secrets contract](../../../../delivered/live-config/spec/secrets.md).
 
 | Where                                    | Read when                                                                                                                  |
 | ---------------------------------------- | -------------------------------------------------------------------------------------------------------------------------- |

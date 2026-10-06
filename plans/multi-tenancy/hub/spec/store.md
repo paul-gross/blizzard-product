@@ -6,27 +6,23 @@ key in place.
 
 ## The tenant record
 
-A tenant is identified by its id and known to people by its name. The two never stand in for each other inside the
-store: every `tenant_id` column, foreign key, credential binding, cache key, and internal reference holds the id, and
-the name appears only where a person reads or types it.
+A tenant is identified by its id and known to people by its name. The two never stand in for each other: every
+`tenant_id` column, foreign key, credential binding, cache key, route, header, and command holds the id, and the name
+appears only where a person reads it.
 
-| Table                 | Columns                                                               | Notes                                                                               |
-| --------------------- | --------------------------------------------------------------------- | ----------------------------------------------------------------------------------- |
-| `tenants`             | `tenant_id` (`ten_<ulid>`, PK), `name`, `created_at`, `created_by`    | `name` unique among live tenants, compared case-insensitively                       |
-| `tenant_former_names` | `name` (PK), `tenant_id`, `retired_at`                                | a name a tenant was renamed away from; at most one tenant holds a given former name |
-| `tenant_deletions`    | `id`, `tenant_id`, `name`, `deleted_at`, `deleted_by`, `rows_removed` | append-only audit of a teardown; outlives the tenant it names, so carries no FK     |
+| Table              | Columns                                                               | Notes                                                                           |
+| ------------------ | --------------------------------------------------------------------- | ------------------------------------------------------------------------------- |
+| `tenants`          | `tenant_id` (`ten_<ulid>`, PK), `name`, `created_at`, `created_by`    | `name` is a display label, unique nowhere                                       |
+| `tenant_deletions` | `id`, `tenant_id`, `name`, `deleted_at`, `deleted_by`, `rows_removed` | append-only audit of a teardown; outlives the tenant it names, so carries no FK |
 
-- **The id** is a ULID with the prefix `ten_`, minted once and never reused.
-- **The name** is the tenant's own choice and freely editable: 1–64 characters, no `/`, no leading or trailing
-  whitespace, and not beginning with `ten_`, so a path segment is never ambiguous between a name and an id. Slug style
-  (`acme-sandbox`) is the convention the board suggests, not a rule.
-- **Renaming** updates `tenants.name` and records the old name in `tenant_former_names`, replacing any earlier holder of
-  that former name. Nothing that references the tenant changes. A name another live tenant holds is refused `409`;
-  taking a name that is some tenant's *former* name is allowed and removes that former-name row.
-- **Deleting** a tenant removes its `tenant_former_names` rows with it; its name is free once the deletion completes
-  ([administration.md](./administration.md)).
+- **The id** is a ULID with the prefix `ten_`, minted once and never reused. It is the only way anything names a tenant.
+- **The name** is a label for people to read: 1–64 characters, no leading or trailing whitespace. It is unique nowhere,
+  so two tenants may share one, and nothing resolves it — no route, header, query parameter, or command accepts a name
+  in place of an id.
+- **Renaming** updates `tenants.name` and nothing else. Every link, script, and saved context holds the id, so a rename
+  breaks nothing and leaves nothing to redirect.
 
-All three tables are global.
+Both tables are global.
 
 ## The tenant key
 
@@ -42,6 +38,10 @@ Every tenant-owned table gains `tenant_id String NOT NULL REFERENCES tenants(ten
   `(routine_name, scope_slug)` and `(source, ref)` families — is rebuilt with `tenant_id` as its leading column, so a
   tenant's feed never scans another tenant's rows. An index whose leading column is a ULID primary or foreign key
   (`*_id` lookups by chunk, finding, proposal, segment) keeps its shape: the id already selects one tenant's rows.
+- **Every tenant-owned table can find a tenant's rows by index.** Each has at least one index whose leading column is
+  `tenant_id` — a listing index rebuilt as above, or a plain `ix_<table>_tenant_id` where none already leads with it —
+  so draining a tenant ([administration.md](./administration.md) §Deleting a tenant) touches that tenant's rows and
+  never scans another's.
 - **Ids stay hub-unique.** ULID-minted ids (`ch_`, `gr_`, `fin_`, `gprop_`, `wi_`, `qn_`, `dec_`, transcript segment
   ids, …) remain globally unique primary keys. A tenant scope is still applied to every read by id, so a guessed id from
   another tenant resolves to nothing, never to a row (`not found`, not `forbidden`).
@@ -53,25 +53,23 @@ a scope between the connections and every adapter.
 
 ```python
 TenantId = NewType("TenantId", str)
-ProjectId = NewType("ProjectId", str)
 
 @dataclass(frozen=True)
 class StoreScope:
     tenant: TenantId
-    project: ProjectId | None = None   # a lens: narrows reads of project-owned tables only
 ```
 
 - **`HubStoreConnections.scoped(scope) -> ScopedConnections`.** The only connections object a `hub/store/internal/`
   adapter for a tenant-owned table may hold (`bzh:dependency-injection`). It keeps `read(operation)` and
   `write(operation, expect=…)` and adds the statement builders `select(table, *cols)`, `insert(table)`, `update(table)`,
   `delete(table)`, and `scope_join(left, right, onclause)`. Each builder applies `table.c.tenant_id == scope.tenant` to
-  every tenant-owned table it names; `insert` stamps `tenant_id` into every row's values. When `scope.project` is set,
-  the same builders add `table.c.project_id == scope.project` to tables `epic:projects` marks project-owned, and leave
-  every other table at tenant scope.
+  every tenant-owned table it names; `insert` stamps `tenant_id` into every row's values. The scope is the tenant and
+  nothing narrower: a filter within a tenant, such as `epic:projects`' project filter, is an ordinary argument of the
+  read that applies it, never a property of the scope.
 - **Stores are opened per scope.** `HubCore.open(scope) -> TenantStores` constructs the tenant's repository set over
-  `connections.scoped(scope)`. Adapters are stateless, so the hub caches one `TenantStores` per tenant (the project lens
-  is applied per call, not cached) and evicts it when the tenant is deleted. Services built on stores (`build_services`)
-  are built from a `TenantStores`, never from the unscoped core.
+  `connections.scoped(scope)`. Adapters are stateless, so the hub caches one `TenantStores` per tenant and evicts it
+  when the tenant is deleted. Services built on stores (`build_services`) are built from a `TenantStores`, never from
+  the unscoped core.
 - **Repository Protocols do not change shape.** `IRead…`/`IWrite…` seams keep their signatures (`bzh:repository-split`,
   `bzh:controller-read-only`): the tenant is a property of the instance a caller was handed, not an argument it passes.
   A controller holding a read repository therefore cannot widen its own scope.
@@ -94,6 +92,13 @@ corpus through `HubScopedReads`, and every row it acts on carries its `tenant_id
 through `TenantStores` opened for that row's tenant. A probe that gates a pass (`bzh:probe-gated-pass`) stays hub-wide.
 A pass never holds one tenant's scope while acting on another tenant's row.
 
+A pass never acts on a closed tenant — one with a `tenant_deletions` fact, whether its drain is still running or done.
+The corpus reads leave closed tenants out, and the seam backs that up for every writer, sweep or not:
+`HubCore.open(scope)` refuses a closed tenant, and `ScopedConnections.write` confirms inside its own transaction that
+the scope's tenant is still open, raising `TenantClosed` when it is not. A hub-executed node or a request that opened
+its stores before the close therefore cannot write a row into a table the drain has already passed. Reads are not
+checked; a read of a draining tenant sees a shrinking set and writes nothing.
+
 ### The fleet-wide hub-execution slot
 
 `hub_exec_slot` serializes hub-executed nodes "one at a time across the fleet". It becomes one live slot per tenant: a
@@ -105,15 +110,15 @@ the lock row read through the tenant scope.
 `schema.py` declares `GLOBAL_TABLES: frozenset[str]`, the complete list of tables that carry no tenant key. Each entry
 names why it is global.
 
-| Table                                                | Why global                                                                                               |
-| ---------------------------------------------------- | -------------------------------------------------------------------------------------------------------- |
-| `tenants`, `tenant_former_names`, `tenant_deletions` | the boundary itself                                                                                      |
-| `users`, `identities`, `sessions`, `auth_state`      | identity is resolved before a tenant is ([identity.md](./identity.md))                                   |
-| `auth_facts`                                         | the sign-in and security log of hub-level identities                                                     |
-| `superuser_bootstrap`                                | names the hub administrator, the role above every tenant                                                 |
-| `membership_facts`                                   | carries `tenant_id` as data but is read hub-wide to list a person's tenants                              |
-| `hub_event_log`                                      | hub-level occurrences that concern no tenant (startup, migration check, teardown)                        |
-| `trace_cursor`                                       | trace export is hub configuration with one destination; spans carry the tenant's id as `blizzard.tenant` |
+| Table                                           | Why global                                                                                               |
+| ----------------------------------------------- | -------------------------------------------------------------------------------------------------------- |
+| `tenants`, `tenant_deletions`                   | the boundary itself                                                                                      |
+| `users`, `identities`, `sessions`, `auth_state` | identity is resolved before a tenant is ([identity.md](./identity.md))                                   |
+| `auth_facts`                                    | the sign-in and security log of hub-level identities                                                     |
+| `superuser_bootstrap`                           | names the hub administrator, the role above every tenant                                                 |
+| `membership_facts`                              | carries `tenant_id` as data but is read hub-wide to list a person's tenants                              |
+| `hub_event_log`                                 | hub-level occurrences that concern no tenant (startup, migration check, teardown)                        |
+| `trace_cursor`                                  | trace export is hub configuration with one destination; spans carry the tenant's id as `blizzard.tenant` |
 
 Outside the store and not tables: Alembic's `alembic_version`, the packaged system artifacts served from the wheel
 (`/api/system-artifacts`), and the health and readiness routes. Packaged graphs are *not* global — they are minted into
@@ -159,7 +164,8 @@ A test over `schema.metadata` fails the build when any table either:
 - carries no `tenant_id` column and is not in `GLOBAL_TABLES`;
 - carries `tenant_id` nullable, without a foreign key to `tenants`, or while also listed in `GLOBAL_TABLES`
   (`membership_facts` excepted, by name);
-- has a unique constraint or unique index that names a non-ULID column without naming `tenant_id`.
+- has a unique constraint or unique index that names a non-ULID column without naming `tenant_id`;
+- is tenant-owned and has no index whose leading column is `tenant_id`.
 
 A second guard runs in the test suite: a SQLAlchemy `before_execute` listener on the test engine walks every compiled
 `Select`, `Update`, and `Delete` and fails the test when a tenant-owned table appears in its `FROM` without a
@@ -171,8 +177,8 @@ A second guard runs in the test suite: a SQLAlchemy `before_execute` listener on
 Per `bzh:manual-migrations` and `bzh:frozen-revisions`, as a sequence of revisions in the hub tree, each with a real
 `downgrade()`:
 
-1. **Create** `tenants`, `tenant_former_names`, `tenant_deletions`, `membership_facts`, `hub_event_log`, and insert the
-   carried-over tenant ([carry-over.md](./carry-over.md)).
+1. **Create** `tenants`, `tenant_deletions`, `membership_facts`, `hub_event_log`, and insert the carried-over tenant
+   ([carry-over.md](./carry-over.md)).
 2. **Add** `tenant_id` as nullable to every tenant-owned table, then **backfill** it with the carried-over tenant in
    batches of bounded size per table.
 3. **Tighten**: `NOT NULL`, the foreign key to `tenants`, and the rebuilt indexes and unique constraints above. On
@@ -192,9 +198,10 @@ store is measured and stated in the release note that ships it.
 
 - **One code path.** Every statement the scoped builders produce stays inside `bzh:sql-portable`'s surface; nothing in
   this contract is dialect-specific.
-- **Postgres row-level security** is not part of this slice. The seam is the boundary on both backends; whether Postgres
-  additionally enforces `tenant_id = current_setting('blizzard.tenant')` is the slice plan's open question, and nothing
-  here precludes it.
+- **Postgres row-level security** is not part of this slice. The seam is the boundary on both backends, and SQLite stays
+  supported, so isolation never depends on the dialect. Postgres additionally enforcing
+  `tenant_id = current_setting('blizzard.tenant')` is a later second guard beside the seam, never a replacement for it
+  ([slice plan](../index.md) §Left for later); nothing here precludes it.
 - **Write contention.** All tenants on one SQLite hub share one writer: WAL mode with `busy_timeout=5000`
   (`foundation/store/engine.py`) queues concurrent writers rather than failing them. A tenant's write latency therefore
   includes every other tenant's writes. This slice changes nothing about that; `epic:test-shared-service` measures how

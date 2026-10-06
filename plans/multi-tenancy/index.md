@@ -7,6 +7,7 @@ slices:
     plan: ./hub/index.md
   - name: runner
     status: horizon
+    plan: ./runner.md
 ---
 
 # Plan — `epic:multi-tenancy`
@@ -52,10 +53,7 @@ The hub slice — the tenant key on every table, the store seam that keeps it, o
 tenant administration, and the installation carried over as a single tenant — is planned in
 [its slice plan](./hub/index.md), with its technical contracts beneath it.
 
-## What to build — the runner slice
+## The runner slice
 
-- **A runner belongs to one tenant.** It registers, claims, and reports within that tenant, and within it serves the
-  projects its registration declares, as `epic:projects` describes.
-- **The runner's local store and workspaces are tenant-aware** wherever a runner could plausibly be pointed at a
-  different tenant over its lifetime. Whether a single runner process may ever serve two tenants is an open question,
-  and the default answer is no.
+The runner slice — one runner serving one tenant for life, a local store that knows whose it is, set-up that names its
+tenant, and sign-in checked against it — is planned in [its slice plan](./runner.md).

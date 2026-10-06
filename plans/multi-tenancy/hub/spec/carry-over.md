@@ -17,6 +17,9 @@ Nothing distinguishes it from any tenant created later: it can be renamed, and i
 exists. It is the only tenant, which is why every unambiguous-resolution rule in [identity.md](./identity.md) and
 [api.md](./api.md) resolves to it.
 
+A fresh hub runs the same revision, so it too starts with an empty `default` tenant, and the person who claims the
+superuser becomes its admin ([identity.md](./identity.md) §Memberships).
+
 ## What is stamped
 
 - **Every row of every tenant-owned table** receives the first tenant's id, in the backfill step, before the column is
@@ -49,8 +52,8 @@ signed in after it, now resolving into the first tenant.
   `auth.superuser` keep their meaning.
 - **URLs.** No API route changes path, and a client that names no tenant keeps resolving, because a caller on a
   one-tenant hub is never ambiguous. Links shared before the upgrade still open.
-- **The fleet wire.** Runners see no change at all ([api.md](./api.md) §Compatibility).
+- **The fleet wire.** Runners keep working unchanged; the wire only gains fields ([api.md](./api.md) §Compatibility).
 
 An operator who never creates a second tenant never sees the concept, beyond a tenant name in the board's header and a
-`/t/default/` segment in links the board now writes — and those links keep working if the tenant is later renamed,
-because a former name keeps resolving ([api.md](./api.md) §Naming a tenant).
+`/t/ten_…/` segment in links the board now writes — and those links keep working however the tenant is later renamed,
+because they carry its id ([api.md](./api.md) §Naming a tenant).

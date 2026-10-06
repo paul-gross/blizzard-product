@@ -16,14 +16,14 @@ can enter. Usernames, emails, and provider subjects stay unique across the hub.
 
 A membership grants one user one role in one tenant. It is recorded as facts (`bzh:facts-not-status`):
 
-| Column      | Meaning                                                                     |
-| ----------- | --------------------------------------------------------------------------- |
-| `id`        | autoincrement; the newest fact per `(tenant_id, user_id)` is in force       |
-| `tenant_id` | the tenant granted into                                                     |
-| `user_id`   | the user granted                                                            |
-| `role`      | `guest`, `contributor`, or `admin`; `NULL` revokes                          |
-| `set_at`    | from the injected clock (`bzh:injected-clock`)                              |
-| `set_by`    | the granting user id, `migration`, or `operator` under `auth.mode = "none"` |
+| Column      | Meaning                                                                                  |
+| ----------- | ---------------------------------------------------------------------------------------- |
+| `id`        | autoincrement; the newest fact per `(tenant_id, user_id)` is in force                    |
+| `tenant_id` | the tenant granted into                                                                  |
+| `user_id`   | the user granted                                                                         |
+| `role`      | `guest`, `contributor`, or `admin`; `NULL` revokes                                       |
+| `set_at`    | from the injected clock (`bzh:injected-clock`)                                           |
+| `set_by`    | the granting user id, `migration`, `bootstrap`, or `operator` under `auth.mode = "none"` |
 
 - **Roles move onto the membership.** `Role.GUEST`, `CONTRIBUTOR`, and `ADMIN` and their permission bundles
   (`auth_core.ROLE_PERMISSIONS`, `bzh:domain-core`) are unchanged; a role now means "in this tenant". `users.role` is
@@ -33,6 +33,11 @@ A membership grants one user one role in one tenant. It is recorded as facts (`b
 - **`superuser` becomes the hub administrator.** The `superuser_bootstrap` singleton keeps naming one user, claimed from
   `auth.superuser` as it is today. That user is the hub administrator: the role above every tenant, holding the new
   hub-level permissions below. It is not a membership role and grants no permission inside any tenant by itself.
+- **The first administrator is let into the first tenant.** When the superuser is claimed while the hub holds exactly
+  one tenant and that tenant has no `admin` member, the same transaction grants the claiming user an `admin` membership
+  in it, `set_by = "bootstrap"`. On a fresh hub this is how the person who set it up reaches `default` at all; on a
+  carried-over hub the migration has already made them its admin ([carry-over.md](./carry-over.md)), so the claim grants
+  nothing. Once a tenant has an admin, or a second tenant exists, the claim never grants a membership.
 
 ### Permissions
 
@@ -67,20 +72,21 @@ computed once at resolution, as today.
 
 ## Naming the tenant
 
-| Caller                        | How the tenant is named                                                                               |
-| ----------------------------- | ----------------------------------------------------------------------------------------------------- |
-| A runner                      | its bearer token: the registration it resolves to carries exactly one `tenant_id`                     |
-| A route token or marker token | the chunk it is bound to                                                                              |
-| An API token                  | the tenant it was issued in                                                                           |
-| A person on the board         | `X-Blizzard-Tenant`, which the board derives from its page route `/t/{name}/…`                        |
-| A person on the CLI           | `X-Blizzard-Tenant`, from `--tenant <name-or-id>` or the context's saved default tenant, stored by id |
-| A person naming none          | their only membership, when they hold exactly one; otherwise `409 tenant_required`                    |
+| Caller                          | How the tenant is named                                                                |
+| ------------------------------- | -------------------------------------------------------------------------------------- |
+| A runner                        | its bearer token: the registration it resolves to carries exactly one `tenant_id`      |
+| A route token or marker token   | the chunk it is bound to                                                               |
+| An API token                    | the tenant it was issued in                                                            |
+| A person on the board           | `X-Blizzard-Tenant`, which the board takes from its page route `/t/{tenant_id}/…`      |
+| A person on the CLI             | `X-Blizzard-Tenant`, from `--tenant <tenant_id>` or the context's saved default tenant |
+| A person signing in to a runner | the runner's registration ([api.md](./api.md) §Signing in to a runner)                 |
+| A person naming none            | their only membership, when they hold exactly one; otherwise `409 tenant_required`     |
 
-The full resolution order, the naming rule for ids, names, and former names, and why the session never holds a current
-tenant are owned by [api.md](./api.md) §Resolution order. A person's request is admitted when the named tenant exists
-and the caller holds a membership in it; otherwise it is answered `404` — a tenant the caller cannot enter is
-indistinguishable from one that does not exist. The hub administrator is admitted to hub-level routes regardless of
-membership, and to a tenant's routes only through a membership of their own.
+The full resolution order, the rule that only an id names a tenant, and why the session never holds a current tenant are
+owned by [api.md](./api.md) §Resolution order. A person's request is admitted when the named tenant exists and the
+caller holds a membership in it; otherwise it is answered `404` — a tenant the caller cannot enter is indistinguishable
+from one that does not exist. The hub administrator is admitted to hub-level routes regardless of membership, and to a
+tenant's routes only through a membership of their own.
 
 ## Under `auth.mode = "none"`
 
@@ -88,12 +94,7 @@ The implicit operator (`hub/api/auth_session.py::IMPLICIT_OPERATOR`) is the hub 
 member of every tenant, acting in whichever tenant the request names. A request naming none resolves only while the hub
 holds exactly one tenant.
 
-## Open
-
-- **What the hub administrator sees.** This contract admits the administrator to a tenant only through a membership.
-  Whether administering a tenant should also let them read inside it is the slice plan's open question; the contract is
-  built so that the answer is a change to the admission rule above and nothing else.
-- **The auth-off shortcut for tests.** Whether a hub with `auth.mode = "none"` may hold more than one tenant — letting a
-  test claim a tenant and act inside it by naming it in the `X-Blizzard-Tenant` header, with no user or session — is
-  open. Nothing in this contract forbids it; deciding against it would make tenant creation refuse a second tenant while
-  auth is off.
+Such a hub may hold any number of tenants, and this is the shortcut a test takes: it creates a tenant and acts inside it
+by naming it in `X-Blizzard-Tenant`, with no user or session. Nothing equivalent exists while auth is on — every caller
+there resolves to a person with a membership or to a machine credential. The shortcut lives exactly as long as
+`auth.mode = "none"` does.
