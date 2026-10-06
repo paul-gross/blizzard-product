@@ -1,9 +1,9 @@
 # Plan — `epic:projects`, hub slice
 
 An operator who builds blizzard, winter, and celestial frontier from one hub today has one undifferentiated queue. Every
-chunk lands through the same forge owner and base branch, every runner will claim anything, every scope and routine
-shares one namespace, and the board cannot be asked to show only winter. The hub has no idea which body of work a chunk
-belongs to, so the operator keeps that map in their head — or stands up a second hub to keep it for them.
+work source and repository the hub holds is open to every chunk, every runner will claim anything, every scope and
+routine shares one namespace, and the board cannot be asked to show only winter. The hub has no idea which body of work
+a chunk belongs to, so the operator keeps that map in their head — or stands up a second hub to keep it for them.
 
 This slice gives a tenant its projects.
 [`persona:application-architect`](../../../charter/personas/application-architect.md) creates a project, links it to the
@@ -25,18 +25,14 @@ that tends it.
   proposals, and links to the work sources it draws from and the repositories it may land in. Scope slugs and routine
   names are unique within a project, so two projects never collide on the name of a sweep.
 - **Work sources shared, linked by project.** A work source belongs to the tenant, and any number of projects link to
-  it. A link may narrow what that project usually draws from the source — a Jira project key, a GitHub repository — so
-  browsing and bare references default sensibly, but it never makes the source the project's own. A narrowing is one key
-  or one repository and nothing richer, and it only sets defaults: it never filters what the project may ingest. Closing
-  and annotating an item still go through its source, whichever project carried the work. The hub's own source is one
-  list per tenant, linked to every project, and each item in it belongs to the project it was created in; there are no
-  further hub buckets to configure.
+  it, but a link never makes the source the project's own. Closing and annotating an item still go through its source,
+  whichever project carried the work. The hub's own source is one list per tenant, linked to every project, and each
+  item in it belongs to the project it was created in; there are no further hub buckets to configure.
 - **A chunk belongs to exactly one project.** Its project is the one its items were ingested into, and grouping items
   ingested into two projects into one chunk is refused rather than resolved by a guess.
 - **Ingest into a project.** An ingest names its source and the project it ingests into. The project may be left out
-  only where it is unambiguous — the source is linked to a single project, or the caller's lens is on one — and a bare
-  reference that more than one source would accept is refused with a request to name the source, where today it goes
-  quietly to the first that matches. An item is held by one live chunk at a time, so it sits in one project at a time.
+  only where it is unambiguous — the source is linked to a single project, or the caller's lens is on one. Every token
+  names its source, as it does today. An item is held by one live chunk at a time, so it sits in one project at a time.
 - **Repositories shared, linked by project.** A repository belongs to the tenant, carrying the forge, owner, and base
   branch `epic:live-config` moved into the store, and any number of projects link to it. A library two projects both
   build on is one repository both link, so their work lands on the same branch and waits its turn there like any other.
@@ -69,3 +65,16 @@ that tends it.
 - **The runners already deployed keep working.** A hub redeploys ahead of the runners that talk to it. A runner built
   before this slice declares no projects when it registers; the hub keeps the declaration it already holds for that
   runner rather than clearing it, so the fleet carries on until its runners are redeployed.
+
+## Left for later
+
+A project cannot be retired in this slice: once created, it stays. Retiring one raises questions this slice does not
+need answered — what becomes of its queued chunks that no runner has claimed, whether its routines stop, and what a
+runner that declares it serves afterwards — and the answers earn their own change once someone needs to wind a project
+down.
+
+Nor does a project narrow a shared source, or accept a reference that names no source. Both earn their place with a
+source that several projects draw from in different parts — a Jira site whose project keys split the work — and blizzard
+has no such source yet: a GitHub source is already one repository, and every token names its source today. When one
+arrives, a source link may carry the part a project usually draws from, so that a bare `BLZ-412` resolves within the
+project's lens.

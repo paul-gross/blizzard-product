@@ -7,7 +7,7 @@ way around.
 | Milestone                      | What users will be able to do                                                                                                                                                                                                                                                                                                                                              |
 | ------------------------------ | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | `milestone:polyglot`           | Run the fleet on the coding harness of their choice — Claude Code, Codex, or OpenCode, first-class and mixable by node — with the safeties on: no worker runs with permissions dangerously bypassed.                                                                                                                                                                       |
-| `milestone:projects`           | Run every project from one fleet: a single hub hosting many projects and the sources they draw from, and a single runner host per machine working all of them — a workspace per project, not a stack per project. Each project lands and deploys its finished work its own declared way.                                                                                   |
+| `milestone:projects`           | Run every project from one fleet: a single hub hosting many projects and the sources they draw from, and a single runner host per machine working all of them — a workspace for each project or set of projects, not a stack per project. Each project lands and deploys its finished work its own declared way.                                                           |
 | `milestone:hardening`          | Decide for themselves how the fleet behaves: every operational constant theirs to set, what each runner will take and when and at what rate theirs to declare, a provider outage ridden out rather than slept through, nothing growing without end underneath them, and every question about the platform answerable without cloning it.                                   |
 | `milestone:human-in-the-loop`  | Stop being the wire between the fleet and everything it needs: it reaches them wherever they are when a decision is genuinely theirs, and settles CI's verdict itself when it is not.                                                                                                                                                                                      |
 | `milestone:mobile`             | Carry the fleet in a pocket: watch the night, answer a question, and unblock a chunk from a phone, through notifications that arrive the way the phone's own do.                                                                                                                                                                                                           |
@@ -45,26 +45,26 @@ first-class idea: a grouping of both what to do and who does it. One hub hosts m
 one Jira can feed all of them — and a piece of work carries the project it was ingested into from ingest to landing.
 
 The machine is rearchitected to match. Its runner host — the one daemon a machine runs — stops being the extension of a
-single workspace and becomes a host of many: it configures a local workspace per project, and each workspace works for
-its project through whichever of the host's runners serve it. Three projects on one laptop means three workspaces and
-one host — never three installations, and never three of everything above them. For the operator, a desk full of stacks
-collapses into one: queue work against any project, watch all of it on one board, and slice the view to a single project
-when only that one matters. That host is the one `epic:runner-host` builds for `milestone:hardening`, and this
-milestone's host work waits on it; until then, a project gets a runner of its own.
+single workspace and becomes a host of many: it configures local workspaces, each serving one project or several whose
+repositories it holds together, and each works for its projects through whichever of the host's runners serve them.
+Three projects on one laptop means three workspaces and one host — never three installations, and never three of
+everything above them. For the operator, a desk full of stacks collapses into one: queue work against any project, watch
+all of it on one board, and slice the view to a single project when only that one matters. That host is the one
+`epic:runner-host` builds for `milestone:hardening`, and this milestone's host work waits on it; until then, a runner
+serves the projects whose repositories its one workspace holds, and a project worked apart gets a runner of its own.
 
-None of it can be grouped while it lives where it does today. A hub's work sources sit in a file on its machine, and its
-delivery target and tokens in its environment, so adding a source or rotating a token means a redeploy, and nothing in a
-file can belong to one project rather than another. The first step moves that configuration into the hub's store, behind
-a secret store that takes a credential once and never hands it back, where the operator can change it while the hub runs
-and the grouping that follows has something to own.
+None of it could be grouped while it lived in a file on the hub's machine and its tokens in the hub's environment, where
+adding a source or rotating a token meant a redeploy and nothing could belong to one project rather than another. The
+first step moved that configuration into the hub's store, behind a secret store that takes a credential once and never
+hands it back, where the operator changes it while the hub runs and the grouping that follows has something to own.
 
 A project organises one operator's world; it does not partition the hub. Graphs stay a shared library and the board
-still shows the whole fleet, so the boundary that holds for everything is a level above projects: the tenant. One hub
-can host several wholly separate worlds, each with its own graphs, projects, runners, and board, and none aware of the
-others. The first to need that is blizzard's own test suite, which wants hundreds of tests running against one hub, each
-in a world of its own. Tenancy threads through the same store, API, and runner seams that projects reshapes, so the two
-are designed together and built back to back, tenancy first, so that every project is born inside a tenant rather than
-one reopening what the other just finished.
+still shows the tenant's whole fleet, so the boundary that holds for everything is a level above projects: the tenant.
+One hub can host several wholly separate worlds, each with its own graphs, projects, runners, and board, and none aware
+of the others. The first to need that is blizzard's own test suite, which wants hundreds of tests running against one
+hub, each in a world of its own. Tenancy threads through the same store, API, and runner seams that projects reshapes,
+so the two are designed together and built back to back, tenancy first, so that every project is born inside a tenant
+rather than one reopening what the other just finished.
 
 A project also decides where its finished work goes and how it gets there. Repositories belong to the tenant and each
 project links the ones its work may land in — a shared library can serve two projects — while each repository says how

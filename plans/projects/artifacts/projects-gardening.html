@@ -369,16 +369,16 @@
     </div>
     <div class="spacer"></div>
     <div class="cell spend"><span class="stat-lbl">Today</span><span class="v t-amber-hi">$41.06</span></div>
-    <div class="tenant" onclick="document.getElementById('tmenu').classList.toggle('open')">
-      <div style="display:flex;flex-direction:column"><span class="stat-lbl">Tenant</span><span class="v">grosscode <span class="caret">▾</span></span></div>
+    <div class="tenant avatar" title="Profile menu" onclick="document.getElementById('tmenu').classList.toggle('open')">
+      <i>PG</i>
       <div class="menu" id="tmenu">
-        <div class="mh">Your tenants</div>
+        <div class="mh">Switch tenant</div>
         <div class="mi cur"><span>grosscode</span><span class="t-label xs">admin</span></div>
         <div class="mi"><span>sandbox</span><span class="t-label xs">viewer</span></div>
-        <div class="mh xs">the tenant is part of the URL — /t/grosscode/admin/projects</div>
+        <div class="mh xs">shown only with several memberships — no URL carries the tenant</div>
+        <div class="mi"><span>Sign out</span></div>
       </div>
     </div>
-    <div class="avatar"><i>PG</i></div>
   </header>
 
   <nav class="tabstrip">

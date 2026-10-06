@@ -10,28 +10,26 @@ class ChunkIngestRequest(BaseModel):
     project: str | None = None   # a project id or slug in the caller's tenant
 ```
 
-The CLI's ingest verb gains `--project PROJECT`, an id or a slug. The board sends the shell lens as `project` whenever
-the lens is on one ([surfaces.md](./surfaces.md)).
+The CLI's ingest verb, `blizzard hub chunk ingest`, gains `--project PROJECT`, an id or a slug. The board sends the
+shell lens as `project` whenever the lens is on one ([surfaces.md](./surfaces.md)).
 
 ## Resolution, in order
 
 The whole request resolves before anything is written, and rejects as a whole, as today.
 
-1. **The project, if named.** `project` resolves to a non-retired project of the caller's tenant by
-   [surfaces.md](./surfaces.md) §Resolving a project — `422` otherwise.
-2. **Each token to a pointer.** A source-qualified token — `{source}:{ref}`, `{source}#{ref}`, or the item's own URL —
-   resolves through the registry exactly as `WorkSourceRegistry.resolve` does today. A *bare* reference (no source
-   prefix: `212`, `BLZ-412`) resolves only when a project is already known: it is offered to each source linked to that
-   project whose link's narrowing accepts it (a `repository` narrowing accepts a bare number; a `jira-project` narrowing
-   accepts `KEY-n` for its own key). Exactly one acceptor resolves it; none is `422` naming the linked sources; more
-   than one is `422` naming each candidate and asking for the source prefix. Source resolution never falls through to
-   "first match wins": a qualified token that more than one binding claims is the same `422`.
+1. **The project, if named.** `project` resolves to a project of the caller's tenant by [surfaces.md](./surfaces.md)
+   §Resolving a project — `422` otherwise.
+2. **Each token to a pointer.** Every token names its source — `{source}:{ref}`, `{source}#{ref}`, or the item's own URL
+   — and resolves through the registry exactly as `WorkSourceRegistry.resolve` does today, within the tenant. Config
+   already refuses two sources that could claim one token, so exactly one source ever does. A reference with no source
+   (`212`, `BLZ-412`) is not accepted, as today.
 3. **The project, if not named.** Every pointer's source is looked up among the tenant's links. When all of them are
    linked to exactly one and the same project, that project is used. Otherwise — a source linked to several projects, or
    sources whose single projects differ — the request is `422`, naming the candidate projects.
 4. **Every source linked.** Each pointer's source must be linked to the resolved project (`422` naming the unlinked
    source). Linking is how a project declares where it draws from; ingest never links implicitly.
-5. **One live holder.** `require_no_live_holder` runs per pointer, unchanged (`409` with `ChunkIngestConflict`). A work
+5. **One live holder.** `IngestService.ingest` (`hub/domain/chunk/ingest.py`) runs `require_unheld` over every pointer
+   under `locked_work_refs`, unchanged (`IngestConflict`, answered `409` with the `ChunkIngestConflict` body). A work
    ref is held by at most one live chunk, so an item sits in at most one project at a time; once its holder is terminal
    it may be ingested again, into any project.
 
@@ -46,8 +44,9 @@ Projects add nothing to a pointer: the project is the chunk's.
 
 ## Grouping
 
-`GroupService.group` (`hub/domain/queue.py`) refuses to fold a chunk into a survivor of a different project: a new
-`ChunksInDifferentProjects` error, mapped to `409` beside `ChunkNotGroupable`. A fold within one project is unchanged.
+`GroupService.group` (`hub/domain/operations/queue.py`) refuses to fold a chunk into a survivor of a different project:
+a new `ChunksInDifferentProjects` error, mapped to `409` beside `ChunkNotGroupable`. A fold within one project is
+unchanged.
 
 ## Closing and annotating
 
@@ -60,13 +59,16 @@ repositories its commits resolved to ([delivery.md](./delivery.md)), not through
 
 The built-in `hub` source is one tenant source, and every project is linked to it without a stored link. The source has
 no `work_sources` row to point a link at — it is seated in the hub's code and its name is reserved — so the hub treats
-it as linked to every live project: resolution counts it among each project's sources, a project's source links list it
-as linked and unnarrowed, and unlinking it is refused. Every path that mints a hub work item and ingests it in one act
-names the project explicitly, never relying on resolution step 3:
+it as linked to every project: resolution counts it among each project's sources, a project's source links list it as
+linked, and unlinking it is refused. Every path that mints a hub work item and ingests it in one act names the project
+explicitly, never relying on resolution step 3:
 
-- `RunService` (`hub/domain/routine_run.py`) ingests a run's item into the routine's own project;
+- `RunService` (`hub/domain/garden/runs/run.py`) ingests a run's item into the routine's own project;
 - accepting a garden proposal ingests the minted item into the proposal's project;
-- an operator creating a hub item from the board names the shell lens's project, and from the CLI names `--project`.
+- an agent's work-item proposal, materialized at delivery (`hub/domain/work_items/materialization.py`, through
+  `materialize_create`), mints its item into the proposing chunk's project;
+- an operator creating a hub item names its project: `blizzard hub item create` takes a required `--project`. The board
+  offers no way to create a hub item.
 
 Each item the built-in source mints records that project as its own (`work_items.project_id`), so a hub item belongs to
 one project from the moment it exists, and the source stays one list for the whole tenant rather than a bucket per

@@ -10,12 +10,16 @@
   rows or rows reached through a chunk; the multi-tenancy store seam scopes by tenant only and knows nothing of projects
   ([store.md](../../../multi-tenancy/hub/spec/store.md) §The scoped store seam).
 - **Ingest** is the one write that may infer its project, under [ingest.md](./ingest.md)'s rules.
+- **Managing projects takes the tenant `admin` role.** Creating and editing a project, and creating or removing its
+  source and repository links, require `CONFIG_EDIT` — the permission `epic:live-config`'s record verbs already take,
+  held by the `admin` bundle alone (`auth_core.ROLE_PERMISSIONS`). Reading projects and links takes `FLEET_VIEW`.
+  Records created under a project keep the permission they take today: a scope or routine `GRAPH_EDIT`, a garden
+  proposal `CHUNK_CONTROL`.
 
 The tenant every call acts within is resolved before any of this, under the multi-tenancy contract
 ([api.md](../../../multi-tenancy/hub/spec/api.md)): an API call takes it from its machine credential, else from the
-`X-Blizzard-Tenant` header, else from the caller's single membership, else answers `409 tenant_required`; the live
-stream also accepts `?tenant=`. No API path carries a tenant. A project is always resolved within the tenant so
-resolved.
+`X-Blizzard-Tenant` header, else from the caller's single membership, else answers `409 tenant_required`. No API path
+carries a tenant. A project is always resolved within the tenant so resolved.
 
 ## Resolving a project
 
@@ -23,7 +27,7 @@ Every place that accepts a project — board URL segment, API path (`/api/projec
 `--project`, `ChunkIngestRequest.project`, a runner declaration — accepts either its id or its slug, and resolves to the
 id at the boundary; nothing past the boundary handles a slug. A display name is never accepted.
 
-1. A value of the `proj_<ulid>` form is an id and resolves to that project, live or retired, whatever its slug.
+1. A value of the `proj_<ulid>` form is an id and resolves to that project, whatever its slug.
 2. Otherwise it is matched exactly against the slugs of the tenant's projects. A value outside the slug alphabet matches
    nothing.
 3. Otherwise it is matched against `project_former_slugs` ([model.md](./model.md)), and resolves to the project that
@@ -42,35 +46,52 @@ the CLI saves a default project by id, so a slug change never breaks a saved con
 Projects follow `epic:live-config`'s configured-record verbs and patch semantics
 ([api.md](../../../../delivered/live-config/spec/api.md)):
 
-| Route                                                                           | Verbs                                                      |
-| ------------------------------------------------------------------------------- | ---------------------------------------------------------- |
-| `/api/projects`                                                                 | `GET` list, `POST` create (`slug`, `name`, `description`)  |
-| `/api/projects/{project}`                                                       | `GET`, `PATCH` (slug, name, description), retire, enable   |
-| `/api/projects/{project}/source-links`                                          | `GET`; `PUT /{source}` links or re-narrows; retire unlinks |
-| `/api/projects/{project}/repository-links`                                      | `GET`; `PUT /{repository}` links; retire unlinks           |
-| `/api/projects/{project}/scopes`, `/routines`, `/findings`, `/garden-proposals` | the existing gardening verbs, moved under the project      |
+| Route                                                                           | Verbs                                                     |
+| ------------------------------------------------------------------------------- | --------------------------------------------------------- |
+| `/api/projects`                                                                 | `GET` list, `POST` create (`slug`, `name`, `description`) |
+| `/api/projects/{project}`                                                       | `GET`, `PATCH` (slug, name, description)                  |
+| `/api/projects/{project}/source-links`                                          | `GET`; `PUT /{source}` links; retire unlinks              |
+| `/api/projects/{project}/repository-links`                                      | `GET`; `PUT /{repository}` links; retire unlinks          |
+| `/api/projects/{project}/scopes`, `/routines`, `/findings`, `/garden-proposals` | the existing gardening verbs, moved under the project     |
+| `/api/projects/{project}/runs`, `/runs/{chunk_id}`                              | the garden run list and a run's delta, within the project |
 
 The tenant-wide reads gain `?project={project}`: `GET /api/chunks`, `/api/chunk-counts`, `/api/queue`, `/api/backlog`,
-the event feed, and the SSE stream's subscription, which filters chunk-scoped events by the chunk's project and passes
-runner-scoped events for runners that serve it. `GET /api/runners` gains each runner's served declaration
-([eligibility.md](./eligibility.md)). A project's own view carries `project_id`, `slug`, and `name` as separate fields,
-and response models that describe a chunk gain `project_id`, `project_slug`, and `project_name`; every addition is
-optional on the wire and additive.
+`/api/runs`, `/api/routines/trend`, `/api/routines/proposal-counts`, `/api/spend`, every `/api/analytics/*` read
+(counts, durations, spend, outcomes, events), the event feed, and the SSE stream's subscription, which filters
+chunk-scoped events by the chunk's project and passes runner-scoped events for runners that serve it. `GET /api/runners`
+gains each runner's served declaration ([eligibility.md](./eligibility.md)). A project's own view carries `project_id`,
+`slug`, and `name` as separate fields, and response models that describe a chunk gain `project_id`, `project_slug`, and
+`project_name`; every addition is optional on the wire and additive.
 
-The existing un-nested gardening routes (`/api/scopes`, `/api/routines`, …) remain as tenant-wide reads with the same
-`?project=` filter, so the all-projects doorway reads every garden in one call; their write verbs move under the
-project.
+The existing un-nested gardening routes (`/api/scopes`, `/api/routines`, `/api/findings`, `/api/garden-proposals`,
+`/api/runs`) remain as tenant-wide reads with the same `?project=` filter, so the all-projects doorway reads every
+garden in one call. Every route that names a scope by slug or a routine by name — scope and routine names are unique
+only within a project ([model.md](./model.md) §Scope and routine identity) — gains its project:
+
+| Today                                                               | Becomes                                                    |
+| ------------------------------------------------------------------- | ---------------------------------------------------------- |
+| `GET`/`PATCH /api/scopes/{slug}`, `GET /api/scopes/{slug}/routines` | the same under `/api/projects/{project}/scopes/{slug}`     |
+| `POST /api/scopes/{slug}/retire`, `/enable`                         | the same under `/api/projects/{project}/scopes/{slug}`     |
+| `POST /api/scopes`, `POST /api/routines`                            | `POST /api/projects/{project}/scopes`, `/routines`         |
+| `PUT`/`DELETE /api/routines/{routine_id}/scopes/{scope_slug}`       | unchanged path; the slug resolves in the routine's project |
+| `GET /api/findings?routine=&scope=`                                 | gains `?project=`, required when `routine` or `scope` is   |
+
+A route keyed by `routine_id` or another hub-unique id keeps its path, since the id already settles the project. Nothing
+is removed: each un-nested by-name route stays as a deprecated alias, marked deprecated in the OpenAPI document, which
+resolves the name across the tenant's projects and serves it when exactly one project holds it, and answers `409` naming
+the candidate projects when more than one does. On a carried-over hub, which holds one project, every alias resolves.
 
 ## CLI
 
-`blizzard hub project create|list|show|edit|retire|enable` manage projects — `create <slug> [--name <display name>]`,
-the name defaulting to the slug, and `edit <project> [--slug …] [--name …] [--description …]` — and
+`blizzard hub project create|list|show|edit` manage projects — `create <slug> [--name <display name>]`, the name
+defaulting to the slug, and `edit <project> [--slug …] [--name …] [--description …]` — and
 `blizzard hub project link|unlink <project> --source <source> | --repository <repository>` manage their links. Every
 verb that creates a project-owned record takes a required `--project`, an id or a slug; every listing verb takes an
-optional one; `item ingest` takes `--project` under ingest's inference rules. The CLI context that holds a hub login and
-default tenant also holds an optional default project, the CLI's own lens, which `--project` overrides on any call.
-Every call sends the context's tenant as `X-Blizzard-Tenant` alongside whatever project it names. A verb's help states
-its effect in operator vocabulary (`bzh:help-states-effect`, `bzh:operator-vocabulary`).
+optional one; `blizzard hub chunk ingest` takes `--project` under ingest's inference rules, and
+`blizzard hub item create` takes a required one. The CLI context that holds a hub login and default tenant also holds an
+optional default project, the CLI's own lens, which `--project` overrides on any call. Every call sends the context's
+tenant as `X-Blizzard-Tenant` alongside whatever project it names. A verb's help states its effect in operator
+vocabulary (`bzh:help-states-effect`, `bzh:operator-vocabulary`).
 
 ## The shell lens
 
@@ -86,11 +107,16 @@ Board URLs carry no tenant: the tab's tenant is the multi-tenancy contract's
 ([api.md](../../../multi-tenancy/hub/spec/api.md) §Where people's clients get the header), and the `p/{project_slug}`
 segment is resolved within it. The segment is this slice's, and holds the project's current slug, resolved by §Resolving
 a project — a former slug redirects to the current one, and an id is accepted too. The lens control and the breadcrumb
-show the project's display name. The existing route table (`web/projects/hub/src/app/app.routes.ts`) mounts once at the
-root and once under `p/{project_slug}`, so every view and every deep link is reachable with and without a lens, and a
-chunk's detail opened from a lens keeps it. Changing the lens re-navigates to the same view under the other prefix. The
-lens control sits in the shell's app strip beside the tenant; the header's counts are read with the lens's `?project=`
-filter.
+show the project's display name. The existing route table (`web/projects/hub/src/app/shell/app.routes.ts`) mounts once
+at the root and once under `p/{project_slug}`, so every view and every deep link is reachable with and without a lens,
+and a chunk's detail opened from a lens keeps it. Changing the lens re-navigates to the same view under the other
+prefix.
+
+The lens control sits in the app's view-tab row (`web/projects/hub/src/app/shell/nav/app-nav`, the shell's `shell-nav`
+slot) beside the tabs, where the mockups place it, and it narrows what the board and every list the lens touches show;
+the header's counts are read with the lens's `?project=` filter. The tenant is not beside it: a person changes tenant
+only from the profile menu (`app-nav-menu`), which offers the switcher only to someone with several memberships
+(multi-tenancy [api.md](../../../multi-tenancy/hub/spec/api.md) §Where people's clients get the header).
 
 ## What each view does with the lens
 

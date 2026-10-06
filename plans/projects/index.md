@@ -1,6 +1,6 @@
 ---
 epic: projects
-refinement: scaffolded
+refinement: refined
 slices:
   - name: hub
     status: horizon
@@ -30,18 +30,18 @@ to the sources it draws from and the repositories it may land in, and an item en
 one. Nor is a project a tag. `epic:tagging` lets a chunk say what kind of work it is, and it can filter by project, but
 a tag cannot hold links to sources and repositories or own a garden, and a project must.
 
-The work lands in three slices: hub, then runner, then host. It stands on `epic:live-config`, which first moves work
-sources, the delivery target, and their credentials into the hub's store, where a tenant holds them and a project links
-them, and it is built alongside `epic:multi-tenancy`, whose hub slice lands first so that every project record is born
-inside a tenant. The runner slice needs nothing from the machine beyond what a runner already is; the host slice builds
-on the runner host `epic:runner-host` introduces.
+The work lands in three slices: hub, then runner, then host. It stands on `epic:live-config`, which moved work sources,
+the delivery target, and their credentials into the hub's store, where a tenant holds them and a project links them, and
+it is built alongside `epic:multi-tenancy`, whose hub slice lands first so that every project record is born inside a
+tenant. The runner slice needs nothing from the machine beyond what a runner already is; the host slice builds on the
+runner host `epic:runner-host` introduces.
 
 ## A lens, not a wall
 
 The tenant is the wall around a world, and a project is a lens over one. Reading across projects is ordinary — the board
-shows the whole fleet, graphs are a shared library, and a person narrows to one project only when they choose to — so
-the hub's store scopes every read to its tenant, and a read narrows to a project only when its caller asks. The one
-place a project draws a line is around the repositories it links: a chunk's work is checked out with, and delivered
+shows the tenant's whole fleet, graphs are a shared library, and a person narrows to one project only when they choose
+to — so the hub's store scopes every read to its tenant, and a read narrows to a project only when its caller asks. The
+one place a project draws a line is around the repositories it links: a chunk's work is checked out with, and delivered
 into, only those.
 
 A project is also never assumed, and almost nothing needs to be told which one it belongs to. An item enters a project

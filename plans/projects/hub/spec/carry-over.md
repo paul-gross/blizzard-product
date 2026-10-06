@@ -13,14 +13,16 @@ surface (`bzh:sql-portable`). Within every tenant, whether or not it holds any s
 1. **Creates the project.** A fresh `proj_<ulid>` id, slug `default`, display name `Default`; description empty;
    revision 1; a change fact attributed to `migration`. The operator changes its slug and name afterwards like any other
    project's.
-2. **Links every work source.** One `project_source_links` row per work-source record, unnarrowed. The built-in `hub`
-   source needs no row: every project is linked to it already ([ingest.md](./ingest.md) §The built-in source).
+2. **Links every work source.** One `project_source_links` row per work-source record. The built-in `hub` source needs
+   no row: every project is linked to it already ([ingest.md](./ingest.md) §The built-in source).
 3. **Links every repository.** One `project_repository_links` row per repository record, so every repository the hub
    delivers into today stays a repository its chunks may land in.
 4. **Stamps the project-owned tables.** `chunks`, `scopes`, `routines`, `findings`, `finding_sets`, `garden_proposals`,
-   and `work_item_runs` get the project's id, and `work_items` rows carrying a routine pair get it too. Scope and
-   routine uniqueness narrows from the tenant to the project ([model.md](./model.md) §Scope and routine identity); no
-   slug or routine name changes, because one project cannot collide with itself.
+   `work_item_runs`, and every `work_items` row — routine-run items, operator-created items, and agent-proposed items
+   alike — get the project's id, before `work_items.project_id` is tightened to `NOT NULL`. `config_changes` rows for a
+   scope or routine get it too; rows for a work source, repository, or secret stay null. Scope and routine uniqueness
+   narrows from the tenant to the project ([model.md](./model.md) §Scope and routine identity); no slug or routine name
+   changes, because one project cannot collide with itself.
 5. **Records what every runner serves.** Every `runner_registrations` row's `projects` becomes the one project. A runner
    that re-registers without a declaration keeps it ([eligibility.md](./eligibility.md)), so the fleet keeps claiming
    exactly what it claimed before.

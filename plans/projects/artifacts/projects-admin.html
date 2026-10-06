@@ -357,16 +357,16 @@
     </div>
     <div class="spacer"></div>
     <div class="cell spend"><span class="stat-lbl">Today</span><span class="v t-amber-hi">$41.06</span></div>
-    <div class="tenant" onclick="document.getElementById('tmenu').classList.toggle('open')">
-      <div style="display:flex;flex-direction:column"><span class="stat-lbl">Tenant</span><span class="v">grosscode <span class="caret">▾</span></span></div>
+    <div class="tenant avatar" title="Profile menu" onclick="document.getElementById('tmenu').classList.toggle('open')">
+      <i>PG</i>
       <div class="menu" id="tmenu">
-        <div class="mh">Your tenants</div>
+        <div class="mh">Switch tenant</div>
         <div class="mi cur"><span>grosscode</span><span class="t-label xs">admin</span></div>
         <div class="mi"><span>sandbox</span><span class="t-label xs">viewer</span></div>
-        <div class="mh xs">the tenant is part of the URL — /t/grosscode/admin/projects</div>
+        <div class="mh xs">shown only with several memberships — no URL carries the tenant</div>
+        <div class="mi"><span>Sign out</span></div>
       </div>
     </div>
-    <div class="avatar"><i>PG</i></div>
   </header>
 
   <nav class="tabstrip">
@@ -405,7 +405,7 @@
     <h2>After projects &mdash; configuration grouped by the body of work it serves</h2>
     <div class="cards">
       <div class="card"><h3>Three levels, each in its place</h3>
-        <p><b>Tenant</b> (header): who you are working as, part of the URL. <b>Tenant-wide</b> (Admin strip):
+        <p><b>Tenant</b> (profile menu): who you are working as, switched only there and never part of the URL. <b>Tenant-wide</b> (Admin strip):
         members, projects, work sources, repositories, secrets, and the changes log. <b>Project</b> (inside a project): the
         sources and repositories it links, and who serves it. Gardening is per project too, under its own tab.</p></div>
       <div class="card"><h3>Work sources are shared; projects link them</h3>
@@ -421,7 +421,7 @@
         <p>From inside a project, ingest is already pointed at it. Elsewhere, ingest names both the source and the
         project &mdash; unless the source is linked to only one project, which settles it.</p></div>
       <div class="card"><h3>A lens, not a wall</h3>
-        <p>The <b>project lens</b> in the app strip narrows every tab to one project; <b>All</b> shows the whole tenant.
+        <p>The <b>project lens</b> in the tab row narrows every tab to one project; <b>All</b> shows the whole tenant.
         With the lens on a project, Work sources shows only the sources that project links.</p></div>
       <div class="card"><h3>Overview answers &ldquo;is this project wired?&rdquo;</h3>
         <p>Work comes in (a linked source), goes out (a linked repository), and gets done (a runner serving it). A project
@@ -529,7 +529,7 @@ function renderProjects(){
     <div class="p-body">${ps.map(q=>{const m=wiring(q);return `<button class="row ${q.name===sel?'active':''}" onclick="sel='${q.name}';ptab='overview';render()">
       <div class="row-top"><span class="row-name">${esc(q.name)}</span><span class="row-right">${m.length?'<span class="badge unused">needs a '+m.join(', a ')+'</span>':'<span class="dot green"></span>'}<span class="rev">r<b>${q.rev}</b></span></span></div>
       <div class="row-sub"><span>${q.links.length} linked sources</span><span>${q.repoLinks.length} linked repos</span><span>${q.ready+q.run} in queue</span></div></button>`}).join('')}</div>
-    <div class="p-foot xs t-label">a project is a lens over the tenant — retire, never delete</div></section>
+    <div class="p-foot xs t-label">a project is a lens over the tenant</div></section>
   <section class="panel"><div class="stack">
     <div class="detail-hdr"><h1>${esc(p.name)}</h1><span class="t-label sm">${esc(p.desc)}</span><span class="grow"></span>
       <button class="act" onclick="toast('Edit project: name and description. Renaming changes nothing that references it — links using the old name keep working until another project takes it.')">Edit</button><button class="act danger" onclick="toast('Retiring a project stops new ingest into it; chunks in flight finish.')">Retire</button></div>
