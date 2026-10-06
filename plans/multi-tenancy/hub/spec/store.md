@@ -42,9 +42,14 @@ Every tenant-owned table gains `tenant_id String NOT NULL REFERENCES tenants(ten
   `tenant_id` — a listing index rebuilt as above, or a plain `ix_<table>_tenant_id` where none already leads with it —
   so draining a tenant ([administration.md](./administration.md) §Deleting a tenant) touches that tenant's rows and
   never scans another's.
-- **Ids stay hub-unique.** ULID-minted ids (`ch_`, `gr_`, `fin_`, `gprop_`, `wi_`, `qn_`, `dec_`, transcript segment
-  ids, …) remain globally unique primary keys. A tenant scope is still applied to every read by id, so a guessed id from
-  another tenant resolves to nothing, never to a row (`not found`, not `forbidden`).
+- **Ids the hub mints stay hub-unique.** ULID ids the hub mints (`ch_`, `gr_`, `fin_`, `gprop_`, `wi_`, `dec_`, …)
+  remain globally unique primary keys. A tenant scope is still applied to every read by id, so a guessed id from another
+  tenant resolves to nothing, never to a row (`not found`, not `forbidden`).
+- **Ids a runner mints are unique per tenant.** A question's `qn_` id and a transcript segment's id are minted on the
+  runner and travel the wire both ways — a runner asks, then polls for the answer by that id — so the hub keys its rows
+  on `(tenant_id, <the runner's id>)` rather than minting an id of its own. An id reused in another tenant is simply a
+  different row, and a collision reveals nothing. These columns are not marked hub-unique, so the build check holds
+  every key built on them to carrying `tenant_id` (§Uniqueness, rescoped).
 
 ## The scoped store seam
 
@@ -75,8 +80,8 @@ class StoreScope:
   A controller holding a read repository therefore cannot widen its own scope.
 - **Hub-scoped reads are named and few.** A read that must span tenants goes through `HubScopedReads`, an explicitly
   separate seam with a closed list of members:
-  - credential and token resolution — runner bearer hash → registration, route token, marker token, session hash,
-    invitation token → invitation — each returning the tenant it resolves to beside its principal;
+  - credential and token resolution — runner bearer hash → registration, route token, session hash, invitation token →
+    invitation — each returning the tenant it resolves to beside its principal;
   - the hub sweeps' corpus reads (below);
   - tenant administration (listing tenants, teardown);
   - the identity store.
@@ -136,43 +141,61 @@ the lock row read through the tenant scope.
 `schema.py` declares `GLOBAL_TABLES: frozenset[str]`, the complete list of tables that carry no tenant key. Each entry
 names why it is global.
 
-| Table                                           | Why global                                                                                               |
-| ----------------------------------------------- | -------------------------------------------------------------------------------------------------------- |
-| `tenants`, `tenant_deletions`                   | the boundary itself                                                                                      |
-| `users`, `identities`, `sessions`, `auth_state` | identity is resolved before a tenant is ([identity.md](./identity.md))                                   |
-| `auth_facts`                                    | the sign-in and security log of hub-level identities                                                     |
-| `superuser_bootstrap`                           | names the hub administrator, the role above every tenant                                                 |
-| `membership_facts`                              | carries `tenant_id` as data but is read hub-wide to list a person's tenants                              |
-| `hub_event_log`                                 | hub-level occurrences that concern no tenant (startup, migration check, teardown, the exports' own)      |
-| `trace_cursor`                                  | trace export is hub configuration with one destination; spans carry the tenant's id as `blizzard.tenant` |
-| `egress_cursor`                                 | fact egress is hub configuration with one destination; rows carry the tenant's id (§Fact egress)         |
+| Table                                           | Why global                                                                                       |
+| ----------------------------------------------- | ------------------------------------------------------------------------------------------------ |
+| `tenants`, `tenant_deletions`                   | the boundary itself                                                                              |
+| `users`, `identities`, `sessions`, `auth_state` | identity is resolved before a tenant is ([identity.md](./identity.md))                           |
+| `auth_facts`                                    | the sign-in and security log of hub-level identities                                             |
+| `superuser_bootstrap`                           | the first claim of the hub administrator role, from `auth.superuser`                             |
+| `hub_admin_facts`                               | who holds the hub administrator role, the role above every tenant ([identity.md](./identity.md)) |
+| `config_import_facts`                           | the hub-level carry-over of a file-configured hub, read by the startup legacy check              |
+| `membership_facts`                              | carries `tenant_id` as data but is read hub-wide to list a person's tenants                      |
+| `hub_event_log`                                 | hub-level occurrences that concern no tenant (§The hub's own event log)                          |
+| `trace_cursor`                                  | trace export is hub configuration with one destination; request spans carry `blizzard.tenant`    |
+| `egress_cursor`                                 | fact egress is hub configuration with one destination; rows carry the tenant's id (§Fact egress) |
 
 Outside the store and not tables: Alembic's `alembic_version`, the packaged system artifacts served from the wheel
 (`/api/fleet/system-artifacts`), and the health and readiness routes. Packaged graphs are *not* global — they are minted
 into each tenant ([administration.md](./administration.md)).
 
-Every other table — 74 at this writing, including every chunk, fact, graph, garden, transcript, work-item, runner, and
-event-log table — is tenant-owned. `event_log` keeps only tenant occurrences; an occurrence with no tenant goes to
-`hub_event_log`.
+Every other table is tenant-owned: 84 of the 93 tables in today's schema, including every chunk, fact, graph, garden,
+transcript, work-item, runner, and event-log table, plus the `invitations` and `invitation_facts` tables this slice
+adds.
+
+### The hub's own event log
+
+`event_log` keeps only tenant occurrences; an occurrence that concerns no tenant goes to `hub_event_log`. That is every
+occurrence of the hub's own machinery:
+
+- the exports': `trace-export-failed`, `trace-export-recovered`, `trace-window-skipped`, `trace-config-rejected`,
+  `egress-write-failed`, `egress-write-recovered`, `egress-config-rejected`, and `egress-cursor-reset`
+  (`foundation/event_log.py`);
+- this slice's: startup, the migration check, and each tenant teardown's close and completion.
+
+The carry-over moves every existing `event_log` row of those kinds into `hub_event_log`, so no tenant inherits the hub's
+history. Only hub administrators read it, through the hub-level `GET /api/admin/events`; no tenant member, a tenant's
+admins included, ever sees it.
 
 ## Uniqueness, rescoped
 
 Every uniqueness rule a tenant can observe becomes unique per tenant. Rules keyed on a hub-unique ULID are unchanged.
 
-| Table                      | Today                                                                                                                                      | Becomes                                                                                                                |
-| -------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------ | ---------------------------------------------------------------------------------------------------------------------- |
-| `graphs`                   | `ix_graphs_name (name)`, name resolution hub-wide                                                                                          | `ix_graphs_tenant_name (tenant_id, name)`; resolution within scope                                                     |
-| `scopes`                   | PK `slug`; FKs from `scope_lifecycle_facts`, `routines.default_scope_slug`, `routine_scopes`, `work_item_runs`, `findings`, `finding_sets` | surrogate PK `scope_id` (`scp_<ulid>`); `uq_scopes_tenant_slug (tenant_id, slug)`; all six FKs repointed to `scope_id` |
-| `secrets`                  | PK `name`; FKs from `secret_lifecycle_facts.name`, `work_sources.secret_name`, `repositories.secret_name`                                  | PK `(tenant_id, name)`; the three FKs become `(tenant_id, …)`                                                          |
-| `work_sources`             | PK `name`; `uq_work_sources_provider_locator (provider, locator)`; FK from `work_source_lifecycle_facts.name`                              | PK `(tenant_id, name)`; `(tenant_id, provider, locator)`; the FK becomes `(tenant_id, name)`                           |
-| `repositories`             | PK `name`; `uq_repositories_coordinate (forge_api_url, owner, repo)`; FK from `repository_lifecycle_facts.name`                            | PK `(tenant_id, name)`; `(tenant_id, forge_api_url, owner, repo)`; the FK becomes `(tenant_id, name)`                  |
-| `keyed_locks`              | PK `(namespace, key)` — keys are graph names and work refs                                                                                 | PK `(tenant_id, namespace, key)`                                                                                       |
-| `routines`                 | `uq_routines_name (name)`                                                                                                                  | `uq_routines_tenant_name (tenant_id, name)`                                                                            |
-| `work_items`               | `uq_work_items_source_ref (source, ref)`                                                                                                   | `(tenant_id, source, ref)`                                                                                             |
-| `work_item_sequence`       | PK `source`                                                                                                                                | PK `(tenant_id, source)` — each tenant's built-in `hub` source numbers from 1                                          |
-| `garden_proposal_closures` | `ix_garden_proposal_closures_source_ref (source, ref)` unique                                                                              | `(tenant_id, source, ref)` unique                                                                                      |
-| `chunk_work_refs`          | `ix_chunk_work_refs_source_ref (source, ref)`                                                                                              | `(tenant_id, source, ref)`                                                                                             |
-| `runner_registrations`     | PK `runner_id`                                                                                                                             | unchanged — runner ids are hub-minted (below)                                                                          |
+| Table                           | Today                                                                                                                                      | Becomes                                                                                                                |
+| ------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------ | ---------------------------------------------------------------------------------------------------------------------- |
+| `scopes`                        | PK `slug`; FKs from `scope_lifecycle_facts`, `routines.default_scope_slug`, `routine_scopes`, `work_item_runs`, `findings`, `finding_sets` | surrogate PK `scope_id` (`scp_<ulid>`); `uq_scopes_tenant_slug (tenant_id, slug)`; all six FKs repointed to `scope_id` |
+| `secrets`                       | PK `name`; FKs from `secret_lifecycle_facts.name`, `work_sources.secret_name`, `repositories.secret_name`                                  | PK `(tenant_id, name)`; the three FKs become `(tenant_id, …)`                                                          |
+| `work_sources`                  | PK `name`; `uq_work_sources_provider_locator (provider, locator)`; FK from `work_source_lifecycle_facts.name`                              | PK `(tenant_id, name)`; `(tenant_id, provider, locator)`; the FK becomes `(tenant_id, name)`                           |
+| `repositories`                  | PK `name`; `uq_repositories_coordinate (forge_api_url, owner, repo)`; FK from `repository_lifecycle_facts.name`                            | PK `(tenant_id, name)`; `(tenant_id, forge_api_url, owner, repo)`; the FK becomes `(tenant_id, name)`                  |
+| `keyed_locks`                   | PK `(namespace, key)` — keys are graph names and work refs                                                                                 | PK `(tenant_id, namespace, key)`                                                                                       |
+| `routines`                      | `uq_routines_name (name)`                                                                                                                  | `uq_routines_tenant_name (tenant_id, name)`                                                                            |
+| `work_items`                    | `uq_work_items_source_ref (source, ref)`                                                                                                   | `(tenant_id, source, ref)`                                                                                             |
+| `work_item_sequence`            | PK `source`                                                                                                                                | PK `(tenant_id, source)` — each tenant's built-in `hub` source numbers from 1                                          |
+| `garden_proposal_closures`      | `ix_garden_proposal_closures_source_ref (source, ref)` unique                                                                              | `(tenant_id, source, ref)` unique                                                                                      |
+| `runner_registrations`          | PK `runner_id`                                                                                                                             | unchanged — runner ids are hub-minted (below)                                                                          |
+| `questions`, `question_answers` | PK `question_id` — minted by the runner                                                                                                    | PK `(tenant_id, question_id)`                                                                                          |
+| `transcript_segments`           | `uq_transcript_segments_segment_turn_start (segment_id, turn_range_start)`                                                                 | `(tenant_id, segment_id, turn_range_start)`                                                                            |
+| `transcript_events`             | `uq_transcript_events_natural_key (segment_id, extractor_version, kind, turn_path, occurrence)`                                            | the same, led by `tenant_id`                                                                                           |
+| `transcript_event_derivations`  | PK `(segment_id, extractor_version)`                                                                                                       | PK `(tenant_id, segment_id, extractor_version)`                                                                        |
 
 `scopes` takes a surrogate key because its natural key is a primary key six foreign keys point at; rescoping a natural
 primary key would force composite foreign keys onto every child, and `epic:projects` rescopes the slug again. With a
@@ -207,6 +230,10 @@ unique across every tenant by construction and there is no collision to refuse. 
 added in. Its name is display only and unique nowhere, so two runners may share one, in one tenant or across several.
 Tenants created for tests add their runners like any other.
 
+Two name-keyed indexes are lookups rather than uniqueness rules, and stay non-unique: `ix_graphs_name (name)` is rebuilt
+as `ix_graphs_tenant_name (tenant_id, name)`, so graph name resolution runs within the tenant, and
+`ix_chunk_work_refs_source_ref (source, ref)` as `(tenant_id, source, ref)`.
+
 Identity uniqueness — `users.username`, `uq_users_email`, `uq_identities_provider_subject` — stays hub-wide.
 
 ## The build check
@@ -215,7 +242,7 @@ A test over `schema.metadata` fails the build when any table either:
 
 - carries no `tenant_id` column and is not in `GLOBAL_TABLES`;
 - carries `tenant_id` nullable, without a foreign key to `tenants`, or while also listed in `GLOBAL_TABLES`
-  (`membership_facts` excepted, by name);
+  (`membership_facts` and `tenant_deletions` excepted, by name);
 - is tenant-owned and has a primary key, unique constraint, or unique index holding neither `tenant_id` nor a column the
   schema marks hub-unique (`info={"hub_unique": True}`) — a hub-minted ULID or an autoincrement surrogate, the table's
   own or a foreign key to one. A key that holds such a column is already unique within one tenant, because the row that
@@ -232,15 +259,17 @@ A second guard runs in the test suite: a SQLAlchemy `before_execute` listener on
 Per `bzh:manual-migrations` and `bzh:frozen-revisions`, as a sequence of revisions in the hub tree, each with a real
 `downgrade()`:
 
-1. **Create** `tenants`, `tenant_deletions`, `membership_facts`, `hub_event_log`, and insert the carried-over tenant
-   ([carry-over.md](./carry-over.md)).
+1. **Create** `tenants`, `tenant_deletions`, `membership_facts`, `hub_admin_facts`, `hub_event_log`, `invitations`, and
+   `invitation_facts`, and insert the carried-over tenant ([carry-over.md](./carry-over.md)).
 2. **Add** `tenant_id` as nullable to every tenant-owned table, then **backfill** it with the carried-over tenant in
    batches of bounded size per table.
 3. **Tighten**: `NOT NULL`, the foreign key to `tenants`, and the rebuilt indexes and unique constraints above. On
    SQLite each table is recreated through `batch_alter_table`'s copy — load-bearing for `NOT NULL` and the foreign key,
    not a style choice. Each table is its own batch so a failure leaves the store at a known revision.
 4. **Rescope** `scopes` to its surrogate key and repoint its six foreign keys.
-5. **Move** identity: copy each `users.role` into a membership, then drop `users.role` ([identity.md](./identity.md)).
+5. **Move** identity: copy each `users.role` into a membership, record the claimed superuser as the first hub
+   administrator, then drop `users.role` ([identity.md](./identity.md)); move every hub-level `event_log` row into
+   `hub_event_log` (§The hub's own event log).
 
 `downgrade()` of revisions 2–5 refuses while more than one tenant exists, naming the tenants to delete first; with one
 tenant it reverses exactly.

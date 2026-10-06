@@ -42,15 +42,22 @@ filter.
   reset. A plain restart reuses the token and keeps the store. The feature-environment runner service, blizzard-mock's
   fleet, and the end-to-end and test harnesses that recycle directories pass the flag; a production runner never does,
   so a runner pointed at the wrong hub stops at `init`, or refuses to work, rather than starting over.
-- **Setting up a runner names its tenant.** Where `runner init` adds the runner at its hub, it adds it in the tenant the
-  operator names, and needs no name only when there is one tenant to choose from — which, on a carried-over hub, is
-  always. A test that brings up a runner in a tenant of its own does it with the same command the operator uses.
-- **Sign-in checks the tenant too.** A person signs in to a runner's own web surface with a token the hub issues for
-  that runner, carrying the person's role in the runner's tenant and the tenant itself. The runner accepts it only when
-  the tenant matches its own, so the role it grants is always a role in the world it serves.
+- **Setting up a runner names its tenant.** `runner init --tenant <tenant_id>` adds the runner in the tenant that id
+  names; a tenant is named by its id, never its name. Without the flag, init resolves the tenant as any request does:
+  the operator's only membership, or the hub's only tenant on a hub without sign-in — which, on a carried-over hub, is
+  always. When that leaves a choice, init stops, adds nothing, and lists the tenants the operator may enter, ids beside
+  names. When `.env` already holds a token whose runner belongs to a different tenant than `--tenant` names, init stops
+  and adds nothing too, naming both tenants: a runner never moves between tenants, so the operator either drops the flag
+  or sets up a new runner in a fresh directory. A test that brings up a runner in a tenant of its own does it with the
+  same command the operator uses.
+- **Sign-in needs no tenant check of its own.** A person signs in to a runner's own web surface with a token the hub
+  issues for that runner, carrying the person's role in the runner's tenant. The hub issues it only to a member of that
+  tenant, and the runner accepts it only when it names the runner's own id, which belongs to exactly one tenant — so the
+  role it grants is always a role in the world the runner serves, with nothing further for the runner to compare.
 - **A runner names its tenant wherever it names itself.** Its status, the command it suggests for resuming it, and the
-  attributes on its traces all carry the tenant beside its id and name, so an operator whose runners serve several
-  tenants can tell them apart at a glance and in a trace search.
+  attributes on its traces all carry the tenant beside its id and name — the tenant its registration answers with, kept
+  in its store for display — so an operator whose runners serve several tenants can tell them apart at a glance and in a
+  trace search.
 - **Existing runners carried over.** A runner whose store was written before this slice adopts the tenant its token
   resolves to on its first start after the upgrade — on a carried-over hub, `default` — with no configuration change and
   no stranded chunk.
@@ -60,8 +67,8 @@ filter.
 Running many runners side by side on one machine — their ports, workspace roots, and harness credentials — belongs to
 `epic:runner-host`, which gives each runner a host to share instead of a desk to fight over. Once a host runs several
 runners, the binding above belongs to each runner under it, not to the host. Which projects a runner serves inside its
-tenant belongs to `epic:projects`' runner slice. What the hub adds to its wire and its sign-in tokens for this slice is
-specified with the hub slice, in its [API contract](./hub/spec/api.md).
+tenant belongs to `epic:projects`' runner slice. What the hub adds to its wire for this slice is specified with the hub
+slice, in its [API contract](./hub/spec/api.md).
 
 The runner-side tests `epic:test-shared-service` wants need only what this slice and the hub slice give them: each test
 adds a runner in its own tenant, starts it on a store of its own, and cannot reach another test's world, because the hub

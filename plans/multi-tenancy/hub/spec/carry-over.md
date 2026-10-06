@@ -30,19 +30,23 @@ superuser becomes its admin ([identity.md](./identity.md) §Memberships).
 - **Every scope** receives its surrogate `scope_id`; rows that pointed at its slug are repointed in the same revision.
 - **Each `work_item_sequence` row** keeps its `next_ref`, now under the first tenant, so the next hub-source item
   numbers on from where the installation left off.
+- **The hub's own occurrences** leave the tenant: every existing `event_log` row of a hub-level kind — the trace and
+  egress exports' — moves to `hub_event_log` ([store.md](./store.md) §The hub's own event log).
 
 ## Who becomes a member
 
 Each user's current `users.role` becomes one `membership_facts` row in the first tenant, `set_by = "migration"`:
 
-| `users.role`  | Becomes                                                                                   |
-| ------------- | ----------------------------------------------------------------------------------------- |
-| `guest`       | a `guest` membership                                                                      |
-| `contributor` | a `contributor` membership                                                                |
-| `admin`       | an `admin` membership                                                                     |
-| `superuser`   | an `admin` membership; the user stays the hub administrator through `superuser_bootstrap` |
-| `pending`     | no membership — a pending user stays exactly as unable to act as before, until invited    |
+| `users.role`  | Becomes                                                                                |
+| ------------- | -------------------------------------------------------------------------------------- |
+| `guest`       | a `guest` membership                                                                   |
+| `contributor` | a `contributor` membership                                                             |
+| `admin`       | an `admin` membership                                                                  |
+| `superuser`   | an `admin` membership, and a `hub_admin_facts` row: the user stays a hub administrator |
+| `pending`     | no membership — a pending user stays exactly as unable to act as before, until invited |
 
+The `superuser` row's hub administrator fact is written `set_by = "migration"`, and `superuser_bootstrap` keeps its
+claim, so `auth.superuser` never claims the role a second time ([identity.md](./identity.md) §Hub administrators).
 `users.role` is dropped after the copy. Sessions survive the migration: a person signed in before the upgrade is still
 signed in after it, now resolving into the first tenant.
 

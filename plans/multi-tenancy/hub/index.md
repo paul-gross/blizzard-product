@@ -61,13 +61,14 @@ hard to write rather than merely wrong:
   which never changes and is never reused. The name is only for people to read: the hub administrator may change it at
   will, two tenants may share one, and since nothing ever looks a tenant up by name, a rename breaks nothing. The
   carried-over tenant is named `default`.
-- **Two kinds of administrator.** The hub administrator — today's superuser — stands above every tenant: they alone
-  create, rename, and delete tenants, and they may grant a membership in any of them. A tenant's own admins manage who
-  belongs to their tenant and nothing beyond it, so a tenant can be handed to someone to run without handing them the
-  hub. Standing above every tenant is not the same as seeing inside one: the hub administrator reads a tenant's state
-  only through a membership of their own, like anyone else. The one membership the role brings with it is the first:
-  whoever claims it on a hub whose only tenant has no admin yet becomes that tenant's admin, so the person who sets up a
-  fresh hub is not locked out of the only world it holds.
+- **Two kinds of administrator.** Hub administrators — today's superuser, and whoever they make one — stand above every
+  tenant: they alone create, rename, and delete tenants, they may grant a membership in any of them, and only a hub
+  administrator can make another. A tenant's own admins manage who belongs to their tenant, and may make other members
+  its admins, but reach nothing beyond it, so a tenant can be handed to someone to run without handing them the hub.
+  Standing above every tenant is not the same as seeing inside one: the hub administrator reads a tenant's state only
+  through a membership of their own, like anyone else. The one membership the role brings with it is the first: whoever
+  claims it on a hub whose only tenant has no admin yet becomes that tenant's admin, so the person who sets up a fresh
+  hub is not locked out of the only world it holds.
 - **Tenant administration.** Create, rename, list, and delete tenants, and grant memberships, from the CLI and API.
   Deleting a tenant removes everything it owns. Test suites depend on that teardown, so it must be complete and fast
   enough to run after every test.
@@ -80,8 +81,9 @@ hard to write rather than merely wrong:
   existing user a member of it in the role they hold today, every runner registration inside it, with no re-ingest and
   no configuration change. An operator who never creates a second tenant never notices the concept.
 - **Exports stay the hub's.** Trace export and fact egress keep the one destination whoever runs the hub chose, and stay
-  theirs to operate. Every span and every exported row names its tenant, so each tenant's share can be told apart today
-  and routed to the tenant itself later, by `epic:tenant-telemetry`.
+  theirs to operate. Every request's span and every exported row names its tenant, so each tenant's share can be told
+  apart today and routed to the tenant itself later, by `epic:tenant-telemetry`. The hub's own sweep and platform spans
+  serve every tenant at once; they carry no tenant and go only to the hub's destination, never to a tenant's.
 - **Startup configuration stays hub-wide.** Auth mode is hub-wide because a person signs in before choosing a tenant.
   Route-token mode and produces mode are rollout brakes on the code's own security posture rather than anyone's
   preference, so they are hub-wide too. No startup setting varies by tenant.

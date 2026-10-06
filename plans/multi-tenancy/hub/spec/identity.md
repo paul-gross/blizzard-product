@@ -27,37 +27,71 @@ A membership grants one user one role in one tenant. It is recorded as facts (`b
 
 - **Roles move onto the membership.** `Role.GUEST`, `CONTRIBUTOR`, and `ADMIN` and their permission bundles
   (`auth_core.ROLE_PERMISSIONS`, `bzh:domain-core`) are unchanged; a role now means "in this tenant". `users.role` is
-  dropped.
+  dropped, and `Role.SUPERUSER` and `Role.PENDING` leave the enum a membership role is drawn from: a membership is
+  `guest`, `contributor`, or `admin`, and nothing else.
 - **`pending` becomes the absence of a membership.** A user with no membership — one whose last membership was revoked,
   or a `pending` user carried over — reaches `/api/me` and a page that says *You don't have access to anything here yet.
   Reach out to your administrator for access.* and nothing else. Signing in never mints such a user: the hub is
   invite-only (§Invitations).
-- **`superuser` becomes the hub administrator.** The `superuser_bootstrap` singleton keeps naming one user, claimed from
-  `auth.superuser` as it is today. That user is the hub administrator: the role above every tenant, holding the new
-  hub-level permissions below. It is not a membership role and grants no permission inside any tenant by itself.
+- **`superuser` becomes the hub administrator.** The hub administrator is the role above every tenant, holding the
+  hub-level permissions below, and any number of users may hold it (§Hub administrators). It is not a membership role
+  and grants no permission inside any tenant by itself.
+- **Role changes stay on the security log.** Every grant, change, and revocation of a membership keeps writing
+  `user_role_changed` to the global `auth_facts`, as a role change does today, now naming the tenant it happened in.
 - **The first administrator is let into the first tenant.** When the superuser is claimed while the hub holds exactly
   one tenant and that tenant has no `admin` member, the same transaction grants the claiming user an `admin` membership
   in it, `set_by = "bootstrap"`. On a fresh hub this is how the person who set it up reaches `default` at all; on a
   carried-over hub the migration has already made them its admin ([carry-over.md](./carry-over.md)), so the claim grants
   nothing. Once a tenant has an admin, or a second tenant exists, the claim never grants a membership.
 
+### Hub administrators
+
+The hub administrator is a role a set of users hold, not one user. Who holds it is recorded as facts in the global
+`hub_admin_facts` table (`bzh:facts-not-status`):
+
+| Column    | Meaning                                                               |
+| --------- | --------------------------------------------------------------------- |
+| `id`      | autoincrement; the newest fact per `user_id` is in force              |
+| `user_id` | the user granted or revoked                                           |
+| `granted` | `true` grants the role, `false` revokes it                            |
+| `set_at`  | from the injected clock (`bzh:injected-clock`)                        |
+| `set_by`  | the granting hub administrator's user id, `bootstrap`, or `migration` |
+
+- **The first comes from configuration.** `superuser_bootstrap` keeps one job: the first claim. The user who first signs
+  in as `auth.superuser` is recorded there as today, and the same transaction writes the first `hub_admin_facts` row,
+  `set_by = "bootstrap"`. A carried-over hub's claimed superuser becomes a hub administrator through a row
+  `set_by = "migration"` ([carry-over.md](./carry-over.md)).
+- **Only a hub administrator makes another.** Granting and revoking the role takes `HUB_ADMIN_GRANT`, which only hub
+  administrators hold: `blizzard hub admin list|grant|revoke <user_id>` over `GET /api/admin/hub-admins` and
+  `PUT`/`DELETE /api/admin/hub-admins/{user_id}` ([administration.md](./administration.md)). No membership role reaches
+  it, and no tenant admin can make anyone a hub administrator.
+- **There is always one.** Revoking the last hub administrator is refused, so a hub can never be left with nobody able
+  to create a tenant or grant the role again.
+
 ### Permissions
 
-`auth_core` gains three hub-level permissions, held by the hub administrator only and never expanded from a membership
-role:
+`auth_core` gains four hub-level permissions, held by hub administrators only and never expanded from a membership role:
 
-- `TENANT_ADMIN` — create, list, and delete tenants;
+- `TENANT_ADMIN` — create, list, rename, and delete tenants;
 - `MEMBERSHIP_GRANT_ANY` — grant or revoke a membership in any tenant, and issue, list, and revoke any tenant's
   invitations;
-- `EXPORT_ADMIN` — read the fact-egress export's status and move or backfill its cursor, which every tenant's rows share
-  ([store.md](./store.md) §Fact egress).
+- `HUB_ADMIN_GRANT` — grant and revoke the hub administrator role (§Hub administrators);
+- `EXPORT_ADMIN` — operate the hub-wide exports whose cursors every tenant shares: read trace export's and fact egress's
+  status, replay a trace window, and move or backfill an egress cursor ([store.md](./store.md) §Fact egress).
 
-`USER_MANAGE` keeps its place in the `admin` bundle and narrows to the tenant: a tenant's admin changes and revokes the
-roles of their tenant's existing members, and brings people in by inviting them (§Invitations). Bringing someone into a
-tenant — new to the hub or already on it — is always an invitation, or the hub administrator's own direct grant under
-`MEMBERSHIP_GRANT_ANY`. A tenant's admin invites by email address and never searches the hub's users, so no tenant
-learns who else is on the hub, or whether the address they invited already has an account. Creating a tenant grants its
-creator nothing unless the creator names themselves as its first admin ([administration.md](./administration.md)).
+There are two levels of administrator, and neither reaches the other's. `USER_MANAGE` keeps its place in the `admin`
+bundle and narrows to the tenant: a tenant's admin changes and revokes the roles of their tenant's existing members —
+`admin` included — and brings people in by inviting them (§Invitations), with any role up to `admin`. This deliberately
+replaces today's rule that only a superuser may grant or revoke `admin` (`hub/api/users.py::assign_role`): `admin` is
+now a tenant's own role, so the tenant's admins hand it out, while the role above every tenant is granted only by hub
+administrators. Two guards stay: nobody changes their own role, and a tenant that has an admin keeps at least one
+([administration.md](./administration.md)). A tenant's admin names a member by user id; a user id that is no member of
+their tenant answers `404`, exactly as a user id that does not exist, so a role change can never be used to probe who
+else is on the hub. Bringing someone into a tenant — new to the hub or already on it — is always an invitation, or the
+hub administrator's own direct grant under `MEMBERSHIP_GRANT_ANY`. A tenant's admin invites by email address and never
+searches the hub's users, so no tenant learns who else is on the hub, or whether the address they invited already has an
+account. Creating a tenant grants its creator nothing unless the creator names themselves as its first admin
+([administration.md](./administration.md)).
 
 ## Invitations
 
@@ -88,9 +122,9 @@ and dies with its tenant.
 | `created_at`    | from the injected clock                                                     |
 | `expires_at`    | `created_at` plus the lifetime asked for: 7 days by default, at most 30     |
 
-What became of it is recorded as one fact beside it (`bzh:facts-not-status`): `accepted` with the accepting user and
-time, or `revoked` with the revoking admin and time. An invitation is live while it has neither fact and has not
-expired; it is used at most once.
+Invitations live in the tenant-owned `invitations` table. What became of one is recorded as one fact beside it in
+`invitation_facts` (`bzh:facts-not-status`): `accepted` with the accepting user and time, or `revoked` with the revoking
+admin and time. An invitation is live while it has neither fact and has not expired; it is used at most once.
 
 ### Accepting one
 
@@ -140,15 +174,15 @@ computed once at resolution, as today.
 
 ## Naming the tenant
 
-| Caller                          | How the tenant is named                                                                |
-| ------------------------------- | -------------------------------------------------------------------------------------- |
-| A runner                        | its bearer token: the registration it resolves to carries exactly one `tenant_id`      |
-| A route token or marker token   | the chunk it is bound to                                                               |
-| An API token                    | the tenant it was issued in                                                            |
-| A person on the board           | `X-Blizzard-Tenant`, from the tab's chosen tenant ([api.md](./api.md))                 |
-| A person on the CLI             | `X-Blizzard-Tenant`, from `--tenant <tenant_id>` or the context's saved default tenant |
-| A person signing in to a runner | the runner's registration ([api.md](./api.md) §Signing in to a runner)                 |
-| A person naming none            | their only membership, when they hold exactly one; otherwise `409 tenant_required`     |
+| Caller                          | How the tenant is named                                                                  |
+| ------------------------------- | ---------------------------------------------------------------------------------------- |
+| A runner                        | its bearer token: the registration it resolves to carries exactly one `tenant_id`        |
+| A route token                   | the chunk it is bound to                                                                 |
+| A marker token                  | the tenant the hub recorded when it minted the token ([api.md](./api.md) §Marker tokens) |
+| A person on the board           | `X-Blizzard-Tenant`, from the tab's chosen tenant ([api.md](./api.md))                   |
+| A person on the CLI             | `X-Blizzard-Tenant`, from `--tenant <tenant_id>` or the context's saved default tenant   |
+| A person signing in to a runner | the runner's registration ([api.md](./api.md) §Signing in to a runner)                   |
+| A person naming none            | their only membership, when they hold exactly one; otherwise `409 tenant_required`       |
 
 The full resolution order, the rule that only an id names a tenant, and why the session never holds a current tenant are
 owned by [api.md](./api.md) §Resolution order. A person's request is admitted when the named tenant exists and the

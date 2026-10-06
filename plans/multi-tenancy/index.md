@@ -17,7 +17,7 @@ part of*. One operator builds winter, blizzard, and a couple of other products f
 host, and a project is how the platform tells those products apart: each links the tenant's work sources and
 repositories and owns its scopes and routines, and the findings and garden proposals gardening raises about it. But much
 of the platform is project-independent by design: graphs are a shared library that any project's work can travel, and
-the board shows the operator's whole fleet at once. A project organises one operator's world. It does not partition the
+the board shows the tenant's whole fleet at once. A project organises one operator's world. It does not partition the
 hub.
 
 A tenant answers *whose world is this*. It is the only boundary that holds for everything: graphs, projects, work
@@ -34,7 +34,7 @@ whoever administers the hub.
 
 ## Why it travels with `epic:projects`
 
-Both epics add a grouping key to a store in which every table is global today. The hub has about eighty tables, and none
+Both epics add a grouping key to a store in which every table is global today. The hub has ninety-three tables, and none
 carries a grouping above the installation. Both then make the API, the event stream, and the runner's claiming respect
 that key. Projects touches some of that surface, and tenancy touches all of it. Designed one after the other, the second
 epic would reopen every table, route, and claim path the first had just finished, and it would find decisions already
