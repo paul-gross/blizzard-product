@@ -78,17 +78,19 @@ The lens is shell state, owned by `fleet/shell` and imported eagerly (`bzh:front
 from the URL, never held separately, so a refresh or a shared link reproduces it.
 
 ```text
-/t/{tenant_id}/{view}/…                    lens on All
-/t/{tenant_id}/p/{project_slug}/{view}/…   lens on one project
+/{view}/…                    lens on All
+/p/{project_slug}/{view}/…   lens on one project
 ```
 
-The board's `/t/{tenant_id}` page prefix is the multi-tenancy contract's; the `p/{project_slug}` segment is this
-slice's, and holds the project's current slug, resolved by §Resolving a project — a former slug redirects to the current
-one, and an id is accepted too. The lens control and the breadcrumb show the project's display name. The existing route
-table (`web/projects/hub/src/app/app.routes.ts`) mounts once under each prefix, so every view and every deep link is
-reachable with and without a lens, and a chunk's detail opened from a lens keeps it. Changing the lens re-navigates to
-the same view under the other prefix. The lens control sits in the shell's app strip beside the tenant; the header's
-counts are read with the lens's `?project=` filter.
+Board URLs carry no tenant: the tab's tenant is the multi-tenancy contract's
+([api.md](../../../multi-tenancy/hub/spec/api.md) §Where people's clients get the header), and the `p/{project_slug}`
+segment is resolved within it. The segment is this slice's, and holds the project's current slug, resolved by §Resolving
+a project — a former slug redirects to the current one, and an id is accepted too. The lens control and the breadcrumb
+show the project's display name. The existing route table (`web/projects/hub/src/app/app.routes.ts`) mounts once at the
+root and once under `p/{project_slug}`, so every view and every deep link is reachable with and without a lens, and a
+chunk's detail opened from a lens keeps it. Changing the lens re-navigates to the same view under the other prefix. The
+lens control sits in the shell's app strip beside the tenant; the header's counts are read with the lens's `?project=`
+filter.
 
 ## What each view does with the lens
 

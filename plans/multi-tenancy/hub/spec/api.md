@@ -6,11 +6,11 @@ path, not in it. The runner-reached wire only gains fields.
 
 ## Route families
 
-| Family    | Paths                                                                        | Tenant comes from                                                    |
-| --------- | ---------------------------------------------------------------------------- | -------------------------------------------------------------------- |
-| Hub-level | `/api/health`, `/api/ready`, `/api/me`, `/api/auth/*`, `/api/admin/tenants*` | none — these routes hold no `TenantStores`                           |
-| People    | `/api/…` — every operator router, at its current path                        | the request's resolution order below                                 |
-| Fleet     | `/api/fleet/*` — unchanged paths and requests; responses only gain fields    | the machine credential the call already carries, never anything else |
+| Family    | Paths                                                                                                   | Tenant comes from                                                    |
+| --------- | ------------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------- |
+| Hub-level | `/api/health`, `/api/ready`, `/api/me`, `/api/auth/*`, `/api/admin/tenants*`, `/api/admin/invitations*` | none — these routes hold no `TenantStores`                           |
+| People    | `/api/…` — every operator router, at its current path                                                   | the request's resolution order below                                 |
+| Fleet     | `/api/fleet/*` — unchanged paths and requests; responses only gain fields                               | the machine credential the call already carries, never anything else |
 
 `/api/fleet/system-artifacts*` serves blizzard's packaged documents — the finding and proposal formats agents write to —
 which are read from the installed package and are the same in every tenant. It stays in the fleet family, so its
@@ -35,11 +35,10 @@ applies only while the hub holds exactly one tenant.
 
 ### Naming a tenant
 
-The header value, the stream's query parameter, the board's `/t/{tenant_id}/…` route, the CLI's `--tenant`, and every
-`/api/admin/tenants/{tenant_id}` path take the tenant's id, `ten_<ulid>`, and nothing else. A tenant's name is never
-accepted in its place: names are labels, unique nowhere ([store.md](./store.md) §The tenant record), so there is no name
-to resolve, no former name to honor, and no way for a stale name to land on a different tenant. An id stays valid for as
-long as its tenant exists.
+The header value, the stream's query parameter, the CLI's `--tenant`, and every `/api/admin/tenants/{tenant_id}` path
+take the tenant's id, `ten_<ulid>`, and nothing else. A tenant's name is never accepted in its place: names are labels,
+unique nowhere ([store.md](./store.md) §The tenant record), so there is no name to resolve, no former name to honor, and
+no way for a stale name to land on a different tenant. An id stays valid for as long as its tenant exists.
 
 ### Why the session holds no current tenant
 
@@ -47,14 +46,23 @@ A session belongs to a person, not to a tenant ([identity.md](./identity.md)), a
 that person has open. A "current tenant" stored on it would be one value for all of them: switching tenant in one tab
 would silently move every other open tab into the new tenant, and the next write from an older tab would land somewhere
 its page never showed. The tenant is therefore stated per request, by whatever the request came from — the tab's own
-route, the CLI's own context — and two tabs on two tenants never interfere.
+state, the CLI's own context — and two tabs on two tenants never interfere.
 
 ### Where people's clients get the header
 
-- **The board** keeps shareable page URLs of the form `/t/{tenant_id}/…` and sends that id as `X-Blizzard-Tenant` on
-  every API call the page makes, from one HTTP interceptor. It shows the tenant's name, from `/api/me`, wherever a
-  person reads it. `/` redirects to the caller's only tenant, to a tenant picker when they hold several, or to a "no
-  tenants yet" page when they hold none.
+- **The board** keeps its page URLs exactly as they are today: no URL carries a tenant. Each tab holds the tenant it is
+  working in, in the tab's own `sessionStorage`, and sends that id as `X-Blizzard-Tenant` on every API call the page
+  makes, from one HTTP interceptor. It shows the tenant's name, from `/api/me`, wherever a person reads it.
+- **Which tenant a tab opens in.** A caller with one membership is always in it, and never sees a choice. A caller with
+  several opens in the tenant this browser last chose — its id kept in `localStorage` — while they still hold a
+  membership there, and otherwise sees a tenant picker; a caller with none sees the page that tells them to reach out to
+  their administrator for access ([identity.md](./identity.md) §Memberships).
+- **Switching** is a tenant switcher in the profile menu, shown only to a caller with several memberships. It sets the
+  tab's tenant and the browser's last choice, then reloads the tab's current view in the new tenant. It needs no new
+  sign-in: the session is the person's, and the next request is checked against their memberships like any other.
+- **A shared link** names a page and the records on it, never a tenant, so it opens in whichever tenant the recipient's
+  tab is in. Record ids are unique across the hub, so a link to another tenant's record answers not found rather than
+  ever reaching the wrong record. For the people with one membership, which is nearly everyone, every link simply works.
 - **The CLI** sends the header from `--tenant <tenant_id>`, else from the context's saved default tenant. It lists the
   caller's tenants, ids beside names, from `/api/me`, so a person finds an id without leaving the terminal.
 

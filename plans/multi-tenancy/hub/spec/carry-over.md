@@ -41,7 +41,7 @@ Each user's current `users.role` becomes one `membership_facts` row in the first
 | `contributor` | a `contributor` membership                                                                |
 | `admin`       | an `admin` membership                                                                     |
 | `superuser`   | an `admin` membership; the user stays the hub administrator through `superuser_bootstrap` |
-| `pending`     | no membership — a pending user stays exactly as unable to act as before                   |
+| `pending`     | no membership — a pending user stays exactly as unable to act as before, until invited    |
 
 `users.role` is dropped after the copy. Sessions survive the migration: a person signed in before the upgrade is still
 signed in after it, now resolving into the first tenant.
@@ -54,6 +54,6 @@ signed in after it, now resolving into the first tenant.
   one-tenant hub is never ambiguous. Links shared before the upgrade still open.
 - **The fleet wire.** Runners keep working unchanged; the wire only gains fields ([api.md](./api.md) §Compatibility).
 
-An operator who never creates a second tenant never sees the concept, beyond a tenant name in the board's header and a
-`/t/ten_…/` segment in links the board now writes — and those links keep working however the tenant is later renamed,
-because they carry its id ([api.md](./api.md) §Naming a tenant).
+An operator who never creates a second tenant never sees the concept, beyond a tenant name in the board's header: the
+board's URLs stay exactly as they are, and no link carries a tenant ([api.md](./api.md) §Where people's clients get the
+header).

@@ -75,10 +75,10 @@ class StoreScope:
   A controller holding a read repository therefore cannot widen its own scope.
 - **Hub-scoped reads are named and few.** A read that must span tenants goes through `HubScopedReads`, an explicitly
   separate seam with a closed list of members:
-  - credential and token resolution — runner bearer hash → registration, route token, marker token, session hash — each
-    returning the tenant it resolves to beside its principal;
+  - credential and token resolution — runner bearer hash → registration, route token, marker token, session hash,
+    invitation token → invitation — each returning the tenant it resolves to beside its principal;
   - the hub sweeps' corpus reads (below);
-  - tenant administration (listing tenants, teardown);
+  - tenant administration (listing tenants, listing invitations across tenants, teardown);
   - the identity store.
 
   Nothing else may hold it. An ast-grep rule (`blizzard:structural-gate`) refuses an import of `HubScopedReads` outside
@@ -121,8 +121,8 @@ names why it is global.
 | `trace_cursor`                                  | trace export is hub configuration with one destination; spans carry the tenant's id as `blizzard.tenant` |
 
 Outside the store and not tables: Alembic's `alembic_version`, the packaged system artifacts served from the wheel
-(`/api/system-artifacts`), and the health and readiness routes. Packaged graphs are *not* global — they are minted into
-each tenant ([administration.md](./administration.md)).
+(`/api/fleet/system-artifacts`), and the health and readiness routes. Packaged graphs are *not* global — they are minted
+into each tenant ([administration.md](./administration.md)).
 
 Every other table — 74 at this writing, including every chunk, fact, graph, garden, transcript, work-item, runner, and
 event-log table — is tenant-owned. `event_log` keeps only tenant occurrences; an occurrence with no tenant goes to

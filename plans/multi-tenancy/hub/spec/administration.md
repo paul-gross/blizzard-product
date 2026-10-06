@@ -1,21 +1,29 @@
 # Administration contract
 
-Tenants are created and deleted by the hub administrator; memberships are granted by the administrator in any tenant and
-by a tenant's admins in their own. There is no self-service path.
+Tenants are created and deleted by the hub administrator, and people are brought into them by the administrator's
+invitations ([identity.md](./identity.md) §Invitations). A tenant's admins manage the roles of the members it already
+has. There is no self-service path: signing in never admits anyone.
 
 ## Verbs
 
-| Verb                    | API                                             | CLI                                                            | Permission                              |
-| ----------------------- | ----------------------------------------------- | -------------------------------------------------------------- | --------------------------------------- |
-| Create a tenant         | `POST /api/admin/tenants` `{name}`              | `blizzard hub tenant create <name> [--admin <user>]`           | `TENANT_ADMIN`                          |
-| List tenants            | `GET /api/admin/tenants`                        | `blizzard hub tenant list`                                     | `TENANT_ADMIN`                          |
-| Rename a tenant         | `PATCH /api/admin/tenants/{tenant_id}` `{name}` | `blizzard hub tenant rename <tenant_id> <name>`                | `TENANT_ADMIN`                          |
-| Delete a tenant         | `DELETE /api/admin/tenants/{tenant_id}`         | `blizzard hub tenant delete <tenant_id>`                       | `TENANT_ADMIN`                          |
-| List members            | `GET /api/members`                              | `blizzard hub member list --tenant <tenant_id>`                | `USER_MANAGE`                           |
-| Grant or change a role  | `PUT /api/members/{user_id}` `{role}`           | `blizzard hub member grant <user> <role> --tenant <tenant_id>` | `USER_MANAGE` or `MEMBERSHIP_GRANT_ANY` |
-| Revoke                  | `DELETE /api/members/{user_id}`                 | `blizzard hub member revoke <user> --tenant <tenant_id>`       | `USER_MANAGE` or `MEMBERSHIP_GRANT_ANY` |
-| Add a runner            | `POST /api/runners` `{name}`                    | `blizzard hub runner add <name> --tenant <tenant_id>`          | the runner-add permission               |
-| Rotate a runner's token | `POST /api/runners/{runner_id}/enrollments`     | `blizzard hub runner enroll <id> --tenant <tenant_id>`         | `RUNNER_PAUSE`, as today                |
+| Verb                    | API                                                                  | CLI                                                                                                | Permission                                                                   |
+| ----------------------- | -------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------- |
+| Create a tenant         | `POST /api/admin/tenants` `{name}`                                   | `blizzard hub tenant create <name> [--admin <user>]`                                               | `TENANT_ADMIN`                                                               |
+| List tenants            | `GET /api/admin/tenants`                                             | `blizzard hub tenant list`                                                                         | `TENANT_ADMIN`                                                               |
+| Rename a tenant         | `PATCH /api/admin/tenants/{tenant_id}` `{name}`                      | `blizzard hub tenant rename <tenant_id> <name>`                                                    | `TENANT_ADMIN`                                                               |
+| Delete a tenant         | `DELETE /api/admin/tenants/{tenant_id}`                              | `blizzard hub tenant delete <tenant_id>`                                                           | `TENANT_ADMIN`                                                               |
+| List members            | `GET /api/members`                                                   | `blizzard hub member list --tenant <tenant_id>`                                                    | `USER_MANAGE`                                                                |
+| Change a member's role  | `PUT /api/members/{user_id}` `{role}`                                | `blizzard hub member grant <user> <role> --tenant <tenant_id>`                                     | `USER_MANAGE` for an existing member; `MEMBERSHIP_GRANT_ANY` to grant anyone |
+| Revoke                  | `DELETE /api/members/{user_id}`                                      | `blizzard hub member revoke <user> --tenant <tenant_id>`                                           | `USER_MANAGE` or `MEMBERSHIP_GRANT_ANY`                                      |
+| Invite                  | `POST /api/admin/invitations` `{tenant_id, email, role, expires_in}` | `blizzard hub invite create --tenant <tenant_id> --email <email> --role <role> [--expires <days>]` | `MEMBERSHIP_GRANT_ANY`                                                       |
+| List invitations        | `GET /api/admin/invitations`                                         | `blizzard hub invite list [--tenant <tenant_id>]`                                                  | `MEMBERSHIP_GRANT_ANY`                                                       |
+| Revoke an invitation    | `POST /api/admin/invitations/{invitation_id}/revocations`            | `blizzard hub invite revoke <invitation_id>`                                                       | `MEMBERSHIP_GRANT_ANY`                                                       |
+| Add a runner            | `POST /api/runners` `{name}`                                         | `blizzard hub runner add <name> --tenant <tenant_id>`                                              | the runner-add permission                                                    |
+| Rotate a runner's token | `POST /api/runners/{runner_id}/enrollments`                          | `blizzard hub runner enroll <id> --tenant <tenant_id>`                                             | `RUNNER_PAUSE`, as today                                                     |
+
+The invitation verbs are CLI-only by design: the board offers no surface for them, and the routes are hub-level, naming
+their tenant in the body. `invite create` prints the link once; `invite list` shows each invitation's tenant, email,
+role, and state — `live`, `accepted` (by whom), `expired`, or `revoked` — and never the link.
 
 Member and runner routes act in the request's tenant ([api.md](./api.md) §Resolution order), and a runner belongs to the
 tenant it was added in. Grants are `membership_facts` rows ([identity.md](./identity.md)); a grant whose role equals the

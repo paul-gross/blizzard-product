@@ -28,8 +28,10 @@ A membership grants one user one role in one tenant. It is recorded as facts (`b
 - **Roles move onto the membership.** `Role.GUEST`, `CONTRIBUTOR`, and `ADMIN` and their permission bundles
   (`auth_core.ROLE_PERMISSIONS`, `bzh:domain-core`) are unchanged; a role now means "in this tenant". `users.role` is
   dropped.
-- **`pending` becomes the absence of a membership.** A person who signs in for the first time has an identity and no
-  memberships; they reach `/api/me` and a "no tenants yet" page and nothing else, which is what `pending` grants today.
+- **`pending` becomes the absence of a membership.** A user with no membership — one whose last membership was revoked,
+  or a `pending` user carried over — reaches `/api/me` and a page that says *You don't have access to anything here yet.
+  Reach out to your administrator for access.* and nothing else. Signing in never mints such a user: the hub is
+  invite-only (§Invitations).
 - **`superuser` becomes the hub administrator.** The `superuser_bootstrap` singleton keeps naming one user, claimed from
   `auth.superuser` as it is today. That user is the hub administrator: the role above every tenant, holding the new
   hub-level permissions below. It is not a membership role and grants no permission inside any tenant by itself.
@@ -45,11 +47,72 @@ A membership grants one user one role in one tenant. It is recorded as facts (`b
 role:
 
 - `TENANT_ADMIN` — create, list, and delete tenants;
-- `MEMBERSHIP_GRANT_ANY` — grant or revoke a membership in any tenant.
+- `MEMBERSHIP_GRANT_ANY` — grant or revoke a membership in any tenant, and issue, list, and revoke invitations.
 
-`USER_MANAGE` keeps its place in the `admin` bundle and narrows to the tenant: a tenant's admin grants, changes, and
-revokes memberships in that tenant, for users who already exist on the hub. Creating a tenant grants its creator nothing
-unless the creator names themselves as its first admin ([administration.md](./administration.md)).
+`USER_MANAGE` keeps its place in the `admin` bundle and narrows to the tenant: a tenant's admin changes and revokes the
+roles of their tenant's existing members. Bringing someone into a tenant — new to the hub or already on it — is an
+invitation, which only the hub administrator issues (§Invitations), or the hub administrator's own direct grant under
+`MEMBERSHIP_GRANT_ANY`. A tenant's admin never searches the hub's users, so no tenant learns who belongs to another.
+Creating a tenant grants its creator nothing unless the creator names themselves as its first admin
+([administration.md](./administration.md)).
+
+## Invitations
+
+The hub is invite-only. Signing in proves who a person is; it never admits them. A provider identity the hub has not
+seen before becomes a user only by accepting an invitation, or by being the configured superuser (§Memberships). Any
+other first sign-in creates no user, no identity link, and no session, and lands on a page that says *This hub is
+invite-only. Reach out to your administrator for an invitation.* An identity already linked to a user signs in as today,
+and a new identity whose verified email matches an existing user still links to that user, under today's email-merge
+rule — invitations change who can arrive, not how a returning person is recognized.
+
+### What an invitation is
+
+An invitation admits one email address into one tenant with one role. The hub administrator issues it from the CLI
+([administration.md](./administration.md)); there is no board surface for it, and a tenant's own admins cannot issue
+one. The CLI prints a link once — `https://<hub>/invite/<token>` — and the administrator hands it to the person by
+whatever channel they already use; the hub sends no mail.
+
+| Column          | Meaning                                                                     |
+| --------------- | --------------------------------------------------------------------------- |
+| `invitation_id` | `inv_<ulid>`                                                                |
+| `tenant_id`     | the tenant the invitation admits into                                       |
+| `email`         | the one address that may accept it, stored lowercased                       |
+| `role`          | the membership role accepting it grants: `guest`, `contributor`, or `admin` |
+| `token_hash`    | sha256 of the link's token; the token itself is shown once and never stored |
+| `created_by`    | the hub administrator's user id                                             |
+| `created_at`    | from the injected clock                                                     |
+| `expires_at`    | `created_at` plus the lifetime asked for: 7 days by default, at most 30     |
+
+What became of it is recorded as one fact beside it (`bzh:facts-not-status`): `accepted` with the accepting user and
+time, or `revoked` with the revoking administrator and time. An invitation is live while it has neither fact and has not
+expired; it is used at most once.
+
+### Accepting one
+
+1. **The link starts a sign-in.** Opening `/invite/<token>` on the board takes the person to the hub's sign-in with the
+   token carried through the provider round trip in `auth_state`, beside the state and PKCE values it already holds.
+2. **The email must match.** On the provider's callback the hub resolves the token through `HubScopedReads`, and
+   requires that the provider report a verified email equal to the invitation's, compared case-insensitively. A provider
+   reports every verified address the account holds — the GitHub provider reads all of `/user/emails`, not only the
+   primary — so a person whose invited address is a secondary one on their account is not turned away. Whatever account
+   the person signs in with, it must carry that address.
+3. **One transaction admits them.** It creates the user when the identity is new (or uses the user the identity or the
+   email already resolves to), links the identity, writes the `membership_facts` row with `set_by` naming the
+   invitation, records the `accepted` fact, and mints the session. The person lands in the invited tenant.
+
+When the invitation is expired, revoked, or already used, nothing is written and the page says *This invitation is no
+longer valid. Reach out to your administrator for a new one.* When no verified email on the account matches, nothing is
+written, the invitation stays live, and the page says *This invitation is for a different email address. Sign in with
+the account that uses it, or reach out to your administrator.* A person already signed in who opens an invitation goes
+through the same check: the invitation admits their account into one more tenant only if that account carries the
+invited address.
+
+### Why email
+
+Email is the key because GitHub is the one provider the hub trusts to start, and GitHub only reports an address as
+verified once its owner has proven it. That trust is the hub administrator's to extend: a provider whose verified-email
+claim is not authoritative for every address it reports — a client's own directory, say — must never admit through an
+invitation by email, and would bind invitations to its own subject instead.
 
 ## The resolved principal
 
@@ -77,7 +140,7 @@ computed once at resolution, as today.
 | A runner                        | its bearer token: the registration it resolves to carries exactly one `tenant_id`      |
 | A route token or marker token   | the chunk it is bound to                                                               |
 | An API token                    | the tenant it was issued in                                                            |
-| A person on the board           | `X-Blizzard-Tenant`, which the board takes from its page route `/t/{tenant_id}/…`      |
+| A person on the board           | `X-Blizzard-Tenant`, from the tab's chosen tenant ([api.md](./api.md))                 |
 | A person on the CLI             | `X-Blizzard-Tenant`, from `--tenant <tenant_id>` or the context's saved default tenant |
 | A person signing in to a runner | the runner's registration ([api.md](./api.md) §Signing in to a runner)                 |
 | A person naming none            | their only membership, when they hold exactly one; otherwise `409 tenant_required`     |

@@ -43,17 +43,23 @@ hard to write rather than merely wrong:
   tenant they may enter, with a role in each; the single role a user carries today moves onto that membership, so the
   same person can administer one tenant and only watch another. Each request names the tenant it acts within and is
   checked against the caller's memberships — the sign-in never remembers a "current" tenant — so two windows can hold
-  two tenants without disturbing each other, and a link one person sends another lands in the right world. A person with
-  one membership is never asked to choose. Machines never choose at all: a runner's credentials belong to exactly one
+  two tenants without disturbing each other. A person with one membership, which is nearly everyone, is never asked to
+  choose and never sees a tenant in a link. Machines never choose at all: a runner's credentials belong to exactly one
   tenant, and the credential settles it.
+- **Invite-only.** Signing in proves who someone is; it never lets them in. A person arrives only through an invitation
+  the hub administrator issues from the CLI for one email address, one tenant, and one role, and hands over as a link.
+  Whatever account the person signs in with must carry that address, so a forwarded link admits nobody else. Anyone who
+  signs in uninvited, or who holds no membership, is told to reach out to their administrator — and the hub keeps no
+  record of a stranger who merely tried.
 - **Secrets inside the boundary.** The secret store `epic:live-config` builds becomes tenant-scoped, so a work source or
   repository can name only its own tenant's secrets.
 - **One tenant per view.** The board shows one tenant at a time: every page, list, and live stream belongs to the tenant
-  its link names. A person with several memberships moves between their tenants, and can hold two of them open in two
-  windows, but nothing on the board gathers several tenants into one view.
-- **A tenant has an id and a name.** Everything that refers to a tenant — every link, request, and command — holds its
-  id, which never changes and is never reused. The name is only for people to read: the hub administrator may change it
-  at will, two tenants may share one, and since nothing ever looks a tenant up by name, a rename breaks nothing. The
+  the person is working in. A person with several memberships switches between their tenants from the board, and can
+  hold two of them open in two windows, but nothing on the board gathers several tenants into one view, and no board
+  link carries a tenant.
+- **A tenant has an id and a name.** Everything that refers to a tenant — every request and command — holds its id,
+  which never changes and is never reused. The name is only for people to read: the hub administrator may change it at
+  will, two tenants may share one, and since nothing ever looks a tenant up by name, a rename breaks nothing. The
   carried-over tenant is named `default`.
 - **Two kinds of administrator.** The hub administrator — today's superuser — stands above every tenant: they alone
   create, rename, and delete tenants, and they may grant a membership in any of them. A tenant's own admins manage who
