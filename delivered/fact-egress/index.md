@@ -1,12 +1,12 @@
 ---
 epic: fact-egress
-refinement: refined
+refinement: pristine
 slices:
   - name: steps
     status: delivered
     plan: ./steps/index.md
   - name: events
-    status: in-progress
+    status: delivered
     plan: ./events/index.md
 ---
 
