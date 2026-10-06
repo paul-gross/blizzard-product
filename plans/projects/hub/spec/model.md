@@ -99,17 +99,17 @@ earn its place.
 Every table carries `tenant_id` under the multi-tenancy contract. `project_id` is added only where a record's project
 cannot be reached through a chunk, or where a hot read filters on it:
 
-| Table                                       | `project_id`          | Why                                                                                 |
-| ------------------------------------------- | --------------------- | ----------------------------------------------------------------------------------- |
-| `chunks`                                    | NOT NULL              | Set once at mint ([ingest.md](./ingest.md)); every chunk-owned fact derives from it |
-| `scopes`                                    | NOT NULL              | Project-owned; `(project_id, slug)` unique                                          |
-| `routines`                                  | NOT NULL              | Project-owned; `(project_id, name)` unique                                          |
-| `findings`                                  | NOT NULL              | A routine finding has no chunk; a review finding's chunk agrees with it             |
-| `finding_sets`                              | NOT NULL              | Read by `(project_id, routine_name, scope_slug)`, not via its chunk                 |
-| `garden_proposals`                          | NOT NULL              | An operator-origin proposal has no chunk                                            |
-| `work_item_runs`                            | NOT NULL              | A run's routine name and scope label only mean something inside a project           |
-| `work_items` (`routine_name`, `scope_slug`) | NULL                  | Set only on a routine run's item, beside the pair it records                        |
-| `runner_registrations`                      | — (`projects` column) | The served declaration ([eligibility.md](./eligibility.md))                         |
+| Table                                       | `project_id`          | Why                                                                                                    |
+| ------------------------------------------- | --------------------- | ------------------------------------------------------------------------------------------------------ |
+| `chunks`                                    | NOT NULL              | Set once at mint ([ingest.md](./ingest.md)); every chunk-owned fact derives from it                    |
+| `scopes`                                    | NOT NULL              | Project-owned; `(project_id, slug)` unique                                                             |
+| `routines`                                  | NOT NULL              | Project-owned; `(project_id, name)` unique                                                             |
+| `findings`                                  | NOT NULL              | A routine finding has no chunk; a review finding's chunk agrees with it                                |
+| `finding_sets`                              | NOT NULL              | Read by `(project_id, routine_name, scope_slug)`, not via its chunk                                    |
+| `garden_proposals`                          | NOT NULL              | An operator-origin proposal has no chunk                                                               |
+| `work_item_runs`                            | NOT NULL              | A run's routine name and scope label only mean something inside a project                              |
+| `work_items` (`routine_name`, `scope_slug`) | NULL                  | Set on every item of the built-in `hub` source, and on a routine run's item beside the pair it records |
+| `runner_registrations`                      | — (`projects` column) | The served declaration ([eligibility.md](./eligibility.md))                                            |
 
 Everything else that hangs off a chunk — `chunk_work_refs`, `transitions`, `artifacts`, `lease_facts`, `usage_facts`,
 `questions`, `decisions`, `escalations`, the delivery and closure facts, transcripts, and `event_log` rows that name a

@@ -26,8 +26,11 @@ that tends it.
   names are unique within a project, so two projects never collide on the name of a sweep.
 - **Work sources shared, linked by project.** A work source belongs to the tenant, and any number of projects link to
   it. A link may narrow what that project usually draws from the source — a Jira project key, a GitHub repository — so
-  browsing and bare references default sensibly, but it never makes the source the project's own. Closing and annotating
-  an item still go through its source, whichever project carried the work.
+  browsing and bare references default sensibly, but it never makes the source the project's own. A narrowing is one key
+  or one repository and nothing richer, and it only sets defaults: it never filters what the project may ingest. Closing
+  and annotating an item still go through its source, whichever project carried the work. The hub's own source is one
+  list per tenant, linked to every project, and each item in it belongs to the project it was created in; there are no
+  further hub buckets to configure.
 - **A chunk belongs to exactly one project.** Its project is the one its items were ingested into, and grouping items
   ingested into two projects into one chunk is refused rather than resolved by a guess.
 - **Ingest into a project.** An ingest names its source and the project it ingests into. The project may be left out
@@ -37,6 +40,9 @@ that tends it.
 - **Repositories shared, linked by project.** A repository belongs to the tenant, carrying the forge, owner, and base
   branch `epic:live-config` moved into the store, and any number of projects link to it. A library two projects both
   build on is one repository both link, so their work lands on the same branch and waits its turn there like any other.
+- **A project holds no secrets.** Credentials belong to the tenant's work sources and repositories, which name the
+  secrets they need; a project reaches a credential only by linking the record that holds it. There is no project-level
+  secret and no per-project override of one, so a credential is configured once, on the record that uses it.
 - **Work lands only where its project was given.** A chunk may land only in repositories its project links. Its agents
   may commit wherever their workspace lets them, but the hub will not land a commit into a repository the project was
   not given: the step is refused before anything is pushed, naming the repository and the project. Landing itself
@@ -63,11 +69,3 @@ that tends it.
 - **The runners already deployed keep working.** A hub redeploys ahead of the runners that talk to it. A runner built
   before this slice declares no projects when it registers; the hub keeps the declaration it already holds for that
   runner rather than clearing it, so the fleet carries on until its runners are redeployed.
-
-## Open questions
-
-- Whether a secret, inside its tenant, may be narrowed to one project, isolating one project's credentials from
-  another's.
-- Whether the built-in `hub` source stays one per tenant, linked to every project, or becomes one per project.
-- What a link's narrowing may express beyond a single key or repository — a Jira query, a label — and whether it filters
-  what may be ingested or only what is offered by default.

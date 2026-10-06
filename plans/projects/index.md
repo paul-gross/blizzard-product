@@ -7,6 +7,9 @@ slices:
     plan: ./hub/index.md
   - name: runner
     status: horizon
+    plan: ./runner.md
+  - name: host
+    status: horizon
 ---
 
 # Plan — `epic:projects`
@@ -27,17 +30,19 @@ to the sources it draws from and the repositories it may land in, and an item en
 one. Nor is a project a tag. `epic:tagging` lets a chunk say what kind of work it is, and it can filter by project, but
 a tag cannot hold links to sources and repositories or own a garden, and a project must.
 
-The work lands in two slices, hub then runner. It stands on `epic:live-config`, which first moves work sources, the
-delivery target, and their credentials into the hub's store, where a tenant holds them and a project links them, and it
-is built alongside `epic:multi-tenancy`, whose hub slice lands first so that every project record is born inside a
-tenant. The runner slice builds on the host `epic:runner-host` introduces.
+The work lands in three slices: hub, then runner, then host. It stands on `epic:live-config`, which first moves work
+sources, the delivery target, and their credentials into the hub's store, where a tenant holds them and a project links
+them, and it is built alongside `epic:multi-tenancy`, whose hub slice lands first so that every project record is born
+inside a tenant. The runner slice needs nothing from the machine beyond what a runner already is; the host slice builds
+on the runner host `epic:runner-host` introduces.
 
 ## A lens, not a wall
 
 The tenant is the wall around a world, and a project is a lens over one. Reading across projects is ordinary — the board
 shows the whole fleet, graphs are a shared library, and a person narrows to one project only when they choose to — so
-the hub's store scopes every read to its tenant and to a project only when a caller asks. The one place a project
-behaves like a wall is on the machine, where a worker in one project's workspace must have no path into another's.
+the hub's store scopes every read to its tenant, and a read narrows to a project only when its caller asks. The one
+place a project draws a line is around the repositories it links: a chunk's work is checked out with, and delivered
+into, only those.
 
 A project is also never assumed, and almost nothing needs to be told which one it belongs to. An item enters a project
 at ingest; a chunk belongs to the project its items were ingested into, and every fact, event, transcript, and question
@@ -55,12 +60,17 @@ the [hub slice plan](./hub/index.md).
 
 ## What to build — the runner slice
 
-- **A workspace per project, one host.** The runner host `epic:runner-host` introduces already holds a list of
-  workspaces; here each one belongs to a project, and the host declares the projects it serves as the projects it holds
-  workspaces for. Its runners claim across all of them, so the machine's capacity is shared rather than partitioned by
-  installation.
-- **Per-project isolation on the machine.** Checkouts, environments, and credentials are separated by project; a worker
-  in one project's workspace has no path into another's.
+The runner slice lets a runner name the projects it serves and changes nothing else about it: one runner, one workspace,
+as today, and more runners for an operator who wants projects worked apart. Its requirements are the
+[runner slice plan](./runner.md).
+
+## What to build — the host slice
+
+The host slice keeps the epic's promise on the machine: three projects on a laptop mean one runner host, not three
+runners in three directories. It waits on `epic:runner-host`, whose host already holds a list of workspaces, and gives
+each workspace the projects it serves — one or several, as one workspace can hold every repository two projects need —
+so that a claim lands in the workspace its chunk's project belongs to, and the host's runners take work from all of
+them. It earns a written plan once `epic:runner-host` has one.
 
 ## Where a project goes next
 
@@ -73,7 +83,5 @@ start until a project can link a repository.
 
 ## Open questions
 
-The hub slice's own open questions live in its [slice plan](./hub/index.md#open-questions).
-
-- Whether every runner under a host serves every project the host holds a workspace for, or a runner may narrow to some
-  of them.
+- Whether a project may have more than one workspace on the same host, which would need a rule for choosing between them
+  on every claim. The leaning is one workspace per project per host until someone needs more.

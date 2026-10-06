@@ -66,5 +66,7 @@ explicitly, never relying on resolution step 3:
 - accepting a garden proposal ingests the minted item into the proposal's project;
 - an operator creating a hub item from the board names the shell lens's project, and from the CLI names `--project`.
 
-`hub:<n>` refs stay unique per tenant (`work_item_sequence` is keyed per source, under the tenant key), so a hub item's
-ref never collides across projects.
+Each item the built-in source mints records that project as its own (`work_items.project_id`), so a hub item belongs to
+one project from the moment it exists, and the source stays one list for the whole tenant rather than a bucket per
+project. `hub:<n>` refs stay unique per tenant (`work_item_sequence` is keyed per source, under the tenant key), so a
+hub item's ref never collides across projects.

@@ -43,8 +43,9 @@ the runners, and subscriptions as a concept of their own that runners draw on ra
   runners, so the operator stops dividing a pool by hand and a runner that is idle leaves its share free for one that is
   not.
 - **Workspaces, plural, from the start.** The host's configuration holds a list of workspaces, each with its own root,
-  environments, and prompt, even while a machine has only one. `epic:projects` gives each workspace a project; shaping
-  the list now means that epic adds an entry rather than reopening how a host is configured.
+  environments, and prompt, even while a machine has only one. `epic:projects`' host slice gives each workspace the
+  projects it serves; shaping the list now means that slice adds to an entry rather than reopening how a host is
+  configured.
 - **The existing machine, carried over.** A runner configured the way it is today becomes a host with one runner under
   the same id, without re-enrollment or a stranded chunk, and two runners already on one machine fold into one host
   keeping both ids.
@@ -63,9 +64,9 @@ the runners, and subscriptions as a concept of their own that runners draw on ra
 The runner is the level every per-machine lever already speaks to, so the levers attach there unchanged:
 `epic:throttling` paces a runner against the subscription it spends, `epic:tagging` lets a runner declare the work it
 takes, and `epic:projects` records the projects a runner serves. The host is what `epic:projects` means by one runner
-host per machine: its runner slice binds each of the host's workspaces to a project, and builds on this epic rather than
-beside it. A runner that can no longer serve a chunk because its subscription is exhausted is `epic:resilience`'s
-problem to ride out, not this epic's.
+host per machine: its host slice gives each of the host's workspaces the projects it serves, and builds on this epic
+rather than beside it. A runner that can no longer serve a chunk because its subscription is exhausted is
+`epic:resilience`'s problem to ride out, not this epic's.
 
 ## Open questions
 

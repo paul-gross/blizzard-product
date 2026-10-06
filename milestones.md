@@ -50,7 +50,7 @@ its project through whichever of the host's runners serve it. Three projects on 
 one host — never three installations, and never three of everything above them. For the operator, a desk full of stacks
 collapses into one: queue work against any project, watch all of it on one board, and slice the view to a single project
 when only that one matters. That host is the one `epic:runner-host` builds for `milestone:hardening`, and this
-milestone's runner work waits on it.
+milestone's host work waits on it; until then, a project gets a runner of its own.
 
 None of it can be grouped while it lives where it does today. A hub's work sources sit in a file on its machine, and its
 delivery target and tokens in its environment, so adding a source or rotating a token means a redeploy, and nothing in a
@@ -79,9 +79,10 @@ method, carried out deterministically, with an agent's judgement called in where
 | `epic:live-config`         | full   | delivered |
 | `epic:multi-tenancy`       | hub    | horizon   |
 | `epic:projects`            | hub    | horizon   |
-| `epic:runner-host`         | runner | horizon   |
-| `epic:multi-tenancy`       | runner | horizon   |
 | `epic:projects`            | runner | horizon   |
+| `epic:multi-tenancy`       | runner | horizon   |
+| `epic:runner-host`         | runner | horizon   |
+| `epic:projects`            | host   | horizon   |
 | `epic:advanced-delivery`   | full   | horizon   |
 | `epic:advanced-deployment` | full   | horizon   |
 
