@@ -27,8 +27,8 @@ different projects would still share them. The tenant is the boundary, and `epic
 ### 1. Shared hub harness
 
 - **Hub lifetime:** one long-lived hub per xdist worker or per CI job, for each config profile.
-- **Tenant per test:** create it via the admin API, together with its runner credentials, graphs, projects, and work
-  sources. The test acts only with that tenant's identity.
+- **Tenant per test:** create it via the admin API. It arrives holding the packaged graphs and a `default` project; the
+  test adds its runner credentials and work sources, and acts only inside that tenant, naming it on every request.
 - **Teardown:** the test deletes its tenant, but correctness can't depend on it; a leftover tenant is invisible to
   others by construction.
 - **Forge and fixture:** one forge process for all tests, with per-test repositories minted inside one shared fixture
@@ -57,3 +57,11 @@ Mark each test as shareable or dedicated, using the categories above. Migrate th
   store of its own, so every tenant on a hub shares one writer, and the suite's parallelism is bounded by how long tests
   queue behind each other's writes. That needs measuring before the epic promises hundreds of concurrent tests, and it
   decides whether the shared hubs run on SQLite at all.
+- How a test on an auth-on profile gets a person. Only a hub with auth off lets a test act in a tenant with no user or
+  session. With auth on, the hub is invite-only and admitting someone runs through a provider's sign-in round trip, so
+  nothing mints a user and a session for a test. That profile needs a test-only way in — a mock provider, say — or its
+  tests stay on dedicated hubs.
+- How fast a tenant tears down, and whether the suite relies on it. `epic:multi-tenancy` promises a teardown fast enough
+  to run after every test and leaves the number to this epic, but nothing here measures it yet. The harness above says
+  correctness can't depend on teardown; whether teardown time is part of each test's budget, or only hygiene that runs
+  behind the suite, decides how much it matters.

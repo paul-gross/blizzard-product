@@ -73,3 +73,7 @@ its own.
   what the fleet does when that signal is late or missed.
 - Whether the queue should avoid conflicts before they happen, keeping chunks likely to touch the same ground from
   running side by side, and whether that belongs here or to the queue.
+- Whether a project gets a landing method of its own at all. `epic:projects` puts the landing policy on the tenant's
+  repository record, with a project-level default on the project's link only if one earns its place, while this plan and
+  `milestone:projects` speak of each project landing its work its own way. A repository two projects link has one base
+  branch and one queue on it, so a per-project policy needs a rule for which project's wins there.

@@ -111,3 +111,7 @@ every chunk it carried.
 - Whether promotion between environments is a declared chain inside one train, or a separate train per environment.
 - How a script that must run on a particular machine is routed to a runner that holds the right credentials, without the
   hub ever reaching into that machine.
+- Who declares the order repositories deploy in. `epic:projects` puts a deployment declaration on the tenant's
+  repository record, while this plan speaks of the dependencies a project declared. A repository two projects link is
+  deployed once, so dependencies declared per project need a rule for when two projects disagree, and dependencies
+  declared per repository need a home that is neither project's.

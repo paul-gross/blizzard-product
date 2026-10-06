@@ -25,17 +25,20 @@ tenant that declares nothing is narrated only to the hub's own destination, as t
   secret store, configured the way `epic:live-config` configures every other record.
 - **Forwarding without leaking.** Every span, and every egress file, reaches only the tenant it belongs to; the tenant
   attribute that tags hub-wide export today is what routes it.
+- **Only a tenant's own story.** A tenant receives the spans of its own requests and chunks and the fact rows that name
+  it. The hub's sweep spans are the hub's own: they carry no tenant, and no tenant ever receives them.
 - **A backend that is slow or down costs only its own tenant.** One tenant's unreachable collector never delays another
   tenant's export or the hub's own.
 
 ## What it stands on
 
-`epic:multi-tenancy` gives every span and fact the tenant it belongs to, and keeps trace export hub-wide with that
-tenant on every span; this epic is the step past it. The fleet-spans, platform-spans, and runner-spans slices of
-`epic:tracing` define what a span is.
+`epic:multi-tenancy` names the tenant on every request span and every exported fact row, and keeps trace export and fact
+egress hub-wide; this epic is the step past it. The hub's sweep spans stay tenant-less. The fleet-spans, platform-spans,
+and runner-spans slices of `epic:tracing` define what a span is.
 
 ## Open questions
 
 - Whether runners, which export their own spans locally, forward per tenant too, or only the hub's spans are routed.
-- Whether a tenant's destination receives the hub's platform spans that served it, or only the spans of its own chunks.
+- Whether a tenant's destination receives the platform spans of the requests it made, or only the spans of its own
+  chunks. Sweep spans are settled: they never go to a tenant.
 - Whether per-tenant fact egress belongs here or in `epic:fact-egress`.
