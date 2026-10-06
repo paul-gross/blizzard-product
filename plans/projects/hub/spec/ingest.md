@@ -7,10 +7,10 @@
 ```python
 class ChunkIngestRequest(BaseModel):
     tokens: list[str]
-    project: str | None = None   # a project id or name in the caller's tenant
+    project: str | None = None   # a project id or slug in the caller's tenant
 ```
 
-The CLI's ingest verb gains `--project PROJECT`, an id or a name. The board sends the shell lens as `project` whenever
+The CLI's ingest verb gains `--project PROJECT`, an id or a slug. The board sends the shell lens as `project` whenever
 the lens is on one ([surfaces.md](./surfaces.md)).
 
 ## Resolution, in order

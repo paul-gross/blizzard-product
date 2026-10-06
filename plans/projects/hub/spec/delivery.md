@@ -44,7 +44,7 @@ delivery slot serializes every landing as it does today.
 
 | Variable         | Carries                  |
 | ---------------- | ------------------------ |
-| `BZ_HUB_PROJECT` | The chunk's project name |
+| `BZ_HUB_PROJECT` | The chunk's project slug |
 
 A platform script that delivers into the hub — `garden_deliver.py` through `BZ_HUB_GARDEN_DELIVERY_URL`,
 `review_deliver.py` through `BZ_HUB_REVIEW_FINDINGS_URL` — needs nothing new: the callback is keyed by the chunk, and

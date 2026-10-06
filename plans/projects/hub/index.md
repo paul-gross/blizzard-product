@@ -18,10 +18,12 @@ that tends it.
 ## What to build
 
 - **Project as a stored concept.** A tenant holds many projects. A project is known to the hub by an id that never
-  changes, and to people by a name they choose and may change at will — a link or a runner's configuration written
-  against an old name keeps working until another project takes that name. Each project owns its scopes, routines,
-  findings, and garden proposals, and links to the work sources it draws from and the repositories it may land in. Scope
-  slugs and routine names are unique within a project, so two projects never collide on the name of a sweep.
+  changes; to the people who type it, by a short slug unique within its tenant (`winter`, `celestial-frontier`); and to
+  the people who read it, by a display name that is unique nowhere. Slug and name may both change at will. A link or a
+  runner's configuration written against an old slug keeps working until another project of the tenant claims that slug,
+  which any project may do, the one that left it included. Each project owns its scopes, routines, findings, and garden
+  proposals, and links to the work sources it draws from and the repositories it may land in. Scope slugs and routine
+  names are unique within a project, so two projects never collide on the name of a sweep.
 - **Work sources shared, linked by project.** A work source belongs to the tenant, and any number of projects link to
   it. A link may narrow what that project usually draws from the source — a Jira project key, a GitHub repository — so
   browsing and bare references default sensibly, but it never makes the source the project's own. Closing and annotating
@@ -54,10 +56,10 @@ that tends it.
 - **Gardening per project, entirely.** With the lens on a project, the gardening tab is that project's scopes, routines,
   runs and findings, and proposals; with the lens on all of them, it is a doorway into each project's garden. A routine
   runs a graph from the tenant's shared library, and a run's work is ingested into the routine's own project.
-- **The single-project fleet, carried over.** An existing installation's state becomes one project, named `default` for
-  the operator to rename — its chunks, scopes, routines, findings, and proposals, linked to every existing work source
-  and every existing repository — and every existing runner registration is recorded as serving it. Nothing is
-  re-ingested, and nothing that runs today is reconfigured.
+- **The single-project fleet, carried over.** An existing installation's state becomes one project, with the slug
+  `default` for the operator to change — its chunks, scopes, routines, findings, and proposals, linked to every existing
+  work source and every existing repository — and every existing runner registration is recorded as serving it. Nothing
+  is re-ingested, and nothing that runs today is reconfigured.
 - **The runners already deployed keep working.** A hub redeploys ahead of the runners that talk to it. A runner built
   before this slice declares no projects when it registers; the hub keeps the declaration it already holds for that
   runner rather than clearing it, so the fleet carries on until its runners are redeployed.

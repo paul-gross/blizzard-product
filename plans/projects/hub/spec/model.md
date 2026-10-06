@@ -10,33 +10,45 @@ the create / read / edit / retire verb set, and change facts that record who cha
 projects
   project_id    String  PK          proj_<ulid>
   tenant_id     String  NOT NULL    the tenant key (multi-tenancy store.md)
+  slug          String  NOT NULL    the project's handle; editable
   name          String  NOT NULL    display name; editable
   description   Text    NOT NULL
   revision      Integer NOT NULL
   created_at    UtcDateTime NOT NULL
-  project_former_names                   a name a project was renamed away from
-  name          String  NOT NULL
-  project_id    String  FK projects NOT NULL
+  UNIQUE (tenant_id, slug)          uq_projects_tenant_slug
+
+project_former_slugs                  a slug a project moved away from
   tenant_id     String  NOT NULL
+  slug          String  NOT NULL
+  project_id    String  FK projects NOT NULL
   retired_at    UtcDateTime NOT NULL
-  PRIMARY KEY (tenant_id, name)        at most one project holds a given former name
+  PRIMARY KEY (tenant_id, slug)       at most one project holds a given former slug
 
 project_lifecycle_facts               append-only; retired derives from the newest fact
   id, project_id FK, retired Boolean, set_at, set_by
 ```
 
-`project_id` is the project's identity: every `project_id` column, link, runner declaration, change fact, and internal
-reference uses it, and nothing stores a project's name in its place. `name` is a display name the operator chooses and
-may change at any time; the board suggests a slug (lowercase letters, digits, hyphens) but does not require one, and a
-name only needs to be unique, case-insensitively, among the tenant's live projects. Liveness derives from lifecycle
-facts (`bzh:facts-not-status`), so no index can express that rule; create and rename check it inside the tenant's
-exclusive write (`bzh:store-exclusive-write`). A rename records the name it leaves in `project_former_names`, replacing
-any earlier holder of that former name, and taking a name removes it from `project_former_names`. Renaming changes
-nothing that references the project. Where a name is accepted as input — a URL, a CLI flag, an API path, a runner
-declaration — it is resolved to the id at the boundary ([surfaces.md](./surfaces.md) §Resolving a project). Retirement
-follows the retired brake scopes and routines already carry (`bzh:facts-not-status`): a retired project accepts no new
-ingest, is offered to no runner as new work, and keeps everything recorded under it readable; chunks already in it
-finish.
+A project carries three things that people and machines tell it apart by, and each has one job:
+
+- **`project_id`** is the project's identity: every `project_id` column, link, runner declaration, change fact, and
+  internal reference uses it, and nothing stores a slug or a name in its place.
+- **`slug`** is the handle people type and read in URLs, CLI flags, API paths, and runner configuration. It is 1–64
+  characters of lowercase ASCII letters, digits, and hyphens, a hyphen only ever between two letters or digits — no
+  leading or trailing hyphen, no double hyphen, no other symbol (`^[a-z0-9]+(-[a-z0-9]+)*$`). It is unique within the
+  tenant across every project, live or retired, so `uq_projects_tenant_slug` enforces it with no liveness check, and two
+  tenants may each hold the same slug. A retired project keeps its slug so that it can be found, and enabled again, by
+  the slug people know it by.
+- **`name`** is the display name: free text, 1–128 characters with no leading or trailing whitespace, unique nowhere.
+  Nothing resolves a name; it is only ever shown.
+
+Changing a project's slug records the slug it leaves in `project_former_slugs`, replacing any earlier holder of that
+former slug. A slug that is some project's former slug — another project's, or the project's own — may be taken by any
+project of the tenant; taking it removes its `project_former_slugs` row in the same write, so from then on it resolves
+to its new holder and a slug is never both current and former. Changing the slug or the name changes nothing that
+references the project. Where a slug is accepted as input — a URL, a CLI flag, an API path, a runner declaration — it is
+resolved to the id at the boundary ([surfaces.md](./surfaces.md) §Resolving a project). Retirement follows the retired
+brake scopes and routines already carry (`bzh:facts-not-status`): a retired project accepts no new ingest, is offered to
+no runner as new work, and keeps everything recorded under it readable; chunks already in it finish.
 
 ## Links to work sources and repositories
 

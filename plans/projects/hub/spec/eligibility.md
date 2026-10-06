@@ -5,7 +5,7 @@
 A runner declares the projects it serves at registration. `RunnerRegistrationRequest` (`wire/runner.py`) gains:
 
 ```python
-projects: list[str] | None = None   # project ids or names in the runner's tenant
+projects: list[str] | None = None   # project ids or slugs in the runner's tenant
 ```
 
 `None` and `[]` mean different things, the distinction `subscriptions` already draws:
@@ -16,19 +16,19 @@ projects: list[str] | None = None   # project ids or names in the runner's tenan
 | `[]`       | Replaced with none: the runner serves nothing.                                   |
 | `["a", …]` | Replaced with exactly these projects.                                            |
 
-Each entry is a project id or a name; ids are the durable form and names the friendly one a runner's own configuration
+Each entry is a project id or a slug; ids are the durable form and slugs the friendly one a runner's own configuration
 may use. `FleetService.register` (`hub/domain/registry.py`) resolves every entry by [surfaces.md](./surfaces.md)
 §Resolving a project at registration and stores the result — `runner_registrations` gains `projects Text NULL`, a JSON
 list of `{entry, project_id}` pairs, where `entry` is what the runner sent and `project_id` is what it resolved to. A
 first registration that sends `None` stores none.
 
-Because the stored value is the id, renaming a project never strands a runner: the declaration keeps serving the project
-until the runner next re-registers, and a runner whose configuration still carries the old name keeps resolving it for
-as long as the old name resolves. Registration never rejects over the declaration, because it doubles as the heartbeat
-(`api/fleet.py::register_runner`): an entry that resolves to no live project of the tenant is stored with a null
-`project_id`, serves nothing, and is surfaced on the board as an unresolved declaration naming the entry. It is
-re-resolved at every registration, so it starts serving once a project answers to it. Operators who want a declaration
-that no rename or reuse of a name can affect configure ids.
+Because the stored value is the id, changing a project's slug never strands a runner: the declaration keeps serving the
+project until the runner next re-registers, and a runner whose configuration still carries the old slug keeps resolving
+it for as long as the old slug resolves to that project. Registration never rejects over the declaration, because it
+doubles as the heartbeat (`api/fleet.py::register_runner`): an entry that resolves to no live project of the tenant is
+stored with a null `project_id`, serves nothing, and is surfaced on the board as an unresolved declaration naming the
+entry. It is re-resolved at every registration, so it starts serving once a project answers to it. Operators who want a
+declaration that no slug change or reclaimed slug can affect configure ids.
 
 The field is additive on the runner-reached wire (`bzh:fleet-wire-additive`): an older runner neither sends nor reads
 it.
