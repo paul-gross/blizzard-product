@@ -16,17 +16,18 @@ projects: list[str] | None = None   # project ids or slugs in the runner's tenan
 | `[]`       | Replaced with none: the runner serves nothing.                                   |
 | `["a", …]` | Replaced with exactly these projects.                                            |
 
-Keeping the stored value when `None` is sent is new. Every field a runner reports today is overwritten on each
-registration, `subscriptions` included: a `None` roster is stored as null (`FleetService.register` in
-`hub/domain/execution/fleet.py`, over `upsert_registration` in `hub/store/internal/runner_registry_store.py`).
-`upsert_registration` therefore gains a conditional update that leaves `projects` untouched when the request carries
+Keeping the stored value when `None` is sent is new. A runner's row is created when it is added, before it ever
+registers (`RunnerRegistryStore.add`, behind `POST /api/runners`), and each registration after that updates the row
+(`FleetService.register` in `hub/domain/execution/fleet.py`, over `record_registration` in
+`hub/store/internal/runner_registry_store.py`), overwriting every field a runner reports, `subscriptions` included: a
+`None` roster is stored as null. `record_registration` therefore leaves `projects` untouched when the request carries
 none, while every other reported field is overwritten as before.
 
 Each entry is a project id or a slug; ids are the durable form and slugs the friendly one a runner's own configuration
 may use. `FleetService.register` (`hub/domain/execution/fleet.py`) resolves every entry by [surfaces.md](./surfaces.md)
 §Resolving a project at registration and stores the result — `runner_registrations` gains `projects Text NULL`, a JSON
-list of `{entry, project_id}` pairs, where `entry` is what the runner sent and `project_id` is what it resolved to. A
-first registration that sends `None` stores none.
+list of `{entry, project_id}` pairs, where `entry` is what the runner sent and `project_id` is what it resolved to. Its
+first value is set when the runner is added (§The declaration a runner is added with).
 
 Because the stored value is the id, changing a project's slug never strands a runner: the declaration keeps serving the
 project until the runner next re-registers, and a runner whose configuration still carries the old slug keeps resolving
@@ -43,6 +44,27 @@ unresolved entry without asking the hub again.
 
 Both fields are additive on the runner-reached wire (`bzh:fleet-wire-additive`): an older runner neither sends the
 request field nor reads the response field.
+
+## The declaration a runner is added with
+
+A runner that has never heard of projects will never declare one, so its declaration cannot wait for its first
+registration. The carry-over records one for every runner that exists when it runs ([carry-over.md](./carry-over.md)),
+but runners keep being added after it: a feature environment's runner adds itself again after every reset of its hub's
+data, and the mock fleet and the test harnesses add runners as they go. Each of those would register with nothing
+declared and serve nothing until its runner was rebuilt. The declaration therefore starts when the runner is added.
+
+- **Adding may name the projects.** `RunnerAddRequest` (`wire/runner.py`) gains `projects: list[str] | None = None`, ids
+  or slugs resolved as at registration, and `blizzard hub runner add` gains a repeatable `--project`. An entry that
+  resolves to nothing is refused `422`, since adding, unlike registration, is no heartbeat and can afford to say no.
+- **Naming none, the tenant's only project is served.** When the tenant holds exactly one project, the runner is added
+  serving it, its entry stored as the project's id so that no later slug change touches it — a project is assumed only
+  where nothing else could be meant, as at ingest ([ingest.md](./ingest.md) §Resolution, in order). When the tenant
+  holds several, the runner is added serving nothing, and the board marks it unassigned (§On the board).
+- **Registration takes over from there.** A runner that declares projects replaces the added declaration on its next
+  registration, under the table above; one that sends `None` keeps it.
+
+`POST /api/runners` sits on the surface `blizzard:wire-compat` diffs, because `runner init` adds its runner through it;
+the field is optional, so a `runner init` built before this slice adds through it unchanged.
 
 ## The matched peek
 

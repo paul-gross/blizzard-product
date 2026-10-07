@@ -114,9 +114,10 @@ today.
 
 - **Every row names its tenant.** Each row of every dataset — `steps`, `invocations`, and `events`, a `dropped` row
   included — gains `tenant_id`, and beside it `tenant_name` as the tenant was named when the row was written, the way
-  the rows already pair `graph_id` with `graph_name`. The column is additive; the contract version moves with its
-  goldens and the data dictionary. A loader that wants one tenant filters on `tenant_id`, and `epic:tenant-telemetry`
-  routes each tenant's rows by it later.
+  the rows already pair `graph_id` with `graph_name` and `runner_id` with `runner_name`. The columns are additive, so
+  each dataset keeps its major version and the writer widens its `_schema` document in place, as it did for
+  `runner_name`, with the goldens and the data dictionary moving beside them (`docs/versioning.md`). A loader that wants
+  one tenant filters on `tenant_id`, and `epic:tenant-telemetry` routes each tenant's rows by it later.
 - **One pass across tenants.** The sweep reads closed steps, usage facts, derivation markers, and drops through
   `HubScopedReads`, in its existing cursor order across every open tenant, and writes nothing into any tenant's store.
 - **Files written before the upgrade** lack the column. Every row in them belongs to the carried-over tenant, which the

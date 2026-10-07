@@ -84,9 +84,10 @@ class TenantRequest:
 - **People.** `require(permission)` (`hub/api/auth_session.py`) resolves the identity as today, applies the resolution
   order, checks the membership, expands the membership role, and only then checks `permission`, which answers `403` as
   today.
-- **Fleet.** `require_runner_principal` (`hub/api/auth.py`) resolves the bearer token through `HubScopedReads` to
-  `(runner_id, workspace_id, tenant_id)`, where `runner_id` is the id the hub minted when the runner was added;
-  `RunnerPrincipal` gains `tenant_id`, and `FleetRequest` builds its services from that tenant's `TenantStores`.
+- **Fleet.** `require_runner_principal` (`hub/api/auth.py`) resolves the bearer token through `HubScopedReads` to the
+  runner it belongs to. `RunnerPrincipal` already carries `runner_id`, the id the hub minted when the runner was added,
+  `runner_name`, its display label, and `workspace_id`, `None` until the runner first registers; it gains `tenant_id`,
+  the tenant the runner was added in, and `FleetRequest` builds its services from that tenant's `TenantStores`.
   Route-token resolution does the same through the chunk its token is bound to.
 - **Marker tokens.** A marker token is minted by the hub for one hub-executed node visit, `(chunk_id, node_id, epoch)`,
   and lives in the hub's memory (`hub/delivery/marker_auth.py`), not its store. The hub mints it inside that chunk's
@@ -124,17 +125,18 @@ can refuse to cross tenants. What the runner does with them is the [runner slice
 
 ### What registration answers
 
-`RunnerRegistrationResponse` (`wire/runner.py`), which already carries the runner's hub-minted `runner_id`, gains
-`tenant_id` and `tenant_name`, read from the registration the runner's token resolved to. Registration doubles as the
-heartbeat, so a runner learns of a tenant's rename on its next tick. Nothing a runner sends changes, and a runner built
-before this slice ignores both fields.
+`RunnerRegistrationResponse` (`wire/runner.py`), which already carries the runner's hub-minted `runner_id`, the
+`runner_name` the registry holds, and `first_registration`, gains `tenant_id` and `tenant_name`, read from the
+registration the runner's token resolved to. Registration doubles as the heartbeat, so a runner learns of a tenant's
+rename on its next tick. Nothing a runner sends changes, and a runner built before this slice ignores both fields.
 
 ### What the identity route answers
 
-`GET /api/fleet/identity` — which answers a runner's bearer token with its id and name, and tells an unknown token, a
-revoked one, and a retired runner apart — gains `tenant_id` and `tenant_name` beside them, read the same way.
-`runner init` asks it before adding anything, so it can see that a token already in `.env` belongs to a different tenant
-than the one it was asked to add the runner in, and stop ([runner slice](../../runner.md)).
+`GET /api/fleet/identity` — which answers a runner's bearer token with a `RunnerIdentityView` of its `runner_id` and
+`runner_name`, or a `RunnerIdentityRefusal` that tells a missing, unknown, or revoked token and a retired runner apart —
+gains `tenant_id` and `tenant_name` on the view, read the same way. `runner init` asks it before adding anything, so it
+can see that a token already in `.env` belongs to a different tenant than the one it was asked to add the runner in, and
+stop ([runner slice](../../runner.md)).
 
 ### Signing in to a runner
 

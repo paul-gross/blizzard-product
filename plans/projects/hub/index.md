@@ -47,7 +47,9 @@ that tends it.
   rather than any project that uses it.
 - **Runners serve what they declare.** A runner's registration records the projects it serves, and the hub offers it
   only chunks from those projects. A runner that declares nothing serves nothing, and the board says so rather than
-  leaving its idleness to be puzzled out.
+  leaving its idleness to be puzzled out. A runner's declaration begins when it is added rather than when it first
+  registers: adding it may name its projects, and naming none in a tenant that holds one project serves that project, so
+  a runner that has never heard of projects is still offered work the moment it is added.
 - **The project lens belongs to the shell.** Which project a person is looking through is the app's state, not any one
   screen's: it sits in the shell beside the tenant, travels in the URL so a shared link opens through the same lens, and
   every view reads it. Each view decides what the lens means for it — the board and events narrow to the project's

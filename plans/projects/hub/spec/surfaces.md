@@ -59,7 +59,8 @@ The tenant-wide reads gain `?project={project}`: `GET /api/chunks`, `/api/chunk-
 `/api/runs`, `/api/routines/trend`, `/api/routines/proposal-counts`, `/api/spend`, every `/api/analytics/*` read
 (counts, durations, spend, outcomes, events), the event feed, and the SSE stream's subscription, which filters
 chunk-scoped events by the chunk's project and passes runner-scoped events for runners that serve it. `GET /api/runners`
-gains each runner's served declaration ([eligibility.md](./eligibility.md)). A project's own view carries `project_id`,
+gains each runner's served declaration, and `POST /api/runners` an optional `projects` to add a runner serving
+([eligibility.md](./eligibility.md) §The declaration a runner is added with). A project's own view carries `project_id`,
 `slug`, and `name` as separate fields, and response models that describe a chunk gain `project_id`, `project_slug`, and
 `project_name`; every addition is optional on the wire and additive.
 
@@ -142,6 +143,7 @@ loading states follow `bzh:frontend-empty-state-gated`, and a change to any of t
 Every `epic:fact-egress` row that belongs to a chunk — each `steps`, `invocations`, and `events` row, a `dropped` row
 included — gains `project_id`, and beside it `project_slug` and `project_name` as the project was known when the row was
 written, read from the chunk's project. The columns sit beside the tenant columns the multi-tenancy
-[store contract](../../../multi-tenancy/hub/spec/store.md) §Fact egress adds; they are additive, and the contract
-version moves with them. A loader groups or filters by project from the rows alone, as it does by graph and node; a
-script that must survive a slug change keys on `project_id`.
+[store contract](../../../multi-tenancy/hub/spec/store.md) §Fact egress adds. They are additive, so each dataset keeps
+its major version and the writer widens its `_schema` document in place, with the goldens and the data dictionary moving
+beside them (`docs/versioning.md`). A loader groups or filters by project from the rows alone, as it does by graph and
+node; a script that must survive a slug change keys on `project_id`.

@@ -25,7 +25,8 @@ surface (`bzh:sql-portable`). Within every tenant, whether or not it holds any s
    changes, because one project cannot collide with itself.
 5. **Records what every runner serves.** Every `runner_registrations` row's `projects` becomes the one project. A runner
    that re-registers without a declaration keeps it ([eligibility.md](./eligibility.md)), so the fleet keeps claiming
-   exactly what it claimed before.
+   exactly what it claimed before. A runner added after the migration takes its declaration from the add instead
+   ([eligibility.md](./eligibility.md) §The declaration a runner is added with).
 
 ## What does not change
 
