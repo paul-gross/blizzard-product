@@ -15,5 +15,5 @@ to build.
 | `delivered/`                                 | Reading the frozen plan of an epic that has fully landed                                                                                                |
 | [CONTRIBUTING.md](./CONTRIBUTING.md)         | Raising a proposal from outside, or judging one — what belongs here and what it must argue                                                              |
 | [MAINTAINERS.md](./MAINTAINERS.md)           | Promoting intent a step — adding a registry row, writing a plan, filing issues, or closing a slice out                                                  |
-| `strategy/`                                  | Sizing our own intent against the field — market research on a product we mean to keep watching                                                         |
+| `strategy/`                                  | Sizing our own intent against the field — market research on a product, or a field, we mean to keep watching                                            |
 | [context/index.md](./context/index.md)       | Authoring anything here — the repo's structure rules and the voice its documents are written in                                                         |
