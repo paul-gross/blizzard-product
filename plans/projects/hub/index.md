@@ -1,5 +1,10 @@
 # Plan — `epic:projects`, hub slice
 
+> **Shipped.** This plan is frozen: it records what the projects hub slice was conceived to be, with its
+> [specification](./spec/index.md) aligned to what landed. `blizzard-context:/domain/projects.md` owns the behavior from
+> here, and [milestones.md](../../../milestones.md) records the slice delivered until `milestone:projects` reaches
+> [delivered.md](../../../delivered.md).
+
 An operator who builds blizzard, winter, and celestial frontier from one hub today has one undifferentiated queue. Every
 work source and repository the hub holds is open to every chunk, every runner will claim anything, every scope and
 routine shares one namespace, and the board cannot be asked to show only winter. The hub has no idea which body of work

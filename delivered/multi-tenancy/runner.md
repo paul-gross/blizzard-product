@@ -1,5 +1,9 @@
 # Plan — `epic:multi-tenancy`, runner slice
 
+> **Shipped.** This plan is frozen: it records what tenancy's runner slice was conceived to be.
+> `blizzard-context:/domain/tenancy.md` owns the behavior from here, and [milestones.md](../../milestones.md) records
+> the slice delivered until `milestone:projects` reaches [delivered.md](../../delivered.md).
+
 The hub slice settles a runner's tenant without asking the runner anything. The token a runner holds resolves to one
 registration in one tenant, and a runner built before tenancy keeps claiming and reporting as if nothing had changed.
 What the hub cannot settle is what the runner remembers, and what the runner does on the operator's behalf. A runner

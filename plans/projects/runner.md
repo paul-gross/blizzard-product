@@ -1,5 +1,9 @@
 # Plan — `epic:projects`, runner slice
 
+> **Shipped.** This plan is frozen: it records what the projects runner slice was conceived to be.
+> `blizzard-context:/domain/projects.md` owns the behavior from here, and [milestones.md](../../milestones.md) records
+> the slice delivered until `milestone:projects` reaches [delivered.md](../../delivered.md).
+
 The hub slice teaches the hub which project every chunk belongs to, stores the projects every runner serves, and offers
 a runner only those projects' chunks. All that is left for the runner is to say which projects it serves. This slice is
 that and no more: a runner keeps its one workspace, exactly as it works today, and an operator who wants projects worked

@@ -1,5 +1,8 @@
 # Multi-tenancy hub specifications
 
+> **Shipped.** These contracts are frozen with the [hub slice](../index.md) they specify, aligned to what landed; the
+> code and `blizzard-context:/domain/tenancy.md` own the behavior from here.
+
 The technical contracts behind the hub slice of `epic:multi-tenancy`. Product intent begins at the
 [slice plan](../index.md); implementation enters at the concern below. The secret store a tenant scopes is owned by
 `epic:live-config`'s [secrets contract](../../../../delivered/live-config/spec/secrets.md).

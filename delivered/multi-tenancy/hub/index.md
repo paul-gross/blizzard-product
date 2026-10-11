@@ -1,5 +1,10 @@
 # Plan — `epic:multi-tenancy`, hub slice
 
+> **Shipped.** This plan is frozen: it records what tenancy's hub slice was conceived to be, with its
+> [specification](./spec/index.md) aligned to what landed. `blizzard-context:/domain/tenancy.md` owns the behavior from
+> here, and [milestones.md](../../../milestones.md) records the slice delivered until `milestone:projects` reaches
+> [delivered.md](../../../delivered.md).
+
 A test that wants a hub of its own today has to start one. It cannot borrow a running hub from its neighbour, because
 nothing inside a hub is smaller than the whole installation: every graph, chunk, finding, and runner is everyone's. The
 same wall stands in front of an operator who wants two fleets that never meet — a client's work and their own, a sandbox
