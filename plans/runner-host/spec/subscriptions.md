@@ -17,20 +17,12 @@ The legacy `[external_subscription_usage]` table, and the `anthropic` declaratio
 (`resolved_subscriptions`, `config.py:779`), do not carry into `blizzard-host.toml`: a host declares its subscriptions
 explicitly.
 
-## The host store
+## Where samples live
 
-The host keeps a store of its own, `<host dir>/data/host.db`, for what belongs to the machine rather than to a runner:
-
-- `external_usage_samples` and `credential_renewal_claims` / `credential_renewal_outcomes`, moved from the runner store
-  (`runner/store/schema.py:678`, `:696`, `:710`) with the same columns;
-- `workspace_prompt`, moved from the runner store (`schema.py:377`), keyed by workspace id;
-- `host_identity`, a singleton holding the host id and the tenant id and name the hub first answered with, written once
-  and never cleared ([process.md](./process.md) §One tenant);
-- `host_outbound_buffer`, the host's own FIFO of subscription reports awaiting delivery, shaped as a runner's
-  `outbound_buffer` (`schema.py:61`).
-
-No lease, binding, brake, or runner outbox row lives here: everything the hub's exactly-once and a runner's recovery
-depend on stays in the runner's own store.
+Samples, misses, and renewal records are host-scoped rows of the host store — `external_usage_samples`,
+`credential_renewal_claims`, `credential_renewal_outcomes` (`runner/store/schema.py:678`, `:696`, `:710`), with the same
+columns ([store.md](./store.md) §Runner-scoped and host-scoped tables). A sample belongs to its slug, not to any runner
+that spends it.
 
 ## Sampling once
 
@@ -46,30 +38,35 @@ The host reports its roster in its own registration and each sample or miss once
 (`POST /api/fleet/host/events`, [hub.md](./hub.md) §The host's fact lane). Recording a sample writes the
 `external_usage_samples` row and its `host_outbound_buffer` report in one transaction, as a runner's
 `record_external_usage_attempt` does today (`store/internal/usage_store.py:386`), so a sample is never recorded without
-its report or reported without being recorded. A hosted runner reports no roster and no samples; it registers the slug
-it spends, and the hub reads its usage from its host's.
+its report or reported without being recorded. A runner of a registered host reports no roster and no samples; it
+registers the slug it spends, and the hub reads its usage from its host's.
+
+An unregistered host has no lane of its own ([configuration.md](./configuration.md) §Hub credentials). Its one runner
+reports its roster and each sample through its own outbox, exactly as a runner does today, and the host writes the
+sample and that runner's `outbound_buffer` report in one transaction.
 
 ## The brake
 
-A usage limit is still detected per lease, by the harness the lease ran (`lifecycle/usage_limit.py:501`). What changes
-is how far it reaches:
+A usage limit is still detected per lease, by the harness the lease ran (`lifecycle/usage_limit.py`). What changes is
+how far it reaches:
 
 1. The runner whose worker reported the limit engages its own brake (`throttle/pause.py:310`) with `by = "usage-limit"`,
    exactly as today, and parks the lease in place.
-2. If that runner spends a subscription, the host engages the same brake, with the same reason and reset time, on every
-   other runner of the host spending that slug, each in its own store with its own outbound report. Runners spending
-   another subscription, or none, are untouched.
+2. If that runner spends a subscription, the same transaction engages the same brake, with the same reason and reset
+   time, on every other runner of the host spending that slug, each with its own `local_pause_facts` row and its own
+   outbound report. Runners spending another subscription, or none, are untouched.
+
+Because every runner's brake lives in the one host store, the fan-out is a single `BEGIN IMMEDIATE` transaction with the
+reporting runner's own engagement: either every runner spending the plan is braked, or none is and the limited lease is
+not yet parked.
 
 The reason names the subscription beside the harness — `usage limit: anthropic via claude_code (resets …)` — so a runner
 braked by a neighbour's limit says whose plan ran dry.
 
-The reset time is the harness's own when it reported one. Otherwise `_fallback_reset` (`usage_limit.py:493`) reads the
+The reset time is the harness's own when it reported one. Otherwise `_fallback_reset` (`usage_limit.py:137`) reads the
 newest sample of the runner's one subscription only, never every declared slug, and names none when that subscription
 has no sample or the runner spends none.
 
 Engagement stays once-only per brake (`LocalBrake.engage`, `pause.py:134`): a runner already braked is not re-braked by
 the fan-out. Lifting is unchanged — only an operator lifts a runner's brake, one runner at a time
 (`blizzard runner start --runner <id>`), and nothing lifts it at the reported reset.
-
-A crash between the reporting runner's engagement and the fan-out leaves a neighbour unbraked. That is tolerated: the
-neighbour's next worker to meet the limit engages its own brake and fans out in turn, at the cost of one parked lease.

@@ -72,10 +72,13 @@ bindings: list[RunnerBinding] | None = None   # {project, workspace_id, agents}
 subscription: str | None = None                # the slug it spends, one of its host's roster
 ```
 
-A runner under a host sends `bindings`, from which the hub derives the served-projects declaration exactly as it does
-from `projects` today ([eligibility](../../../delivered/projects/hub/spec/eligibility.md)), and sends neither `projects`
-nor a subscription roster. Its `workspace_id` and `env_capacity` become optional; a hosted runner omits them, since its
-host reports its workspaces. A runner with no host keeps sending what it sends today.
+Every runner a host runs sends `bindings`, from which the hub derives the served-projects declaration exactly as it does
+from `projects` today ([eligibility](../../../delivered/projects/hub/spec/eligibility.md)), in place of `projects`. A
+runner under a registered host also sends no subscription roster, and omits `workspace_id` and `env_capacity`, which
+become optional, since its host reports its workspaces. The one runner of an unregistered host is host-less at the hub:
+beside its bindings it sends its roster of one subscription, its bindings' first workspace as `workspace_id`, and that
+workspace's size as `env_capacity`, as a runner sends them today. A runner from before the host keeps sending exactly
+what it sends today.
 
 Registration doubles as the heartbeat, so it is never refused over its content. A binding naming a workspace its host
 has not reported, or a subscription outside the host's roster, is stored and flagged on the board and in the answer, as
@@ -92,7 +95,7 @@ own client.
 
 A host's own facts travel a lane of their own, shaped exactly as a runner's does (`POST /api/fleet/events`,
 `hub/api/fleet.py:793`). The host appends each fact to `host_outbound_buffer` with a per-host monotonic `seq`
-([subscriptions.md](./subscriptions.md) §The host store) and pushes batches in `seq` order. The hub keeps
+([store.md](./store.md) §Runner-scoped and host-scoped tables) and pushes batches in `seq` order. The hub keeps
 `host_high_water` — `host_id`, the greatest applied `seq`, `updated_at`, `tenant_id` — shaped as `runner_high_water`
 (`hub/store/schema.py:1700`), and applies a batch exactly as `FactIngestService.ingest` does for a runner
 (`hub/domain/execution/facts.py:224`): a retired host is refused before its mark is read, a fact at or below the mark is

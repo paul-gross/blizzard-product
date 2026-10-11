@@ -87,7 +87,8 @@ serve, and receives the host's id and a credential of its own, shown once. From 
 Bringing a runner up is something the host asks the hub for under its own credential: the hub mints the runner's id and
 token in the host's tenant and under the host, and the host writes both into its configuration. Neither the operator nor
 an agent working on the machine needs a sign-in at the hub to add a runner — only the host's credential, which already
-lives on the machine the runners will run on.
+lives on the machine the runners will run on. A host the hub has not been told of yet still runs, holding the one runner
+it graduated from, which talks to the hub as it always has.
 
 The credential is deliberately narrow. It lets the host describe itself — its workspaces, its subscriptions, the address
 its panel is reached at — report its subscriptions' usage, sign the operator in to its panel, and add or retire runners
@@ -98,9 +99,13 @@ under it.
 ## What to build
 
 - **One host, many runners.** A single daemon runs every runner the operator declares on the machine, each holding the
-  id and token the hub issued for it, each keeping its own store. A machine that runs two installations today runs one,
-  on one port, under one service unit. A runner that cannot work — a token the hub refuses, a store that is not its own
-  — stops alone, and its neighbours carry on.
+  id and token the hub issued for it. A machine that runs two installations today runs one, on one port, under one
+  service unit. A runner that cannot work — a token the hub refuses, an identity that is not its own — stops alone, and
+  its neighbours carry on.
+- **One store for the machine.** A host keeps one database holding every runner it runs, each runner's records marked as
+  its own and read only through that runner's view of the store. What spans runners — the environments a workspace has
+  handed out, a plan's exhaustion braking every runner that spends it — is settled in one transaction rather than
+  stitched across files, so two runners can never hold one environment and a brake never reaches half its runners.
 - **The host as a hub record.** A host is a record in its tenant with an id the hub mints, a name, and a credential.
   `hub host add` creates it, `hub host retire` retires it with its runners, and an existing runner can be adopted into a
   host without losing its id or token.
@@ -136,10 +141,15 @@ under it.
   routes live under the host's address for that runner; nothing answers at the paths a lone runner used.
 - **The machine seen as one thing.** The board shows a host with its runners inside it rather than unrelated peers that
   happen to share a desk, and a plan's usage once, on its host, with each runner that draws on it named.
-- **The existing machine, carried over by hand.** Today's runners keep their ids, tokens, stores, and every chunk they
-  hold. The operator adds a host, adopts the runners into it, and writes the host's configuration around their existing
-  directories — a short, mechanical change an agent makes as readily as a person, so blizzard ships the procedure rather
-  than a command for it. A runner not yet moved under a host keeps working against the hub as it does today.
+- **Every runner graduates to a host.** Deploying the release turns each existing runner into a host of one: its
+  database migrates forward into a host's, holding that one runner, and its configuration file is rewritten as the
+  host's — a short, mechanical step that is part of the deploy, which an agent carries out as readily as a person, so
+  blizzard ships the procedure rather than a command for it. The runner keeps its id, its token, and every chunk it
+  holds, and until its host is registered at the hub it works there exactly as a runner with no host does today.
+- **Ingest gathers runners into one host.** A registered host takes in a runner from another host's database — or from a
+  runner not yet graduated — copying its records across, re-numbering what must be re-numbered, and removing it from the
+  source, which is set aside once empty. Two runners on one desk become one host by graduating both and ingesting one
+  into the other, and the same verb serves any later rearrangement.
 
 ## Where the runner goes next
 

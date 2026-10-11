@@ -2,17 +2,17 @@
 
 ## The file and the directories
 
-A host is a directory holding `blizzard-host.toml`. Each runner on it keeps a directory of its own — its store, its
-published harness bundle, and its scratch directories (`worker-stdout/`, `elicitation-output/`, `worker-tmp/`) — named
-by the runner's `dir`, relative to the host directory or absolute. A runner's directory is exactly what a runner's root
-is today, minus `blizzard-runner.toml`, which is how existing runners move under a host without moving a file
-([carry-over.md](./carry-over.md)).
+A host is one directory: `blizzard-host.toml`, its `.env`, its store at `data/host.db` ([store.md](./store.md)), its
+socket and lock, and a `runners/<name>/` directory per runner holding that runner's published harness bundle and its
+scratch directories (`worker-stdout/`, `elicitation-output/`, `worker-tmp/`). A runner has no store and no root of its
+own; everything a runner's root held today is either in the host's store or under `runners/<name>/`.
 
 `RunnerConfig.load` (`runner/config.py:1050`) gains a sibling, `HostConfig.load`, that reads `blizzard-host.toml` and
 projects one `RunnerConfig` per `[[runner]]` entry, with the host's and the bound workspaces' keys filled in. Everything
 downstream of a `RunnerConfig` keeps reading the shape it reads today, apart from the agent limit, which moves to the
 binding ([workspaces.md](./workspaces.md) §Parallel agents). `blizzard runner host` refuses a directory holding a
-`blizzard-runner.toml` and no `blizzard-host.toml`, naming the carry-over procedure ([carry-over.md](./carry-over.md)).
+`blizzard-runner.toml` and no `blizzard-host.toml`, naming the graduation procedure ([carry-over.md](./carry-over.md)
+§Graduation).
 
 ```toml
 hub_url = "https://blizzard.grosscode.net"
@@ -52,7 +52,7 @@ prompt_package = "winter"
 
 [[runner]]
 name = "r-claude"
-dir = "../runner"
+
 subscription = "anthropic"
 projects = [{ project = "blizzard", workspace = "blizzard-claude", agents = 2 }]
 
@@ -64,7 +64,7 @@ enabled = false
 
 [[runner]]
 name = "r-chatgpt"
-dir = "../runner-opencode"
+
 subscription = "openai"
 projects = [{ project = "blizzard", workspace = "blizzard-openai", agents = 1 }]
 
@@ -76,19 +76,21 @@ enabled = false
 
 Every key `RunnerConfig` reads today has exactly one home.
 
-| Level               | Keys                                                                                                                                                                                                                                                                           |
-| ------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
-| Host                | `hub_url`, `host`, `port`, `public_url`, `trusted_proxies`, `session_secret_env`, `[auth]`, `[tracing]`, `[transcripts]`, `[worker_stdout]`, `host_token`, `[hub_tokens]`, `[[subscription]]`, `[[workspace]]`                                                                 |
-| `[[workspace]]`     | `id` (today's `workspace_id`), `root` (`workspace_root`), `provider` (`workspace_provider`), `envs` (`workspace_envs`), `max_environments`, `[[workspace.repo]]` (`[[workspace_repo]]`), `base_branch`, `prompt` / `prompt_file` / `prompt_package` (`workspace_prompt*`)      |
-| `[[runner]]`        | `name`, `dir`, `subscription`, `projects`, `gates`, `runner_prompt*`, `transcripts_root`, `[harness]` (`autonomy`, `config_dir`), `[claude_code]` and its legacy root keys, `[opencode]`, `[models.aliases]`, `[effort.aliases]`, `[cost]`, `[queue]`, `[context]`, `[worker]` |
-| `runner.projects[]` | `project`, `workspace`, `agents` (today's `max_agents`)                                                                                                                                                                                                                        |
+| Level               | Keys                                                                                                                                                                                                                                                                      |
+| ------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Host                | `hub_url`, `host`, `port`, `public_url`, `trusted_proxies`, `session_secret_env`, `[auth]`, `[tracing]`, `[transcripts]`, `[worker_stdout]`, `host_token`, `[hub_tokens]`, `[[subscription]]`, `[[workspace]]`                                                            |
+| `[[workspace]]`     | `id` (today's `workspace_id`), `root` (`workspace_root`), `provider` (`workspace_provider`), `envs` (`workspace_envs`), `max_environments`, `[[workspace.repo]]` (`[[workspace_repo]]`), `base_branch`, `prompt` / `prompt_file` / `prompt_package` (`workspace_prompt*`) |
+| `[[runner]]`        | `name`, `subscription`, `projects`, `gates`, `runner_prompt*`, `transcripts_root`, `[harness]` (`autonomy`, `config_dir`), `[claude_code]` and its legacy root keys, `[opencode]`, `[models.aliases]`, `[effort.aliases]`, `[cost]`, `[queue]`, `[context]`, `[worker]`   |
+| `runner.projects[]` | `project`, `workspace`, `agents` (today's `max_agents`)                                                                                                                                                                                                                   |
 
 Worker security is the runner's: `[harness]` autonomy and bundle, `[worker]`'s spawn-environment allowlist, and the
 Claude Code legacy keys (`harness_permission_mode`, `worker_settings_path`) all sit under `[[runner]]`, so two runners
 on one host may run at different autonomy levels.
 
-`db_url` is not configurable under a host: each runner's store is `sqlite:///<dir>/data/runner.db`, and the host's own
-store is `sqlite:///<host dir>/data/host.db` ([subscriptions.md](./subscriptions.md) §The host store).
+Three keys of today's file have no home under a host. `db_url` is gone: the store is always
+`sqlite:///<host dir>/data/host.db`. `token_env` is gone: a runner's token variable is derived from its name (§Hub
+credentials). The legacy `runner_id` key, which a runner reads as its name, is read once, by graduation
+([carry-over.md](./carry-over.md) §Graduation), and is not accepted in `blizzard-host.toml`.
 
 ## Workspaces
 
@@ -114,8 +116,10 @@ The host holds two kinds of credential ([hub.md](./hub.md) §The host credential
 The **host token** authenticates the host itself: its reports, its subscription usage, panel sign-in, and adding or
 retiring its runners. The host resolves the first of the environment variable `BZ_HOST_TOKEN`, the host file's
 `host_token` key, and `BZ_HOST_TOKEN` in the host directory's `.env`. The host's id is not configured; the hub answers
-with it on the host's first report, and the host keeps it in its store (`host_identity`,
-[subscriptions.md](./subscriptions.md) §The host store).
+with it on the host's first report, and the host keeps it in its store (`host_identity`, [store.md](./store.md)). A host
+with no host token is **unregistered**: it runs, but the hub does not know it, so it may hold only one runner, and that
+runner registers, reports, and signs the operator in exactly as a host-less runner does today
+([carry-over.md](./carry-over.md) §Registering a host).
 
 A **runner token** identifies one runner to the hub, which knows a runner's work by its token alone
 (`wire/runner.py:53`). Tokens are per runner, keyed by the runner's `name`. For each runner the host resolves the first
@@ -125,8 +129,8 @@ of:
    outside `[A-Z0-9]` replaced by `_` — `r-claude` reads `BZ_HUB_TOKEN_R_CLAUDE`, `r-chatgpt` reads
    `BZ_HUB_TOKEN_R_CHATGPT`.
 2. The host file's `[hub_tokens]` table, keyed by runner name: `[hub_tokens] r-claude = "…"`.
-3. `BZ_HUB_TOKEN` in the runner directory's `.env` (`hub/token_file.py:89`), which is where `blizzard runner add` writes
-   a new runner's token, and where a runner moved under a host already keeps its own.
+3. `BZ_HUB_TOKEN_<NAME>` in the host directory's `.env` (read as `hub/token_file.py:89` reads it today), which is where
+   `blizzard runner add` writes a new runner's token, and where graduation and ingest put a runner's existing one.
 
 The unsuffixed `BZ_HUB_TOKEN` in the process environment is never read under a host; it names no runner. A host whose
 file carries `host_token` or `[hub_tokens]` warns at startup when the file is readable by anyone but its owner. The
@@ -142,8 +146,10 @@ panel's session secret is the host's, read from the process environment under `s
 - an unreadable or malformed `blizzard-host.toml`, or an invalid host-level key;
 - two `[[workspace]]` entries sharing an `id`, or two on the same root naming the same environment;
 - two `[[subscription]]` entries sharing a `slug`;
-- two `[[runner]]` entries sharing a `name`, a `dir`, or a token environment-variable name after normalisation — the
-  host cannot tell which entry an error or a token belongs to.
+- two `[[runner]]` entries sharing a `name`, or a token environment-variable name after normalisation — the host cannot
+  tell which entry an error or a token belongs to;
+- more than one `[[runner]]` on a host with no host token;
+- a host directory another process holds ([process.md](./process.md) §One owner per host directory).
 
 **Runner errors** halt that runner alone, as [process.md](./process.md) §Isolation describes: the host starts, every
 other runner works, and the halted runner's view names the error. They are:
@@ -153,7 +159,7 @@ other runner works, and the halted runner's view names the error. They are:
 - a binding whose `agents` is absent or not a positive integer;
 - no harness enabled (`harness/wiring.py:56`), or any other error in the runner's own tables;
 - no hub token found for the runner;
-- a runner directory another process holds ([process.md](./process.md) §One owner per runner directory).
+- a registered host's runner that the hub does not hold under the host.
 
 A runner may leave `subscription` out: it spends no declared plan, reports no roster, and a usage limit brakes it alone,
 with no fallback reset time ([subscriptions.md](./subscriptions.md) §The brake).

@@ -50,38 +50,42 @@ environments claims only as environments free, since a failed acquire leaves the
 
 ## The shared pool
 
-A workspace's environments are shared by every binding to it, whichever runner holds the binding. Occupancy stays where
-it is today — in each runner's own store, as `env_bindings` with no later `binding_releases` — and the host derives a
-workspace's held set as the union of every runner's held environments for that workspace. The workspace seam already
-takes the held set as an argument (`IWorkspaceProvider.acquire(chunk_id, count, held_ids)`,
-`runner/environments/provider.py:66`), so a provider needs no change: the host calls `acquire` with the host-wide held
-set, under the workspace's own lock, and the runner records its binding before the lock is released.
+A workspace's environments are shared by every binding to it, whichever runner holds the binding. Occupancy stays the
+fact it is today — an `env_bindings` row with no later `binding_releases` — now in the one host store, where every
+runner's rows sit side by side. A workspace's held set is one read across all of them, a named `HostStores` member
+([store.md](./store.md) §Scoped access). The workspace seam already takes the held set as an argument
+(`IWorkspaceProvider.acquire(chunk_id, count, held_ids)`, `runner/environments/provider.py:66`), so a provider needs no
+change: the runner reads the held set, has the provider choose, and records its binding in one `BEGIN IMMEDIATE`
+transaction, so two runners can never bind one environment.
 
 ```text
-acquire(workspace, chunk):
-  with workspace.lock:
-    held = ⋃ runner.stores.environments.held_environment_ids(workspace)  for every runner bound to workspace
+acquire(workspace, runner, chunk):
+  BEGIN IMMEDIATE
+    held = host_stores.held_environment_ids(workspace)        -- every runner's held rows
     env  = workspace.provider.acquire(chunk, 1, held)
-    runner.stores.environments.bind(chunk, workspace, project, env)
+    runner_stores.environments.bind(chunk, workspace, project, env)
+  COMMIT
 ```
 
-Two workspaces on one root are two pools: each acquires only from the environments it names.
+The provider's own preparation of the environment — fetching, resetting, provisioning — runs after the commit, outside
+the transaction, as it does today; the binding already reserves the environment. Two workspaces on one root are two
+pools: each acquires only from the environments it names.
 
 ## Crash recovery
 
-Because occupancy lives in runner stores, a host restart recovers it with no host record: each runner's
-`InterruptedClaims.reconcile` (`claim.py:252`) walks its own held bindings as it does today, and the host's first
-acquire on a workspace sees every binding any runner still holds. A runner that is refusing to work — a mismatched
-identity, a foreign tenant — still contributes its held bindings to the union, so a halted runner's environments are
-never handed to a neighbour while its chunks still hold them.
+Occupancy is durable in the host store, so a host restart recovers it with no further record: each runner's
+`InterruptedClaims.reconcile` (`claim.py:252`) walks its own held bindings as it does today, and the next acquire on a
+workspace sees every binding any runner still holds. A runner that is refusing to work — a mismatched identity, a
+foreign tenant — keeps its held rows, so its environments are never handed to a neighbour while its chunks still hold
+them. That an environment is held by at most one binding across the host is asserted by the invariant checker
+([store.md](./store.md) §Invariants).
 
 ## Workspace prompts
 
 The standing prompt is the workspace's: `Spawner` (`runner/lifecycle/spawn.py:595`) reads the prompt of the workspace
 the lease's `env_bindings` row names. The live override (`GET/PUT/DELETE /api/workspace-prompt`,
-`api/workspace_prompt.py:37`) moves to the host's routes as `/api/host/workspaces/<id>/prompt`, and its row moves from
-each runner's `workspace_prompt` table to the host store's ([carry-over.md](./carry-over.md)). A runner's own
-`runner_prompt` stays the runner's.
+`api/workspace_prompt.py:37`) moves to the host's routes as `/api/host/workspaces/<id>/prompt`, and its row becomes
+host-scoped, keyed by workspace id ([store.md](./store.md)). A runner's own `runner_prompt` stays the runner's.
 
 ## What a workspace holds
 
