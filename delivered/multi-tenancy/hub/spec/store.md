@@ -36,8 +36,11 @@ Every tenant-owned table gains `tenant_id String NOT NULL REFERENCES tenants(ten
 - **Indexes lead with it where a read lists.** An index that serves a listing or a range read — every
   `ix_*_recorded_at_*`, `ix_*_at_id`, `ix_chunks_minted_at_chunk_id`, `ix_event_log_recorded_at`, the
   `(routine_name, scope_slug)` and `(source, ref)` families — is rebuilt with `tenant_id` as its leading column, so a
-  tenant's feed never scans another tenant's rows. An index whose leading column is a ULID primary or foreign key
-  (`*_id` lookups by chunk, finding, proposal, segment) keeps its shape: the id already selects one tenant's rows.
+  tenant's feed never scans another tenant's rows. Every id lookup a scoped read uses (`*_id` lookups by chunk, finding,
+  proposal, segment) leads with it too, as `(tenant_id, <id>…)`: the id alone would select one tenant's rows, but
+  SQLite, planning without statistics, would serve the read through another index's tenant prefix and scan every row the
+  tenant holds. An index that does not lead with `tenant_id` is kept only where a hub-scoped read (§The scoped store
+  seam) needs one — a hub-wide twin, for a pass that pages every open tenant's rows in its order.
 - **Every tenant-owned table can find a tenant's rows by index.** Each has at least one index whose leading column is
   `tenant_id` — a listing index rebuilt as above, or a plain `ix_<table>_tenant_id` where none already leads with it —
   so draining a tenant ([administration.md](./administration.md) §Deleting a tenant) touches that tenant's rows and
@@ -86,8 +89,11 @@ class StoreScope:
   - tenant administration (listing tenants, teardown);
   - the identity store.
 
-  Nothing else may hold it. An ast-grep rule (`blizzard:structural-gate`) refuses an import of `HubScopedReads` outside
-  `hub/auth/`, `hub/api/auth*.py`, the sweep reconcilers, and tenant administration.
+  Nothing else may hold it. The composition root builds it as `HubCore.hub_scoped_reads` and hands each hub-level pass
+  and tenant administration only the members it reads. An ast-grep rule (`blizzard:structural-gate`) refuses every name
+  in the seam's family — `HubScopedReads`, any `hub_scoped_*` module or helper, and that field — however it arrives, by
+  import, annotation, attribute, or a string handed to `importlib` or `getattr`, anywhere but the composition root, the
+  seam's own modules, `hub/auth/`, and `hub/api/auth*.py`.
 
 ### Sweeps
 
@@ -147,7 +153,7 @@ names why it is global.
 | `tenants`, `tenant_deletions`                   | the boundary itself                                                                              |
 | `users`, `identities`, `sessions`, `auth_state` | identity is resolved before a tenant is ([identity.md](./identity.md))                           |
 | `auth_facts`                                    | the sign-in and security log of hub-level identities                                             |
-| `superuser_bootstrap`                           | the first claim of the hub administrator role, from `auth.superuser`                             |
+| `superuser_bootstrap`                           | the `auth.superuser` address to claim and who claimed it; each claim makes a hub administrator   |
 | `hub_admin_facts`                               | who holds the hub administrator role, the role above every tenant ([identity.md](./identity.md)) |
 | `config_import_facts`                           | the hub-level carry-over of a file-configured hub, read by the startup legacy check              |
 | `membership_facts`                              | carries `tenant_id` as data but is read hub-wide to list a person's tenants                      |

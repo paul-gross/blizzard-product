@@ -63,7 +63,8 @@ state, the CLI's own context — and two tabs on two tenants never interfere.
 - **A shared link** names a page and the records on it, never a tenant, so it opens in whichever tenant the recipient's
   tab is in. Record ids are unique across the hub, so a link to another tenant's record answers not found rather than
   ever reaching the wrong record. For the people with one membership, which is nearly everyone, every link simply works.
-- **The CLI** sends the header from `--tenant <tenant_id>`, else from the context's saved default tenant. It lists the
+- **The CLI** sends the header from `--tenant <tenant_id>` and saves no default: without the flag the hub acts in the
+  caller's single membership (§Resolution order), and a caller with several is asked for `--tenant`. It lists the
   caller's tenants, ids beside names, from `/api/me`, so a person finds an id without leaving the terminal. Its sign-in
   (`GET /api/auth/authorize?client=cli`, `hub/api/idp.py`) stays a hub-level route and mints a session that belongs to
   the person and no tenant; the CLI names its tenant per request, as the board does.
@@ -114,7 +115,8 @@ The in-process `EventBroker` (`hub/events/broker.py` over `foundation/events/bro
 - `GET /api/events/stream` subscribes to the resolved tenant's broker after `require(FLEET_VIEW)`, its tenant named by
   `X-Blizzard-Tenant` like every other people route. The board's stream transport is fetch-based
   (`web/projects/fleet/src/lib/sse/sse.service.ts`, `fetchEventSourceFactory`), so it sends the header from the same
-  interceptor as every API call, and the stream needs no query-parameter exception.
+  interceptor as every API call, and the stream needs no query-parameter exception. A subscriber's stream ends once its
+  membership in that tenant is revoked; a role change ends none, since every membership role holds `FLEET_VIEW`.
 - Every `publish_*` call site receives its broker from `TenantServices`, never from `app.state.events`, so a publish can
   only reach the tenant whose write produced it.
 

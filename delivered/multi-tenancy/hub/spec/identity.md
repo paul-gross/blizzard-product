@@ -38,7 +38,8 @@ A membership grants one user one role in one tenant. It is recorded as facts (`b
   and grants no permission inside any tenant by itself.
 - **Role changes stay on the security log.** Every grant, change, and revocation of a membership keeps writing
   `user_role_changed` to the global `auth_facts`, as a role change does today, now naming the tenant it happened in.
-- **The first administrator is let into the first tenant.** When the superuser is claimed while the hub holds exactly
+- **The first administrator is let into the first tenant.** When the superuser is claimed — by a sign-in whose provider
+  reports the `auth.superuser` address verified and is authoritative for it (§Why email) — while the hub holds exactly
   one tenant and that tenant has no `admin` member, the same transaction grants the claiming user an `admin` membership
   in it, `set_by = "bootstrap"`. On a fresh hub this is how the person who set it up reaches `default` at all; on a
   carried-over hub the migration has already made them its admin ([carry-over.md](./carry-over.md)), so the claim grants
@@ -57,10 +58,13 @@ The hub administrator is a role a set of users hold, not one user. Who holds it 
 | `set_at`  | from the injected clock (`bzh:injected-clock`)                        |
 | `set_by`  | the granting hub administrator's user id, `bootstrap`, or `migration` |
 
-- **The first comes from configuration.** `superuser_bootstrap` keeps one job: the first claim. The user who first signs
-  in as `auth.superuser` is recorded there as today, and the same transaction writes the first `hub_admin_facts` row,
-  `set_by = "bootstrap"`. A carried-over hub's claimed superuser becomes a hub administrator through a row
-  `set_by = "migration"` ([carry-over.md](./carry-over.md)).
+- **Configuration names one too.** `superuser_bootstrap` holds the address `auth.superuser` names, recorded at boot as a
+  target to claim. The user who claims it — by a sign-in whose provider is authoritative for the address (§Why email) —
+  is recorded there, and the same transaction writes a `hub_admin_facts` row, `set_by = "bootstrap"`, unless that user
+  already holds the role. Pointing `auth.superuser` at another address records a new target, and whoever claimed the old
+  one stays a hub administrator; unsetting it cancels a target nobody has claimed and revokes no one. A carried-over
+  hub's claimed superuser becomes a hub administrator through a row `set_by = "migration"`
+  ([carry-over.md](./carry-over.md)).
 - **Only a hub administrator makes another.** Granting and revoking the role takes `HUB_ADMIN_GRANT`, which only hub
   administrators hold: `blizzard hub admin list|grant|revoke <user_id>` over `GET /api/admin/hub-admins` and
   `PUT`/`DELETE /api/admin/hub-admins/{user_id}` ([administration.md](./administration.md)). No membership role reaches
@@ -97,10 +101,11 @@ account. Creating a tenant grants its creator nothing unless the creator names t
 
 The hub is invite-only. Signing in proves who a person is; it never admits them. A provider identity the hub has not
 seen before becomes a user only by accepting an invitation, or by being the configured superuser (§Memberships). Any
-other first sign-in creates no user, no identity link, and no session, and lands on a page that says *This hub is
-invite-only. Reach out to your administrator for an invitation.* An identity already linked to a user signs in as today,
-and a new identity whose verified email matches an existing user still links to that user, under today's email-merge
-rule — invitations change who can arrive, not how a returning person is recognized.
+other first sign-in creates no user, no identity link, and no session, and lands on a page that says *You don't have
+access to anything here yet. Reach out to your administrator for access.* An identity already linked to a user signs in
+as today, and a new identity whose verified email matches an existing user still links to that user when its provider is
+authoritative for that address (§Why email); through any other provider, only an identity already linked signs in.
+Invitations change who can arrive, not how a returning person is recognized.
 
 ### What an invitation is
 
@@ -149,9 +154,10 @@ invited address.
 ### Why email
 
 Email is the key because GitHub is the one provider the hub trusts to start, and GitHub only reports an address as
-verified once its owner has proven it. That trust is the hub administrator's to extend: a provider whose verified-email
-claim is not authoritative for every address it reports — a client's own directory, say — must never admit through an
-invitation by email, and would bind invitations to its own subject instead.
+verified once its owner has proven it. That trust is the hub administrator's to extend, provider by provider: `github`
+is always authoritative for the addresses it reports, and an `oidc` provider only when configured with
+`emails_authoritative = true`. An address from a provider that is not — a client's own directory, say — never accepts an
+invitation, never claims `auth.superuser`, and never links a new identity to the user who holds it.
 
 ## The resolved principal
 
