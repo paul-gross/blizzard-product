@@ -36,7 +36,8 @@ in the same shape as a host with several.
 
 ## Talking to the host
 
-The host serves one OpenAPI document covering its own routes (`/api/host/*`, `/api/auth/*`) and every runner's routes
+The host serves one OpenAPI document covering its own routes at the root (`/api/host/*`, `/api/auth/*`, `/api/health`,
+`/api/ready`, and the event stream — [process.md](./process.md) §Listeners and the panel) and every runner's routes
 under `/runners/{runner_id}/api/*`, with `runner_id` a path parameter. `openapi-ts.runner.config.ts` generates the
 panel's client from it, so a runner-scoped call names its runner explicitly and the regenerated client is held to the
 document by `web:client-drift`. Query keys (`runner/src/app/core/query-keys.ts`) and mutation keys
@@ -58,7 +59,8 @@ the host card, naming the runners that spend each plan — and lists its runners
 runner row under a host shows its bindings (`served-project-group` grows to show each project's workspace and agents)
 and its one subscription's name rather than a roster. A runner with no host keeps today's row, under a heading of its
 own. The host card carries the host's own verbs — retire, revoke and issue its credential — and each runner keeps its
-pause, resume, and retire controls unchanged.
+pause, resume, and retire controls unchanged, with one more under a host: releasing it to stand alone
+([hub.md](./hub.md) §Operator verbs).
 
 ## Shared between the two
 

@@ -46,18 +46,26 @@ unless forced.
 
 ## Operator verbs
 
-Under an operator session, with `RUNNER_RETIRE`-level permission for the destructive ones:
+Each verb is a route under `/api/hosts`, beside the runner registry's own (`hub/api/runners.py`), and each takes the
+permission its runner counterpart takes — reading a host as reading a runner does, and `RUNNER_RETIRE` for adding,
+adopting, releasing, re-issuing, and retiring:
 
 - `hub host add <name> [--tenant <id>] [--adopt <runner id>…]` creates the host and prints its id and token once.
   `--adopt` places existing runners under it, refusing a runner in another tenant, one already under a host, or one
   retired.
 - `hub host list`, `hub host show <id>`.
 - `hub host adopt <id> <runner id>…` places existing runners under an existing host, by the same rules.
+- `hub host release <id> <runner id>…` returns runners under the host to standing alone, keeping their ids and tokens. A
+  registered host then halts each one, as a runner the hub no longer holds under it; it is how an adoption is undone.
 - `hub host revoke-token <id>` revokes the host's credential and issues none; `hub host enroll <id>` issues a new one,
   as `POST /api/runners/{runner_id}/enrollments` does for a runner (`runners.py:280`).
 - `hub host retire <id> [--force]` revokes the credential and retires every runner under it, refusing as a runner's
   retirement does while any of them holds live chunks.
 - `hub runner add <name> --host <id>` adds a runner under a host from an operator's session.
+
+A hub that admits a runner's add without a session — an open hub, as a feature environment runs — admits a host's add,
+and a runner's add under that host, the same way, so a throwaway environment's `blizzard runner init` needs no sign-in
+([process.md](./process.md) §CLI).
 
 ## Registration
 
@@ -72,13 +80,14 @@ bindings: list[RunnerBinding] | None = None   # {project, workspace_id, agents}
 subscription: str | None = None                # the slug it spends, one of its host's roster
 ```
 
-Every runner a host runs sends `bindings`, from which the hub derives the served-projects declaration exactly as it does
-from `projects` today ([eligibility](../../../delivered/projects/hub/spec/eligibility.md)), in place of `projects`. A
-runner under a registered host also sends no subscription roster, and omits `workspace_id` and `env_capacity`, which
-become optional, since its host reports its workspaces. The one runner of an unregistered host is host-less at the hub:
-beside its bindings it sends its roster of one subscription, its bindings' first workspace as `workspace_id`, and that
-workspace's size as `env_capacity`, as a runner sends them today. A runner from before the host keeps sending exactly
-what it sends today.
+Every runner a host runs sends `bindings`, from which a hub that reads them derives the served-projects declaration
+exactly as it does from `projects` today ([eligibility](../../../delivered/projects/hub/spec/eligibility.md)), in place
+of `projects`. Because a runner may run a newer release than its hub ([carry-over.md](./carry-over.md) §Hub and runners
+on different clocks), it also keeps sending what a hub from before hosts requires: the `projects` its bindings declare,
+in order, its first binding's workspace as `workspace_id` — the host's first workspace when it binds none — and that
+workspace's size as `env_capacity`. The one runner of an unregistered host is host-less at the hub and sends its roster
+of one subscription beside them, as a runner does today; a runner under a registered host sends no roster, since its
+host reports its subscriptions. A runner from before the host keeps sending exactly what it sends today.
 
 Registration doubles as the heartbeat, so it is never refused over its content. A binding naming a workspace its host
 has not reported, or a subscription outside the host's roster, is stored and flagged on the board and in the answer, as
@@ -94,12 +103,12 @@ own client.
 ## The host's fact lane
 
 A host's own facts travel a lane of their own, shaped exactly as a runner's does (`POST /api/fleet/events`,
-`hub/api/fleet.py:793`). The host appends each fact to `host_outbound_buffer` with a per-host monotonic `seq`
+`hub/api/fleet.py:821`). The host appends each fact to `host_outbound_buffer` with a per-host monotonic `seq`
 ([store.md](./store.md) §Runner-scoped and host-scoped tables) and pushes batches in `seq` order. The hub keeps
 `host_high_water` — `host_id`, the greatest applied `seq`, `updated_at`, `tenant_id` — shaped as `runner_high_water`
 (`hub/store/schema.py:1700`), and applies a batch exactly as `FactIngestService.ingest` does for a runner
 (`hub/domain/execution/facts.py:224`): a retired host is refused before its mark is read, a fact at or below the mark is
-re-acknowledged and not applied, a fact above it is applied and raises the mark in the same transaction, and the answer
+re-acknowledged and not applied, a fact above it is applied and the mark raised past it as a runner's is, and the answer
 carries the mark. The host deletes every buffered fact at or below the answered mark. A retry after a lost answer
 therefore re-acknowledges rather than re-applies, and a crash between the host's write and its push loses nothing, since
 the fact waits in the buffer.
@@ -112,7 +121,7 @@ independently.
 
 A host's samples and misses are stored against the host and slug, in tables shaped as `runner_external_usage` and
 `runner_external_usage_misses` are (`schema.py:1865`, `:1887`). A hosted runner's view (`RunnerView.subscriptions`,
-`wire/runner.py:163`) shows its host's newest sample for the slug it spends, so every reader of a runner's usage keeps
+`wire/runner.py:181`) shows its host's newest sample for the slug it spends, so every reader of a runner's usage keeps
 working; the host's view shows each sample once, with the runners spending it named. A runner with no host keeps
 reporting its own roster and samples.
 
@@ -122,3 +131,9 @@ The fleet view groups runners under their host: a host card holding its runners,
 in use, and its subscriptions with the runners spending each. A runner with no host stands on its own, as today.
 Operator controls stay per runner — pausing, resuming, and retiring a runner are unchanged — and the host card adds only
 the host's own retirement and credential verbs.
+
+The board learns of a host's change from the tenant's event stream, as it learns of a runner's. A host reports itself on
+every tick, so the hub publishes a host's change only when the report changes what the hub holds for it — its name,
+address, callbacks, workspaces, or subscriptions — or when a host it read as offline reports again. Where the hub
+publishes a runner's change only when its registration changes what it holds, a runner's bindings and subscription are
+part of what it compares.

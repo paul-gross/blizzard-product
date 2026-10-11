@@ -104,11 +104,11 @@ under it.
   its neighbours carry on.
 - **One store for the machine.** A host keeps one database holding every runner it runs, each runner's records marked as
   its own and read only through that runner's view of the store. What spans runners — the environments a workspace has
-  handed out, a plan's exhaustion braking every runner that spends it — is settled in one transaction rather than
-  stitched across files, so two runners can never hold one environment and a brake never reaches half its runners.
+  handed out, a plan's exhaustion braking every runner that spends it — is settled in one place rather than stitched
+  across files, so two runners can never hold one environment and a brake never reaches half its runners.
 - **The host as a hub record.** A host is a record in its tenant with an id the hub mints, a name, and a credential.
   `hub host add` creates it, `hub host retire` retires it with its runners, and an existing runner can be adopted into a
-  host without losing its id or token.
+  host, and released from it again, without losing its id or token.
 - **Runners added at the host.** `blizzard runner add <name>` on the machine asks the hub, under the host's credential,
   for a new runner under the host, and records its id and token in the host's configuration. `hub runner add --host`
   does the same from an operator's session.
@@ -138,14 +138,18 @@ under it.
 - **One panel, one sign-in.** The host serves one origin, and the operator signs in to it once, with the host as the
   hub's sign-in client. Its panel shows the machine — workspaces, environments, subscriptions — and each runner's view
   within it, with each runner's status, brake, and operator verbs scoped to that runner as they are today. A runner's
-  routes live under the host's address for that runner; nothing answers at the paths a lone runner used.
+  routes live under the host's address for that runner; only what is the host's — its health, its sign-in, its event
+  stream — answers where a lone runner's did.
 - **The machine seen as one thing.** The board shows a host with its runners inside it rather than unrelated peers that
   happen to share a desk, and a plan's usage once, on its host, with each runner that draws on it named.
 - **Every runner graduates to a host.** Deploying the release turns each existing runner into a host of one: its
   database migrates forward into a host's, holding that one runner, and its configuration file is rewritten as the
   host's — a short, mechanical step that is part of the deploy, which an agent carries out as readily as a person, so
-  blizzard ships the procedure rather than a command for it. The runner keeps its id, its token, and every chunk it
-  holds, and until its host is registered at the hub it works there exactly as a runner with no host does today.
+  blizzard ships the procedure rather than a command for it. Because the runners that build the host are the ones this
+  release stops, it is the one landing of the epic delivered and deployed by hand, in a single attended session with the
+  fleet drained; every other landing reaches the runners the way any change does. The runner keeps its id, its token,
+  and every chunk it holds, and until its host is registered at the hub it works there exactly as a runner with no host
+  does today.
 - **Ingest gathers runners into one host.** A registered host takes in a runner from another host's database — or from a
   runner not yet graduated — copying its records across, re-numbering what must be re-numbered, and removing it from the
   source, which is set aside once empty. Two runners on one desk become one host by graduating both and ingesting one
