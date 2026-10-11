@@ -10,8 +10,7 @@ class ChunkIngestRequest(BaseModel):
     project: str | None = None   # a project id or slug in the caller's tenant
 ```
 
-The CLI's ingest verb, `blizzard hub chunk ingest`, gains `--project PROJECT`, an id or a slug. The board sends the
-shell lens as `project` whenever the lens is on one ([surfaces.md](./surfaces.md)).
+The CLI's ingest verb, `blizzard hub chunk ingest`, gains `--project PROJECT`, an id or a slug.
 
 ## Resolution, in order
 
@@ -23,11 +22,13 @@ The whole request resolves before anything is written, and rejects as a whole, a
    — and resolves through the registry exactly as `WorkSourceRegistry.resolve` does today, within the tenant. Config
    already refuses two sources that could claim one token, so exactly one source ever does. A reference with no source
    (`212`, `BLZ-412`) is not accepted, as today.
-3. **The project, if not named.** Every pointer's source is looked up among the tenant's links. When all of them are
-   linked to exactly one and the same project, that project is used. Otherwise — a source linked to several projects, or
-   sources whose single projects differ — the request is `422`, naming the candidate projects.
-4. **Every source linked.** Each pointer's source must be linked to the resolved project (`422` naming the unlinked
-   source). Linking is how a project declares where it draws from; ingest never links implicitly.
+3. **The project, if not named.** Every pointer's configured source is looked up among the tenant's links; the built-in
+   `hub` source is linked to every project and sits out. When the configured sources are all linked to exactly one and
+   the same project, that project is used, and an ingest of hub items alone takes the project every item records.
+   Otherwise — a source linked to several projects, or sources whose single projects differ — the request is `422`,
+   naming the candidate projects.
+4. **Every source linked.** Each pointer's configured source must be linked to the resolved project (`422` naming the
+   unlinked source). Linking is how a project declares where it draws from; ingest never links implicitly.
 5. **One live holder.** `IngestService.ingest` (`hub/domain/chunk/ingest.py`) runs `require_unheld` over every pointer
    under `locked_work_refs`, unchanged (`IngestConflict`, answered `409` with the `ChunkIngestConflict` body). A work
    ref is held by at most one live chunk, so an item sits in at most one project at a time; once its holder is terminal
@@ -67,8 +68,9 @@ explicitly, never relying on resolution step 3:
 - accepting a garden proposal ingests the minted item into the proposal's project;
 - an agent's work-item proposal, materialized at delivery (`hub/domain/work_items/materialization.py`, through
   `materialize_create`), mints its item into the proposing chunk's project;
-- an operator creating a hub item names its project: `blizzard hub item create` takes a required `--project`. The board
-  offers no way to create a hub item.
+- an operator creating a hub item names its project with `blizzard hub item create --project`, which a tenant with one
+  project may leave off: the item goes to its only project, and when the tenant holds several, a create naming none is
+  refused `422 project_required`, listing them. The board offers no way to create a hub item.
 
 Each item the built-in source mints records that project as its own (`work_items.project_id`), so a hub item belongs to
 one project from the moment it exists, and the source stays one list for the whole tenant rather than a bucket per

@@ -137,9 +137,10 @@ by it ([surfaces.md](./surfaces.md) §What each view does with the lens).
 `scopes`, and `routines`, gains a `projects` section. Each entry declares a project by slug — its name and description,
 the sources it links, and the repositories it links — and reconciles before the scopes and routines, so a scope or
 routine may name a project the same document declares. Each scope and routine entry gains a `project`, an id or a slug;
-an entry without one belongs to the tenant's `default` project, so a document written before this slice applies
-unchanged to a carried-over hub. A repository the document declares is linked to no project until a project entry links
-it.
+an entry without one belongs to the tenant's only project, counting any the same document declares, so a document
+written before this slice applies unchanged to a carried-over hub. When the tenant holds several, each such entry is
+refused `422 project_required`, naming the entry and listing the tenant's projects. A repository the document declares
+is linked to no project until a project entry links it.
 
 ## Scope and routine identity
 
@@ -175,7 +176,11 @@ The invariant checker (`bzh:invariant-checker`) gains:
 - a review-sourced finding's `project_id` equals its `raised_by_chunk_id` chunk's;
 - every `garden_proposal_findings` row joins a proposal and a finding of the same project;
 - every `work_items` row's `project_id` names a project of its tenant;
-- every source a chunk's work refs name is linked to the chunk's project, or was when the chunk was minted — the link's
-  facts answer which.
-- every `delivery_repo_landed` row whose `repository_name` is set names a repository the chunk's project linked when the
-  row was written — the link's facts answer which ([delivery.md](./delivery.md) §Landing).
+- every source a chunk's work refs name is linked to the chunk's project, as the link's facts answer: the chunk's
+  originating ref, its first, by a link set at or before the chunk's `minted_at`, and a ref folded in later — no instant
+  of its own is recorded — by a link set at any time. The built-in `hub` source, linked to every project without a
+  stored link, is never judged, and neither is a chunk minted before its project was created, as a carried-over chunk is
+  ([carry-over.md](./carry-over.md));
+- every `delivery_repo_landed` row whose `repository_name` is set names a repository the chunk's project had linked by
+  the time the row was written — a link set at or before its `landed_at` — so an unlink while the landing step ran does
+  not breach it ([delivery.md](./delivery.md) §Landing).

@@ -73,7 +73,8 @@ the field is optional, so a `runner init` built before this slice adds through i
 authenticated principal, never from the request body. `HOLD` and `PASS_OVER` then apply to the narrowed order exactly as
 today: a chunk of a project the runner does not serve is never its head, so `HOLD` cannot stall a runner on another
 project's work. Capability eligibility (`EligibilityCheck`) and dependency blocking are unchanged and apply within the
-narrowed order.
+narrowed order. The matched entry's `position` is its index in the tenant's whole ready order: narrowing to the served
+projects selects without renumbering, as the project filter does on the unmatched reads (`bzh:ranking-is-per-list`).
 
 The unmatched reads — `GET /api/queue`, `GET /api/fleet/queue/peek`, `GET /api/backlog` — take an optional project
 filter ([surfaces.md](./surfaces.md)) and otherwise show the whole tenant's order. Ranking stays one order per list per

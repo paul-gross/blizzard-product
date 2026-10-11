@@ -3,8 +3,9 @@
 ## The rule for a project parameter
 
 - **Creating a project-owned record names its project.** Scopes, routines, operator-origin garden proposals, and links
-  to sources and repositories are created under a project, and the call is refused without one. Work sources and
-  repositories themselves are tenant records, created under live-config's verbs without a project.
+  to sources and repositories are created under a project. A call that names none acts in the tenant's only project;
+  when the tenant holds several, it is refused `422 project_required`, listing them. Work sources and repositories
+  themselves are tenant records, created under live-config's verbs without a project.
 - **Reading takes an optional project filter.** Omitted means the whole tenant — what every caller reads today. The
   filter is an ordinary argument, `project: ProjectId | None`, on the read repository methods that list project-owned
   rows or rows reached through a chunk; the multi-tenancy store seam scopes by tenant only and knows nothing of projects
@@ -39,7 +40,7 @@ id at the boundary; nothing past the boundary handles a slug. A display name is 
 
 A tenant is named by its id alone ([api.md](../../../../delivered/multi-tenancy/hub/spec/api.md)); a project adds a slug
 because people type and read it in every lensed URL and every `--project`. The board always writes links with the
-current slug; the CLI saves a default project by id, so a slug change never breaks a saved context.
+current slug.
 
 ## API
 
@@ -69,35 +70,41 @@ The existing un-nested gardening routes (`/api/scopes`, `/api/routines`, `/api/f
 garden in one call. Every route that names a scope by slug or a routine by name — scope and routine names are unique
 only within a project ([model.md](./model.md) §Scope and routine identity) — gains its project:
 
-| Today                                                               | Becomes                                                    |
-| ------------------------------------------------------------------- | ---------------------------------------------------------- |
-| `GET`/`PATCH /api/scopes/{slug}`, `GET /api/scopes/{slug}/routines` | the same under `/api/projects/{project}/scopes/{slug}`     |
-| `POST /api/scopes/{slug}/retire`, `/enable`                         | the same under `/api/projects/{project}/scopes/{slug}`     |
-| `POST /api/scopes`, `POST /api/routines`                            | `POST /api/projects/{project}/scopes`, `/routines`         |
-| `PUT`/`DELETE /api/routines/{routine_id}/scopes/{scope_slug}`       | unchanged path; the slug resolves in the routine's project |
-| `GET /api/findings?routine=&scope=`                                 | gains `?project=`, required when `routine` or `scope` is   |
+| Today                                                               | Becomes                                                                                         |
+| ------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------- |
+| `GET`/`PATCH /api/scopes/{slug}`, `GET /api/scopes/{slug}/routines` | the same under `/api/projects/{project}/scopes/{slug}`                                          |
+| `POST /api/scopes/{slug}/retire`, `/enable`                         | the same under `/api/projects/{project}/scopes/{slug}`                                          |
+| `POST /api/scopes`, `POST /api/routines`                            | `POST /api/projects/{project}/scopes`, `/routines`                                              |
+| `PUT`/`DELETE /api/routines/{routine_id}/scopes/{scope_slug}`       | unchanged path; the slug resolves in the routine's project                                      |
+| `GET /api/findings?routine=&scope=`                                 | gains `?project=`, needed with `routine` or `scope` only when the tenant holds several projects |
 
 A route keyed by `routine_id` or another hub-unique id keeps its path, since the id already settles the project. Nothing
 is removed: each un-nested by-name route stays as a deprecated alias, marked deprecated in the OpenAPI document, which
-resolves the name across the tenant's projects and serves it when exactly one project holds it, and answers `409` naming
-the candidate projects when more than one does. On a carried-over hub, which holds one project, every alias resolves.
+serves the name from the tenant's only project and answers `422 project_required`, listing the tenant's projects, when
+the tenant holds several — a name is never resolved across projects. On a carried-over hub, which holds one project,
+every alias resolves.
 
 ## CLI
 
 `blizzard hub project create|list|show|edit` manage projects — `create <slug> [--name <display name>]`, the name
 defaulting to the slug, and `edit <project> [--slug …] [--name …] [--description …]` — and
 `blizzard hub project link|unlink <project> --source <source> | --repository <repository>` manage their links. Every
-verb that creates a project-owned record takes a required `--project`, an id or a slug; every listing verb takes an
-optional one; `blizzard hub chunk ingest` takes `--project` under ingest's inference rules, and
-`blizzard hub item create` takes a required one. The CLI context that holds a hub login and default tenant also holds an
-optional default project, the CLI's own lens, which `--project` overrides on any call. Every call sends the context's
-tenant as `X-Blizzard-Tenant` alongside whatever project it names. A verb's help states its effect in operator
-vocabulary (`bzh:help-states-effect`, `bzh:operator-vocabulary`).
+verb that creates a project-owned record takes `--project`, an id or a slug, which a tenant with one project may leave
+off: the hub refuses a create that names none among several projects, and the CLI lists them and asks for `--project`.
+Every listing verb takes an optional one; `blizzard hub chunk ingest` takes `--project` under ingest's inference rules,
+and `blizzard hub item create` takes one as every create verb does. The CLI saves no default tenant or project: a call
+names its tenant with `--tenant`, needed only by a caller with several memberships, and sends it as `X-Blizzard-Tenant`
+alongside whatever project it names. A verb's help states its effect in operator vocabulary (`bzh:help-states-effect`,
+`bzh:operator-vocabulary`).
 
 ## The shell lens
 
-The lens is shell state, owned by `fleet/shell` and imported eagerly (`bzh:frontend-eager-shell-entry`). It is derived
-from the URL, never held separately, so a refresh or a shared link reproduces it.
+The lens is the hub app's shell state (`web/projects/hub/src/app/core/project-lens.ts`, its route guard in
+`web/projects/hub/src/app/shell/project-lens.guard.ts`), since only the hub has projects: the runner's board shares
+`fleet` and has none (`bzh:frontend-placement`). `fleet/shell` carries only the neutral seams fleet's views read the
+lens through — the `HUB_PROJECT_FILTER` token, `IN_APP_LINK`, and the `lensLink` pipe — and the lens, on the board's
+eager path, reaches `fleet` through that entry alone (`bzh:frontend-eager-shell-entry`). The lens is derived from the
+URL, never held separately, so a refresh or a shared link reproduces it.
 
 ```text
 /{view}/…                    lens on All
@@ -121,16 +128,16 @@ only from the profile menu (`app-nav-menu`), which offers the switcher only to s
 
 ## What each view does with the lens
 
-| View                                     | Lens on a project                                                 | Lens on All                              |
-| ---------------------------------------- | ----------------------------------------------------------------- | ---------------------------------------- |
-| Board                                    | Chunks of the project; ranking unchanged, filtered                | Every chunk in the tenant                |
-| Events                                   | Events of the project's chunks, and of runners that serve it      | Every event                              |
-| Gardening                                | That project's scopes, routines, runs and findings, and proposals | A doorway: one card per project, no tabs |
-| Admin → Projects                         | Opens that project                                                | Every project                            |
-| Admin → Work sources                     | The sources the project links                                     | Every source in the tenant               |
-| Admin → Repositories                     | The repositories the project links                                | Every repository in the tenant           |
-| Admin → Changes                          | The project's changes and tenant-wide ones                        | Every change                             |
-| Graphs, Admin → Members, Admin → Secrets | Unchanged, with a visible note that the lens does not apply here  | —                                        |
+| View                                     | Lens on a project                                                 | Lens on All                                                                                  |
+| ---------------------------------------- | ----------------------------------------------------------------- | -------------------------------------------------------------------------------------------- |
+| Board                                    | Chunks of the project; ranking unchanged, filtered                | Every chunk in the tenant                                                                    |
+| Events                                   | Events of the project's chunks, and of runners that serve it      | Every event                                                                                  |
+| Gardening                                | That project's scopes, routines, runs and findings, and proposals | A doorway: one card per project, no tabs; a tenant with one project opens its garden instead |
+| Admin → Projects                         | Opens that project                                                | Every project                                                                                |
+| Admin → Work sources                     | The sources the project links                                     | Every source in the tenant                                                                   |
+| Admin → Repositories                     | The repositories the project links                                | Every repository in the tenant                                                               |
+| Admin → Changes                          | The project's changes and tenant-wide ones                        | Every change                                                                                 |
+| Graphs, Admin → Members, Admin → Secrets | Unchanged, with a visible note that the lens does not apply here  | —                                                                                            |
 
 Gardening's breadcrumb (`Gardening › {project} › {surface}`) is the lens shown in place: its project crumb switches the
 lens and keeps the surface. The [projects-era admin mockup](../../artifacts/projects-admin.html) and the
