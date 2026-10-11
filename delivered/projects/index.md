@@ -1,6 +1,6 @@
 ---
 epic: projects
-refinement: refined
+refinement: pristine
 slices:
   - name: hub
     status: delivered
@@ -9,7 +9,7 @@ slices:
     status: delivered
     plan: ./runner.md
   - name: host
-    status: horizon
+    status: retired
 ---
 
 # Plan — `epic:projects`
@@ -30,11 +30,11 @@ to the sources it draws from and the repositories it may land in, and an item en
 one. Nor is a project a tag. `epic:tagging` lets a chunk say what kind of work it is, and it can filter by project, but
 a tag cannot hold links to sources and repositories or own a garden, and a project must.
 
-The work lands in three slices: hub, then runner, then host. It stands on `epic:live-config`, which moved work sources,
-the delivery target, and their credentials into the hub's store, where a tenant holds them and a project links them, and
-it is built alongside `epic:multi-tenancy`, whose hub slice lands first so that every project record is born inside a
-tenant. The runner slice needs nothing from the machine beyond what a runner already is; the host slice builds on the
-runner host `epic:runner-host` introduces.
+The work lands in two slices: hub, then runner. It stands on `epic:live-config`, which moved work sources, the delivery
+target, and their credentials into the hub's store, where a tenant holds them and a project links them, and it is built
+alongside `epic:multi-tenancy`, whose hub slice lands first so that every project record is born inside a tenant. The
+runner slice needs nothing from the machine beyond what a runner already is. The machine's half of the promise — one
+runner host working every project — belongs to `epic:runner-host`.
 
 ## A lens, not a wall
 
@@ -64,13 +64,12 @@ The runner slice lets a runner name the projects it serves and changes nothing e
 as today, and more runners for an operator who wants projects worked apart. Its requirements are the
 [runner slice plan](./runner.md).
 
-## What to build — the host slice
+## The machine
 
-The host slice keeps the epic's promise on the machine: three projects on a laptop mean one runner host, not three
-runners in three directories. It waits on `epic:runner-host`, whose host already holds a list of workspaces, and gives
-each workspace the projects it serves — one or several, as one workspace can hold every repository two projects need —
-so that a claim lands in the workspace its chunk's project belongs to, and the host's runners take work from all of
-them. It earns a written plan once `epic:runner-host` has one.
+Three projects on a laptop mean one runner host, not three runners in three directories, and that promise is kept on the
+machine by `epic:runner-host`, not here. Its host binds each runner's projects to the workspace that serves them, so a
+claim lands in the one workspace its chunk's project is bound to. This epic's `host` slice is retired unbuilt: its work
+is `epic:runner-host`'s.
 
 ## Where a project goes next
 
@@ -80,8 +79,3 @@ work today. How a repository is landed into and what follows describes the repos
 declaration, both on the tenant's repository record. A project-level default for either, if one is ever wanted, would
 sit on the project's link to the repository. Both build on the repository links this epic introduces, and neither can
 start until a project can link a repository.
-
-## Open questions
-
-- Whether a project may have more than one workspace on the same host, which would need a rule for choosing between them
-  on every claim. The leaning is one workspace per project per host until someone needs more.

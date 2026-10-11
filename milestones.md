@@ -49,8 +49,9 @@ single workspace and becomes a host of many: it configures local workspaces, eac
 repositories it holds together, and each works for its projects through whichever of the host's runners serve them.
 Three projects on one laptop means three workspaces and one host — never three installations, and never three of
 everything above them. For the operator, a desk full of stacks collapses into one: queue work against any project, watch
-all of it on one board, and slice the view to a single project when only that one matters. That host is the one
-`epic:runner-host` builds for `milestone:hardening`, and this milestone's host work waits on it; until then, a runner
+all of it on one board, and slice the view to a single project when only that one matters. That host is
+`epic:runner-host`'s, serving this milestone and `milestone:hardening` alike: each of its runners binds every project it
+serves to one of the host's workspaces, so a claim never has to choose where its work happens. Until it lands, a runner
 serves the projects whose repositories its one workspace holds, and a project worked apart gets a runner of its own.
 
 None of it could be grouped while it lived in a file on the hub's machine and its tokens in the hub's environment, where
@@ -81,8 +82,8 @@ method, carried out deterministically, with an agent's judgement called in where
 | `epic:projects`            | hub    | delivered |
 | `epic:projects`            | runner | delivered |
 | `epic:multi-tenancy`       | runner | delivered |
-| `epic:runner-host`         | runner | horizon   |
-| `epic:projects`            | host   | horizon   |
+| `epic:runner-host`         | full   | horizon   |
+| `epic:projects`            | host   | retired   |
 | `epic:advanced-delivery`   | full   | horizon   |
 | `epic:advanced-deployment` | full   | horizon   |
 
@@ -142,8 +143,7 @@ the platform made on the operator's behalf, handed back to them as a decision.
 
 | Epic                       | Slice            | Status    |
 | -------------------------- | ---------------- | --------- |
-| `epic:runner-host`         | runner           | horizon   |
-| `epic:runner-host`         | hub              | horizon   |
+| `epic:runner-host`         | full             | horizon   |
 | `epic:throttling`          | full             | horizon   |
 | `epic:tagging`             | full             | horizon   |
 | `epic:resilience`          | full             | horizon   |
