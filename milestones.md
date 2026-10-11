@@ -75,17 +75,17 @@ repositories deploys all three in the order they depend on one another, proving 
 the next one moves. Delivery and deployment stop being one fleet-wide habit and become each project's own declared
 method, carried out deterministically, with an agent's judgement called in where the project asks for it.
 
-| Epic                       | Slice  | Status    |
-| -------------------------- | ------ | --------- |
-| `epic:live-config`         | full   | delivered |
-| `epic:multi-tenancy`       | hub    | delivered |
-| `epic:projects`            | hub    | delivered |
-| `epic:projects`            | runner | delivered |
-| `epic:multi-tenancy`       | runner | delivered |
-| `epic:runner-host`         | full   | horizon   |
-| `epic:projects`            | host   | retired   |
-| `epic:advanced-delivery`   | full   | horizon   |
-| `epic:advanced-deployment` | full   | horizon   |
+| Epic                       | Slice  | Status      |
+| -------------------------- | ------ | ----------- |
+| `epic:live-config`         | full   | delivered   |
+| `epic:multi-tenancy`       | hub    | delivered   |
+| `epic:projects`            | hub    | delivered   |
+| `epic:projects`            | runner | delivered   |
+| `epic:multi-tenancy`       | runner | delivered   |
+| `epic:runner-host`         | full   | in-progress |
+| `epic:projects`            | host   | retired     |
+| `epic:advanced-delivery`   | full   | horizon     |
+| `epic:advanced-deployment` | full   | horizon     |
 
 ## `milestone:hardening` — the platform stops guessing on your behalf
 
@@ -141,21 +141,21 @@ package a one-way place in the order, and every rule a home on the model it gove
 Hardening is what a platform does after it works. Little of it is a new capability. Almost all of it is an assumption
 the platform made on the operator's behalf, handed back to them as a decision.
 
-| Epic                       | Slice            | Status    |
-| -------------------------- | ---------------- | --------- |
-| `epic:runner-host`         | full             | horizon   |
-| `epic:throttling`          | full             | horizon   |
-| `epic:tagging`             | full             | horizon   |
-| `epic:resilience`          | full             | horizon   |
-| `epic:retention`           | full             | horizon   |
-| `epic:config`              | model-resolution | horizon   |
-| `epic:config`              | sweep            | horizon   |
-| `epic:ui-toolkit`          | full             | horizon   |
-| `epic:documentation`       | full             | horizon   |
-| `epic:test-optimization`   | full             | horizon   |
-| `epic:test-architecture`   | full             | horizon   |
-| `epic:test-shared-service` | full             | horizon   |
-| `epic:architectural-sweep` | full             | delivered |
+| Epic                       | Slice            | Status      |
+| -------------------------- | ---------------- | ----------- |
+| `epic:runner-host`         | full             | in-progress |
+| `epic:throttling`          | full             | horizon     |
+| `epic:tagging`             | full             | horizon     |
+| `epic:resilience`          | full             | horizon     |
+| `epic:retention`           | full             | horizon     |
+| `epic:config`              | model-resolution | horizon     |
+| `epic:config`              | sweep            | horizon     |
+| `epic:ui-toolkit`          | full             | horizon     |
+| `epic:documentation`       | full             | horizon     |
+| `epic:test-optimization`   | full             | horizon     |
+| `epic:test-architecture`   | full             | horizon     |
+| `epic:test-shared-service` | full             | horizon     |
+| `epic:architectural-sweep` | full             | delivered   |
 
 ## `milestone:human-in-the-loop` — the operator stops being the wire
 

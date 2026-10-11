@@ -3,7 +3,7 @@ epic: runner-host
 refinement: scaffolded
 slices:
   - name: full
-    status: horizon
+    status: in-progress
 ---
 
 # Plan — `epic:runner-host`
