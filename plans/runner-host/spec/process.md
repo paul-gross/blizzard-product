@@ -28,7 +28,19 @@ A runner that cannot work stops alone. A refused token, an identity mismatch (`l
 runner the hub does not hold under this host, a store that fails its migration, or a configuration error confined to one
 `[[runner]]` entry halts that runner's tick and is shown on its view; the host and every other runner keep running. A
 host-level error — an unreadable `blizzard-host.toml`, a port already bound, a host store that fails its migration —
-stops the host, as a runner's equivalent stops it today.
+stops the host, as a runner's equivalent stops it today. Which configuration errors are which is owned by
+[configuration.md](./configuration.md) §Validation.
+
+## One owner per runner directory
+
+A machine may run several hosts — separate host directories, separate ports, separate runners — but a runner directory
+is only ever driven by one process. On start, the host takes an exclusive, non-blocking advisory lock (`flock`) on
+`<host dir>/data/host.lock`, and for each runner on `<dir>/data/runner.lock`, holding each for its lifetime; the kernel
+releases them when the process dies, so a crash never leaves a stale lock. A host whose own lock is held stops. A runner
+whose lock is held by another process is halted, its view naming the holder's pid. A runner daemon from before the host
+takes no lock, so the host also probes `<dir>/runner.sock` and halts the runner when it answers. Keeping the
+environments of two hosts on one machine apart is the operator's to declare, as keeping two runners' pools disjoint is
+today.
 
 ## One tenant
 
@@ -36,8 +48,10 @@ The hub enforces it: a host is created in one tenant, every runner it adds is bo
 of another ([hub.md](./hub.md) §Operator verbs). The host store's `host_identity` row records the host id and tenant the
 hub first answered with, and never changes after. Each runner's own tenant check is unchanged
 ([multi-tenancy runner slice](../../../delivered/multi-tenancy/runner.md)); a runner whose answered tenant differs from
-the host's refuses to work through the gate an identity mismatch uses (`hub/verified.py:37`). No command clears the row:
-a host moves to another tenant only by its operator retiring it, archiving its stores, and adding a new one.
+the host's refuses to work through the gate an identity mismatch uses (`hub/verified.py:37`). The row is never edited: a
+host moves to another tenant only by its operator retiring it, archiving its stores, and adding a new one. The one path
+that sets it aside is a throwaway environment's re-add (§CLI, `--allow-readd`), which starts the host over rather than
+moving it.
 
 ## Sign-in
 
@@ -67,8 +81,12 @@ served.
 - `blizzard runner host [dir]` starts the host from `blizzard-host.toml`.
 - `blizzard runner init [dir]` scaffolds a host. Given `--host-token`, it uses a host an operator already added; under
   an operator's `hub login` session it runs `hub host add` itself, in the session's tenant or `--tenant`, and writes the
-  token to the host directory's `.env`. Feature environments, the mock fleet, and the test harnesses call it as they
-  call today's `init`.
+  token to the host directory's `.env`. With `--allow-readd`, an init whose held host token the hub no longer knows —
+  after a feature environment's hub data is reset — sets `host.db` and every runner store aside under timestamped names,
+  as `runner store reset` does (`runner/runtime.py:161`), adds the host afresh, and re-adds each of its `[[runner]]`
+  entries under the new host; a token the hub still knows is kept and nothing is set aside. Without the flag, an unknown
+  token stops init. Feature environments, the mock fleet, and the test harnesses pass it, as they pass it to today's
+  `init`; a production host never does.
 - `blizzard runner add <name> [--project <p> --workspace <w> --agents <n>]…` asks the hub for a new runner under the
   host's credential (`POST /api/fleet/host/runners`), creates the runner's directory, writes its token to that
   directory's `.env`, and appends its `[[runner]]` entry. No hub sign-in is needed; the hub still mints the id.

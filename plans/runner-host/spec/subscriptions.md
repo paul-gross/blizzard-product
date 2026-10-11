@@ -43,7 +43,7 @@ and shown on the host's panel.
 ## Reporting to the hub
 
 The host reports its roster in its own registration and each sample or miss once, under its own credential
-(`POST /api/fleet/host/subscription-usage`, [hub.md](./hub.md) §Subscription usage). Recording a sample writes the
+(`POST /api/fleet/host/events`, [hub.md](./hub.md) §The host's fact lane). Recording a sample writes the
 `external_usage_samples` row and its `host_outbound_buffer` report in one transaction, as a runner's
 `record_external_usage_attempt` does today (`store/internal/usage_store.py:386`), so a sample is never recorded without
 its report or reported without being recorded. A hosted runner reports no roster and no samples; it registers the slug

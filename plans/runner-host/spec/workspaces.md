@@ -16,15 +16,21 @@ routes nothing. Two entries that resolve to one project are refused ([configurat
 
 ## Routing a claim
 
-`QueuePeekEntry` already carries the chunk's `project_id` (`wire/queue.py:26`). In FILL
-(`runner/lifecycle/claim.py:120`) the runner looks the entry's project up in its routing map before anything else:
+A runner peeks per binding, not once for everything it serves. The hub's matched peek (`POST /api/fleet/queue/peek`,
+`wire/queue.py:37`) already answers with the first eligible entry in queue order among the runner's served projects;
+`QueuePeekRequest` gains, additively under `bzh:fleet-wire-additive`, an optional `project` that narrows that same
+answer to one project of the runner's declaration. Ordering, eligibility, capabilities, and queue policy are the hub's,
+unchanged. A project outside the runner's declaration answers with nothing, and a request without `project` behaves as
+today.
 
-1. **Bound, with a free agent.** The entry's binding has fewer open leases than its `agents`. Acquire, bind, and claim
-   proceed against the binding's workspace, and `POST /api/fleet/routes` carries that workspace's id.
-2. **Bound, and full.** Every agent the binding allows is busy. The entry is one the runner cannot take now, handled
-   under its `[queue]` policy exactly as an entry it lacks a slot for is handled today.
-3. **Unbound.** The hub offered a chunk of a project the runner does not bind — a stale declaration, or a binding just
-   removed. The runner passes over it and claims nothing for it.
+In FILL (`runner/lifecycle/claim.py:120`, `runner/loop/steps.py:435`) the runner walks its bindings in configuration
+order. For each binding with a free agent (§Parallel agents) it peeks with that binding's project, once per free agent,
+and stops for that binding at the first empty answer. A claimed entry acquires an environment from the binding's
+workspace and claims with `POST /api/fleet/routes` carrying that workspace's id. A binding with no free agent sends no
+peek at all, so a full project never stands in front of another project's work.
+
+`QueuePeekEntry` carries the chunk's `project_id` (`wire/queue.py:26`). An entry whose project is not the binding's —
+possible only against a hub too old to honor `project` — is passed over and not claimed.
 
 The workspace and binding a chunk was claimed through are fixed for the chunk's tenure: `env_bindings`
 (`runner/store/schema.py:48`) gains `workspace_id` and `project_id`, so recovery, release, and resume read them from the
@@ -32,9 +38,11 @@ row and never re-route. A binding changed in configuration affects only the next
 
 ## Parallel agents
 
-`max_agents` leaves the runner. FILL's slot count (`runner/loop/steps.py:435`) becomes a count per binding: a binding's
-open leases are those whose `env_bindings` row names its project, and its free slots are its `agents` less that count.
-The runner has no cap of its own beyond the sum of its bindings'.
+`max_agents` leaves the runner. FILL's slot count becomes a count per binding: a binding's open leases are those whose
+`env_bindings` row names its project, and its free slots are its `agents` less that count. A held row whose project is
+not yet known ([carry-over.md](./carry-over.md) §What the host does on first start) counts against every binding on its
+workspace, so an unknown row can only make a binding claim less, never more. The runner has no cap of its own beyond the
+sum of its bindings'.
 
 `agents` is independent of the workspace's environments. A binding allowed more agents than its workspace has free
 environments claims only as environments free, since a failed acquire leaves the chunk waiting as it does today

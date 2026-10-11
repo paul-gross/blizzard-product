@@ -135,15 +135,25 @@ panel's session secret is the host's, read from the process environment under `s
 
 ## Validation
 
-`HostConfig.load` refuses the file, naming the offending entry, when:
+`HostConfig.load` sorts every error into the host's or one runner's, and only the host's stop the host.
 
-- two `[[runner]]` entries share a `name` or a `dir`, two share the same token environment-variable name after
-  normalisation, two `[[workspace]]` entries share an `id`, or two `[[subscription]]` entries share a `slug`;
-- a runner names a `subscription` the host does not declare, or a binding names a `workspace` the host does not declare;
-- a runner binds the same project entry twice, whatever the workspaces;
-- a binding's `agents` is absent or not a positive integer;
-- two workspaces on the same root name the same environment;
-- a runner enables no harness (`harness/wiring.py:56`), as today.
+**Host errors** refuse the file and start nothing, naming the offending entry:
+
+- an unreadable or malformed `blizzard-host.toml`, or an invalid host-level key;
+- two `[[workspace]]` entries sharing an `id`, or two on the same root naming the same environment;
+- two `[[subscription]]` entries sharing a `slug`;
+- two `[[runner]]` entries sharing a `name`, a `dir`, or a token environment-variable name after normalisation — the
+  host cannot tell which entry an error or a token belongs to.
+
+**Runner errors** halt that runner alone, as [process.md](./process.md) §Isolation describes: the host starts, every
+other runner works, and the halted runner's view names the error. They are:
+
+- a `subscription` the host does not declare, or a binding naming a `workspace` the host does not declare;
+- the same project entry bound twice, whatever the workspaces;
+- a binding whose `agents` is absent or not a positive integer;
+- no harness enabled (`harness/wiring.py:56`), or any other error in the runner's own tables;
+- no hub token found for the runner;
+- a runner directory another process holds ([process.md](./process.md) §One owner per runner directory).
 
 A runner may leave `subscription` out: it spends no declared plan, reports no roster, and a usage limit brakes it alone,
 with no fallback reset time ([subscriptions.md](./subscriptions.md) §The brake).

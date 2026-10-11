@@ -10,11 +10,12 @@ host; it redefines none.
 
 Paths are relative to `blizzard/src/blizzard/`.
 
-| Where                                  | Read when                                                                                                                |
-| -------------------------------------- | ------------------------------------------------------------------------------------------------------------------------ |
-| [hub.md](./hub.md)                     | Building the hub's side — the host record and its credential, adding and adopting runners, registration, and the board   |
-| [configuration.md](./configuration.md) | Shaping the host's configuration file — which key lives on the host, a workspace, a runner, or a binding, and validation |
-| [process.md](./process.md)             | Composing the daemon — what is per host and per runner, isolation, sign-in, listeners, the panel, and the CLI            |
-| [workspaces.md](./workspaces.md)       | Routing a claim — project bindings, parallel agents, the shared environment pool, its crash recovery, workspace prompts  |
-| [subscriptions.md](./subscriptions.md) | Sampling and spending a plan — declarations, the host store, reporting to the hub, and the brake's fan-out               |
-| [carry-over.md](./carry-over.md)       | Moving today's runners under a host by hand, and what the hub accepts from a runner not yet moved                        |
+| Where                                  | Read when                                                                                                                                  |
+| -------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------ |
+| [hub.md](./hub.md)                     | Building the hub's side — the host record and its credential, adding and adopting runners, registration, the host's fact lane, and sign-in |
+| [configuration.md](./configuration.md) | Shaping the host's configuration file — which key lives on the host, a workspace, a runner, or a binding, and validation                   |
+| [process.md](./process.md)             | Composing the daemon — what is per host and per runner, isolation, sign-in, listeners, the panel, and the CLI                              |
+| [workspaces.md](./workspaces.md)       | Routing a claim — project bindings, parallel agents, the shared environment pool, its crash recovery, workspace prompts                    |
+| [subscriptions.md](./subscriptions.md) | Sampling and spending a plan — declarations, the host store, reporting to the hub, and the brake's fan-out                                 |
+| [frontend.md](./frontend.md)           | Building the host panel and the hub's host card — routes, runner selection, the generated client, query keys, and what is shared           |
+| [carry-over.md](./carry-over.md)       | Moving today's runners under a host by hand, and what the hub accepts from a runner not yet moved                                          |

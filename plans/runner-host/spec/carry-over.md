@@ -15,7 +15,8 @@ the fleet changes until its operator moves a machine.
 
 1. **Add the host and adopt the runners.** `hub host add <name> --adopt <runner id>…` in the runners' tenant prints the
    host's id and token. Adoption only records `host_id` on each runner, so it is safe while they run.
-2. **Stop the runners.** `blizzard runner host` refuses a directory still served by a live daemon (`cli/daemon.py:176`).
+2. **Stop the runners.** The host halts any runner whose directory another process still holds
+   ([process.md](./process.md) §One owner per runner directory), so a leftover unit cannot share a store with it.
 3. **Write `blizzard-host.toml`** in a new host directory, with the token in that directory's `.env` as `BZ_HOST_TOKEN`:
    - the host-level keys — `hub_url`, listener, `[auth]`, `[tracing]`, `[transcripts]` — from the runners' files, which
      must agree on them;
@@ -35,10 +36,16 @@ the fleet changes until its operator moves a machine.
 
 ## What the host does on first start
 
-Each runner store migrates in place. Held `env_bindings` rows written before the host gain the workspace whose
-environments include theirs — environment names are unique within a root, so the match is exact — and the project of
-their chunk, as the hub's chunk view reports it during reconcile (`claim.py:252`). Leases, outboxes, and brakes carry on
-as they were, so chunks in flight resume where they stopped. The runner store's `workspace_prompt` and
+Each runner store migrates in place, and the migration reads nothing from the hub. Held `env_bindings` rows written
+before the host gain the workspace that holds their environment, matched by the row's `workdir` against each workspace's
+root and environment, never by environment name alone — two workspaces on different roots may both name `r1`. Their
+`project_id` stays null.
+
+On each runner's first tick under the host, before FILL, the runner asks the hub for the project of every held row whose
+`project_id` is null — leased or not — through the fleet chunk view (`GET /api/fleet/chunks/{chunk_id}`) and records it.
+Until a row's project is known it counts against every binding on its workspace ([workspaces.md](./workspaces.md)
+§Parallel agents), so the backfill can delay a claim but never over-admit one. Leases, outboxes, and brakes carry on as
+they were, so chunks in flight resume where they stopped. The runner store's `workspace_prompt` and
 `external_usage_samples` rows are left in place and no longer read. Workers alive before the restart are terminated by
 it and respawned by resume with the host's address ([process.md](./process.md) §Listeners and the panel).
 

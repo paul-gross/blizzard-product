@@ -27,13 +27,13 @@ A host holds one bearer token, stored at the hub as a hash and revocable on its 
 `presented_bearer` (`hub/api/bearer.py:13`) alongside the runner principal. The host principal is bound to its host's
 tenant (`tenant_bound`) and may do only the following:
 
-| Action                               | Route                                             |
-| ------------------------------------ | ------------------------------------------------- |
-| Report itself                        | `POST /api/fleet/host`                            |
-| Report a subscription sample or miss | `POST /api/fleet/host/subscription-usage`         |
-| Add a runner under itself            | `POST /api/fleet/host/runners`                    |
-| Retire a runner under itself         | `POST /api/fleet/host/runners/{runner_id}/retire` |
-| Read its own record and its runners  | `GET /api/fleet/host`                             |
+| Action                                           | Route                                             |
+| ------------------------------------------------ | ------------------------------------------------- |
+| Report itself                                    | `POST /api/fleet/host`                            |
+| Push its facts — subscription samples and misses | `POST /api/fleet/host/events`                     |
+| Add a runner under itself                        | `POST /api/fleet/host/runners`                    |
+| Retire a runner under itself                     | `POST /api/fleet/host/runners/{runner_id}/retire` |
+| Read its own record and its runners              | `GET /api/fleet/host`                             |
 
 Every other `/api/fleet` route stays behind `require_runner_principal` (`hub/api/fleet.py:118`), so a host token cannot
 peek, claim, report a lease, or register as a runner. A runner token cannot act as its host.
@@ -87,6 +87,23 @@ The host is the panel's sign-in client. `authorize` (`hub/api/idp.py:183`) accep
 `redirect_uri` against the host's reported `redirect_uris`, and mints a token whose audience is the host id. The role it
 carries is the person's role in the host's tenant, as for a runner today. A runner with no host keeps signing in as its
 own client.
+
+## The host's fact lane
+
+A host's own facts travel a lane of their own, shaped exactly as a runner's does (`POST /api/fleet/events`,
+`hub/api/fleet.py:793`). The host appends each fact to `host_outbound_buffer` with a per-host monotonic `seq`
+([subscriptions.md](./subscriptions.md) §The host store) and pushes batches in `seq` order. The hub keeps
+`host_high_water` — `host_id`, the greatest applied `seq`, `updated_at`, `tenant_id` — shaped as `runner_high_water`
+(`hub/store/schema.py:1700`), and applies a batch exactly as `FactIngestService.ingest` does for a runner
+(`hub/domain/execution/facts.py:224`): a retired host is refused before its mark is read, a fact at or below the mark is
+re-acknowledged and not applied, a fact above it is applied and raises the mark in the same transaction, and the answer
+carries the mark. The host deletes every buffered fact at or below the answered mark. A retry after a lost answer
+therefore re-acknowledges rather than re-applies, and a crash between the host's write and its push loses nothing, since
+the fact waits in the buffer.
+
+The host's `seq` is never reused: it lives in `host.db`, and a host re-added under `--allow-readd` is a new host with a
+new id and a mark of its own. A host's mark is never shared with any runner's, so the two lanes de-duplicate
+independently.
 
 ## Subscription usage
 
