@@ -4,7 +4,8 @@ Blizzard is not the only fleet shipping code while its owner sleeps. On public G
 repositories with one person behind them, landing pull requests faster than a human could read them. A handful are
 products that call themselves factories; most are ordinary codebases (an input method, a chess app, a Vue toolchain, a
 trucking system) whose owner quietly put a fleet to work. This folder sizes that field. Fusion, the nearest single
-competitor, keeps its own folder at [fusion-ai](../fusion-ai/index.md); this one is about the crowd around it.
+competitor, keeps its own folder at [fusion-ai](../fusion-ai/index.md), and Soleur, the nearest product to the
+methodology layer beneath blizzard, keeps one at [soleur](../soleur/index.md); this one is about the crowd around them.
 
 | File                               | When to read                                                                                                                  |
 | ---------------------------------- | ----------------------------------------------------------------------------------------------------------------------------- |
