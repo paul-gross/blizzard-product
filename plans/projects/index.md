@@ -3,10 +3,10 @@ epic: projects
 refinement: refined
 slices:
   - name: hub
-    status: horizon
+    status: delivered
     plan: ./hub/index.md
   - name: runner
-    status: horizon
+    status: delivered
     plan: ./runner.md
   - name: host
     status: horizon

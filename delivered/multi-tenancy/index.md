@@ -1,12 +1,12 @@
 ---
 epic: multi-tenancy
-refinement: refined
+refinement: pristine
 slices:
   - name: hub
-    status: horizon
+    status: delivered
     plan: ./hub/index.md
   - name: runner
-    status: horizon
+    status: delivered
     plan: ./runner.md
 ---
 

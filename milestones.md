@@ -77,10 +77,10 @@ method, carried out deterministically, with an agent's judgement called in where
 | Epic                       | Slice  | Status    |
 | -------------------------- | ------ | --------- |
 | `epic:live-config`         | full   | delivered |
-| `epic:multi-tenancy`       | hub    | horizon   |
-| `epic:projects`            | hub    | horizon   |
-| `epic:projects`            | runner | horizon   |
-| `epic:multi-tenancy`       | runner | horizon   |
+| `epic:multi-tenancy`       | hub    | delivered |
+| `epic:projects`            | hub    | delivered |
+| `epic:projects`            | runner | delivered |
+| `epic:multi-tenancy`       | runner | delivered |
 | `epic:runner-host`         | runner | horizon   |
 | `epic:projects`            | host   | horizon   |
 | `epic:advanced-delivery`   | full   | horizon   |

@@ -50,11 +50,11 @@ resolved to the id at the boundary ([surfaces.md](./surfaces.md) §Resolving a p
 
 A tenant holds a `default` project from the moment it exists, so it can ingest, hold a routine, and give a runner a
 project to declare before anyone has configured anything. Creating a tenant creates it in the same transaction
-(multi-tenancy [administration.md](../../../multi-tenancy/hub/spec/administration.md) §Creating a tenant): slug
-`default`, display name `Default`, attributed to whoever created the tenant, and linked to the built-in `hub` source as
-every project is, with no stored link. The carry-over gives the same project to every tenant that exists when this slice
-lands ([carry-over.md](./carry-over.md)), so a fresh hub's empty `default` tenant holds one too. Nothing else sets it
-apart: its slug and name change like any other project's.
+(multi-tenancy [administration.md](../../../../delivered/multi-tenancy/hub/spec/administration.md) §Creating a tenant):
+slug `default`, display name `Default`, attributed to whoever created the tenant, and linked to the built-in `hub`
+source as every project is, with no stored link. The carry-over gives the same project to every tenant that exists when
+this slice lands ([carry-over.md](./carry-over.md)), so a fresh hub's empty `default` tenant holds one too. Nothing else
+sets it apart: its slug and name change like any other project's.
 
 ## Links to work sources and repositories
 
@@ -144,9 +144,9 @@ it.
 ## Scope and routine identity
 
 `scopes` already carries the surrogate `scope_id` the multi-tenancy
-[store contract](../../../multi-tenancy/hub/spec/store.md) gives it, with every scope foreign key pointing at that id.
-This slice only narrows uniqueness: `uq_scopes_tenant_slug (tenant_id, slug)` becomes `(project_id, slug)`, and
-`uq_routines_tenant_name (tenant_id, name)` becomes `(project_id, name)`. A routine's default scope and every
+[store contract](../../../../delivered/multi-tenancy/hub/spec/store.md) gives it, with every scope foreign key pointing
+at that id. This slice only narrows uniqueness: `uq_scopes_tenant_slug (tenant_id, slug)` becomes `(project_id, slug)`,
+and `uq_routines_tenant_name (tenant_id, name)` becomes `(project_id, name)`. A routine's default scope and every
 `routine_scopes` row must name a scope of the routine's own project, enforced on write. Columns that carry a scope slug
 or routine name as a denormalized label — `findings.scope_slug`, `findings.routine_name`, `finding_sets`,
 `garden_proposals.routine_name`, `work_items.routine_name` — keep the label and resolve it within the row's own

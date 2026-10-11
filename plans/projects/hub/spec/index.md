@@ -3,8 +3,9 @@
 The technical contracts behind the hub slice of `epic:projects`. Product intent begins at the [slice plan](../index.md);
 implementation enters at the concern below. The tenant key, and the store seam that scopes every read to a tenant and
 narrows it to a project on request, are owned by the multi-tenancy
-[store contract](../../../multi-tenancy/hub/spec/store.md). Work-source and repository records, their revisions, and the
-secrets they name are owned by `epic:live-config`'s [records](../../../../delivered/live-config/spec/records.md) and
+[store contract](../../../../delivered/multi-tenancy/hub/spec/store.md). Work-source and repository records, their
+revisions, and the secrets they name are owned by `epic:live-config`'s
+[records](../../../../delivered/live-config/spec/records.md) and
 [secrets](../../../../delivered/live-config/spec/secrets.md) contracts. This spec adds the project to them; it redefines
 neither.
 

@@ -8,7 +8,7 @@
 - **Reading takes an optional project filter.** Omitted means the whole tenant — what every caller reads today. The
   filter is an ordinary argument, `project: ProjectId | None`, on the read repository methods that list project-owned
   rows or rows reached through a chunk; the multi-tenancy store seam scopes by tenant only and knows nothing of projects
-  ([store.md](../../../multi-tenancy/hub/spec/store.md) §The scoped store seam).
+  ([store.md](../../../../delivered/multi-tenancy/hub/spec/store.md) §The scoped store seam).
 - **Ingest** is the one write that may infer its project, under [ingest.md](./ingest.md)'s rules.
 - **Managing projects takes the tenant `admin` role.** Creating and editing a project, and creating or removing its
   source and repository links, require `CONFIG_EDIT` — the permission `epic:live-config`'s record verbs already take,
@@ -17,9 +17,9 @@
   proposal `CHUNK_CONTROL`.
 
 The tenant every call acts within is resolved before any of this, under the multi-tenancy contract
-([api.md](../../../multi-tenancy/hub/spec/api.md)): an API call takes it from its machine credential, else from the
-`X-Blizzard-Tenant` header, else from the caller's single membership, else answers `409 tenant_required`. No API path
-carries a tenant. A project is always resolved within the tenant so resolved.
+([api.md](../../../../delivered/multi-tenancy/hub/spec/api.md)): an API call takes it from its machine credential, else
+from the `X-Blizzard-Tenant` header, else from the caller's single membership, else answers `409 tenant_required`. No
+API path carries a tenant. A project is always resolved within the tenant so resolved.
 
 ## Resolving a project
 
@@ -37,9 +37,9 @@ id at the boundary; nothing past the boundary handles a slug. A display name is 
 4. Otherwise it resolves to nothing, answered as the surface answers an unknown project — `404` on a path, `422` in a
    body or query.
 
-A tenant is named by its id alone ([api.md](../../../multi-tenancy/hub/spec/api.md)); a project adds a slug because
-people type and read it in every lensed URL and every `--project`. The board always writes links with the current slug;
-the CLI saves a default project by id, so a slug change never breaks a saved context.
+A tenant is named by its id alone ([api.md](../../../../delivered/multi-tenancy/hub/spec/api.md)); a project adds a slug
+because people type and read it in every lensed URL and every `--project`. The board always writes links with the
+current slug; the CLI saves a default project by id, so a slug change never breaks a saved context.
 
 ## API
 
@@ -105,19 +105,19 @@ from the URL, never held separately, so a refresh or a shared link reproduces it
 ```
 
 Board URLs carry no tenant: the tab's tenant is the multi-tenancy contract's
-([api.md](../../../multi-tenancy/hub/spec/api.md) §Where people's clients get the header), and the `p/{project_slug}`
-segment is resolved within it. The segment is this slice's, and holds the project's current slug, resolved by §Resolving
-a project — a former slug redirects to the current one, and an id is accepted too. The lens control and the breadcrumb
-show the project's display name. The existing route table (`web/projects/hub/src/app/shell/app.routes.ts`) mounts once
-at the root and once under `p/{project_slug}`, so every view and every deep link is reachable with and without a lens,
-and a chunk's detail opened from a lens keeps it. Changing the lens re-navigates to the same view under the other
-prefix.
+([api.md](../../../../delivered/multi-tenancy/hub/spec/api.md) §Where people's clients get the header), and the
+`p/{project_slug}` segment is resolved within it. The segment is this slice's, and holds the project's current slug,
+resolved by §Resolving a project — a former slug redirects to the current one, and an id is accepted too. The lens
+control and the breadcrumb show the project's display name. The existing route table
+(`web/projects/hub/src/app/shell/app.routes.ts`) mounts once at the root and once under `p/{project_slug}`, so every
+view and every deep link is reachable with and without a lens, and a chunk's detail opened from a lens keeps it.
+Changing the lens re-navigates to the same view under the other prefix.
 
 The lens control sits in the app's view-tab row (`web/projects/hub/src/app/shell/nav/app-nav`, the shell's `shell-nav`
 slot) beside the tabs, where the mockups place it, and it narrows what the board and every list the lens touches show;
 the header's counts are read with the lens's `?project=` filter. The tenant is not beside it: a person changes tenant
 only from the profile menu (`app-nav-menu`), which offers the switcher only to someone with several memberships
-(multi-tenancy [api.md](../../../multi-tenancy/hub/spec/api.md) §Where people's clients get the header).
+(multi-tenancy [api.md](../../../../delivered/multi-tenancy/hub/spec/api.md) §Where people's clients get the header).
 
 ## What each view does with the lens
 
@@ -143,7 +143,7 @@ loading states follow `bzh:frontend-empty-state-gated`, and a change to any of t
 Every `epic:fact-egress` row that belongs to a chunk — each `steps`, `invocations`, and `events` row, a `dropped` row
 included — gains `project_id`, and beside it `project_slug` and `project_name` as the project was known when the row was
 written, read from the chunk's project. The columns sit beside the tenant columns the multi-tenancy
-[store contract](../../../multi-tenancy/hub/spec/store.md) §Fact egress adds. They are additive, so each dataset keeps
-its major version and the writer widens its `_schema` document in place, with the goldens and the data dictionary moving
-beside them (`docs/versioning.md`). A loader groups or filters by project from the rows alone, as it does by graph and
-node; a script that must survive a slug change keys on `project_id`.
+[store contract](../../../../delivered/multi-tenancy/hub/spec/store.md) §Fact egress adds. They are additive, so each
+dataset keeps its major version and the writer widens its `_schema` document in place, with the goldens and the data
+dictionary moving beside them (`docs/versioning.md`). A loader groups or filters by project from the rows alone, as it
+does by graph and node; a script that must survive a slug change keys on `project_id`.

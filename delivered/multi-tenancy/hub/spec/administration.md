@@ -59,7 +59,7 @@ One write transaction:
    (§Syncing packaged graphs) — so every tenant starts with the library a fresh hub starts with.
 3. Seed the tenant's built-in `hub` work source: its `work_item_sequence` row at 1.
 4. Create the tenant's `default` project, so the tenant can ingest from its first moment (`epic:projects`
-   [model.md](../../../projects/hub/spec/model.md) §Every tenant starts with a project).
+   [model.md](../../../../plans/projects/hub/spec/model.md) §Every tenant starts with a project).
 5. Grant `admin` to the user named by `admin_user_id` (`--admin`), when one is named.
 
 A tenant is usable the moment the transaction commits.
