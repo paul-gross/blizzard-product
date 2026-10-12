@@ -79,7 +79,8 @@ The foundation is shared with `epic:advanced-delivery`: a deploy is a step holdi
 it lives in a flow over that environment rather than in each chunk's graph. Deployment is many chunks to one deploy —
 several landings ride one pipeline run, one chunk's deploy is carried by a later one's, and a rollback undoes every
 chunk it carried — so an environment flow consumes what a branch flow landed, and reports deployed or rolled back to
-every chunk it carried.
+every chunk it carried. A chunk's delivery has already ended at landing, so the deploy is recorded against it and never
+holds it open.
 
 ## Principles the design holds to
 

@@ -38,7 +38,9 @@ its own.
   chunk: it carries several projects' work, changes its contents in flight, and needs no runner. A chunk waiting on a
   flow is `delivering`, and the flow's verdict reaches it as a fact.
 - **One event joins delivery to what follows it.** A branch flow emits that it landed a set of commits for a set of
-  chunks; environment flows consume it. Flows chain, so a delivery train is a train in the literal sense.
+  chunks; environment flows consume it. Flows chain, so a delivery train is a train in the literal sense. A chunk's
+  delivery ends at landing: what happens after it is `epic:advanced-deployment`'s, and never holds the chunk or its
+  environments open.
 
 ## What to build
 
@@ -81,8 +83,6 @@ its own.
 
 ## Open questions
 
-- What "done" means for a chunk: landed, or live. If live, a chunk waiting on its deploy must release its environments
-  before it waits.
 - How a merge made by a human is noticed at scale — polling every parked change, or the forge's webhook waking the hub —
   and what the fleet does when that signal is late or missed.
 - Whether the queue should avoid conflicts before they happen, keeping chunks likely to touch the same ground from
