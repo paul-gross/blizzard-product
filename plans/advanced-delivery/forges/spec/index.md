@@ -8,7 +8,8 @@ the change log, and secrets are owned by `epic:live-config`'s
 by `epic:projects`' [delivery contract](../../../../delivered/projects/hub/spec/delivery.md). This spec adds the forge
 to them; it redefines none.
 
-This spec assumes [blizzard#1105](https://github.com/paul-gross/blizzard/issues/1105) has landed first: repositories and
+This spec assumes [blizzard#1105](https://github.com/paul-gross/blizzard/issues/1105) (repositories) and
+[blizzard#1106](https://github.com/paul-gross/blizzard/issues/1106) (work sources) have landed first: repositories and
 work sources carry an id, a slug, and a name as a project does, every stored reference holds the id, and every boundary
 accepts an id or a slug and resolves it to the id. A forge is born with the same shape. Wherever this spec references a
 repository or a work source, it holds its id.

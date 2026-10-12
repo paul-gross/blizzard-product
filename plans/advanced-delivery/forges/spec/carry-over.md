@@ -6,7 +6,7 @@ for it, in one migration and with nothing reconfigured by hand.
 ## The migration
 
 One manual migration (`bzh:manual-migrations`) under `hub/store/migrations/versions/`, revised after
-[blizzard#1105](https://github.com/paul-gross/blizzard/issues/1105)'s, frozen once released (`bzh:frozen-revisions`) and
+[blizzard#1106](https://github.com/paul-gross/blizzard/issues/1106)'s, frozen once released (`bzh:frozen-revisions`) and
 inside the portable surface (`bzh:sql-portable`). Within every tenant it:
 
 1. **Creates the forges.** It gathers every API origin the tenant's records name — each repository's `forge_api_url`,
