@@ -45,8 +45,11 @@ its own.
 - **A landing seam, beside the work-source seam.** A forge binding already reads, labels, closes, and edits work items;
   it gains a landing half that reads and advances refs, opens, reads, updates, and merges changes, and joins native
   queues. Each forge normalizes its own vocabulary into one set of change states, so a policy never reads GitHub's words
-  or GitLab's. What a binding can do is declared, and a graph asking a forge for a policy it cannot honor is refused
-  when the graph is minted.
+  or GitLab's. A landing script holds no token: it reaches the forge only through the hub, by a callback in the manner
+  of the marker channel, and speaks this seam rather than any one forge's API, so there is one adapter per forge and it
+  lives at the hub. A script names the capabilities it needs and a binding declares the ones it has; a missing
+  capability takes the fallback the script declares for it — the flow's own train for a forge with no merge queue — or,
+  with none declared, the graph is refused when it is minted.
 - **Landing policies with one outcome vocabulary.** Fast-forward, merge once CI is green, park for a human and take over
   once it merges, and join the forge's queue are policies. A policy describes the repository, so it sits on the tenant's
   repository record, where `epic:projects` left room for it; a default on a project's link to the repository comes only
@@ -68,9 +71,6 @@ its own.
 
 ## Open questions
 
-- Whether a landing script reaches the forge through the hub, by a callback in the manner of the marker channel, so no
-  script holds a token and there is one adapter implementation, or through a self-contained adapter it carries. A flow
-  that lives at the hub leans toward the first.
 - Where a forge binding lives. `epic:live-config` split repositories from work sources: a work source names its
   provider, but a repository names its forge only by address, and the commits it resolves are read from GitHub alone.
   The landing seam needs either a forge kind on the repository record, or a forge binding of its own that work sources
