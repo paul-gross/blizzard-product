@@ -66,8 +66,10 @@ its own.
   once it merges, and join the forge's queue are policies. A policy describes the repository, so it sits on the tenant's
   repository record, where `epic:projects` left room for it; a default on a project's link to the repository comes only
   if one earns its place. Projects that link one repository share its one queue, and the repository's policy is the one
-  that holds there. Every policy reports the same outcomes — landed, pending, conflict, failure, awaiting a human — so a
-  graph written for one runs unchanged under another.
+  that holds there. A parked change is noticed merged by polling, every two minutes at the most often; the forge's
+  webhook, where one is declared, only brings that moment forward, so a late or missed event costs minutes and never a
+  landing. Every policy reports the same outcomes — landed, pending, conflict, failure, awaiting a human — so a graph
+  written for one runs unchanged under another.
 - **Landing across repositories and forges.** `epic:projects` already confines a chunk to the repositories its project
   links. What remains is landing across them: today a chunk whose repositories disagree on forge, owner, base branch, or
   credential is refused before its delivery starts, and this epic lifts that, landing each repository through its own
@@ -83,7 +85,5 @@ its own.
 
 ## Open questions
 
-- How a merge made by a human is noticed at scale — polling every parked change, or the forge's webhook waking the hub —
-  and what the fleet does when that signal is late or missed.
 - Whether the queue should avoid conflicts before they happen, keeping chunks likely to touch the same ground from
   running side by side, and whether that belongs here or to the queue.
