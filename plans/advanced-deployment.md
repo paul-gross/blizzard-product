@@ -72,8 +72,8 @@ whatever set the deploy in motion.
 Most of the engine already exists. Hub-executed command nodes start and follow runs; the pending outcome with its poll
 interval and timeout is exactly the wait a pipeline needs; authored choices route healthy, broken, and rollback; markers
 make a retried deploy skip what is already live. What is new is the declaration, the drivers and probes, per-environment
-exclusivity in place of a single fleet-wide slot, dependency ordering, evidence gathering, and scripts that execute on a
-runner.
+exclusivity in place of the one slot a tenant shares, dependency ordering, evidence gathering, and scripts that execute
+on a runner.
 
 The foundation is shared with `epic:advanced-delivery`: a deploy is a step holding a named resource, an environment, and
 it lives in a flow over that environment rather than in each chunk's graph. Deployment is many chunks to one deploy —
@@ -115,3 +115,7 @@ every chunk it carried.
   repository record, while this plan speaks of the dependencies a project declared. A repository two projects link is
   deployed once, so dependencies declared per project need a rule for when two projects disagree, and dependencies
   declared per repository need a home that is neither project's.
+- How a flow runs the judgement it declares. `epic:advanced-delivery` settles that a flow is not a chunk, so it has none
+  of the agent sessions a chunk is given. It could mint an ordinary chunk on a judgement graph, which must then belong
+  to one project even when the deploy it judges carried work from two, or it could run a graph's session itself without
+  becoming a chunk.
