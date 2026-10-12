@@ -15,9 +15,6 @@ on every merge, a GitLab merge train, a chunk whose work spans repositories on t
 many agents finish at once, because every landing moves the branch under each chunk still waiting, and each of those
 goes back to an agent to rebase work that was already right.
 
-This plan is early. The shape below is understood and worth keeping; most of the decisions it forces are not yet made,
-and the open questions at the end are the real work of promoting it.
-
 ## The shape
 
 Delivery, stripped of git, is three things: a deterministic step the hub executes, exclusive access to a shared
@@ -82,8 +79,3 @@ its own.
   own graph to resolve, and the train moves on without it.
 - **The combination is what gets proven.** Two changes that merge cleanly can still break each other, so whatever policy
   lands work, the tree that reaches the base is the tree that was verified.
-
-## Open questions
-
-- Whether the queue should avoid conflicts before they happen, keeping chunks likely to touch the same ground from
-  running side by side, and whether that belongs here or to the queue.
