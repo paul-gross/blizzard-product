@@ -75,17 +75,20 @@ repositories deploys all three in the order they depend on one another, proving 
 the next one moves. Delivery and deployment stop being one fleet-wide habit and become each project's own declared
 method, carried out deterministically, with an agent's judgement called in where the project asks for it.
 
-| Epic                       | Slice  | Status      |
-| -------------------------- | ------ | ----------- |
-| `epic:live-config`         | full   | delivered   |
-| `epic:multi-tenancy`       | hub    | delivered   |
-| `epic:projects`            | hub    | delivered   |
-| `epic:projects`            | runner | delivered   |
-| `epic:multi-tenancy`       | runner | delivered   |
-| `epic:runner-host`         | full   | in-progress |
-| `epic:projects`            | host   | retired     |
-| `epic:advanced-delivery`   | full   | horizon     |
-| `epic:advanced-deployment` | full   | horizon     |
+| Epic                       | Slice    | Status      |
+| -------------------------- | -------- | ----------- |
+| `epic:live-config`         | full     | delivered   |
+| `epic:multi-tenancy`       | hub      | delivered   |
+| `epic:projects`            | hub      | delivered   |
+| `epic:projects`            | runner   | delivered   |
+| `epic:multi-tenancy`       | runner   | delivered   |
+| `epic:runner-host`         | full     | in-progress |
+| `epic:projects`            | host     | retired     |
+| `epic:advanced-delivery`   | forges   | horizon     |
+| `epic:advanced-delivery`   | flows    | horizon     |
+| `epic:advanced-delivery`   | policies | horizon     |
+| `epic:advanced-delivery`   | trains   | horizon     |
+| `epic:advanced-deployment` | full     | horizon     |
 
 ## `milestone:hardening` — the platform stops guessing on your behalf
 

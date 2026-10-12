@@ -2,8 +2,18 @@
 epic: advanced-delivery
 refinement: refined
 slices:
-  - name: full
+  - name: forges
     status: horizon
+    plan: ./forges/index.md
+  - name: flows
+    status: horizon
+    plan: ./flows/index.md
+  - name: policies
+    status: horizon
+    plan: ./policies/index.md
+  - name: trains
+    status: horizon
+    plan: ./trains/index.md
 ---
 
 # Plan — `epic:advanced-delivery`
@@ -79,3 +89,12 @@ its own.
   own graph to resolve, and the train moves on without it.
 - **The combination is what gets proven.** Two changes that merge cleanly can still break each other, so whatever policy
   lands work, the tree that reaches the base is the tree that was verified.
+
+## Slices
+
+| Slice                             | Carries                                                                                                                                                                                               |
+| --------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| [`forges`](./forges/index.md)     | The forge record, repositories and work sources naming their forge, the landing seam with its capabilities, and landing scripts that reach the forge through the hub                                  |
+| [`flows`](./flows/index.md)       | Steps scoped to a named resource, the flow as a subject at the hub, a chunk submitting and awaiting a verdict, and today's landing as a flow with a batch of one                                      |
+| [`policies`](./policies/index.md) | Three landing policies on the repository record, noticing a person's merge with the forge's webhook and shared rate budget, GitLab as a second forge kind, and landing across repositories and forges |
+| [`trains`](./trains/index.md)     | Mechanical updating, batches proven once with the combination landed, capabilities a repository switches on, the forge's own queue as a fourth policy, and ejecting what cannot join                  |
