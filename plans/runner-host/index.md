@@ -1,6 +1,6 @@
 ---
 epic: runner-host
-refinement: scaffolded
+refinement: pristine
 slices:
   - name: full
     status: in-progress
