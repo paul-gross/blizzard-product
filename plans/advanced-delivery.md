@@ -42,14 +42,24 @@ its own.
 
 ## What to build
 
+- **A forge, declared once per tenant.** A forge is a tenant record for one server: its kind, its API and web addresses,
+  how the hub authenticates to it, the webhook it delivers events through and the secret that signs them, the rate
+  budget everything calling it shares, and the capabilities the server itself offers, such as whether its tier runs
+  merge trains. A repository names the forge it lives on, and so does a work source whose provider is a forge; a tracker
+  that is not one names none. What belongs to one use stays on that record: its own credential, so landing and reading
+  work can hold different keys, and its own settings — a repository's base branch, landing policy, and the capabilities
+  it switches on, a work source's opt-in to forge-status annotation. One event the forge delivers, such as a change
+  merged, reaches every record it concerns, the repository waiting on that landing and the source whose item it closes.
 - **A landing seam, beside the work-source seam.** A forge binding already reads, labels, closes, and edits work items;
   it gains a landing half that reads and advances refs, opens, reads, updates, and merges changes, and joins native
   queues. Each forge normalizes its own vocabulary into one set of change states, so a policy never reads GitHub's words
   or GitLab's. A landing script holds no token: it reaches the forge only through the hub, by a callback in the manner
   of the marker channel, and speaks this seam rather than any one forge's API, so there is one adapter per forge and it
-  lives at the hub. A script names the capabilities it needs and a binding declares the ones it has; a missing
-  capability takes the fallback the script declares for it — the flow's own train for a forge with no merge queue — or,
-  with none declared, the graph is refused when it is minted.
+  lives at the hub. A script names the capabilities it needs, and a repository offers what its forge has, narrowed to
+  what the repository switches on; a missing capability takes the fallback the script declares for it — the flow's own
+  train for a forge with no merge queue — or, with none declared, is refused. A graph is shared across the tenant and
+  cannot know where it will land, so the check runs when a repository's policy is set and again when a chunk's
+  repositories resolve at landing.
 - **Landing policies with one outcome vocabulary.** Fast-forward, merge once CI is green, park for a human and take over
   once it merges, and join the forge's queue are policies. A policy describes the repository, so it sits on the tenant's
   repository record, where `epic:projects` left room for it; a default on a project's link to the repository comes only
@@ -71,13 +81,9 @@ its own.
 
 ## Open questions
 
-- Where a forge binding lives. `epic:live-config` split repositories from work sources: a work source names its
-  provider, but a repository names its forge only by address, and the commits it resolves are read from GitHub alone.
-  The landing seam needs either a forge kind on the repository record, or a forge binding of its own that work sources
-  and repositories both reference.
 - What "done" means for a chunk: landed, or live. If live, a chunk waiting on its deploy must release its environments
   before it waits.
-- How a merge made by a human is noticed at scale — polling every parked change, or forge events that wake the hub — and
-  what the fleet does when that signal is late or missed.
+- How a merge made by a human is noticed at scale — polling every parked change, or the forge's webhook waking the hub —
+  and what the fleet does when that signal is late or missed.
 - Whether the queue should avoid conflicts before they happen, keeping chunks likely to touch the same ground from
   running side by side, and whether that belongs here or to the queue.
