@@ -144,8 +144,16 @@ values — and what it replaces is removed at the next major, once nothing insid
   since. A fix lands on `master` first and is carried back by cherry-pick, proven by the same gate against that line's
   first release, and tagged from the branch; only a fix for code the next major has already removed is written on the
   old line alone. Most fixes ride the next week's train instead — a patch is for what cannot wait the week: a hole in
-  security, lost data, a fleet that has stopped; the majors are cut on their published dates from a `master` opened for
-  them. Once `epic:cadence` lands, cutting the candidate is a routine the fleet runs for itself.
+  security, lost data, a fleet that has stopped. The promise of which lines receive patches is deliberately short.
+  Within a major, only the newest minor does — every minor only adds, so moving to the newest is always a safe fix. Once
+  a new major ships, the previous major's final line receives critical fixes, and only those, for three months: long
+  enough for an operator to schedule a breaking upgrade, short enough that blizzard never carries more than two lines,
+  and over before the old branch has drifted so far that each backport becomes a rewrite. Its runners keep working
+  against the new major's hub for the whole of that major, since withdrawing them mid-major would itself be a break, but
+  after the three months they are working unsupported. Before 1.0, only the newest minor is patched. A longer promise
+  for security fixes is an LTS line, and waits until operators outside blizzard ask for one. The majors are cut on their
+  published dates from a `master` opened for them. Once `epic:cadence` lands, cutting the candidate is a routine the
+  fleet runs for itself.
 - **`dark-launch` — `master` that is always releasable.** Work that spans weeks lands behind a flag that is off by
   default, so an unfinished capability can share `master` with a weekly cut. The release that turns a flag on is the
   release whose notes describe the capability, and the flag is retired once it has been on for a release. A flag hides
@@ -194,7 +202,5 @@ exists, the instance's upgrades can travel it, deploying releases rather than la
 
 ## Open questions
 
-- How long a major's final line keeps receiving fixes once the next major ships, and whether fixes that matter to an
-  operator's security are held to a longer promise.
 - How a release records the commits of the repositories that proved it — the mock fleet and the workspace its upper
   tiers check out — so that the proof behind a release can be reproduced.
