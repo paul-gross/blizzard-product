@@ -84,6 +84,7 @@ method, carried out deterministically, with an agent's judgement called in where
 | `epic:multi-tenancy`       | runner   | delivered   |
 | `epic:runner-host`         | full     | in-progress |
 | `epic:projects`            | host     | retired     |
+| `epic:advanced-delivery`   | actions  | horizon     |
 | `epic:advanced-delivery`   | forges   | horizon     |
 | `epic:advanced-delivery`   | flows    | horizon     |
 | `epic:advanced-delivery`   | policies | horizon     |

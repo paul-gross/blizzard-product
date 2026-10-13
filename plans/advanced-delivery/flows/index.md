@@ -13,9 +13,13 @@ submit their work to and that answers each of them with a verdict. In this slice
 way the slot does today, so nothing about how work lands changes; what changes is that the waiting has a place, an
 order, and a record.
 
+| Where                    | Read when                                                              |
+| ------------------------ | ---------------------------------------------------------------------- |
+| [spec/](./spec/index.md) | Implementing any part of the slice or resolving its technical contract |
+
 ## What to build
 
-- **A step holds a named resource.** A hub step that lands into a repository holds `repo:<name>/<branch>` for each
+- **A step holds a named resource.** A hub step that lands into a repository holds `repo:<repository>/<branch>` for each
   repository its chunk's commits resolve to, and two steps conflict only when they hold the same resource. A step that
   lands nowhere — recording a garden delivery, recording review findings — holds nothing and runs whenever its chunk
   reaches it. A step holding several resources takes them together or not at all, so two multi-repository chunks never
@@ -24,12 +28,14 @@ order, and a record.
   keeps an append-only record of what it admitted, landed, and turned back, in what order, and why, so the question
   "what happened on `master` last night" has one place to be answered.
 - **Chunks submit; the flow answers.** A chunk reaching its delivery node submits its work to the flow of each branch it
-  lands on and waits, `delivering`, with its runner keeping its environments as today. The flow takes submissions in the
-  order they arrived and lands each one by running the chunk's own delivery script, with the forge reached through the
-  hub as the `forges` slice built it. Its verdict — landed, conflict, failure — reaches the chunk as a fact and routes
-  it along the edge its graph authored for that outcome. A chunk landing into several repositories is landed only when
-  every flow it submitted to says so; a repository that landed before another refused stays landed, and the chunk
-  reconciles as it does today.
+  lands on and waits, `delivering`, with its runner keeping its environments as today. The flow gives submissions their
+  turns in the order they arrived and lands each by taking the chunk's own delivery action, which speaks the forge
+  through the seam the `forges` slice built. A chunk waiting on its checks gives up its turn and keeps its place, so a
+  branch is never held through a wait on CI; the hub starts each turn itself, so a chunk whose runner has gone still
+  lands. Its verdict — landed, conflict, failure — reaches the chunk as a fact and routes it along the edge its graph
+  authored for that outcome. A chunk landing into several repositories is landed only when every flow it submitted to
+  says so; a repository that landed before another refused stays landed, and the chunk reconciles as it does today. Each
+  landing is recorded as the event that whatever follows delivery, such as a deployment, starts from.
 - **Today's landing is a batch of one.** Nothing in this slice batches, reorders, or rebases. A chunk is landed exactly
   as the slot lands it now, only behind the work queued on its own branch rather than everything in the tenant.
 - **The waiting is visible.** The board shows each flow as a lane: what is landing now, what is queued behind it, and
@@ -43,7 +49,7 @@ order, and a record.
 
 ## Left for later
 
-The flow learns to batch, to rebase mechanically, and to prove a combination in the `trains` slice; until then its line
-is first come, first landed. Which policy lands a repository's work stops being the graph's choice in the `policies`
-slice, and the flow runs the repository's policy rather than the chunk's script from then on. Environments as resources,
-and the flows that deploy to them, are `epic:advanced-deployment`'s.
+The flow learns to batch, to rebase mechanically, and to prove a combination in the `trains` slice; until then turns go
+first come, first served, and each landing completes when its checks do. Which policy lands a repository's work stops
+being the graph's choice in the `policies` slice, and `land` runs the repository's policy from then on. Environments as
+resources, and the flows that deploy to them, are `epic:advanced-deployment`'s.

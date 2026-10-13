@@ -11,6 +11,10 @@ combining ready work, proving the combination once — and wakes an agent only f
 reaches the branch is exactly the tree that was proven, so two changes that each passed alone cannot land a break
 together.
 
+| Where                    | Read when                                                              |
+| ------------------------ | ---------------------------------------------------------------------- |
+| [spec/](./spec/index.md) | Implementing any part of the slice or resolving its technical contract |
+
 ## What to build
 
 - **Mechanical first.** A change behind its base is brought up to it by the flow, through its forge, and only a textual

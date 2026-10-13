@@ -9,7 +9,7 @@ operation names a forge, an owner, or a token:
 | Operation                                       | Answers                                                                                               |
 | ----------------------------------------------- | ----------------------------------------------------------------------------------------------------- |
 | `branch_tip(branch)`                            | The revision a branch points at, or `None` when it does not exist                                     |
-| `compare(base, head)`                           | `Comparison(ahead, behind, status)` — `identical`, `ahead`, `behind`, or `diverged`                   |
+| `compare(base, head)`                           | `Comparison(status, ahead, behind, merge_base, commits, files, truncated)`                            |
 | `commit_exists(revision)`                       | `CommitPresence(exists, authored_at)`, or `None` when the forge could not say                         |
 | `changes(state, base, head=None)`               | The changes into `base`, `open` or `closed`, newest first, bounded as `land_common` bounds them today |
 | `open_change(head, base, title, body)`          | The new `Change`                                                                                      |
@@ -19,12 +19,19 @@ operation names a forge, an owner, or a token:
 | `checks(revision)`                              | `Check(id, name, outcome)` for each check on the revision                                             |
 | `rerun_check(id)`                               | Whether the forge accepted the re-run                                                                 |
 
+A `Comparison` carries everything the `land` action's head gate reads from a compare today, so `gate_head` and
+`base_merge.py` port without losing their proof: `status` is `identical`, `ahead`, `behind`, or `diverged`; `commits`
+are the head side's commits as `CommitSummary(revision, parents)`, which the gate walks along first parents; `files` are
+`FileChange(path, previous_path, status, blob, patch, additions, deletions)`; `merge_base` is the merge base's revision;
+and `truncated` says the forge cut the file list short, which `base_merge.py` refuses to prove across, as it refuses
+GitHub's three-hundred-file cap today.
+
 A `Change` carries the seam's own words. `state` is `open`, `merged`, or `closed`. `mergeability` is `mergeable`,
 `behind`, `conflicting`, `blocked`, or `pending` — the last while the forge has not yet decided. A check's `outcome` is
 `pending`, `passed`, `failed`, or `neutral`. `method` is `merge`, `squash`, or `rebase`. Each adapter maps its forge's
 vocabulary into these and nothing else crosses the seam: the GitHub adapter turns `mergeable_state` `clean` into
-`mergeable` and `dirty` into `conflicting`, and folds a check run's `status` and `conclusion` into one `outcome`, so
-`land_pr_ci.py`'s `Verdict.of` reads `outcome` where it reads GitHub's fields today.
+`mergeable` and `dirty` into `conflicting`, and folds a check run's `status` and `conclusion` into one `outcome`, so the
+`land` action's `Verdict.of` reads `outcome` where it reads GitHub's fields today.
 
 Failures are three typed errors: `ForgeNotFound`, `ForgeRejected(reason)` for a refusal the forge explained, and
 `ForgeUnavailable` for a 5xx, a timeout, or no answer. None is swallowed inside the adapter.
@@ -44,16 +51,20 @@ repository rather than a kind from the start.
 ## The GitHub adapter
 
 `GitHubLanding` (`hub/forge/internal/github_landing.py`) implements every operation and offers every capability. It is
-the forge-calling half of `hub/graphs/scripts/land_common.py`, moved behind the seam: the same routes — `git/ref/heads`,
-`compare`, `pulls`, `pulls/{n}`, `pulls/{n}/update-branch`, `pulls/{n}/merge`, `commits/{ref}`,
-`commits/{ref}/check-runs`, `check-runs/{id}/rerequest` — the same paging bounds, and the same `blizzard-hub` user on
-writes. It uses `httpx` with `Authorization: token <secret>`, as the work-source adapter does.
+the `land` action's GitHub client (`hub/delivery/actions/internal/github_client.py`), moved behind the seam: the same
+routes — `git/ref/heads`, `compare`, `pulls`, `pulls/{n}`, `pulls/{n}/update-branch`, `pulls/{n}/merge`,
+`commits/{ref}`, `commits/{ref}/check-runs`, `check-runs/{id}/rerequest` — the same paging bounds, and the same
+`blizzard-hub` user on writes. Two reads the scripts leave at GitHub's first page of thirty, the open pull requests into
+a base and the check runs on a revision, are paged to the same bound as the closed ones, so a busy repository never
+hides the change or the failing check it is looking for. It uses `httpx` with `Authorization: token <secret>`, as the
+work-source adapter does.
 
 ## The registry
 
 `ForgeRegistry` (`hub/forge/registry.py`) builds an adapter for a repository record on use: it reads the record and its
 forge, reveals the repository's secret through `ISecretReader`, and picks the adapter class by `kind`. Built adapters
-are cached in a `ConfigObjectCache` keyed by the repository's and the forge's revisions, so an edit to either takes
+are cached in the tenant's `ConfigObjectCache` under the repository's `CacheKey`, which carries the forge's revision
+beside the repository's and its secret's ([record.md](./record.md#the-change-log)), so an edit to any of the three takes
 effect on the next use, as `StoreWorkSourceRegistry` does for work sources. It is wired per tenant in `hub/app.py`
 beside `work_source_registry`.
 

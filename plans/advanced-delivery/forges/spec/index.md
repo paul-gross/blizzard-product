@@ -8,25 +8,29 @@ the change log, and secrets are owned by `epic:live-config`'s
 by `epic:projects`' [delivery contract](../../../../delivered/projects/hub/spec/delivery.md). This spec adds the forge
 to them; it redefines none.
 
-This spec assumes [blizzard#1105](https://github.com/paul-gross/blizzard/issues/1105) (repositories) and
-[blizzard#1106](https://github.com/paul-gross/blizzard/issues/1106) (work sources) have landed first: repositories and
-work sources carry an id, a slug, and a name as a project does, every stored reference holds the id, and every boundary
-accepts an id or a slug and resolves it to the id. A forge is born with the same shape. Wherever this spec references a
-repository or a work source, it holds its id.
+This spec assumes the [actions slice](../../actions/spec/index.md) has landed, so landing is the hub's `land` action and
+no hub step is a process.
+
+It builds on two things already true of the code. Repositories (`repo_<ulid>`) and work sources (`wsrc_<ulid>`) carry an
+id, a slug, and a name as a project does: every stored reference holds the id, every boundary accepts an id or a slug
+and resolves it through the shared kernel in `hub/domain/kernel/id_or_slug.py`, and a slug a record leaves behind is
+held in its kind's former-slug table through `hub/store/internal/former_slugs.py`. A forge is born with the same shape
+([record.md](./record.md)). Wherever this spec references a repository or a work source, it holds its id. And each of a
+chunk's commit pointers already resolves to its own repository record and lands against that record's own forge address,
+owner, base branch, and credential, so one chunk may already land across servers and credentials; what this slice
+changes is how a target names its server, not which targets a chunk may have.
 
 Paths are relative to `blizzard/src/blizzard/`.
 
-The slice reaches beyond `blizzard`'s source. `blizzard-context` restates where the forge is reached and what a `run:`
-step is handed: its forge row in `architecture/system-shape/seam-positions.md` gains the landing seam in place of the
-land scripts' direct path, `standards/hub-nodes/env-contract.md` loses `BZ_FORGE_*` and gains the forge callback, and
-`architecture/system-shape/configuration.md` and `domain/artifacts/delivery.md` learn the forge record and that a
-delivery script never holds a credential. `blizzard-mock`'s forge is unchanged, since the hub now calls it where the
-scripts did.
+The slice reaches beyond `blizzard`'s source. In `blizzard-context`, the section of
+`architecture/system-shape/seam-positions.md` titled *The forge has no single seam* collapses its `GitHubCommitResolver`
+and land rows into the landing seam, and `architecture/system-shape/configuration.md` and `domain/artifacts/delivery.md`
+learn the forge record. `blizzard-mock`'s forge is unchanged.
 
 | Where                            | Read when                                                                                                                     |
 | -------------------------------- | ----------------------------------------------------------------------------------------------------------------------------- |
 | [record.md](./record.md)         | Shaping the forge record — its table, the references from repositories and work sources, retirement, invariants               |
 | [seam.md](./seam.md)             | Building the landing seam — its operations, its vocabulary, capabilities, the GitHub adapter, the readers it absorbs          |
-| [landing.md](./landing.md)       | Routing a delivery script through the hub — the callback, its authority, the `run:` environment, the ported scripts           |
+| [landing.md](./landing.md)       | Porting the `land` action onto the seam, and the capabilities an action requires                                              |
 | [surfaces.md](./surfaces.md)     | Building the API, CLI, configuration document, and admin screens for forges and the records that name them                    |
 | [carry-over.md](./carry-over.md) | Writing the migration — one forge per server already named, every reference filled, the old fields' transition and retirement |
