@@ -148,7 +148,11 @@ values — and what it replaces is removed at the next major, once nothing insid
   them. Once `epic:cadence` lands, cutting the candidate is a routine the fleet runs for itself.
 - **`dark-launch` — `master` that is always releasable.** Work that spans weeks lands behind a flag that is off by
   default, so an unfinished capability can share `master` with a weekly cut. The release that turns a flag on is the
-  release whose notes describe the capability, and the flag is retired once it has been on for a release.
+  release whose notes describe the capability, and the flag is retired once it has been on for a release. A flag hides
+  behavior, never contract: surface that ships behind a flag that is off — a route, a field, a configuration key, a
+  column — is released, and the compatibility checks hold it to the version rules like any other. That keeps the checks
+  blind to flags, and it means an epic whose shape is still moving keeps that shape off `master`, or behind surface it
+  is content to support, until it settles.
 - **`supply-chain` — artifacts a stranger can trust.** Images signed, with a software bill of materials and build
   provenance attested; checksums beside every attached file; the wheel published to the Python package index; and a
   runner installable at a named version, so an operator pins what they run as easily as they pin the hub.
@@ -192,6 +196,5 @@ exists, the instance's upgrades can travel it, deploying releases rather than la
 
 - How long a major's final line keeps receiving fixes once the next major ships, and whether fixes that matter to an
   operator's security are held to a longer promise.
-- Whether surface that ships in a release behind a flag that is off counts as released for the compatibility checks.
 - How a release records the commits of the repositories that proved it — the mock fleet and the workspace its upper
   tiers check out — so that the proof behind a release can be reproduced.
