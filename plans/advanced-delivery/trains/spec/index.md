@@ -5,15 +5,18 @@ The technical contracts behind the trains slice of `epic:advanced-delivery`. Pro
 and how a verdict reaches a chunk are owned by the [flows slice](../../flows/spec/index.md); the forge roles, the
 registry that hands them out, and the capabilities by the [forges slice](../../forges/spec/index.md); and the
 repository's policy, the order a project lands its repositories in, the reserved waits, and the rate budget by the
-[policies slice](../../policies/spec/index.md). This spec teaches a flow to land many submissions at once, and to hand
+[policies slice](../../policies/spec/index.md); and the GitLab adapter, its vocabulary, and the mock's GitLab face by
+the [gitlab slice](../../gitlab/spec/index.md). This spec teaches a flow to land many submissions at once, and to hand
 its line to a forge that keeps one of its own.
 
 This spec assumes the [actions](../../actions/spec/index.md), [forges](../../forges/spec/index.md),
-[flows](../../flows/spec/index.md), and [policies](../../policies/spec/index.md) slices have landed: an action is pure
-under `bzh:hub-action-purity`, receiving a frozen input and handing its effects to an `IEffectSink` the driver persists;
-`land` runs each repository's policy a pass at a time; every forge is spoken through the async roles `ForgeRegistry`
-hands out — `IForgeRefs`, including `merge_into` and the compare-and-swap `advance_ref`, `IForgeChanges`, and
-`IForgeChecks`; and each branch's flow gives its submissions turns, one at a time, in arrival order.
+[flows](../../flows/spec/index.md), [policies](../../policies/spec/index.md), and [gitlab](../../gitlab/spec/index.md)
+slices have landed: an action is pure under `bzh:hub-action-purity`, receiving a frozen input and handing its effects to
+an `IEffectSink` the driver persists; `land` runs each repository's policy a pass at a time; every forge is spoken
+through the async roles `ForgeRegistry` hands out — `IForgeRefs`, including `merge_into` and the compare-and-swap
+`advance_ref`, `IForgeChanges`, and `IForgeChecks`; GitHub and GitLab both sit behind those roles, so a GitLab project's
+merge train is reached through the same seam as GitHub's merge queue; and each branch's flow gives its submissions
+turns, one at a time, in arrival order.
 
 Paths are relative to `blizzard/src/blizzard/`.
 

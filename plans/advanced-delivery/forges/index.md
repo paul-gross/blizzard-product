@@ -57,10 +57,11 @@ runs when the repository's forge lacks one, rather than letting it discover the 
 
 ## Left for later
 
-Everything the seam does not yet need waits for the slice that needs it. A second forge kind, GitLab, arrives with the
-`policies` slice, where a chunk first lands across two kinds of forge and the seam's vocabulary first has to hold for
-both — one chunk can already land across servers, since each of its repositories lands against its own; so does the rate
-budget its callers share, sized against the polling landing itself does. A capability that varies from one repository to
-another, such as a merge queue found on one repository and not its neighbour, arrives with the `trains` slice, and until
-then a forge's capabilities are its kind's. Authenticating as an application rather than with a token waits for an
-operator who needs it.
+Everything the seam does not yet need waits for the slice that needs it. The rate budget the seam's callers share
+arrives with the `policies` slice, sized against the polling landing itself does. GitHub stays the only forge kind
+through the `policies` slice; a second kind, GitLab, is a slice of its own, `gitlab`, where a chunk first lands across
+two kinds of forge and the seam's vocabulary first has to hold for both — one chunk can already land across servers,
+since each of its repositories lands against its own. A capability that varies from one repository to another, such as a
+merge queue found on one repository and not its neighbour, arrives with the `trains` slice, and until then a forge's
+capabilities are its kind's. Authenticating as an application rather than with a token waits for an operator who needs
+it.

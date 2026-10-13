@@ -33,7 +33,7 @@ finds by graph, version, and tenant; none is expected, since no graph has had a 
 
 ## Proof
 
-Each proof runs against the mock forge, GitHub face and GitLab face alike, unless it says otherwise.
+Each proof runs against the mock forge's GitHub face unless it says otherwise.
 
 - **Unchanged by default.** A fixture store captured before the migration carries over, every repository reads
   `merge-on-checks`, every project's repositories read unranked, and every single-repository chunk lands with the
@@ -56,13 +56,12 @@ Each proof runs against the mock forge, GitHub face and GitLab face alike, unles
   first. A project with one repository ranked and two unranked lands the ranked one first, then the others by slug.
   Unlinking a ranked repository and linking it again restores its position. The configuration document exports a
   project's `landing_order` and applies it back unchanged.
-- **Capabilities.** Setting `fast-forward` on a GitLab repository is refused naming `refs.advance`; a policy whose
-  capability vanished after it was set escalates `forge-capability-missing` at the next visit.
-- **GitLab.** A chunk lands into a GitLab repository by `merge-on-checks` and by `park`; a rebase the hub requested
-  passes the gate and one that changed the file set, or that nobody requested, does not; a change passing through
-  `locked` lands rather than failing; a retried job that passed reads green; a merged-results pipeline is read and
-  waited on; a chunk spanning a GitHub and a GitLab repository lands both. The same scenarios run in the GitLab contract
-  suite against a real GitLab CE container ([gitlab.md](./gitlab.md#the-mock)).
+- **Capabilities.** Setting `fast-forward` on a repository whose forge's test adapter does not offer `refs.advance` is
+  refused naming it; a policy whose capability vanished after it was set escalates `forge-capability-missing` at the
+  next visit.
+- **Across repositories.** A chunk spanning a `fast-forward` repository and a `merge-on-checks` repository on a second
+  GitHub server lands both in its project's order, each through its own forge and credential; with the second refusing
+  after the first has landed, the first stands and the chunk reconciles the second.
 - **Budget.** With the mock's rate lever lowering the remaining, parked polls and the sweeps are turned away first and
   landings last; with the remaining spent, or a secondary limit answered, landings slow to `pending` with their next
   poll at the reset and resume after it; `advance_ref`'s GraphQL call does not move the REST budget; `forge-budget-low`

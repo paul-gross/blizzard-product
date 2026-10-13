@@ -41,9 +41,9 @@ wait, `ci-rerun/<…>` per re-run — so the board, the bounce envelope, and the
 base when it is behind, read its checks, and once every repository is ready merge it with `changes.merge.merge` and the
 expected head. Its `Ready.land` is that merge, and the revision it lands at is the change's `merged_revision`. It reads
 a change's checks through `change_checks(number)`, which the GitHub adapter answers from the head revision's check runs
-and the GitLab adapter from the change's own pipeline ([gitlab.md](./gitlab.md#the-gitlab-adapter)). Whether it has
-already landed is one filtered read, `changes(closed, base, head=<the chunk's branch>)`, in place of the ten pages of
-closed pull requests `land_pr_ci` scans today.
+([seam.md](./seam.md#the-seam-grows)). Whether it has already landed is one filtered read,
+`changes(closed, base, head=<the chunk's branch>)`, in place of the ten pages of closed pull requests `land_pr_ci` scans
+today.
 
 **`fast-forward`** lands the chunk's revision with no change at all, and never rewrites the base's own history:
 
@@ -90,10 +90,10 @@ fast-forwarding repository whose shop wants every landing to carry them asks it 
 
 A parked change is noticed merged by polling alone. Rather than reading each parked change on every poll, `park` asks
 `ForgeRegistry.recently_closed(repository)`, one listing of the changes into the base most recently updated — GitHub's
-`state=closed&sort=updated&direction=desc`, GitLab's `order_by=updated_at` — shared by every parked change on the
-repository and cached for the park poll floor ([Awaiting a merge](#awaiting-a-merge)). Ordering by update keeps a change
-parked for a week, then merged, at the top of the listing however busy the repository. A change absent from it is still
-open; a change that might have fallen off a full page is read alone with `change(n)`.
+`state=closed&sort=updated&direction=desc` — shared by every parked change on the repository and cached for the park
+poll floor ([Awaiting a merge](#awaiting-a-merge)). Ordering by update keeps a change parked for a week, then merged, at
+the top of the listing however busy the repository. A change absent from it is still open; a change that might have
+fallen off a full page is read alone with `change(n)`.
 
 ## What each policy proves
 
@@ -101,11 +101,10 @@ The tree that reaches the base is the tree that was verified only under `fast-fo
 compare-and-swap to exactly the candidate its checks passed on. `merge-on-checks` proves the change: its checks ran on
 its head, brought up to its base when the forge called it behind, but a base that moves after the checks pass is merged
 in by the forge without a further run, unless the repository's forge itself requires a change to be up to date before it
-merges — GitHub's "require branches to be up to date", or a GitLab project merging fast-forward or semi-linear — which
-closes that gap on the forge's side. `park` lands whatever a person merged, and proves nothing on their behalf. The
-order a chunk's repositories land in does not prove their combination either: a consumer waiting behind its parked
-library lands on checks that ran against the library as it was. Proving the combination whatever the policy is the
-`trains` slice's.
+merges — GitHub's "require branches to be up to date" — which closes that gap on the forge's side. `park` lands whatever
+a person merged, and proves nothing on their behalf. The order a chunk's repositories land in does not prove their
+combination either: a consumer waiting behind its parked library lands on checks that ran against the library as it was.
+Proving the combination whatever the policy is the `trains` slice's.
 
 ## Combining a chunk's repositories
 
@@ -193,9 +192,8 @@ Each window between a forge write and the marker that records it is a named poin
 (`bzh:crash-point-registry`), each reached by a `blizzard:crash-sweep` scenario that kills the hub there and proves the
 next pass converges:
 
-| Point                                       | Between                                                               | The next pass                                               |
-| ------------------------------------------- | --------------------------------------------------------------------- | ----------------------------------------------------------- |
-| `policy.after-merge-into.before-advance`    | The landing branch holds the base-first merge; the base has not moved | Finds the landing branch already holding it, and proves it  |
-| `policy.after-advance.before-marker`        | The base advanced; `merged/<repo>` is not durable                     | Finds the base holding the candidate, and is `Landed` at it |
-| `policy.after-rebase-marker.before-request` | `rebase-requested/<repo>/<head>` is durable; no rebase was requested  | Sees the head unchanged, and requests the rebase again      |
-| `policy.after-merged-read.before-marker`    | A parked change was read merged; `merged/<repo>` is not durable       | Reads it merged again, and records it                       |
+| Point                                    | Between                                                               | The next pass                                               |
+| ---------------------------------------- | --------------------------------------------------------------------- | ----------------------------------------------------------- |
+| `policy.after-merge-into.before-advance` | The landing branch holds the base-first merge; the base has not moved | Finds the landing branch already holding it, and proves it  |
+| `policy.after-advance.before-marker`     | The base advanced; `merged/<repo>` is not durable                     | Finds the base holding the candidate, and is `Landed` at it |
+| `policy.after-merged-read.before-marker` | A parked change was read merged; `merged/<repo>` is not durable       | Reads it merged again, and records it                       |

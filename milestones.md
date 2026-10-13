@@ -70,10 +70,10 @@ rather than one reopening what the other just finished.
 A project also decides where its finished work goes and how it gets there. Repositories belong to the tenant and each
 project links the ones its work may land in — a shared library can serve two projects — while each repository says how
 work lands in it and how it runs once landed. One project merges its own work while another waits for a human to merge
-every pull request; one repository fast-forwards while its neighbor rides a merge train; and a chunk that touched three
-repositories deploys all three in the order they depend on one another, proving each healthy, or rolling it back, before
-the next one moves. Delivery and deployment stop being one fleet-wide habit and become each project's own declared
-method, carried out deterministically, with an agent's judgement called in where the project asks for it.
+every pull request; one repository fast-forwards while its neighbor merges once its checks pass; and a chunk that
+touched three repositories deploys all three in the order they depend on one another, proving each healthy, or rolling
+it back, before the next one moves. Delivery and deployment stop being one fleet-wide habit and become each project's
+own declared method, carried out deterministically, with an agent's judgement called in where the project asks for it.
 
 | Epic                       | Slice    | Status      |
 | -------------------------- | -------- | ----------- |
@@ -88,7 +88,6 @@ method, carried out deterministically, with an agent's judgement called in where
 | `epic:advanced-delivery`   | forges   | horizon     |
 | `epic:advanced-delivery`   | flows    | horizon     |
 | `epic:advanced-delivery`   | policies | horizon     |
-| `epic:advanced-delivery`   | trains   | horizon     |
 | `epic:advanced-deployment` | full     | horizon     |
 
 ## `milestone:hardening` — the platform stops guessing on your behalf
@@ -309,6 +308,13 @@ how the fleet works can arrive carrying its evidence. The lab earns its place in
 hand, as a winter lab outside blizzard, until a few experiments have changed a decision someone would otherwise have
 made by feel.
 
+Landing has its own unfinished edge here. A branch many agents finish onto at once re-proves every chunk each time
+another lands, and a train ends that: it batches the ready work, proves the combination once, and lands it, or hands the
+line to the forge's own merge queue where a shop already lives on one. And the shop blizzard's authors never saw is
+often one on GitLab. The landing seam `milestone:projects` builds speaks GitHub alone, drawn so another forge fits
+behind it; GitLab is the first to take that place, so a project whose repositories live there lands its work the way a
+GitHub project does, and a chunk spanning both lands in each.
+
 The milestone closes with five pieces of ordinary platform maturity. Settings that every graph node restates want a name
 to inherit instead, so an operator retunes the fleet's reviewers in one edit rather than nine. And the seams the mission
 is built on want to be reachable from outside the wheel: interoperability is proven at two live bindings, and today
@@ -346,3 +352,5 @@ tooling blizzard does not own.
 | `epic:lab`                 | lab-board      | horizon |
 | `epic:lab`                 | seeded-defects | horizon |
 | `epic:lab`                 | evidence       | horizon |
+| `epic:advanced-delivery`   | gitlab         | horizon |
+| `epic:advanced-delivery`   | trains         | horizon |

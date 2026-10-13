@@ -75,11 +75,11 @@ Each policy names the capabilities it cannot do without, and those it uses when 
 | `park`            | `refs.read`, `compare`, `changes.open`, `changes.read`                                                                   | —                                              |
 
 `refs.advance`, `branches.merge`, `refs.create`, and `refs.delete` are new to the seam
-([gitlab.md](./gitlab.md#the-seam-grows)). GitHub offers all four; GitLab offers none, so a GitLab repository cannot
-fast-forward, and says so when an operator tries. `fast-forward` without the three it uses still lands a revision that
-is already ahead of its base, and calls a diverged one a conflict ([landing.md](./landing.md#the-three-policies)).
-`park` needs `compare` because finding or opening its change starts, as every policy's does, by asking whether the
-chunk's revision has anything left to land.
+([seam.md](./seam.md#the-seam-grows)). GitHub offers all four; a forge kind that offers none cannot fast-forward, and
+says so when an operator tries. `fast-forward` without the three it uses still lands a revision that is already ahead of
+its base, and calls a diverged one a conflict ([landing.md](./landing.md#the-three-policies)). `park` needs `compare`
+because finding or opening its change starts, as every policy's does, by asking whether the chunk's revision has
+anything left to land.
 
 The check runs twice. **When a policy is set** — a repository created, its policy edited, or its forge changed —
 `ConfigAuthoring` checks the forge's `offered` capabilities against the policy's `requires` and refuses

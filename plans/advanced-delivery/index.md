@@ -14,6 +14,9 @@ slices:
   - name: policies
     status: horizon
     plan: ./policies/index.md
+  - name: gitlab
+    status: horizon
+    plan: ./gitlab/index.md
   - name: trains
     status: horizon
     plan: ./trains/index.md
@@ -76,10 +79,12 @@ resource, and an act followed by patient observation until the world settles.
   GitLab's. A forge's momentary refusals — a race on the base, a rate limit, an outage — are waits, never failures, and
   a refusal no agent can repair, such as a rejected credential or a repository that is not there, goes to a person.
   Landing is the hub's own action, so no credential leaves the hub, and it speaks this seam rather than any one forge's
-  API, so there is one adapter per forge kind and it lives at the hub. A policy names the capabilities it needs; a
-  missing one takes the fallback the policy declares — merging once checks pass, for a forge queue the repository does
-  not have — or, with none declared, is refused. A graph is shared across the tenant and cannot know where it will land,
-  so the check runs when a repository's policy is set and again when a chunk's repositories resolve at landing.
+  API, so there is one adapter per forge kind and it lives at the hub. GitHub's is the first and, until the `gitlab`
+  slice, the only one: the seam is drawn so that any forge fits behind it, and GitLab is the evidence that one does. A
+  policy names the capabilities it needs; a missing one takes the fallback the policy declares — merging once checks
+  pass, for a forge queue the repository does not have — or, with none declared, is refused. A graph is shared across
+  the tenant and cannot know where it will land, so the check runs when a repository's policy is set and again when a
+  chunk's repositories resolve at landing.
 - **Landing policies with one outcome vocabulary.** Fast-forward, merge once checks pass, park for a human and take over
   once it merges, and join the forge's queue are policies. A policy describes the repository, so it sits on the tenant's
   repository record, where `epic:projects` left room for it; a default on a project's link to the repository comes only
@@ -90,15 +95,15 @@ resource, and an act followed by patient observation until the world settles.
   while a parked change is unmerged, so a graph written for one runs unchanged under another.
 - **Landing across repositories and forges.** `epic:projects` already confines a chunk to the repositories its project
   links, and each of a chunk's repositories already lands against its own record — its own server, owner, base branch,
-  and credential — so a chunk spanning two GitHub servers lands today. What remains is landing across kinds of forge and
-  across policies, each repository through its own binding, in an order its project sets. Each project ranks the
-  repositories it links, by dragging them into place: a library ranked above its consumer lands first, and a repository
-  left unranked lands after every ranked one, the unranked in order of their slugs. Two projects linking the same
-  repositories may rank them differently, since a chunk belongs to one project and lands by its order. A chunk lands
-  into none of the repositories the hub lands itself until every one of them is ready, then lands them in its project's
-  order, one waiting behind a parked repository until the person merges. Landing across forges can never be a single
-  act, so should one repository refuse after another has landed, the landed one stands and the chunk reconciles what
-  remains, as it does today.
+  and credential — so a chunk spanning two GitHub servers lands today. What remains is landing across policies, each
+  repository through its own binding, in an order its project sets, and, once GitLab joins, across kinds of forge. Each
+  project ranks the repositories it links, by dragging them into place: a library ranked above its consumer lands first,
+  and a repository left unranked lands after every ranked one, the unranked in order of their slugs. Two projects
+  linking the same repositories may rank them differently, since a chunk belongs to one project and lands by its order.
+  A chunk lands into none of the repositories the hub lands itself until every one of them is ready, then lands them in
+  its project's order, one waiting behind a parked repository until the person merges. Landing across forges can never
+  be a single act, so should one repository refuse after another has landed, the landed one stands and the chunk
+  reconciles what remains, as it does today.
 - **Merge trains.** A pull request behind its base is already brought up to it without an agent; what a busy branch
   lacks is a way to stop re-proving every chunk each time another lands. A flow batches the ready work onto the base and
   proves the combination once, splitting a failing batch to find the chunk responsible; where the forge offers its own
@@ -113,10 +118,11 @@ resource, and an act followed by patient observation until the world settles.
 
 ## Slices
 
-| Slice                             | Carries                                                                                                                                                                                                                              |
-| --------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
-| [`actions`](./actions/index.md)   | Hub steps as the hub's own actions, taken a pass at a time from only what they are handed, the packaged scripts carried over as actions, and `run:` retired                                                                          |
-| [`forges`](./forges/index.md)     | The forge record, repositories and work sources naming their forge, and the landing seam — in parts, with its capabilities and its rule for which refusals wait — which `land` speaks                                                |
-| [`flows`](./flows/index.md)       | Steps scoped to a named resource, the flow as a subject at the hub, a chunk submitting and awaiting a verdict, and today's landing as a flow with a batch of one                                                                     |
-| [`policies`](./policies/index.md) | Three landing policies on the repository record, each project's landing order, noticing a person's merge by polling within the forge's shared rate budget, GitLab as a second forge kind, and landing across repositories and forges |
-| [`trains`](./trains/index.md)     | Batches proven once with the combination landed, capabilities probed for each repository, the forge's own queue as a fourth policy, and ejecting what cannot join                                                                    |
+| Slice                             | Carries                                                                                                                                                                                                   |
+| --------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| [`actions`](./actions/index.md)   | Hub steps as the hub's own actions, taken a pass at a time from only what they are handed, the packaged scripts carried over as actions, and `run:` retired                                               |
+| [`forges`](./forges/index.md)     | The forge record, repositories and work sources naming their forge, and the landing seam — in parts, with its capabilities and its rule for which refusals wait — which `land` speaks                     |
+| [`flows`](./flows/index.md)       | Steps scoped to a named resource, the flow as a subject at the hub, a chunk submitting and awaiting a verdict, and today's landing as a flow with a batch of one                                          |
+| [`policies`](./policies/index.md) | Three landing policies on the repository record, each project's landing order, noticing a person's merge by polling within the forge's shared rate budget, and landing across repositories, all on GitHub |
+| [`gitlab`](./gitlab/index.md)     | GitLab as a second forge kind behind the same seam — merge requests, pipelines, nested groups, a rebase the hub asked for — and landing across kinds of forge                                             |
+| [`trains`](./trains/index.md)     | Batches proven once with the combination landed, capabilities probed for each repository, the forge's own queue as a fourth policy, and ejecting what cannot join                                         |

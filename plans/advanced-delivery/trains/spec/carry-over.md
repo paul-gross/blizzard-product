@@ -40,8 +40,8 @@ capability.
 - A merge queue: GraphQL `enqueuePullRequest`, `mergeQueueEntry`, `RemovedFromMergeQueueEvent`, and
   `dequeuePullRequest`, ordered first come first served, proving each change with the steerable checks, with levers to
   remove a change for a conflict, a failure, a timeout, or by hand.
-- On its GitLab face, merge trains: the `merge_trains` routes, the project's `merge_trains_enabled`, and system notes
-  for a removal.
+- On the GitLab face the `gitlab` slice built, merge trains: the `merge_trains` routes, the project's
+  `merge_trains_enabled`, and system notes for a removal.
 - A lever that answers a forge read with a 5xx, so a probe can fail.
 
 ## Proof

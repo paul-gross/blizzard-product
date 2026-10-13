@@ -9,8 +9,9 @@ every repository a chunk might land in.
 
 This slice moves the policy to where it belongs. How work lands is a fact about the repository, so the repository says
 it, and every graph lands into it the same way. A chunk's graph stops choosing how to land and only says what to do with
-the answer. The same slice lets a chunk land across kinds of forge, which is where the seam the `forges` slice built
-first has to hold for two kinds rather than one.
+the answer. Each project also says the order its repositories land in, so a chunk that touches a library and its
+consumer lands the library first. Every policy here lands on GitHub, the one forge kind behind the seam, and asks the
+seam only for what any forge could offer, so a second kind can join later without a policy changing.
 
 | Where                    | Read when                                                              |
 | ------------------------ | ---------------------------------------------------------------------- |
@@ -58,28 +59,24 @@ first has to hold for two kinds rather than one.
   caller holding a forge key — landings, polling, the status sweep, closing work items — then shares that key's rate
   budget, reading what the forge reports of it, and slows down rather than failing when it runs low, the least urgent
   callers first.
-- **GitLab, the second forge kind.** GitLab joins GitHub behind the landing seam: refs, comparisons, merge requests,
-  pipelines, and the capabilities it offers. Its merge requests and pipelines answer in the seam's vocabulary, so a
-  policy that runs on GitHub runs on GitLab without knowing which it is on, and a contract suite against a real GitLab
-  holds the adapter to GitLab's actual behaviour rather than the mock's reading of its documentation.
-- **Landing across repositories and forges, in the project's order.** Each of a chunk's repositories already lands
-  against its own server, owner, and credential; this slice adds a kind of forge and a policy to that, so each
-  repository lands through its own forge with its own policy. A project orders the repositories it links by dragging
-  them into place, and a chunk lands its repositories one at a time in its project's order, so a library ranked ahead of
-  its consumer lands first; repositories no one has ranked land after the ranked ones, alphabetically. Two projects
-  linking the same repositories may order them differently. Landing across forges is never one atomic act: the hub lands
-  none of the repositories it lands itself until every one is ready, then lands them in order, and a parked repository
-  holds every repository after it until a person merges. If one is refused after another has landed, the landed one
-  stands and the chunk reconciles as it does today.
+- **Landing across repositories, in the project's order.** Each of a chunk's repositories already lands against its own
+  server, owner, and credential; this slice adds a policy to that, so each repository lands through its own forge with
+  its own policy. A project orders the repositories it links by dragging them into place, and a chunk lands its
+  repositories one at a time in its project's order, so a library ranked ahead of its consumer lands first; repositories
+  no one has ranked land after the ranked ones, alphabetically. Two projects linking the same repositories may order
+  them differently. Landing across repositories is never one atomic act: the hub lands none of the repositories it lands
+  itself until every one is ready, then lands them in order, and a parked repository holds every repository after it
+  until a person merges. If one is refused after another has landed, the landed one stands and the chunk reconciles as
+  it does today.
 - **Carried over without a change in behavior.** Every existing repository is given the policy it is landed by today,
   merge once checks pass, so the fleet lands as before until an operator chooses otherwise.
 
 ## Left for later
 
-Joining a forge's own merge queue or merge train is the `trains` slice's, because whether a repository has one switched
-on is a capability of the repository rather than its forge. A policy of an operator's own, run where the operator
+A second kind of forge is the `gitlab` slice's: GitLab joins GitHub behind the seam this slice grows, with no policy
+changing. Joining a forge's own merge queue or merge train is the `trains` slice's, because whether a repository has one
+is found for that repository rather than known from its forge. A policy of an operator's own, run where the operator
 already trusts its code, waits for an operator who needs one; the three here cover the shops this epic was written for.
 A reviewer asking for changes on a parked change, rather than merging or closing it, is `epic:ci-feedback`'s to hear;
-until then the change waits and its park timeout brings it back to a person. GitLab as a source of work items, rather
-than a place work lands, is not this epic's, and neither is a forge's webhook: polling notices a person's merge within
-minutes, and that is soon enough for now.
+until then the change waits and its park timeout brings it back to a person. A forge's webhook is not this epic's:
+polling notices a person's merge within minutes, and that is soon enough for now.
