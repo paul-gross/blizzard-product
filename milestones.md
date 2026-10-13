@@ -4,15 +4,15 @@ What users will be able to do. A milestone is a destination stated in the user's
 where the product must reach, then ask what work the journey requires — the milestone demands its epics, never the other
 way around.
 
-| Milestone                      | What users will be able to do                                                                                                                                                                                                                                                                                                                                              |
-| ------------------------------ | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `milestone:polyglot`           | Run the fleet on the coding harness of their choice — Claude Code, Codex, or OpenCode, first-class and mixable by node — with the safeties on: no worker runs with permissions dangerously bypassed.                                                                                                                                                                       |
-| `milestone:projects`           | Run every project from one fleet: a single hub hosting many projects and the sources they draw from, and a single runner host per machine working all of them — a workspace for each project or set of projects, not a stack per project. Each project lands and deploys its finished work its own declared way.                                                           |
-| `milestone:hardening`          | Decide for themselves how the fleet behaves: every operational constant theirs to set, what each runner will take and when and at what rate theirs to declare, a provider outage ridden out rather than slept through, nothing growing without end underneath them, and every question about the platform answerable without cloning it.                                   |
-| `milestone:human-in-the-loop`  | Stop being the wire between the fleet and everything it needs: it reaches them wherever they are when a decision is genuinely theirs, and settles CI's verdict itself when it is not.                                                                                                                                                                                      |
-| `milestone:mobile`             | Carry the fleet in a pocket: watch the night, answer a question, and unblock a chunk from a phone, through notifications that arrive the way the phone's own do.                                                                                                                                                                                                           |
-| `milestone:project-management` | Assemble what the fleet works on from inside blizzard — browse the backlog, take many items at once, and shape them into chunks — instead of handing over ids one at a time.                                                                                                                                                                                               |
-| `milestone:future-state`       | Look inside the fleet while it works and steer it without stopping it — a live environment opened from the board, a word to a running chunk — over a fleet that keeps its own schedule, hears from the systems that notice trouble first, bends to a shop blizzard's authors never saw, and settles by experiment rather than by feel which way of working serves it best. |
+| Milestone                      | What users will be able to do                                                                                                                                                                                                                                                                                                                                                                                           |
+| ------------------------------ | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `milestone:polyglot`           | Run the fleet on the coding harness of their choice — Claude Code, Codex, or OpenCode, first-class and mixable by node — with the safeties on: no worker runs with permissions dangerously bypassed.                                                                                                                                                                                                                    |
+| `milestone:projects`           | Run every project from one fleet: a single hub hosting many projects and the sources they draw from, and a single runner host per machine working all of them — a workspace for each project or set of projects, not a stack per project. Each project lands and deploys its finished work its own declared way.                                                                                                        |
+| `milestone:hardening`          | Decide for themselves how the fleet behaves: every operational constant theirs to set, what each runner will take and when and at what rate theirs to declare, a provider outage ridden out rather than slept through, nothing growing without end underneath them, every upgrade taken when they choose and told beforehand what it asks of them, and every question about the platform answerable without cloning it. |
+| `milestone:human-in-the-loop`  | Stop being the wire between the fleet and everything it needs: it reaches them wherever they are when a decision is genuinely theirs, and settles CI's verdict itself when it is not.                                                                                                                                                                                                                                   |
+| `milestone:mobile`             | Carry the fleet in a pocket: watch the night, answer a question, and unblock a chunk from a phone, through notifications that arrive the way the phone's own do.                                                                                                                                                                                                                                                        |
+| `milestone:project-management` | Assemble what the fleet works on from inside blizzard — browse the backlog, take many items at once, and shape them into chunks — instead of handing over ids one at a time.                                                                                                                                                                                                                                            |
+| `milestone:future-state`       | Look inside the fleet while it works and steer it without stopping it — a live environment opened from the board, a word to a running chunk — over a fleet that keeps its own schedule, hears from the systems that notice trouble first, bends to a shop blizzard's authors never saw, and settles by experiment rather than by feel which way of working serves it best.                                              |
 
 ## `milestone:polyglot` — any harness, with the safeties on
 
@@ -141,12 +141,25 @@ what it is about, both ask the reader to carry a map the code no longer draws. G
 package a one-way place in the order, and every rule a home on the model it governs is the same hardening turned inward
 — and it holds only if the build refuses the drift, not if someone remembers to.
 
+Another presumption is about when a change reaches the people running it. Every merge to `master` is a release in all
+but name: the moment it lands, the hosted hub pulls it and the runners are rebuilt onto it. The operator who runs
+blizzard for themselves has no way to say not yet, no notes telling them what an upgrade will ask of them, and no
+promise about which runner still works against which hub — because compatibility is only ever judged against the commit
+before. Releases cut on a cadence, held to their version rules against what earlier releases actually shipped, hand the
+timing of an upgrade back to the person who has to live with it.
+
 Hardening is what a platform does after it works. Little of it is a new capability. Almost all of it is an assumption
 the platform made on the operator's behalf, handed back to them as a decision.
 
 | Epic                       | Slice            | Status      |
 | -------------------------- | ---------------- | ----------- |
 | `epic:runner-host`         | full             | in-progress |
+| `epic:release-engineering` | first-release    | horizon     |
+| `epic:release-engineering` | compat-floor     | horizon     |
+| `epic:release-engineering` | notes            | horizon     |
+| `epic:release-engineering` | release-lines    | horizon     |
+| `epic:release-engineering` | dark-launch      | horizon     |
+| `epic:release-engineering` | supply-chain     | horizon     |
 | `epic:throttling`          | full             | horizon     |
 | `epic:tagging`             | full             | horizon     |
 | `epic:resilience`          | full             | horizon     |
