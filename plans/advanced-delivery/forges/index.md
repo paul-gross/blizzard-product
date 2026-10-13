@@ -29,17 +29,27 @@ runs when the repository's forge lacks one, rather than letting it discover the 
   an enabled record still names cannot be retired.
 - **One landing seam.** The hub speaks to a forge through one seam that reads a branch's tip, compares two revisions,
   opens, reads, updates, and merges a change, reads and re-runs the checks on a revision, and confirms that a commit
-  exists. Each forge kind answers in the seam's own vocabulary, so an action reads that a change is behind its base or
-  in conflict, never GitHub's `mergeable_state`. GitHub is the one kind this slice builds; the hub's other forge
-  readers, such as the garden's check that a delivered commit exists, move onto the same seam.
+  exists — cut into narrow roles along the lines its callers use, so the garden's check that a delivered commit exists
+  depends on reading commits and nothing more. Each forge kind answers in the seam's own vocabulary, so an action reads
+  that a change is behind its base or in conflict, never GitHub's `mergeable_state`, and every one of GitHub's words has
+  a written place in it. GitHub is the one kind this slice builds; the hub's other forge readers move onto the same
+  seam.
+- **A forge's refusals sorted by who can act on them.** Every answer a forge gives is classified once: a forge that is
+  briefly unreachable or out of patience is waited out, a race the forge reports is re-read, a conflict goes back to the
+  chunk's worker, and a wrong credential or a repository the forge does not know goes to a person, since no worker can
+  repair a tenant's configuration. A brief outage is retried within the call before it is waited out at all.
 - **Capabilities an action can count on.** Each forge kind declares the capabilities it offers, and each of the hub's
   actions the ones it cannot do without. A landing into a repository whose forge lacks one is refused before the action
-  runs, naming the capability and the forge. A capability an action can live without is not required; the action reads
-  what the forge offers and takes its own fallback, as `land` can carry on without re-running a check.
+  runs, naming the capability and the forge, and brought to a person rather than a worker. A capability an action can
+  live without is not required; the action reads what the forge offers and takes its own fallback, as `land` can carry
+  on without re-running a check.
 - **`land`, ported.** The `land` action is rewritten against the seam and behaves as it does today, so the fleet lands
-  exactly as it did before; the repository's credential is revealed inside the forge's adapter and handled nowhere else.
+  as it did before, save that a refusal only a person can resolve now reaches one; the repository's credential is
+  revealed inside the forge's adapter and handled nowhere else.
 - **Carried over without a hand on it.** An installation becomes one forge per server its records already name, each
-  repository and work source pointed at its own, with nothing reconfigured by hand.
+  repository and work source pointed at its own, with nothing reconfigured by hand. Two spellings of one server's
+  address are one server, a port is part of the address, and the rare installation whose records could not be carried
+  without one of them silently changing is refused before anything moves, naming what to settle.
 - **Old fields through a transition, then retired.** For a release, every door still accepts the addresses a repository
   and a work source carried before, resolving each to its forge, so a configuration document or a runbook written before
   the slice keeps working while it is moved over. The hub notes every use and warns whoever made it. Once the uses stop,
@@ -50,7 +60,7 @@ runs when the repository's forge lacks one, rather than letting it discover the 
 Everything the seam does not yet need waits for the slice that needs it. A second forge kind, GitLab, arrives with the
 `policies` slice, where a chunk first lands across two kinds of forge and the seam's vocabulary first has to hold for
 both — one chunk can already land across servers, since each of its repositories lands against its own; so does the rate
-budget its callers share, which matters once parked changes are watched at scale. A capability that varies from one
-repository to another, such as a merge queue switched on for one repository and not its neighbour, arrives with the
-`trains` slice, and until then a forge's capabilities are its kind's. Authenticating as an application rather than with
-a token waits for an operator who needs it.
+budget its callers share, sized against the polling landing itself does. A capability that varies from one repository to
+another, such as a merge queue found on one repository and not its neighbour, arrives with the `trains` slice, and until
+then a forge's capabilities are its kind's. Authenticating as an application rather than with a token waits for an
+operator who needs it.

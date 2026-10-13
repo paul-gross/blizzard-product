@@ -21,19 +21,30 @@ retired.
 
 - **A hub node names an action.** A hub node says which of the hub's actions it takes, and any arguments that action
   accepts, from a set blizzard ships. A graph that names a command, or an action the hub does not have, is refused when
-  it is written.
+  it is written, and so is a hub node that leaves one of its action's outcomes without somewhere to go. A hub node that
+  only routes — today an empty `run:` — takes `pass`, the action that does nothing and answers `success`.
 - **The packaged scripts, as actions.** Landing a chunk's work once its checks pass, recording a review's deferred
   findings, and delivering a garden run become the hub's `land`, `record-findings`, and `garden-deliver` actions. Each
   answers with the outcomes and writes the markers its script did, so every shipped graph routes as it does today.
   Landing uses the repository's credential inside the hub, and the credential never leaves it.
-- **An action takes a pass, and says what comes next.** Each time the hub calls an action, the action does a short,
-  bounded piece of work — a handful of calls to a forge at most — and answers with an outcome or with `pending`. A
-  landing that waits on checks is a run of short passes, never a process the hub waits on for minutes, which is the
+- **An action works only with what it is handed.** An action is given everything its visit needs before it starts — the
+  chunk's repositories, its artifacts, the markers already written at its node, and a connection to each forge it lands
+  on — and it reaches nothing else: not the store, not a secret, not the hub's configuration. What it records, it hands
+  back to the hub, which makes each record durable before the action goes on. An action that needs more declares it as
+  an input and is handed it; the rule is enforced by the hub's own tests, so a later change that reaches past it fails
+  the build rather than the night. Actions run apart from the hub's requests, so a slow forge never slows the board.
+- **An action takes a pass, and says what comes next.** Each time the hub calls an action, the action does a bounded
+  piece of work and answers with an outcome or with `pending`. A pass is cut off at five minutes by default, a limit an
+  operator can change; a landing that waits on checks is a run of passes, never a process the hub waits on, which is the
   shape the `flows` slice drives.
+- **Patience in hours, not minutes.** A hub node that keeps answering `pending` gives up and goes back to an agent only
+  after three hours by default, not thirty minutes, so a busy branch's CI no longer sends correct work back for repair.
+  A graph still sets its own limit per node.
 - **Carried over in place.** Every stored graph, in every tenant and at every version, that names a packaged script
-  takes the action that script was. A chunk pinned to an old version lands exactly as it did, and nothing is re-pinned.
-  A command that names anything else, and none is expected, no longer runs: a chunk that reaches it goes to a person,
-  naming the command.
+  takes the action that script was, and nothing is re-pinned. A version that landed through the old unchecked script now
+  waits on checks like every other. A command that names anything else, and none is expected, no longer runs: a chunk
+  that reaches it, or already stands at it, goes to a person naming the command, and so does a chunk whose action
+  answers an outcome its graph never routed.
 - **The door closed.** The hub stops starting processes for graphs. The environment it handed to a step, the per-visit
   token, and the routes that token unlocked are removed, so nothing a tenant writes runs with the hub's reach.
 

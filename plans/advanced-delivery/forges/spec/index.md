@@ -25,12 +25,16 @@ Paths are relative to `blizzard/src/blizzard/`.
 The slice reaches beyond `blizzard`'s source. In `blizzard-context`, the section of
 `architecture/system-shape/seam-positions.md` titled *The forge has no single seam* collapses its `GitHubCommitResolver`
 and land rows into the landing seam, and `architecture/system-shape/configuration.md` and `domain/artifacts/delivery.md`
-learn the forge record. `blizzard-mock`'s forge is unchanged.
+learn the forge record; `domain/projects.md` names forges beside work sources and repositories as the tenant's. In
+`blizzard`'s own docs, `docs/deployment/repositories.md`, `work-sources.md`, and `config-documents.md` name the forge,
+and a new `docs/deployment/forges.md` describes it. The census `tests/store_read_census.py` learns the new reads. The
+workspace's feature-environment seeding (`hub-host.sh`) names its forge by `forge` in the transition release, so a
+feature environment never keeps `config-old-field-used` firing. `blizzard-mock`'s forge is unchanged.
 
 | Where                            | Read when                                                                                                                     |
 | -------------------------------- | ----------------------------------------------------------------------------------------------------------------------------- |
 | [record.md](./record.md)         | Shaping the forge record — its table, the references from repositories and work sources, retirement, invariants               |
-| [seam.md](./seam.md)             | Building the landing seam — its operations, its vocabulary, capabilities, the GitHub adapter, the readers it absorbs          |
-| [landing.md](./landing.md)       | Porting the `land` action onto the seam, and the capabilities an action requires                                              |
+| [seam.md](./seam.md)             | Building the landing seam — its roles, vocabulary, failures and retries, capabilities, the GitHub adapter, the registry       |
+| [landing.md](./landing.md)       | Porting the `land` action onto the seam, what it answers to each forge refusal, and the capabilities an action requires       |
 | [surfaces.md](./surfaces.md)     | Building the API, CLI, configuration document, and admin screens for forges and the records that name them                    |
 | [carry-over.md](./carry-over.md) | Writing the migration — one forge per server already named, every reference filled, the old fields' transition and retirement |

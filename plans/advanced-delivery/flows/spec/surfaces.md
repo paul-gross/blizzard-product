@@ -1,6 +1,6 @@
 # Surfaces
 
-Every surface here reads; nothing an operator does creates, edits, or reorders a flow. Reads take
+Every surface here reads; nothing an operator does creates, edits, holds, or reorders a flow. Reads take
 `Permission.FLEET_VIEW`, as the board does.
 
 ## API
@@ -16,10 +16,10 @@ GET /api/flows/{flow}/record         ?before=&limit=
 
 `{flow}` is a `flw_<ulid>`. `GET /api/flows` lists the tenant's flows as `FlowView`: id, resource, repository id, slug
 and name, branch, the turn open now (chunk, started at), the line (`FlowPlaceView` per open submission in arrival order:
-chunk id, arrival, `state` of `landing`, `next`, `waiting`, or `polling` with its next poll time), and the last verdict
-and the last landing. `active=true` keeps flows with an open submission or a fact in the board window's 48 hours, the
-board's own default. `GET /api/flows/{flow}` answers one `FlowView`. `/record` pages the flow's facts newest first as
-`FlowFactView`, joined to each chunk's short id and title.
+chunk id, arrival, `state` of `landing`, `next`, `waiting`, `polling` with its next poll time, or `passed-over` while
+its chunk is `needs_human`), and the last verdict and the last landing. `active=true` keeps flows with an open
+submission or a fact in the board window's 48 hours, the board's own default. `GET /api/flows/{flow}` answers one
+`FlowView`. `/record` pages the flow's facts newest first as `FlowFactView`, joined to each chunk's short id and title.
 
 The chunk reads gain the chunk's places. `ChunkSummary` and `ChunkDetail` (`wire/chunk.py`) carry
 `flow_places: list[ChunkFlowPlaceView]`, one per flow its open submission holds: flow id, resource, repository slug,
@@ -53,7 +53,7 @@ active flow, in `web/projects/hub/src/app/board/flows/`:
 
 - The lane is titled by its repository's name and branch (`blizzard · master`), and shows, left to right, the chunk
   landing now, the chunks in line in arrival order, and the last verdict with how long ago it came.
-- A chunk in line shows its state: next, waiting its poll (with the time of it), or passed over.
+- A chunk in line shows its state: next, waiting its poll (with the time of it), or passed over while a person holds it.
 - Clicking a chunk opens it in the chunk dock as a card does; clicking the lane title opens the flow's record in the
   dock.
 - A lane with nothing landing and no one in line collapses to a single line showing its last verdict, and drops out
