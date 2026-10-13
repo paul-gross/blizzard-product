@@ -151,9 +151,13 @@ values — and what it replaces is removed at the next major, once nothing insid
   and over before the old branch has drifted so far that each backport becomes a rewrite. Its runners keep working
   against the new major's hub for the whole of that major, since withdrawing them mid-major would itself be a break, but
   after the three months they are working unsupported. Before 1.0, only the newest minor is patched. A longer promise
-  for security fixes is an LTS line, and waits until operators outside blizzard ask for one. The majors are cut on their
-  published dates from a `master` opened for them. Once `epic:cadence` lands, cutting the candidate is a routine the
-  fleet runs for itself.
+  for security fixes is an LTS line, and waits until operators outside blizzard ask for one. A release is proven by
+  nothing outside `blizzard` and `blizzard-mock`, the fleet of fakes its upper tiers run against, and the mock mirrors
+  it one for one: the same release branch, cut at the candidate from the commit that proved it, and the same tag on
+  every release, whether or not the mock changed. Checking out a tag in both repositories reproduces exactly what that
+  release was proven against, and a patch that needs the mock to change lands there the way it lands in `blizzard` — on
+  `master` first, carried back, tagged with the same name. The majors are cut on their published dates from a `master`
+  opened for them. Once `epic:cadence` lands, cutting the candidate is a routine the fleet runs for itself.
 - **`dark-launch` — `master` that is always releasable.** Work that spans weeks lands behind a flag that is off by
   default, so an unfinished capability can share `master` with a weekly cut. The release that turns a flag on is the
   release whose notes describe the capability, and the flag is retired once it has been on for a release. A flag hides
@@ -175,10 +179,11 @@ and the rules they lean on — what a patch may carry, what a change note must s
 
 The patch is the procedure that most needs writing down, because it is the one run under pressure and rarely enough that
 nobody remembers the last time. It starts from the fix on `master`, decides whether the fix can wait for the train,
-finds every supported line that carries the bug, carries the fix back by cherry-pick, adapts it by hand where the line
-has drifted, writes it on the old line alone when the code it fixes no longer exists on `master`, proves the branch
-against the line's first release, bumps the version on the branch, tags it there, and confirms the published release —
-and then moves the dogfood instance onto it.
+finds every supported line that carries the bug, carries the fix back by cherry-pick — into `blizzard-mock`'s matching
+branch too, when the fix needs the mock to change — adapts it by hand where the line has drifted, writes it on the old
+line alone when the code it fixes no longer exists on `master`, proves the branch against the line's first release,
+bumps the version on the branch, tags both repositories there, and confirms the published release — and then moves the
+dogfood instance onto it.
 
 | Procedure                                                                                  | Lands with      |
 | ------------------------------------------------------------------------------------------ | --------------- |
@@ -199,8 +204,3 @@ redeploying onto each release, and defers to these procedures rather than restat
 This is not `epic:advanced-deployment`, which gives an operator's own projects a declared way to deploy what they land.
 This epic is about how blizzard itself is released. The two meet at the dogfood instance: once declared deployment
 exists, the instance's upgrades can travel it, deploying releases rather than landings.
-
-## Open questions
-
-- How a release records the commits of the repositories that proved it — the mock fleet and the workspace its upper
-  tiers check out — so that the proof behind a release can be reproduced.
