@@ -50,6 +50,10 @@ consuming its output, and compatibility measured against what was actually shipp
 - **The version number says what an upgrade costs.** A patch is a fix and safe to take without reading. A minor adds and
   never takes away. A major is the only release allowed to break anything, and it arrives on a date the operator knew
   about months in advance.
+- **Every release operation is one an agent can carry out.** Cutting, promoting, patching, and breaking are each a
+  written procedure in `blizzard-context`, so the operator says *patch 0.7 with this fix* and an agent carries it from
+  `master` to a published release without improvising a step. A release process that lives in one person's memory is the
+  most fragile part of a project that wants to be released by its own fleet.
 - **Blizzard's own fleet runs every release candidate first.** The dogfood instance stops following `master` and starts
   following releases, as their first and least forgiving user. Feedback arrives a week later than it does today, and
   that is the trade: a bad landing becomes a bad candidate, caught before anyone else pulls it.
@@ -148,6 +152,35 @@ values — and what it replaces is removed at the next major, once nothing insid
 - **`supply-chain` — artifacts a stranger can trust.** Images signed, with a software bill of materials and build
   provenance attested; checksums beside every attached file; the wheel published to the Python package index; and a
   runner installable at a named version, so an operator pins what they run as easily as they pin the hub.
+
+## The procedures live in the harness
+
+None of the slices is finished when its mechanics work. Each is finished when an agent told to perform its operation by
+name can find the procedure in `blizzard-context`, follow it, and prove the outcome, in the same way `bzh:release`
+already carries a tag from a green `master` to a confirmed release. The procedures belong under `workflows/` beside it,
+and the rules they lean on — what a patch may carry, what a change note must say — under `standards/` and
+`verification/`, where every other rule a change is held to already lives.
+
+The patch is the procedure that most needs writing down, because it is the one run under pressure and rarely enough that
+nobody remembers the last time. It starts from the fix on `master`, decides whether the fix can wait for the train,
+finds every supported line that carries the bug, carries the fix back by cherry-pick, adapts it by hand where the line
+has drifted, writes it on the old line alone when the code it fixes no longer exists on `master`, proves the branch
+against the line's first release, bumps the version on the branch, tags it there, and confirms the published release —
+and then moves the dogfood instance onto it.
+
+| Procedure                                                                                  | Lands with      |
+| ------------------------------------------------------------------------------------------ | --------------- |
+| Cutting a release, and moving the instance's pins onto it or back off it                   | `first-release` |
+| Judging whether a change breaks a supported release, and what lets a break through         | `compat-floor`  |
+| Writing a change note, an upgrade note, and a deprecation that names the major removing it | `notes`         |
+| Cutting the weekly candidate, and promoting it to stable                                   | `release-lines` |
+| Patching a released line: fix first on `master`, carry it back, tag from the branch        | `release-lines` |
+| Opening `master` for a major, and cutting the major on its date                            | `release-lines` |
+| Landing work behind a flag, turning it on in a release, and retiring it                    | `dark-launch`   |
+| Confirming a release's signatures, attestations, and published wheel                       | `supply-chain`  |
+
+The workspace's own runbook for the dogfood instance follows the same move, from redeploying after every landing to
+redeploying onto each release, and defers to these procedures rather than restating them.
 
 ## What this is not
 
