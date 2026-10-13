@@ -69,7 +69,7 @@ Between majors, `master` only adds. In the weeks before a major, `master` opens 
 the next major's number, while the outgoing major's final line continues from its release branch, so an operator never
 loses a fix for choosing to wait.
 
-Blizzard stays on `0.x` only until a run of weekly releases has proven the process, and then declares 1.0; the six-month
+Blizzard stays on `0.x` until `milestone:hardening` is reached, and the release that reaches it is 1.0; the six-month
 major cadence counts from there. Until then, a breaking change waits for a minor after one that marked it deprecated, so
 the stricter discipline is already the habit by the time 1.0 makes it a promise.
 
@@ -120,9 +120,11 @@ values — and what it replaces is removed at the next major, once nothing insid
 
 - **`first-release` — a line in the sand.** Cut the first real release from `master`, give each boundary in the upgrade
   guide the version it belongs to, restate the skew window around majors, and move the dogfood instance onto releases:
-  the hosted hub pinned to a release tag by a reviewed change in its deployment repository, the runners installed from
-  the release's own wheel, and the runner redeploy owed after a release rather than after every landing. The `edge`
-  image keeps publishing for anyone who wants it; nothing of ours follows it.
+  the hosted hub and the runners each pinned to an exact version — never a moving tag, which by design never carries a
+  candidate — moved only by a reviewed change, and opened as that change automatically when a release publishes,
+  candidates included; the runners installed from the pinned release's own wheel; and the runner redeploy owed after a
+  release rather than after every landing. The `edge` image keeps publishing for anyone who wants it; nothing of ours
+  follows it.
 - **`compat-floor` — compatibility held against what shipped.** Every compatibility check compared against the supported
   releases, on every pull request and again at the tag; the checks that compare against the previous commit or against
   `edge` retired; the OpenAPI, configuration, and schema diffs alongside the wire's; the upgrade rehearsal; the version
@@ -135,8 +137,11 @@ values — and what it replaces is removed at the next major, once nothing insid
 - **`release-lines` — the train and a way to patch.** A minor cut every week: a release candidate first, run by
   blizzard's own fleet for the week, then promoted to stable as the next candidate is cut. Each release gets a branch at
   its candidate, so a fix reaches a released line as a patch without dragging along everything `master` has learned
-  since; the majors are cut on their published dates from a `master` opened for them. Once `epic:cadence` lands, cutting
-  the candidate is a routine the fleet runs for itself.
+  since. A fix lands on `master` first and is carried back by cherry-pick, proven by the same gate against that line's
+  first release, and tagged from the branch; only a fix for code the next major has already removed is written on the
+  old line alone. Most fixes ride the next week's train instead — a patch is for what cannot wait the week: a hole in
+  security, lost data, a fleet that has stopped; the majors are cut on their published dates from a `master` opened for
+  them. Once `epic:cadence` lands, cutting the candidate is a routine the fleet runs for itself.
 - **`dark-launch` — `master` that is always releasable.** Work that spans weeks lands behind a flag that is off by
   default, so an unfinished capability can share `master` with a weekly cut. The release that turns a flag on is the
   release whose notes describe the capability, and the flag is retired once it has been on for a release.
@@ -154,9 +159,6 @@ exists, the instance's upgrades can travel it, deploying releases rather than la
 
 - How long a major's final line keeps receiving fixes once the next major ships, and whether fixes that matter to an
   operator's security are held to a longer promise.
-- How many weekly releases count as the process proven, and so when 1.0 is declared.
-- Whether the hosted hub follows its major's moving tag, taking each week's minor unattended, or is pinned to an exact
-  version and moved only by a reviewed change.
 - Whether surface that ships in a release behind a flag that is off counts as released for the compatibility checks.
 - How a release records the commits of the repositories that proved it — the mock fleet and the workspace its upper
   tiers check out — so that the proof behind a release can be reproduced.

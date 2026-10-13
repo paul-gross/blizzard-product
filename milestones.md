@@ -146,7 +146,8 @@ but name: the moment it lands, the hosted hub pulls it and the runners are rebui
 blizzard for themselves has no way to say not yet, no notes telling them what an upgrade will ask of them, and no
 promise about which runner still works against which hub — because compatibility is only ever judged against the commit
 before. Releases cut on a cadence, held to their version rules against what earlier releases actually shipped, hand the
-timing of an upgrade back to the person who has to live with it.
+timing of an upgrade back to the person who has to live with it. The release that reaches this milestone is blizzard's
+1.0.
 
 Hardening is what a platform does after it works. Little of it is a new capability. Almost all of it is an assumption
 the platform made on the operator's behalf, handed back to them as a decision.
