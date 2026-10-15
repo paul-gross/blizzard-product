@@ -8,24 +8,24 @@ slices:
 
 # Plan — `epic:test-optimization`
 
-Every chunk the fleet lands waits on the gate. Since July the unit and component job has grown from about 1 min to 7,
-while the test count grew 3.5×. A PR now waits about 8 min and a push to `master` about 12. The goal is to cut that time
-without weakening any assertion, and to close the coverage gaps in the PR gate.
+Every chunk the fleet lands waits on the gate. The unit and component tier, already split into four parallel shards,
+takes 17–19 min per shard, so a PR waits about 18–21 min and a push to `master` about 23–25. The goal is to cut that
+time without weakening any assertion, and to close the coverage gaps in the PR gate.
 
 ## Baseline
 
-Recent successful runs on `master`:
+Recent successful runs on `master`, October 2026:
 
-| Job                            | Duration    | Shape                                                          |
-| ------------------------------ | ----------- | -------------------------------------------------------------- |
-| pytest unit + component        | 6.9–7.6 min | ~5,750 tests, `-n auto` on 4 vCPU (~2 min on a 20-core laptop) |
-| service tier                   | 5.2–5.5 min | 103 tests, `-n auto` on 4 vCPU, each test with its own stack   |
-| crash sweep, CI profile        | 3.2–4.9 min | 29 tests, `-n auto` on 4 vCPU                                  |
-| dev hub image                  | 3.2–4.0 min | multi-arch QEMU build on every push to `master`                |
-| eslint + vitest + client drift | 1.7 min     | four `ng test` projects run one after another                  |
+| Job                            | Duration                | Shape                                                                                        |
+| ------------------------------ | ----------------------- | -------------------------------------------------------------------------------------------- |
+| pytest unit + component        | 17.4–18.5 min per shard | ~14,100 tests in 4 shards, `-n auto` on 4 vCPU each (~6.3 min per shard on a 20-core laptop) |
+| service tier                   | 3.9–5.0 min per shard   | 231 tests in 3 shards, `-n auto` on 4 vCPU, each test with its own stack                     |
+| crash sweep, CI profile        | 7.2 min                 | 43 tests, `-n auto` on 4 vCPU                                                                |
+| dev hub image                  | 3.1 min                 | multi-arch QEMU build on every push to `master`                                              |
+| eslint + vitest + client drift | 2.2 min                 | four `ng test` projects run one after another                                                |
 
-Every check starts at once, so the PR critical path is the slowest single job, pytest unit + component. Queue time is
-negligible, about 2 s.
+Every check starts at once, so the PR critical path is the slowest single job, a pytest unit + component shard. Queue
+time is negligible, about 2 s.
 
 ## Work areas
 
@@ -105,9 +105,9 @@ Each test runs, in order:
 - optional mock runner and IdP;
 - teardown with up to 10 s SIGTERM per process.
 
-A shared hub isn't possible today because the hub is single-tenant. Tests count hub-wide SSE events, read the whole
-queue and feed, and register graphs by name; crash tests kill the hub. `epic:test-shared-service`, via
-`epic:multi-tenancy`, is the path to sharing. Until then:
+Tests count hub-wide SSE events, read the whole queue and feed, and register graphs by name, and crash tests kill the
+hub, so no two tests share one today. `epic:test-shared-service` is the path to sharing, a tenant per test on one hub.
+Until it lands:
 
 - Measure each phase first: mint, forge, init, ready, act, teardown.
 - Reuse a minted fixture per worker, by reset or copy. Absolute `file://` origins complicate copying.
@@ -142,6 +142,27 @@ intervals, the 10 s termination allowance, and the unit-tier sleeps in `test_cli
   spawning subprocesses. Decide per test whether the subprocess is what's under test. Share one fake binary per module
   where possible.
 - **`test_runner_winter_provider.py`'s real-winter tests** take 11–15 s each. Placement follows area 3.
+
+### 8. Store migrations and statement guards in the fast tiers
+
+Most of the unit and component tier's time goes to three costs that grow with the store rather than with what a test
+proves. Measured on one shard locally, out of about 5,030 s of summed test time:
+
+- **Replaying the chain to reach head, up to ~700 s.** A full hub migration takes ~2.9 s. `build_hub` already copies a
+  once-per-worker prototype database, but about 70 store test files still replay every revision per test, through
+  `upgrade("head")` or `migrate_to(tmp_path, "head")`. They take the prototype copy instead, and a check refuses a new
+  replay to head outside the migration tests.
+- **Migration tests that outlive their subject, ~800 s.** A test that seeds old-shape rows at a pinned revision protects
+  only stores that have not run that revision, and every live store runs it within days. Each such test names its
+  revision with a `migration_revision` marker and is skipped once the revision is 30 days old; the tests then move
+  beside their revisions, under each store's `migrations/tests/`.
+- **Statement guards walking every statement, 25–30% of test time on a sampled set.** The tenant and runner guards walk
+  every statement's tree on every execution, though the suite repeats a few hundred shapes thousands of times. Each
+  guard remembers its verdict per statement shape, keyed by SQLAlchemy's cache key, and a refused shape is refused on
+  every repeat.
+
+Shortening the chain itself is `epic:release-engineering`'s, which folds the store's history into a baseline at each
+major.
 
 ## Out of scope
 
