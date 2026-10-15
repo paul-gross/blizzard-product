@@ -120,6 +120,19 @@ some unrelated place.
 The store follows the same discipline as the wire: **expand, then contract**. A minor only adds — columns, tables,
 values — and what it replaces is removed at the next major, once nothing inside the window still reads it.
 
+The store's history contracts on the same rhythm. Every revision ever written is replayed by every fresh install, every
+hub a test starts, and every store a test builds, long after the last running store has moved past it; a contributor
+replays every schema decision the project has ever made just to get an empty database. Once the oldest supported release
+has run a revision, nobody inside the window will ever need to run it again. So at each major, every revision up to the
+last one the oldest supported release carries is folded into a single baseline that recreates the schema in one step.
+The baseline keeps the identifier of the last revision it absorbs, so a store already at or past that point sees nothing
+change, and only a store older than every supported release is turned away, with a message naming the release to step
+through first. That is no new demand: the window already asks it of anyone that far behind. Before 1.0, with no majors
+on the calendar, the fold rides the first cut of each month instead. Two proofs hold it honest: a store built from the
+baseline matches, table for table, one built by replaying the history it replaced, on every database blizzard supports;
+and the upgrade rehearsal from the oldest supported release still walks forward to the candidate and back again, down as
+far as the baseline.
+
 ## What to build
 
 - **`first-release` — a line in the sand.** Cut the first real release from `master`, give each boundary in the upgrade
@@ -157,7 +170,9 @@ values — and what it replaces is removed at the next major, once nothing insid
   every release, whether or not the mock changed. Checking out a tag in both repositories reproduces exactly what that
   release was proven against, and a patch that needs the mock to change lands there the way it lands in `blizzard` — on
   `master` first, carried back, tagged with the same name. The majors are cut on their published dates from a `master`
-  opened for them. Once `epic:cadence` lands, cutting the candidate is a routine the fleet runs for itself.
+  opened for them, and opening `master` for a major is also when the store's history is folded into a new baseline at
+  the oldest supported release. Once `epic:cadence` lands, cutting the candidate and folding the history are routines
+  the fleet runs for itself.
 - **`dark-launch` — `master` that is always releasable.** Work that spans weeks lands behind a flag that is off by
   default, so an unfinished capability can share `master` with a weekly cut. The release that turns a flag on is the
   release whose notes describe the capability, and the flag is retired once it has been on for a release. A flag hides
@@ -193,6 +208,7 @@ dogfood instance onto it.
 | Cutting the weekly candidate, and promoting it to stable                                   | `release-lines` |
 | Patching a released line: fix first on `master`, carry it back, tag from the branch        | `release-lines` |
 | Opening `master` for a major, and cutting the major on its date                            | `release-lines` |
+| Folding the store's migration history into a baseline at the oldest supported release      | `release-lines` |
 | Landing work behind a flag, turning it on in a release, and retiring it                    | `dark-launch`   |
 | Confirming a release's signatures, attestations, and published wheel                       | `supply-chain`  |
 
