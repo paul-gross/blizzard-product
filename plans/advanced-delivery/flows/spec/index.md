@@ -1,13 +1,13 @@
 # Flows specifications
 
-The technical contracts behind the flows slice of `epic:advanced-delivery`. Product intent begins at the
-[slice plan](../index.md); implementation enters at the concern below. What a hub node's action does, how its outcome
-routes, and pending and its poll are owned by the [actions slice](../../actions/spec/index.md) and
-`domain/artifacts/delivery.md`; landing only where a chunk's project links is owned by `epic:projects`'
+The technical contracts behind `epic:advanced-delivery/flows`. Product intent begins at the [epic plan](../index.md);
+implementation enters at the concern below. What a hub node's action does, how its outcome routes, and pending and its
+poll are owned by the [actions epic](../../actions/spec/index.md) and `domain/artifacts/delivery.md`; landing only where
+a chunk's project links is owned by `initiative:projects`'
 [delivery contract](../../../../delivered/projects/hub/spec/delivery.md). This spec changes when a hub step runs and
 what it waits behind; it changes nothing an action does once it runs.
 
-This spec assumes only the [actions](../../actions/spec/index.md) slice has landed: a hub step is one of the hub's
+This spec assumes only the [actions](../../actions/spec/index.md) epic has landed: a hub step is one of the hub's
 actions, taken a bounded pass at a time on the `ActionLoop`'s dedicated thread (`hub/delivery/action_loop.py`), handing
 every effect it makes to an `IEffectSink` rather than writing it, and declaring in its catalogue entry,
 `ActionSpec.lands` (`hub/domain/actions/catalogue.py`), whether it holds the branches its chunk lands on. It builds on
@@ -18,7 +18,7 @@ forge address, owner, and credential.
 
 Paths are relative to `blizzard/src/blizzard/`.
 
-The slice reaches beyond `blizzard`'s source. In `blizzard-context`:
+The epic reaches beyond `blizzard`'s source. In `blizzard-context`:
 
 - `domain/artifacts/delivery.md` replaces its fleet-wide serialization paragraph with resources and flows, and corrects
   the scope the code already has: one slot per tenant, never one per fleet. Its "only a live, promoted chunk is driven"

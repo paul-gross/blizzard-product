@@ -80,9 +80,9 @@ hub's process environment once `token_env` is gone; that absence is what lets a 
 
 ## Toward tenancy
 
-`epic:multi-tenancy` adds `tenant_id` to `secrets`, makes the key `(tenant_id, name)`, and adds the tenant id to each
-ciphertext's associated data, so a row moved across tenants fails to decrypt. Names, routes, and the reveal seam keep
-their shape.
+`initiative:multi-tenancy` adds `tenant_id` to `secrets`, makes the key `(tenant_id, name)`, and adds the tenant id to
+each ciphertext's associated data, so a row moved across tenants fails to decrypt. Names, routes, and the reveal seam
+keep their shape.
 
 ## Replacing a value
 

@@ -47,7 +47,7 @@ the entry links. Apply plans it after the entry's links, so a document may link 
 writes one position fact per repository listed, ranking them in the list's order, and leaves every other linked
 repository unranked. A repository it names that the project does not link refuses the entry `repository_not_linked`. An
 entry that omits `landing_order` leaves the project's order as it stands. Export writes `landing_order` for every
-project with a ranked repository, so a document exported after this slice rebuilds each project's order, and
+project with a ranked repository, so a document exported after this epic rebuilds each project's order, and
 `epic:terraform-provider` has a field to manage it through.
 
 ## Admin screens
@@ -72,7 +72,7 @@ it"), `base-protected` ("The base branch only accepts pull requests, so it canno
 ## The board and the flow lanes
 
 A parked chunk's card shows its change and "Awaiting your merge" from the markers it already reads, and the chunk
-detail's delivery rows show the same. The flows slice's place `state` (`FlowPlaceView`, `ChunkFlowPlaceView`) gains
+detail's delivery rows show the same. The flows epic's place `state` (`FlowPlaceView`, `ChunkFlowPlaceView`) gains
 `awaiting-merge`, so a parked chunk on a flow's lane reads "awaiting merge" with the change linked, and the lane's line
 shows it as passed over rather than next. The card's one line under its node reads "awaiting merge on
 `blizzard/master`". `blizzard hub flow show` prints the same state.

@@ -1,4 +1,10 @@
-# Plan — `epic:hub`, separation slice
+---
+epic: hub/separation
+refinement: pristine
+status: delivered
+---
+
+# Plan — `epic:hub/separation`
 
 > **Shipped.** This plan is frozen: it records what the hub's first slice was conceived to be, and its entry in
 > [delivered.md](../../delivered.md) is the record of what landed.

@@ -1,9 +1,7 @@
 ---
 epic: forge-status
 refinement: pristine
-slices:
-  - name: full
-    status: delivered
+status: delivered
 ---
 
 # Plan — `epic:forge-status`

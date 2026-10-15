@@ -1,26 +1,18 @@
 ---
-epic: lab
+initiative: lab
 refinement: scaffolded
-slices:
-  - name: bench
-    status: horizon
-  - name: experiment
-    status: horizon
-  - name: lab-runner
-    status: horizon
-  - name: specimen
-    status: horizon
-  - name: verdict
-    status: horizon
-  - name: lab-board
-    status: horizon
-  - name: seeded-defects
-    status: horizon
-  - name: evidence
-    status: horizon
+epics:
+  - bench
+  - experiment
+  - lab-runner
+  - specimen
+  - verdict
+  - lab-board
+  - seeded-defects
+  - evidence
 ---
 
-# Plan — `epic:lab`
+# Plan — `initiative:lab`
 
 [`persona:harness-engineer`](../charter/personas/harness-engineer.md) changes one thing, runs the fleet, and reads the
 results. Today that last step is mostly faith. A plan-review prompt is rewritten, a reviewer moves from one model to
@@ -39,19 +31,19 @@ two node-steps, not a night.
 
 ## Not yet: a winter lab, by hand, first
 
-None of this epic is being built yet. Before blizzard grows experiments, trials, and a board of its own, the lab has to
-earn them by being useful without them. The first step happens outside blizzard entirely: a **winter lab**, a winter
-workspace whose feature environments each hold a whole other workspace, pinned to one commit, with a lab extension that
-tells the agents working there how to design an experiment, turn a graph node into a bench, run trials in paired waves,
-and read the result. The harness engineer drives it by hand, at a terminal, on a few real questions — the reviewer that
-seems to have gone soft, the convention that may or may not be pulling its weight, the cheaper model someone wants to
-try on plan-review.
+None of this initiative is being built yet. Before blizzard grows experiments, trials, and a board of its own, the lab
+has to earn them by being useful without them. The first step happens outside blizzard entirely: a **winter lab**, a
+winter workspace whose feature environments each hold a whole other workspace, pinned to one commit, with a lab
+extension that tells the agents working there how to design an experiment, turn a graph node into a bench, run trials in
+paired waves, and read the result. The harness engineer drives it by hand, at a terminal, on a few real questions — the
+reviewer that seems to have gone soft, the convention that may or may not be pulling its weight, the cheaper model
+someone wants to try on plan-review.
 
-That manual lab is the proof this epic waits on. If a handful of experiments run by hand change a decision someone would
-otherwise have made by feel, the case for bringing the lab into the fleet makes itself, and the slices below are built
-knowing which parts of the work were worth automating and which were not. If they change nothing, the epic has cost a
-few afternoons instead of a quarter. Either way, what blizzard eventually builds is shaped by an experimenter's actual
-habits rather than by this plan's guesses about them.
+That manual lab is the proof this initiative waits on. If a handful of experiments run by hand change a decision someone
+would otherwise have made by feel, the case for bringing the lab into the fleet makes itself, and the epics below are
+built knowing which parts of the work were worth automating and which were not. If they change nothing, the initiative
+has cost a few afternoons instead of a quarter. Either way, what blizzard eventually builds is shaped by an
+experimenter's actual habits rather than by this plan's guesses about them.
 
 The manual lab needs more of winter than winter has today: a workspace hosted inside another workspace's environment,
 with its own port band, the identity its parent hands it, its context sealed from the lab around it, and the whole
@@ -157,12 +149,12 @@ run them against, how many times to repeat each pairing, the evaluation each tri
 will stop itself at. An experiment is launched deliberately, the way a routine's run is, because it spends money the
 moment it starts.
 
-Each **trial** is an ordinary chunk, and that is the most important choice in the epic. A chunk already has everything a
-trial needs: a runner claims it under a lease, it is fenced against a stale attempt, it records every movement and every
-token as facts, its transcripts are shipped home, and a crashed runner hands it to another. Nothing in that machinery
-has to learn about experiments. What marks a trial is where it came from: it carries its experiment, arm, specimen, and
-replicate, and it wraps no backlog item, so it can never close one, never collide with the live chunk working the same
-item, and never be mistaken for work that owes a landing.
+Each **trial** is an ordinary chunk, and that is the most important choice in the initiative. A chunk already has
+everything a trial needs: a runner claims it under a lease, it is fenced against a stale attempt, it records every
+movement and every token as facts, its transcripts are shipped home, and a crashed runner hands it to another. Nothing
+in that machinery has to learn about experiments. What marks a trial is where it came from: it carries its experiment,
+arm, specimen, and replicate, and it wraps no backlog item, so it can never close one, never collide with the live chunk
+working the same item, and never be mistaken for work that owes a landing.
 
 The experiment is the conductor the graph model does not have. No chunk can wait on many, so the experiment does the
 waiting. It mints its trials in waves, each wave holding every arm of the same specimen together, so the arms run side
@@ -193,35 +185,35 @@ their end states, the running estimate and the uncertainty around it, the budget
 blind comparisons waiting for a person's judgement. Any cell in the grid opens the trial as the ordinary chunk it is,
 transcripts and all.
 
-## The bench slice
+## The bench epic
 
-The first slice is the transformation itself: naming a source graph, a bench, and a set of arms, and minting the lab
+The first epic is the transformation itself: naming a source graph, a bench, and a set of arms, and minting the lab
 graphs that result, with end states capping every exit and a seed standing in for everything upstream. It is useful
-before anything else in this epic exists. With a seed written by hand, an engineer can start a trial chunk on each arm
-by hand and read the end states side by side. Paired with `epic:demo`'s mock harness, a lab graph can be run for free,
-which makes the transformation itself testable without spending a token.
+before anything else in this initiative exists. With a seed written by hand, an engineer can start a trial chunk on each
+arm by hand and read the end states side by side. Paired with `epic:demo`'s mock harness, a lab graph can be run for
+free, which makes the transformation itself testable without spending a token.
 
-## The experiment slice
+## The experiment epic
 
-The second slice is the experiment as [How an experiment runs](#how-an-experiment-runs) describes it: the hub record
-that names arms, specimens, repetitions, evaluation, budget, and concurrency; the trial as a chunk that carries its
+The second epic is the experiment as [How an experiment runs](#how-an-experiment-runs) describes it: the hub record that
+names arms, specimens, repetitions, evaluation, budget, and concurrency; the trial as a chunk that carries its
 experiment and wraps no backlog item; and the conductor that mints trials in paired waves, mints the comparisons that
 need two finished trials, and stops on a clear answer, a clear non-answer, or an empty budget. It is what turns the
-bench slice's hand-started trials into a measurement.
+bench epic's hand-started trials into a measurement.
 
-## The lab runner slice
+## The lab runner epic
 
-The third slice is the runner that brings a lab workspace, as
+The third epic is the runner that brings a lab workspace, as
 [Project workspaces and lab workspaces](#project-workspaces-and-lab-workspaces) describes it: a runner that declares it
 offers a lab workspace and claims only trials, materializes each arm's workspace definition on demand, certifies the
 clean room before an experiment's first wave, and reports the fingerprint of every trial's arm as a fact. It is the
 manual winter lab with the fleet's claiming, leasing, and fact log around it, which is why the manual lab comes first.
 
-## The specimen slice
+## The specimen epic
 
-A seed written by hand answers only the questions its author thought to ask. The fourth slice draws seeds from real
-work. A **specimen** is a recorded chunk captured at the moment it entered the bench: the artifacts it held, the commit
-its worktrees stood on, and the work items it wraps. The engineer collects specimens from the fleet's own history (the
+A seed written by hand answers only the questions its author thought to ask. The fourth epic draws seeds from real work.
+A **specimen** is a recorded chunk captured at the moment it entered the bench: the artifacts it held, the commit its
+worktrees stood on, and the work items it wraps. The engineer collects specimens from the fleet's own history (the
 chunks that delivered, the chunks that escalated, the ones that looped five times through review) and runs every arm of
 an experiment against every specimen. The trials pair naturally: each specimen meets each arm, so the hard specimens are
 hard for every arm alike and their difficulty cancels out of the comparison.
@@ -237,9 +229,9 @@ The fleet's own history is what makes this compound. Every chunk that delivers i
 attached, the change that actually landed, and the collection of them becomes a benchmark of the project's own work that
 grows every night.
 
-## The verdict slice
+## The verdict epic
 
-The fifth slice reads the trials. Some of what it reads the fleet already records as facts and costs nothing to collect:
+The fifth epic reads the trials. Some of what it reads the fleet already records as facts and costs nothing to collect:
 how many times a gate sent work back, how many retries a node spent, whether a trial escalated or asked a question, the
 tokens and time each node-step took, and which end state the trial reached. A plan-review that waves a weak plan through
 and a plan-review that loops it four times leave very different traces, and the count of loops per gate may be the
@@ -259,24 +251,24 @@ two identical runs drift apart; a difference smaller than that drift is not a di
 quality rather than folded into it, because "nine-tenths as good at a third of the price" is a decision the engineer
 should make with both numbers in view.
 
-## The lab board slice
+## The lab board epic
 
-The sixth slice is the [lab board](#how-an-experiment-runs): experiments collapsed to a single card on the operator's
+The sixth epic is the [lab board](#how-an-experiment-runs): experiments collapsed to a single card on the operator's
 board, and a surface of their own where an experiment's design, its grid of trials, its running estimate, its budget,
 and its queue of blind comparisons are read. It comes after the verdict because it renders what the verdict computes,
-and before the slices that follow because seeded defects and evidence are both read there.
+and before the epics that follow because seeded defects and evidence are both read there.
 
-## The seeded-defects slice
+## The seeded-defects epic
 
 The hardest thing to measure about a gate is what it misses, because in ordinary work no one knows what was there to
-catch. The seventh slice manufactures that knowledge: the lab plants known defects into a specimen's artifacts, a bug in
+catch. The seventh epic manufactures that knowledge: the lab plants known defects into a specimen's artifacts, a bug in
 a diff on its way to `review` or a missing requirement in a plan on its way to `plan-review`, and measures how often
-each arm catches them. It is the same move `epic:mutation-testing` makes against a test suite, made against the fleet's
-own reviewers, and it yields a number no one has today: how often the review gate catches a real bug.
+each arm catches them. It is the same move `initiative:mutation-testing` makes against a test suite, made against the
+fleet's own reviewers, and it yields a number no one has today: how often the review gate catches a real bug.
 
-## The evidence slice
+## The evidence epic
 
-The last slice closes the loop the lab exists for. The fleet already proposes changes to itself: a retrospective names a
+The last epic closes the loop the lab exists for. The fleet already proposes changes to itself: a retrospective names a
 recurring failure, a garden pass drafts a proposal. Today such a proposal is judged on argument alone. Here a proposal
 to change a prompt, a graph, or a convention can carry an experiment run on the lab, so the person approving it reads
 evidence beside the case. And once a change is adopted, the lab can keep watching it: a small share of live chunks gets

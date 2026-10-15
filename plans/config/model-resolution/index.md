@@ -1,4 +1,10 @@
-# Plan — `epic:config`, model-resolution slice
+---
+epic: config/model-resolution
+refinement: scaffolded
+status: horizon
+---
+
+# Plan — `epic:config/model-resolution`
 
 A graph author writes a capability tier and an effort, never a model, and that is what lets one graph run under either
 harness. The price is that the model a session actually runs on is decided at a distance, in several places that each
@@ -12,8 +18,8 @@ reconstruction they would be doing the morning after a bad night, only in advanc
 
 The runner should answer that question itself. One command, on the machine the runner lives on, prints the resolution
 the way the runner will perform it: every layer that holds a value, which value won, and why. It is the same answer
-`epic:config` promises across the whole configuration surface — a lookup rather than an investigation — given early to
-the one corner of it where the answer changes what a night costs.
+`initiative:config` promises across the whole configuration surface — a lookup rather than an investigation — given
+early to the one corner of it where the answer changes what a night costs.
 
 ## What to build
 
@@ -63,6 +69,6 @@ transcript.
 
 | Where                                             | Read when                                                                   |
 | ------------------------------------------------- | --------------------------------------------------------------------------- |
-| [spec/](./spec/index.md)                          | Implementing any part of the slice or resolving its technical contract      |
+| [spec/](./spec/index.md)                          | Implementing any part of the epic or resolving its technical contract       |
 | [sample](../artifacts/model-resolution.txt)       | Seeing what the operator reads at the terminal, on one worked configuration |
 | [sample JSON](../artifacts/model-resolution.json) | Seeing the same answer as a script or an agent reads it                     |

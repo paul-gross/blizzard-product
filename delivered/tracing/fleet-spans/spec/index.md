@@ -1,7 +1,7 @@
 # Fleet-spans specifications
 
-The technical contracts behind the fleet-spans slice of `epic:tracing`. Product intent begins at the
-[slice plan](../index.md); implementation enters at the concern below.
+The technical contracts behind `epic:tracing/fleet-spans`. Product intent begins at the [slice plan](../index.md);
+implementation enters at the concern below.
 
 | Where                        | Read when                                                                                                    |
 | ---------------------------- | ------------------------------------------------------------------------------------------------------------ |

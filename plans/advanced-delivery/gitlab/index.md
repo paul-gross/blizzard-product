@@ -1,18 +1,24 @@
-# Plan — `epic:advanced-delivery`, gitlab slice
+---
+epic: advanced-delivery/gitlab
+refinement: refined
+status: horizon
+---
 
-A shop whose repositories live on GitLab cannot use blizzard to land anything today, and after the `policies` slice it
-still cannot. The seam the `forges` slice drew speaks in refs, changes, and checks rather than in GitHub's words, and
+# Plan — `epic:advanced-delivery/gitlab`
+
+A shop whose repositories live on GitLab cannot use blizzard to land anything today, and after the `policies` epic it
+still cannot. The seam the `forges` epic drew speaks in refs, changes, and checks rather than in GitHub's words, and
 every policy is written against that seam alone, but the only forge behind it is GitHub. A seam with one occupant is a
 promise rather than a proof: nothing yet shows that a policy written for one forge runs unchanged on another.
 
-This slice puts GitLab behind the seam. A tenant declares a GitLab forge as it declares a GitHub one, a repository on it
+This epic puts GitLab behind the seam. A tenant declares a GitLab forge as it declares a GitHub one, a repository on it
 names a policy as any repository does, and the hub lands into it through merge requests and pipelines without a policy,
 a graph, or the combining step learning which forge it holds. A chunk whose work spans a GitHub repository and a GitLab
 one lands into both, each through its own forge, in its project's order.
 
-| Where                    | Read when                                                              |
-| ------------------------ | ---------------------------------------------------------------------- |
-| [spec/](./spec/index.md) | Implementing any part of the slice or resolving its technical contract |
+| Where                    | Read when                                                             |
+| ------------------------ | --------------------------------------------------------------------- |
+| [spec/](./spec/index.md) | Implementing any part of the epic or resolving its technical contract |
 
 ## What to build
 
@@ -42,14 +48,14 @@ one lands into both, each through its own forge, in its project's order.
   fails exactly as a GitHub key does.
 - **Landing across kinds of forge.** A chunk whose project links a GitHub repository and a GitLab one lands into both,
   each through its own forge and with its own policy, in its project's order. Landing across forges is never one atomic
-  act, and the rule the `policies` slice set for landing across repositories holds unchanged.
+  act, and the rule the `policies` epic set for landing across repositories holds unchanged.
 - **Held to GitLab's real behaviour.** The mock forge gains a GitLab face for the fleet's own proofs, but a mock written
   from documentation is wrong in exactly the ways that matter, so a contract suite runs the adapter against a real
   GitLab and is owed by any change to it.
 
 ## Left for later
 
-GitLab's merge trains, as a way to hand a repository's line to its forge, are the `trains` slice's, which comes after
+GitLab's merge trains, as a way to hand a repository's line to its forge, are the `trains` epic's, which comes after
 this one and speaks GitHub's merge queue and GitLab's merge train alike. GitLab as a source of work items, rather than a
-place work lands, is not this epic's. A forge beyond GitHub and GitLab waits for a shop that needs one, and this slice
-is the evidence that adding it means writing an adapter rather than revisiting the policies.
+place work lands, is not this initiative's. A forge beyond GitHub and GitLab waits for a shop that needs one, and this
+epic is the evidence that adding it means writing an adapter rather than revisiting the policies.

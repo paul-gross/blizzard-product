@@ -104,7 +104,7 @@ established after reassignment or graph migration resolves afresh because pools 
 graph moving from one harness to another does so by entering a different declared session; the sessions share the
 chunk's durable artifacts and the environments under current tenure, not conversational context.
 
-Within-node retries mint fresh sessions but retain the prior attempt's harness in the OpenCode slice. If that capability
+Within-node retries mint fresh sessions but retain the prior attempt's harness in the OpenCode epic. If that capability
 is unavailable or no longer permitted, the attempt escalates explicitly. Cross-harness retry may later choose another
 member of the authored acceptable set only under a separate policy that records the switch; ordinary failure never
 advances the list implicitly.

@@ -19,7 +19,7 @@ driver loads; it never reads the store.
 A train is what keeps a chunk from paying a run of checks, or an agent, for a branch that merely moved. A member is
 never brought up to its base on its own branch: the train merges its revision onto the base and proves the result, so
 the base moving under it costs a merge the forge makes. Only a conflict against the base itself goes back to the chunk's
-graph. The policies slice's mechanical updates — a change brought up to its base, a fast-forwarding branch merged onto
+graph. The policies epic's mechanical updates — a change brought up to its base, a fast-forwarding branch merged onto
 its base — still serve a repository that does not batch.
 
 A member's own checks need not have finished for it to join, since the train proves it again in combination. One whose
@@ -32,12 +32,12 @@ known failure into a batch and costing every other member a split.
 A member's own visit does what belongs to one chunk. When a visit's `land` pass reaches a repository that batches, the
 repository's policy does only its preparation: `merge-on-checks` finds or opens the change and writes its
 `delivery-pr/<repo>/<n>`, so a reviewer and the board can see it, and both policies gate the head as before. Prepared,
-the repository's state is `Queued` — a `RepoState` this slice adds — and the visit writes `train-ready/<repo>` at the
+the repository's state is `Queued` — a `RepoState` this epic adds — and the visit writes `train-ready/<repo>` at the
 submitted revision. Each later pass of the visit reads the flow's verdict on it from the flow's record
 ([record.md](./record.md)): `Landed` once a batch carried it in, the ejection's verdict once it was ejected, and
 `Queued` until then. Routing stays the visit's own, through `_route`, exactly as for a submission landed alone.
 
-`combine.py` folds `Queued` as follows. For the chunk atomicity the policies slice keeps — nothing lands until every
+`combine.py` folds `Queued` as follows. For the chunk atomicity the policies epic keeps — nothing lands until every
 repository the hub lands itself is prepared — `Queued` counts as prepared, as `Ready` does. For the order a project
 lands its repositories in, `Queued` is unlanded, so every repository after it waits for its `Landed`. And for the pass's
 answer, a visit whose every unlanded repository is `Queued`, or waits behind one, answers `awaiting-queue`
@@ -46,7 +46,7 @@ whose work is sound while its train proves; `awaiting-merge` takes precedence wh
 
 A submission is **ready** on a batching flow when its `train-ready` marker is written, its chunk is `delivering`, it is
 open on every flow it holds, its own checks have not failed, and every repository its chunk reaches that comes before
-this one in its project's landing order — the `landing_position` the policies slice reads onto `ResolvedRepository`,
+this one in its project's landing order — the `landing_position` the policies epic reads onto `ResolvedRepository`,
 unranked repositories after ranked ones and ties broken by slug — has landed for its chunk. That order is strict, so a
 chunk reaching two batching repositories joins their trains one after the other, each once the one before it has landed,
 and no repository's readiness waits on another's that waits on it.
@@ -168,7 +168,7 @@ closes its submission everywhere, so every other batch in progress that carries 
 naming the ejection and rebuilt without it, unless that batch's advance has already been made — then its landing stands
 and is recorded. A chunk turned back to an agent never has the same work landed behind the agent's back.
 
-A lever on a member — stop, restart, complete, migrate — withdraws it as the flows slice withdraws any submission, and
+A lever on a member — stop, restart, complete, migrate — withdraws it as the flows epic withdraws any submission, and
 the same rule holds: a member withdrawn from a batch still building simply leaves it; one withdrawn while its batch
 proves abandons that batch, which is rebuilt without it; and one withdrawn after its batch's advance was made has
 landed, which the flow records as it records any member. Work a person stopped is never landed by a proof that finished

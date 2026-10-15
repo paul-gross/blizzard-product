@@ -1,9 +1,7 @@
 ---
 epic: workflow
 refinement: pristine
-slices:
-  - name: full
-    status: delivered
+status: delivered
 ---
 
 # Plan — `epic:workflow`
@@ -28,8 +26,8 @@ editing the graph *is* the dial between reviewing every step and supervising out
   build is the canonical shape, with retry caps as the escape into escalation.
 - **Immutable graphs, pinned chunks.** A graph never changes — an edit mints a new one — and every chunk records the
   graph it was minted under and travels it to completion, so no chunk is ever stranded at a node its graph no longer
-  has. Moving in-flight work between graphs is an explicit operation (`epic:migration`'s territory), never a side effect
-  of editing.
+  has. Moving in-flight work between graphs is an explicit operation (`initiative:migration`'s territory), never a side
+  effect of editing.
 - **The runner drives, the hub applies the rules.** A finished node-step is submitted — judgement, check results,
   artifacts, one atomic epoch-fenced write — and the hub's reply records the transition and returns the next node's
   envelope, which lets the runner continue in place: same environment, artifacts at hand, no re-queue. The envelope is

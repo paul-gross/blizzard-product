@@ -1,13 +1,13 @@
 # Carry-over
 
-An installation that predates this slice lands exactly as it did: every repository's `batch_size` is one, so every flow
+An installation that predates this epic lands exactly as it did: every repository's `batch_size` is one, so every flow
 lands its submissions alone, and no repository's policy changes. Batching and the forge's queue are an operator's
-choice, repository by repository. The slice ships in one release.
+choice, repository by repository. The epic ships in one release.
 
 ## The migration
 
 One manual migration (`bzh:manual-migrations`) under `hub/store/migrations/versions/`, chained after the policies
-slice's, frozen once released (`bzh:frozen-revisions`), inside the portable surface (`bzh:sql-portable`), and proven on
+epic's, frozen once released (`bzh:frozen-revisions`), inside the portable surface (`bzh:sql-portable`), and proven on
 Postgres as on SQLite with every name inside Postgres's 63 characters. It:
 
 1. Adds `repositories.batch_size`, filled 1; `batch_wait_seconds`, filled 60; `train_prefix`, filled `blizzard-train/`;
@@ -21,7 +21,7 @@ No repository changes revision and no `config_changes` row is written. At first 
 capabilities the hub offers it are known before any visit asks; a probe the forge cannot answer at boot is retried at
 the next visit's check, which answers `pending` meanwhile. A repository whose policy needs a probed capability it turns
 out to lack — a `fast-forward` repository whose base only pull requests may change — is reported with a
-`forge-capability-missing` event and escalated to a person at its next visit, as the forges slice escalates any missing
+`forge-capability-missing` event and escalated to a person at its next visit, as the forges epic escalates any missing
 capability.
 
 ## The mock
@@ -40,7 +40,7 @@ capability.
 - A merge queue: GraphQL `enqueuePullRequest`, `mergeQueueEntry`, `RemovedFromMergeQueueEvent`, and
   `dequeuePullRequest`, ordered first come first served, proving each change with the steerable checks, with levers to
   remove a change for a conflict, a failure, a timeout, or by hand.
-- On the GitLab face the `gitlab` slice built, merge trains: the `merge_trains` routes, the project's
+- On the GitLab face the `gitlab` epic built, merge trains: the `merge_trains` routes, the project's
   `merge_trains_enabled`, and system notes for a removal.
 - A lever that answers a forge read with a 5xx, so a probe can fail.
 
@@ -92,5 +92,5 @@ Each proof runs against the mock forge.
   timed-out queue escalate to a person; a cleared queue re-enqueues; a stopped chunk's change is dequeued; with the
   queue switched off, the repository lands by `merge-on-checks`, unbatched, and records `forge-capability-fallback`.
 - **Invariants.** `hub:one-batch-per-flow`, `hub:batch-members-open`, `hub:turn-has-one-subject`,
-  `hub:flow-fact-has-subject`, and the flows slice's invariants pass on the carried-over store and after every scenario
+  `hub:flow-fact-has-subject`, and the flows epic's invariants pass on the carried-over store and after every scenario
   above.

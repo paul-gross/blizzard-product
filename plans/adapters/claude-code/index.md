@@ -1,4 +1,10 @@
-# The delivered Claude Code adapter
+---
+epic: adapters/claude-code
+refinement: pristine
+status: delivered
+---
+
+# Plan — `epic:adapters/claude-code`
 
 > **Shipped.** This plan is frozen: it records the adapter foundation delivered with `milestone:mvp`, and its entry in
 > [delivered.md](../../../delivered.md) is the record of what landed.

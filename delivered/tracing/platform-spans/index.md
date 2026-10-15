@@ -1,4 +1,10 @@
-# Plan — `epic:tracing`, platform-spans slice
+---
+epic: tracing/platform-spans
+refinement: pristine
+status: delivered
+---
+
+# Plan — `epic:tracing/platform-spans`
 
 A worker does not spend its step in silence. It asks the runner for its chunk's history, reads the artifacts an earlier
 station left, writes its own, asks a person a question, and reports in after every tool it uses — each of those a

@@ -2,7 +2,7 @@
 
 ## The seam grows
 
-The forges slice split the seam by the caller that needs each part, and this slice grows each role only where a policy
+The forges epic split the seam by the caller that needs each part, and this epic grows each role only where a policy
 needs it, every new operation behind its own capability. `IForgeRefs` (`hub/forge/landing.py`) gains the four
 `fast-forward` needs:
 
@@ -16,11 +16,11 @@ needs it, every new operation behind its own capability. `IForgeRefs` (`hub/forg
 `IForgeChecks` gains `change_checks(number)` beside `checks(ref)`, under `checks.read`: the checks that decide whether a
 change may merge. On GitHub those are the change's head's; a forge that runs a change's checks on something other than
 its head answers from there, so `merge-on-checks` asks the change rather than guessing where its checks ran.
-`update_from_base` answers the forges slice's `Update(outcome, method)`, where `method` says how the forge brought the
+`update_from_base` answers the forges epic's `Update(outcome, method)`, where `method` says how the forge brought the
 change up to its base — `merge` on GitHub — so the head gate knows what it is reading
 ([landing.md](./landing.md#the-three-policies)).
 
-The four new `IForgeRefs` operations and `change_checks` join `OPERATION_CAPABILITY` beside the forges slice's, so
+The four new `IForgeRefs` operations and `change_checks` join `OPERATION_CAPABILITY` beside the forges epic's, so
 `ForgeRegistry` refuses each where its capability is not offered. A forge kind that cannot move a branch outside a
 change offers none of the four, and its repositories cannot fast-forward ([record.md](./record.md#capabilities)).
 
@@ -46,6 +46,6 @@ answers as `NeedsPerson(base-protected)` ([landing.md](./landing.md#what-goes-to
 - **A protected-branch lever**, so `base-protected` is provable.
 - **Rate headers on every answer** — GitHub's `X-RateLimit-*` with `X-RateLimit-Resource` — with a lever setting the
   remaining and the reset, and a second answering a secondary limit, a 403 whose remaining is not spent, so the budget's
-  thresholds and the forges slice's retry rules are provable.
+  thresholds and the forges epic's retry rules are provable.
 - **Its `update-branch` conflict** answered 422 with a message naming the conflict, as GitHub answers it, where it
   answers 405 today, so the land action's conflict path is exercised against the mock and not only on a later poll.

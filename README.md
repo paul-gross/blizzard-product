@@ -19,9 +19,9 @@ when the task is deciding what to build, rather than carrying it on every task.
 
 Intent is promoted in deliberate steps rather than drifting from an idea into a branch. A destination is declared as
 something users will be able to do, and it demands the capability areas that serve it. A capability area enters as a
-registry row with an epic plan that records how refined its intent is and the slices it will land in; when a slice comes
-within striking distance, it earns a written plan with its scope decided and its open questions resolved. Only then does
-anything reach GitHub as a startable issue. Landed work leaves the registry and enters the ledger.
+registry row with a plan that records how refined its intent is — one epic, or an initiative naming the epics it will
+land in; when an epic comes within striking distance, its plan earns its scope decided and its open questions resolved.
+Only then does anything reach GitHub as a startable issue. Landed work leaves the registry and enters the ledger.
 
 [index.md](./index.md) is the map: the charter that judges whether a capability is ours to build, the epic and milestone
 registries, the plans behind promoted work, the delivered ledger, and the market research we keep against the field.

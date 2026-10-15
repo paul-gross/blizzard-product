@@ -1,4 +1,10 @@
-# Plan — `epic:queue`, priority slice
+---
+epic: queue/priority
+refinement: pristine
+status: retired
+---
+
+# Plan — `epic:queue/priority`
 
 > **Retired.** This slice was dropped unbuilt; the operator-stated ordering it promised is `epic:urgency`'s.
 
@@ -23,7 +29,7 @@ eventually counts for something.
 
 - The shape of the aging curve, and the only question that really matters about it: how long a low-priority chunk can be
   made to wait before the fleet is simply wrong.
-- Whether priority is scoped per project once `epic:projects` lands, since a global ordering across projects rewards
-  whoever shouts loudest.
+- Whether priority is scoped per project once `initiative:projects` lands, since a global ordering across projects
+  rewards whoever shouts loudest.
 - How ordering composes with a runner's tag filters from `epic:tagging` — the top of the queue is not the top of every
   runner's queue.

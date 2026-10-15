@@ -131,8 +131,8 @@ keys derived per user, and Stripe plans at $49, $149, and $499 a month that cap 
 and fifty. The tenancy is thinner at runtime than in the data. Every tenant's agent shares one container on one host,
 separated by a sandbox rather than a machine, and the server refuses to run as more than one replica because live
 sessions, locks, and approval gates are held in process memory. Blizzard's hosted hub is its author's own fleet, and
-[`epic:multi-tenancy`](../../../epics.md) partitions a hub without sign-up or billing, so the commercial surface is a
-position difference.
+[`initiative:multi-tenancy`](../../../epics.md) partitions a hub without sign-up or billing, so the commercial surface
+is a position difference.
 
 ### Confinement, where Soleur's hosted path is ahead
 
@@ -223,8 +223,8 @@ findings forward, Soleur by filing them as issues and blizzard by recording them
 dollars, per unit of work and over a rolling window, and both stop rather than explain. Both start child processes from
 an allowlisted environment instead of the daemon's own, both keep secrets encrypted at rest, and both put Claude Code
 first with a second harness live beside it, Devin for Soleur and OpenCode for blizzard. Both leave Codex unfinished:
-Soleur's engine is coded and switched off, and blizzard's is [`epic:adapters`](../../../epics.md). Both are built by one
-person and a fleet, dogfooded on themselves, and deployed from their own main branch.
+Soleur's engine is coded and switched off, and blizzard's is [`initiative:adapters`](../../../epics.md). Both are built
+by one person and a fleet, dogfooded on themselves, and deployed from their own main branch.
 
 Neither is open source, and the Fusion comparison's line that both of those products are needs correcting on blizzard's
 side. Soleur moved to the Business Source License early in the year to protect a hosted launch, and later had to scrub
@@ -241,11 +241,11 @@ Four decisions fall out of this comparison, and one of them is urgent.
 **Confinement is the urgent one.** The shipped default runs every worker with permissions bypassed, which is the
 condition [`milestone:polyglot`](../../../milestones.md) promises to end, and the Landlock boundary the Fusion
 comparison relied on to soften that gap does not govern live workers. Soleur demonstrates that a fail-closed sandbox
-with a network allowlist is buildable by one person and can be proven on every deploy. The worker-security slice of
-[`epic:security`](../../../epics.md) currently frames the work as harness configuration plus one autonomy level. Either
-that framing meets the milestone through a safer default and a narrower permission posture, or the slice needs an
-operating-system boundary added to its scope. Which of the two is the decision. The Fusion comparison's sandboxing row
-should be corrected in the same change.
+with a network allowlist is buildable by one person and can be proven on every deploy.
+[`epic:security/worker-security`](../../../epics.md) currently frames the work as harness configuration plus one
+autonomy level. Either that framing meets the milestone through a safer default and a narrower permission posture, or
+the epic needs an operating-system boundary added to its scope. Which of the two is the decision. The Fusion
+comparison's sandboxing row should be corrected in the same change.
 
 **Learning deserves a decision, not a copy.** Agent memory is now the idea from two competitors that the mission does
 not refuse and the registry does not hold. Soleur's evidence argues against the automatic half: write-back swelled its
@@ -266,8 +266,8 @@ dropped into a repository blizzard drives.
 Soleur's default branch failed 8 of its last 100 CI runs, a short window, and its bot fixes revert themselves when they
 turn the branch red. The [field survey](../factory-field/index.md) puts blizzard at about one landing in five turning
 `master` red, through a strict single-file queue. The cause is not settled by this comparison, but the asymmetry is
-large enough to examine before [`epic:advanced-delivery`](../../../epics.md) designs its train, because the train is
-where the lesson would land. Whether delivery owns a revert path belongs in the same conversation.
+large enough to examine before [`initiative:advanced-delivery`](../../../epics.md) designs its train, because the train
+is where the lesson would land. Whether delivery owns a revert path belongs in the same conversation.
 
 The remaining differences are the design working. Departments beyond engineering, a priced multi-tenant service, and a
 model that picks which issues travel together are positions the mission already takes, and Soleur's own competitive

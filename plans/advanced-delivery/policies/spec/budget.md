@@ -7,7 +7,7 @@ merge-on-checks pass costs about fourteen calls per repository: the closed pull 
 learn whether the branch already merged, the open ones listed, the pull request read, the head gate's compares, and the
 head's and base's check runs. The shipped graphs poll every thirty seconds, so a single delivering repository spends
 about 1,700 calls an hour, and three landing at once exhaust a GitHub key's 5,000. Parked changes polled for days, and
-the forge-status sweep and close drain sharing a credential with landing, add to that. This is the slice where the hub
+the forge-status sweep and close drain sharing a credential with landing, add to that. This is the epic where the hub
 must make a pass cheap, and then slow itself down before the forge stops it.
 
 ## The cost of a pass
@@ -52,7 +52,7 @@ listing, and the work-source family (`IWorkSource`, `IWorkAnnotator`, `IWorkClos
 A budget learns from the forge, never from a count of its own. Every response's rate headers update it — GitHub's
 `X-RateLimit-Limit`, `-Remaining`, `-Reset`, and `-Resource` — through an `httpx` event hook every adapter's client
 installs, so a later forge kind's adapter teaches the budget from its own headers the same way. What counts as the forge
-refusing for rate is the forges slice's retry rules, which already raise `ForgeRateLimited(resume_at)` for a spent
+refusing for rate is the forges epic's retry rules, which already raise `ForgeRateLimited(resume_at)` for a spent
 remaining, a `Retry-After`, or a secondary limit; the budget hears of each one and marks itself spent until `resume_at`.
 A budget the hub has not yet heard from admits every caller; it is held in memory, and a restarted hub relearns it from
 its first answer.

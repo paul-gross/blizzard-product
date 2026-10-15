@@ -1,9 +1,7 @@
 ---
 epic: transcripts
 refinement: pristine
-slices:
-  - name: full
-    status: delivered
+status: delivered
 ---
 
 # Plan — `epic:transcripts`
@@ -60,8 +58,8 @@ harness's mercy exactly as today.
 - **A per-harness transcript source behind the adapter seam.** The harness-specific knowledge — where transcripts live,
   what their records mean — moves behind the harness adapter seam as a single operation: normalized turns since a given
   position. Today that knowledge is Claude-Code-specific and sits outside the seam; moving it in is what lets
-  `epic:adapters`' OpenCode and Codex slices bring OpenCode and Codex workers whose conversations centralize the same
-  way.
+  `epic:adapters/opencode` and `epic:adapters/codex` bring OpenCode and Codex workers whose conversations centralize the
+  same way.
 - **The transcript lane.** A second outbound buffer with its own sequence and hub high-water mark, so bulk never queues
   ahead of truth: a fat conversation delta must never delay a completion or a gate decision. Flush is opportunistic with
   a per-record cap; the lane's only promise is that a step's segments are complete, with final markers shipped, by step
@@ -79,7 +77,7 @@ harness's mercy exactly as today.
 - **Operator-only access.** A transcript holds everything a worker saw — file contents, environment output, whatever a
   tool happened to print — and centralizing that raises its stakes from one machine to the network. Reading transcripts
   requires the operator role; a viewer sees the fleet's state, not its conversations. (The exposure itself shrinks when
-  `epic:security`'s worker-lockdown scopes what a worker holds in the first place.)
+  `epic:security/worker-security` scopes what a worker holds in the first place.)
 - **The hub transcript view.** Chunk detail grows a transcript surface organized by the node history it already renders:
   pick a step, read its segments. Thinking renders collapsed by default; sidechain conversations read both ways — nested
   in place within the parent's flow, and openable alone as a conversation in their own right; resume seams show as

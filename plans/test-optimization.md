@@ -1,9 +1,7 @@
 ---
 epic: test-optimization
 refinement: refined
-slices:
-  - name: full
-    status: horizon
+status: horizon
 ---
 
 # Plan — `epic:test-optimization`
@@ -161,8 +159,8 @@ proves. Measured on one shard locally, out of about 5,030 s of summed test time:
   guard remembers its verdict per statement shape, keyed by SQLAlchemy's cache key, and a refused shape is refused on
   every repeat.
 
-Shortening the chain itself is `epic:release-engineering`'s, which folds the store's history into a baseline at each
-major.
+Shortening the chain itself is `initiative:release-engineering`'s, which folds the store's history into a baseline at
+each major.
 
 ## Out of scope
 

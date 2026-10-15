@@ -1,12 +1,18 @@
-# Plan — `epic:security`, worker-security slice
+---
+epic: security/worker-security
+refinement: scaffolded
+status: in-progress
+---
+
+# Plan — `epic:security/worker-security`
 
 An operator can tune a coding harness for their own work, but a worker launched by blizzard inherits settings the runner
 generates. Editing those files by hand does not last through `blizzard runner init`. The operator needs to bring another
 set of harness configurations into the runner at startup — permissions, MCP servers, plugins, and other native settings
 — without losing the hooks and headless behavior blizzard needs to do its job.
 
-The runner-auth slice of this epic — runners signing in to the hub with hub-minted tokens — is already delivered. This
-slice is about how the operator configures the coding harnesses those runners launch.
+The runner-auth epic of this initiative — runners signing in to the hub with hub-minted tokens — is already delivered.
+This epic is about how the operator configures the coding harnesses those runners launch.
 
 ## What to build
 
@@ -52,4 +58,4 @@ every command a shell can execute. Workers still need to fetch, rebase, commit, 
 the default branch is a forge rule, and a rebase may require `--force-with-lease`.
 
 The [specifications](./spec/index.md) own the bundle layout, autonomy mapping, composition, and invocation rules. They
-are the implementation entry point for this slice.
+are the implementation entry point for this epic.

@@ -1,4 +1,10 @@
-# Plan — `epic:ask-answer`, remote slice
+---
+epic: ask-answer/remote
+refinement: pristine
+status: delivered
+---
+
+# Plan — `epic:ask-answer/remote`
 
 Answering a question away from the machine only feels safe when the answer visibly arrives. The person who taps out a
 reply between errands is left holding a question of their own — did it get there? is the agent moving again? — and until

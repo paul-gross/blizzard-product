@@ -98,8 +98,8 @@ project_repository_link_facts          append-only; linked/unlinked derives from
 A repository link grants exactly one thing, that the project's chunks may land in the repository
 ([delivery.md](./delivery.md)). Like a source link it is a configured record with a revision and change facts, and
 unlinking is its retirement. A repository linked by no project is legal and receives nothing. The link is where
-`epic:advanced-delivery` may attach a project-level default over the repository's own landing policy, should one earn
-its place.
+`initiative:advanced-delivery` may attach a project-level default over the repository's own landing policy, should one
+earn its place.
 
 ## Which tables carry the project
 

@@ -1,9 +1,7 @@
 ---
 epic: documentation
 refinement: scaffolded
-slices:
-  - name: full
-    status: horizon
+status: horizon
 ---
 
 # Plan — `epic:documentation`

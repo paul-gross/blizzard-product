@@ -1,7 +1,7 @@
 # Worker security specifications
 
-The technical contracts behind the worker-security slice of `epic:security`. Product intent begins at the
-[slice plan](../index.md); implementation enters at the concern below.
+The technical contracts behind `epic:security/worker-security`. Product intent begins at the [epic plan](../index.md);
+implementation enters at the concern below.
 
 | Where                                  | Read when                                                              |
 | -------------------------------------- | ---------------------------------------------------------------------- |

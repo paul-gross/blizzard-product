@@ -1,4 +1,10 @@
-# Plan — `epic:chokepoint`, chokepoint slice
+---
+epic: chokepoint/chokepoint
+refinement: refined
+status: horizon
+---
+
+# Plan — `epic:chokepoint/chokepoint`
 
 Every so often a project has one large thing to do, and everything else has to stop before it can be done well. A
 rewrite of one component from Python into Rust, the board moved from one framework to another, a round of dependency
@@ -27,7 +33,7 @@ clears.
 - **Rules applied at the moment of claiming.** A chokepoint is enforced when a runner goes to pick up work, against the
   queue as it stands at that moment, and nowhere else. Nothing ranked behind a chokepoint is claimed until the
   chokepoint is done, and the chokepoint itself is not claimed while any chunk ranked ahead of it is still open.
-- **A chokepoint belongs to its project.** Once `epic:projects` gives the hub more than one project, a chokepoint
+- **A chokepoint belongs to its project.** Once `initiative:projects` gives the hub more than one project, a chokepoint
   narrows only the project its chunk belongs to. Ahead and behind are counted within that project's queue, and runners
   go on claiming every other project's work as if nothing had happened. A rewrite of one codebase has no reason to stall
   a project that shares none of it. Until projects land, the hub holds a single project, and a chokepoint narrows the

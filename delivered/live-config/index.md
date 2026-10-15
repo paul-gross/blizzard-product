@@ -1,9 +1,7 @@
 ---
 epic: live-config
 refinement: pristine
-slices:
-  - name: full
-    status: delivered
+status: delivered
 ---
 
 # Plan — `epic:live-config`
@@ -16,11 +14,11 @@ describes the fleet's work — where that work comes from, where it lands, and t
 were configuration of the process, and every change to it pays the process's price.
 
 This epic moves that configuration into the hub's store, where the hub can change it while it runs. It is the groundwork
-`milestone:projects` stands on. `epic:multi-tenancy` and `epic:projects` each partition what the hub holds, and a work
-source that lives in a file can be neither owned by a tenant nor grouped under a project. Making the move first, on the
-hub as it is today, lets our own fleet prove the new source of truth before either grouping key exists, so the two epics
-that follow add a key to tables that already exist rather than creating them, moving configuration into them, and
-partitioning them in one stroke.
+`milestone:projects` stands on. `initiative:multi-tenancy` and `initiative:projects` each partition what the hub holds,
+and a work source that lives in a file can be neither owned by a tenant nor grouped under a project. Making the move
+first, on the hub as it is today, lets our own fleet prove the new source of truth before either grouping key exists, so
+the two epics that follow add a key to tables that already exist rather than creating them, moving configuration into
+them, and partitioning them in one stroke.
 
 | Where                    | Read when                                                             |
 | ------------------------ | --------------------------------------------------------------------- |
@@ -36,13 +34,13 @@ partitioning them in one stroke.
 - **The delivery target as data.** The forge address, owner, base branch, and token that delivery reads from the hub's
   environment today become repository records of their own. The hard-coded fallback owner goes with them, so a bare
   repository name resolves against a declared repository rather than a name baked into the hub. Repositories stay
-  records of the whole hub — of the tenant, once `epic:multi-tenancy` lands — and `epic:projects` later lets each
-  project link the ones its work lands in, so nothing here may assume there is only one.
+  records of the whole hub — of the tenant, once `initiative:multi-tenancy` lands — and `initiative:projects` later lets
+  each project link the ones its work lands in, so nothing here may assume there is only one.
 - **A secret store the hub holds.** A credential is written once through the API and never read back, and is encrypted
   at rest under a key the hub's own configuration supplies. Work sources and repositories refer to a secret by name
   instead of naming a variable the hub resolves from its own environment, so rotating a token is an API call rather than
-  a redeploy. The namespace is shaped so that `epic:multi-tenancy` can scope it to a tenant without renaming anything —
-  once tenants exist, a reference into the hub's environment would let one tenant spend another's credential.
+  a redeploy. The namespace is shaped so that `initiative:multi-tenancy` can scope it to a tenant without renaming
+  anything — once tenants exist, a reference into the hub's environment would let one tenant spend another's credential.
 - **Configuration that can still live in a repository.** Moving the configuration into the store must not make it
   something that can only be clicked together. A declarative file, applied by the CLI, states the sources and
   repositories a hub should hold and reconciles the store to it, so an operator who versions their hub's configuration
@@ -111,4 +109,5 @@ and never read back, so no client, file, or state ever holds one it did not send
 
 - Where the secret store's key comes from and how it is rotated — the hub's environment, a file, or an external key
   service — and what an operator does when it is lost.
-- How the split between file and store sits within the single resolution order `epic:config` declares for every setting.
+- How the split between file and store sits within the single resolution order `initiative:config` declares for every
+  setting.

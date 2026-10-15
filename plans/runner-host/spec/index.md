@@ -2,9 +2,9 @@
 
 The technical contracts behind `epic:runner-host`. Product intent begins at the [epic plan](../index.md); implementation
 enters at the concern below. The runner's tenant rule — one runner, one store, one tenant, for life — is owned by
-`epic:multi-tenancy`'s [runner slice](../../../delivered/multi-tenancy/runner.md); the served-projects declaration and
-its wire are owned by `epic:projects`' [eligibility contract](../../../delivered/projects/hub/spec/eligibility.md); the
-harness bundle and autonomy are owned by `epic:security`'s
+[`epic:multi-tenancy/runner`](../../../delivered/multi-tenancy/runner.md); the served-projects declaration and its wire
+are owned by `epic:projects/hub`' [eligibility contract](../../../delivered/projects/hub/spec/eligibility.md); the
+harness bundle and autonomy are owned by `epic:security/worker-security`'s
 [configuration contract](../../security/worker-security/spec/configuration.md). This spec places each of them on the
 host; it redefines none.
 

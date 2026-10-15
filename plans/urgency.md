@@ -1,9 +1,7 @@
 ---
 epic: urgency
 refinement: scaffolded
-slices:
-  - name: full
-    status: horizon
+status: horizon
 ---
 
 # Plan — `epic:urgency`
@@ -31,9 +29,9 @@ for it. *Priority* would have meant both, which is why it is left unused here.
 
 - **An ordered set of urgencies, one per tenant.** The operator names the groups, orders them, and gives each an
   indicator — an emoji, or an icon of their own — while the hub runs, without a redeploy. The set belongs to the tenant,
-  so once `epic:projects` lands every project in it speaks the same urgencies and an urgent chunk means the same thing
-  on every board. One group is the default every new chunk takes when nothing says otherwise: `standard`, out of the
-  box.
+  so once `initiative:projects` lands every project in it speaks the same urgencies and an urgent chunk means the same
+  thing on every board. One group is the default every new chunk takes when nothing says otherwise: `standard`, out of
+  the box.
 - **Urgency on every chunk, set the way rank is.** The operator sets and changes a chunk's urgency from the board and
   the CLI, at mint or at any time after, in the backlog and the ready queue alike, without touching anything else about
   the chunk. In the backlog it changes nothing about what the fleet does; it is a signal to the operator deciding what

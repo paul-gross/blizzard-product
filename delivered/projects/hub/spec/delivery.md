@@ -34,15 +34,15 @@ finishes.
 
 The single-valued `run:` variables live-config fills from the resolved rows — `BZ_FORGE_URL`, `BZ_FORGE_TOKEN`,
 `BZ_FORGE_OWNER`, `BZ_HUB_BASE_BRANCH` — and its `repositories-disagree` refusal are unchanged. Landing across forges or
-credentials stays `epic:advanced-delivery`'s.
+credentials stays `initiative:advanced-delivery`'s.
 
 ## Two projects, one repository
 
 Projects that link the same repository land on the same branch of the same repository row. Nothing per-project separates
-their landings: `epic:advanced-delivery` models landing as a step holding the resource `repo:<name>/<branch>`, keyed by
-the repository, so chunks from every project that links it queue on one resource naturally. Until then, `hub_exec_slot`
-serializes them: it holds one hub-executed node at a time — every landing among them, not only landings — and under
-`epic:multi-tenancy` there is one such slot per tenant, so every project of a tenant shares it.
+their landings: `initiative:advanced-delivery` models landing as a step holding the resource `repo:<name>/<branch>`,
+keyed by the repository, so chunks from every project that links it queue on one resource naturally. Until then,
+`hub_exec_slot` serializes them: it holds one hub-executed node at a time — every landing among them, not only landings
+— and under `initiative:multi-tenancy` there is one such slot per tenant, so every project of a tenant shares it.
 
 ## The `run:` environment
 
@@ -74,7 +74,7 @@ repository row, not through the chunk's first work ref's source (`api/chunk_view
 ## Where later epics attach
 
 A landing policy and a deployment declaration describe the repository, not any project that uses it, so
-`epic:advanced-delivery` and `epic:advanced-deployment` attach them to the tenant's repository record, as further
+`initiative:advanced-delivery` and `epic:advanced-deployment` attach them to the tenant's repository record, as further
 configured fields under the same verbs and revisions. A project-level default over either, if one is ever wanted, would
 sit on the project's repository link. Neither changes the boundary: a chunk still lands only in repositories its project
 links.

@@ -50,7 +50,7 @@ through a transition and then retired ([carry-over.md](./carry-over.md)).
   own `web_base`, or the origin derived from its `api_base` when that is null — and refused `422 forge_conflict` when it
   differs, since the web origin now belongs to the forge; a `web_base` sent as null, or cleared, means the forge's.
 - Every read carries `forge` and the old fields derived from it, the latter marked deprecated in
-  `openapi/hub.openapi.json`, so a client written before the slice keeps reading what it read.
+  `openapi/hub.openapi.json`, so a client written before the epic keeps reading what it read.
 - A write that leaned on an old field answers with a `Deprecation` header and a `warnings` entry naming the field and
   the forge it resolved to — `RepositoryDocument`, `WorkSourceDocument`, and the configuration apply's result each gain
   a `warnings` list for it — and records a `config-old-field-used` event in `event_log`, so an operator can see when

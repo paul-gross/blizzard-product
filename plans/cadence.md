@@ -1,9 +1,7 @@
 ---
 epic: cadence
 refinement: scaffolded
-slices:
-  - name: full
-    status: horizon
+status: horizon
 ---
 
 # Plan — `epic:cadence`
@@ -17,8 +15,8 @@ its turn.
 ## What to build
 
 - **A routine that declares its own rhythm.** An interval, and a minimum spacing between runs, stated once where the
-  routine is defined. A routine belongs to a project once `epic:projects` gives projects a home, so each project keeps
-  its own housekeeping on its own clock.
+  routine is defined. A routine belongs to a project once `initiative:projects` gives projects a home, so each project
+  keeps its own housekeeping on its own clock.
 - **Minting at the hub when due.** The hub creates the work; the queue decides when it runs. A fleet behind on work
   falls behind on its own housekeeping rather than displacing an operator's.
 - **Spacing measured from the last finished run.** A routine an operator ran by hand on Saturday does not run again on

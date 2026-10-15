@@ -72,8 +72,8 @@ class StoreScope:
   `write(operation, expect=…)` and adds the statement builders `select(table, *cols)`, `insert(table)`, `update(table)`,
   `delete(table)`, and `scope_join(left, right, onclause)`. Each builder applies `table.c.tenant_id == scope.tenant` to
   every tenant-owned table it names; `insert` stamps `tenant_id` into every row's values. The scope is the tenant and
-  nothing narrower: a filter within a tenant, such as `epic:projects`' project filter, is an ordinary argument of the
-  read that applies it, never a property of the scope.
+  nothing narrower: a filter within a tenant, such as `initiative:projects`' project filter, is an ordinary argument of
+  the read that applies it, never a property of the scope.
 - **Stores are opened per scope.** `HubCore.open(scope) -> TenantStores` constructs the tenant's repository set over
   `connections.scoped(scope)`. Adapters are stateless, so the hub caches one `TenantStores` per tenant and evicts it
   when the tenant is deleted. Services built on stores (`build_services`) are built from a `TenantStores`, never from
@@ -113,10 +113,10 @@ checked; a read of a draining tenant sees a shrinking set and writes nothing.
 
 ### Fact egress
 
-The `epic:fact-egress` export stays hub-wide, as trace export does. Its `[egress]` directory is hub configuration with
-one destination, chosen by whoever runs the hub, so the egress sweep keeps one cursor per dataset across every tenant
-(`egress_cursor` is global) and writes every tenant's rows into the same tree, partitions, and manifests it writes
-today.
+The `initiative:fact-egress` export stays hub-wide, as trace export does. Its `[egress]` directory is hub configuration
+with one destination, chosen by whoever runs the hub, so the egress sweep keeps one cursor per dataset across every
+tenant (`egress_cursor` is global) and writes every tenant's rows into the same tree, partitions, and manifests it
+writes today.
 
 - **Every row names its tenant.** Each row of every dataset — `steps`, `invocations`, and `events`, a `dropped` row
   included — gains `tenant_id`, and beside it `tenant_name` as the tenant was named when the row was written, the way
@@ -205,16 +205,16 @@ Every uniqueness rule a tenant can observe becomes unique per tenant. Rules keye
 | `transcript_event_derivations`  | PK `(segment_id, extractor_version)`                                                                                                       | PK `(tenant_id, segment_id, extractor_version)`                                                                        |
 
 `scopes` takes a surrogate key because its natural key is a primary key six foreign keys point at; rescoping a natural
-primary key would force composite foreign keys onto every child, and `epic:projects` rescopes the slug again. With a
-surrogate, each later rescoping is a change to one unique constraint. Each of the six children gains `scope_id` as its
+primary key would force composite foreign keys onto every child, and `initiative:projects` rescopes the slug again. With
+a surrogate, each later rescoping is a change to one unique constraint. Each of the six children gains `scope_id` as its
 foreign key in place of the slug; `findings` and `finding_sets` keep `scope_slug` beside it as the label their reads key
 on. Columns that carry a routine name as a denormalized label (`findings.routine_name`, `work_items.routine_name`, …)
 keep it and resolve it within the row's tenant.
 
 The live-config records — `secrets`, `work_sources`, `repositories` — take a composite key instead. Their names are the
 handle every reference already holds: a work ref is `{source, ref}`, a record names its secret by `secret_name`, and
-`epic:live-config` made each name immutable. Nothing rescopes them past the tenant, because `epic:projects` links these
-records rather than owning them, so `(tenant_id, name)` is their final key, and every child already carries the
+`epic:live-config` made each name immutable. Nothing rescopes them past the tenant, because `initiative:projects` links
+these records rather than owning them, so `(tenant_id, name)` is their final key, and every child already carries the
 `tenant_id` a composite foreign key needs. Two tenants may each hold a source, repository, or secret of the same name,
 and each may configure the same forge repository.
 

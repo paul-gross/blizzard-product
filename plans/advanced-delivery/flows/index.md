@@ -1,4 +1,10 @@
-# Plan — `epic:advanced-delivery`, flows slice
+---
+epic: advanced-delivery/flows
+refinement: refined
+status: horizon
+---
+
+# Plan — `epic:advanced-delivery/flows`
 
 The hub runs one step at a time for a whole tenant. Landing a chunk into `blizzard`, recording a garden run's findings,
 and landing an unrelated chunk into a different repository all wait on the same slot, and the order in which they get it
@@ -6,16 +12,16 @@ is whoever happens to ask first on the next tick. The slot was the simplest way 
 it does that, but it keeps everything else apart too: a tenant with three projects lands their work single file, and an
 operator watching a chunk sit in `delivering` cannot see what it is waiting behind or how long the line is.
 
-This slice gives landing the shape the rest of the epic builds on. A step says which resource it needs — the branch it
-lands on — and waits only for that; two landings into different repositories run side by side, and a step that touches
-no repository waits for nothing. Landing on a branch becomes a flow: a subject at the hub, one per branch, that chunks
-submit their work to and that answers each of them with a verdict. In this slice a flow lands one chunk at a time, the
-way the slot does today, so nothing about how work lands changes; what changes is that the waiting has a place, an
+This epic gives landing the shape the rest of the initiative builds on. A step says which resource it needs — the branch
+it lands on — and waits only for that; two landings into different repositories run side by side, and a step that
+touches no repository waits for nothing. Landing on a branch becomes a flow: a subject at the hub, one per branch, that
+chunks submit their work to and that answers each of them with a verdict. In this epic a flow lands one chunk at a time,
+the way the slot does today, so nothing about how work lands changes; what changes is that the waiting has a place, an
 order, and a record.
 
-| Where                    | Read when                                                              |
-| ------------------------ | ---------------------------------------------------------------------- |
-| [spec/](./spec/index.md) | Implementing any part of the slice or resolving its technical contract |
+| Where                    | Read when                                                             |
+| ------------------------ | --------------------------------------------------------------------- |
+| [spec/](./spec/index.md) | Implementing any part of the epic or resolving its technical contract |
 
 ## What to build
 
@@ -44,7 +50,7 @@ order, and a record.
 - **A chunk handed to a person keeps its place.** A chunk escalated to `needs_human` while in line is passed over, and
   the branch moves on without it. An outcome its graph has no edge for goes to a person at once rather than being tried
   again. When a person requeues the chunk, it takes its place again at the back of the line.
-- **Today's landing is a batch of one.** Nothing in this slice batches, reorders, or rebases. A chunk is landed as the
+- **Today's landing is a batch of one.** Nothing in this epic batches, reorders, or rebases. A chunk is landed as the
   slot lands it now, only behind the work queued on its own branch rather than everything in the tenant, and a chunk
   paused before it reached its hub step now waits for its resume rather than being run while paused.
 - **The waiting is visible.** The board shows each flow as a lane: what is landing now, what is queued behind it, and
@@ -55,13 +61,13 @@ order, and a record.
   Restarting a chunk onto an earlier node withdraws it the same way.
 - **A branch is never frozen by a turn that cannot end.** A turn whose ending failed to record is noticed by the hub
   within seconds and ended, so a branch never waits on work nobody is doing.
-- **Carried over in place.** A chunk mid-delivery when the hub restarts onto this slice resumes as a submission at the
+- **Carried over in place.** A chunk mid-delivery when the hub restarts onto this epic resumes as a submission at the
   head of its branch's flow, and the tenant-wide slot is retired once nothing holds it.
 
 ## Left for later
 
-The flow learns to batch, to bring work up to its base, and to prove a combination in the `trains` slice; until then
+The flow learns to batch, to bring work up to its base, and to prove a combination in the `trains` epic; until then
 turns go first come, first served, and each landing completes when its checks do. Which policy lands a repository's work
-stops being the graph's choice in the `policies` slice, and `land` runs the repository's policy from then on. An
+stops being the graph's choice in the `policies` epic, and `land` runs the repository's policy from then on. An
 operator's hand on a flow itself — holding a branch closed to landings through an incident or a release freeze, and
 releasing it — waits until someone needs it; until then a branch is held by stopping the chunks in its line.

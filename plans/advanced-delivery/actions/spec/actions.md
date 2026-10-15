@@ -50,7 +50,7 @@ class ActionSpec:
     name: str
     args: frozenset[str]          # the keys `with:` must carry
     answers: frozenset[str]       # every choice a pass may answer, `pending` included where it may wait
-    lands: bool                   # whether a visit holds the branches its chunk lands on (flows slice)
+    lands: bool                   # whether a visit holds the branches its chunk lands on (flows epic)
 ```
 
 Graph validation reads the catalogue, and the executor reads it to know what a visit must be handed, so neither
@@ -80,11 +80,10 @@ Its three inputs are all it ever touches:
   the node expects git commits, and the project's id and slug. Every field is immutable — frozen dataclasses, tuples,
   and read-only mappings all the way down.
 - **`VisitForge`** is a connection to each resolved repository's forge with that repository's credential already bound,
-  built by the executor only for an action whose spec `lands`. In this slice it is one `GitHubHandle` per repository, an
+  built by the executor only for an action whose spec `lands`. In this epic it is one `GitHubHandle` per repository, an
   async `httpx` client in `hub/delivery/internal/github_handle.py` built from that repository's own forge address and
-  revealed credential, as `LandRun.at` binds each commit to its own target today; the `forges` slice replaces it with
-  the forge role Protocols `ForgeRegistry` hands out. An action never sees a secret, only a handle that already carries
-  one.
+  revealed credential, as `LandRun.at` binds each commit to its own target today; the `forges` epic replaces it with the
+  forge role Protocols `ForgeRegistry` hands out. An action never sees a secret, only a handle that already carries one.
 - **`IEffectSink`** is how an action records anything. An action never writes: it hands each effect —
   `Marker(name, content)`, `RecordReviewFindings`, `RecordGardenDelivery` — to `await effects.record(effect)`, which
   returns once the executor has made the effect durable, with the result of writing it (`recorded`, `invalid`, or
@@ -97,7 +96,7 @@ reach a step's `hub-log.<step>` artifact, and, on `pending`, the earliest moment
 when it knows one — a forge's rate-limit reset, say — which the executor writes on the visit's `hub_node_poll` row and
 honors beside the node's `poll_interval`. An action that meets something only a person can settle answers `escalation`,
 an `EscalationCause` and what it is about, in place of a choice; the executor escalates the chunk with that cause, as it
-does for `UNROUTABLE_OUTCOME`, and routes nothing. Later slices add the causes their actions answer.
+does for `UNROUTABLE_OUTCOME`, and routes nothing. Later epics add the causes their actions answer.
 
 ## Purity
 
@@ -126,13 +125,13 @@ event loop also keeps a pass's heavier work — `base_merge.py` reading a three-
 request or the board's event stream.
 
 `HubNodeExecutor._run_locked` keeps everything before and after the step loop — the poll-timeout check, resolution and
-its refusals, routing, bounces — and replaces the loop with one pass. On its own thread, which in this slice is the
+its refusals, routing, bounces — and replaces the loop with one pass. On its own thread, which in this epic is the
 caller's — `HubNodeExecutor.run`, `IHubNodeExecutor.run` (`hub/domain/execution/apply.py`), and the `hub-advance` route,
 a plain `def` FastAPI runs on a worker thread — it reads the `Visit`, reveals each repository's credential and builds
 the `VisitForge` for an action that lands, and submits `take` to the `ActionLoop`. It then drains the pass's effect
 queue on that same thread, writing each effect through `HubNodeExecutor.record_marker` or the service its record names —
 `services.review_findings.record`, `services.garden_delivery.record` — and releasing the action once each is durable.
-The `flows` slice's driver takes this role over and does its writing through `to_thread`.
+The `flows` epic's driver takes this role over and does its writing through `to_thread`.
 
 A pass is bounded by `BZ_HUB_ACTION_PASS_SECONDS`, 300 by default. A pass that overruns is cancelled at its next
 `await`, answers `pending`, and records a `hub-action-overran` event (warning) naming the action and the chunk, so the
@@ -152,7 +151,7 @@ they say is done. The step-level `produces:` skip goes with the step.
 ## Routing an answer
 
 A pass answers one of its action's `answers`, and the node authors every one of them but `pending`, so a graph minted
-from here on always has somewhere to send it. A stored version minted before this slice may not: a carried-over node
+from here on always has somewhere to send it. A stored version minted before this epic may not: a carried-over node
 whose graph authors no edge for the choice its pass answered — a version that named `land_default` and authors no
 `inherited-failure`, say — records an escalation (`EscalationCause.UNROUTABLE_OUTCOME`) naming the node and the choice,
 and an `unroutable-outcome` event (critical), at once. The chunk goes to a person, who restarts or migrates it onto a
@@ -176,7 +175,7 @@ pass bound is sized for that rather than for a handful.
 **`record-findings`** and **`garden-deliver`** hand their record effect to the sink and answer from its result:
 `recorded`, `invalid` where the route answered it, and `failure` for a fenced write, as the script's non-zero exit did.
 The executor runs the service when it writes the effect, so the garden's commit check runs there with today's
-`CommitResolver` until the `forges` slice moves it into the action.
+`CommitResolver` until the `forges` epic moves it into the action.
 
 **`pass`** does nothing and answers `success`. It is the hub node that only routes, which an empty `run:` was.
 

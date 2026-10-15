@@ -4,13 +4,14 @@
 
 `KNOWN_FORGE_KINDS` becomes `{"github", "gitlab"}`, so a forge record may name `gitlab`. A work source still cannot name
 a GitLab forge — its providers stay `{"github"}`, and `forge_kind_mismatch` refuses it — since GitLab as a source of
-work is not this epic's. `ForgeRegistry` builds the adapter by the forge's `kind`, through the factory the composition
-root supplies, and the capability check, the policies, and the combining step never learn which kind they hold.
+work is not this initiative's. `ForgeRegistry` builds the adapter by the forge's `kind`, through the factory the
+composition root supplies, and the capability check, the policies, and the combining step never learn which kind they
+hold.
 
 The adapter supports GitLab 15.6 and later, the first to answer `detailed_merge_status`. It reads the server's version
 (`GET /version`) on its first call, and a server reporting an older one is refused `forge_version_unsupported`, naming
 the version it found, before any landing call is made; the refusal escalates the visit to a person with cause
-`forge-config`, as the forges slice escalates a forge the hub cannot use.
+`forge-config`, as the forges epic escalates a forge the hub cannot use.
 
 ## Its operations
 
@@ -74,7 +75,7 @@ Its words map onto the seam's and nothing else crosses:
 
 ## Its failures
 
-Failures follow the forges slice's retry rules ([seam.md](../../forges/spec/seam.md)): 404 → `ForgeNotFound`; 401, and a
+Failures follow the forges epic's retry rules ([seam.md](../../forges/spec/seam.md)): 404 → `ForgeNotFound`; 401, and a
 403 that is not a rate limit, → `ForgeRejected("auth")`; 429 → `ForgeRateLimited`, its `resume_at` from
 `RateLimit-Reset` or `Retry-After`; 405, 406, 409, and 422 on a merge are re-read and, with the change still open,
 answer `pending`; a rebase GitLab answers with a conflict → `Update(outcome=conflict)`; 5xx and timeouts →
@@ -82,11 +83,11 @@ answer `pending`; a rebase GitLab answers with a conflict → `Update(outcome=co
 
 ## Its rate budget
 
-The policies slice's `ForgeBudgets` keys each budget by `(forge_id, secret_name, resource)`; a GitLab forge has one
+The policies epic's `ForgeBudgets` keys each budget by `(forge_id, secret_name, resource)`; a GitLab forge has one
 bucket, recorded as `core`. The adapter's client installs the same `httpx` event hook the GitHub adapter does, reading
 GitLab's `RateLimit-Limit`, `-Remaining`, and `-Reset`. A self-managed server that sends those headers only on the
 response that throttles teaches the budget only from its refusals, and its per-minute window makes the wait that follows
-a short one. gitlab.com allows about two thousand authenticated requests a minute, and the policies slice's cheap pass
+a short one. gitlab.com allows about two thousand authenticated requests a minute, and the policies epic's cheap pass
 keeps a GitLab landing well inside it without conditional requests. Because GitLab's windows are a minute long,
 `forge-budget-low` and `forge-rate-limited` are each recorded at most once an hour for a GitLab budget, rather than once
 per window, so a busy hour does not fill the event log.

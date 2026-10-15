@@ -1,9 +1,7 @@
 ---
 epic: test-shared-service
 refinement: scaffolded
-slices:
-  - name: full
-    status: horizon
+status: horizon
 ---
 
 # Plan — `epic:test-shared-service`
@@ -13,7 +11,7 @@ installation that a test could own. This epic runs one long-lived hub per sessio
 own tenant.
 
 A project can't provide that isolation. Graphs, the board, and much of the hub are project-independent, so tests in
-different projects would still share them. The tenant is the boundary, and `epic:multi-tenancy` builds it.
+different projects would still share them. The tenant is the boundary, and `initiative:multi-tenancy` builds it.
 
 ## Stays on a dedicated hub
 
@@ -47,7 +45,7 @@ Mark each test as shareable or dedicated, using the categories above. Migrate th
 
 ## Dependencies
 
-- `epic:multi-tenancy`: the hub slice for hub-side tests, the runner slice for runner-side tests.
+- `epic:multi-tenancy/hub` for hub-side tests, `epic:multi-tenancy/runner` for runner-side tests.
 - `epic:test-architecture`: a hub that outlives its tests can only be reached through public surfaces. As a side effect,
   the suite can run against any running hub.
 
@@ -61,7 +59,7 @@ Mark each test as shareable or dedicated, using the categories above. Migrate th
   session. With auth on, the hub is invite-only and admitting someone runs through a provider's sign-in round trip, so
   nothing mints a user and a session for a test. That profile needs a test-only way in — a mock provider, say — or its
   tests stay on dedicated hubs.
-- How fast a tenant tears down, and whether the suite relies on it. `epic:multi-tenancy` promises a teardown fast enough
-  to run after every test and leaves the number to this epic, but nothing here measures it yet. The harness above says
-  correctness can't depend on teardown; whether teardown time is part of each test's budget, or only hygiene that runs
-  behind the suite, decides how much it matters.
+- How fast a tenant tears down, and whether the suite relies on it. `initiative:multi-tenancy` promises a teardown fast
+  enough to run after every test and leaves the number to this epic, but nothing here measures it yet. The harness above
+  says correctness can't depend on teardown; whether teardown time is part of each test's budget, or only hygiene that
+  runs behind the suite, decides how much it matters.

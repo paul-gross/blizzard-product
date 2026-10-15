@@ -19,10 +19,10 @@ Each tick of the flow driver ([turns.md](./turns.md#the-flow-driver)) reconciles
 its chunks stand, before it admits anyone, in two passes:
 
 1. **Every chunk standing at a hub step is in line.** Every chunk that is promoted and not ended, `delivering`, and
-   whose newest movement enters a hub node (`NodeShape.is_hub_command_node`, which the actions slice makes
+   whose newest movement enters a hub node (`NodeShape.is_hub_command_node`, which the actions epic makes
    `executor is HUB`) naming an action, with no submission for that node at its `latest_epoch`, is submitted, oldest
    entry to the node first. A chunk standing at a hub node that names no action is escalated to a person with the
-   actions slice's `hub-action-missing` cause instead, and submits nothing.
+   actions epic's `hub-action-missing` cause instead, and submits nothing.
 2. **Nothing that has left a step holds a place.** Every open submission whose chunk has ended, whose chunk's newest
    movement no longer enters the submission's node, or whose chunk is `delivering` at that node in a later epoch is
    closed with outcome `superseded`, as a `withdrawn` fact on each flow it held. A submission whose chunk is
@@ -57,7 +57,7 @@ A turn that ends `pending` is no verdict: the submission stays open on its flows
 turn whose answer routes nowhere — a choice the graph authored no edge for, which `_route` records as
 `hub-unroutable-outcome`, or an edge to a node the graph does not have, which `_route` treats the same way — is a fault
 in the graph rather than in the chunk's work, and trying again would only answer the same. The chunk is escalated to a
-person at once with the actions slice's `UNROUTABLE_OUTCOME` cause, naming the choice and, for a missing node, the node;
+person at once with the actions epic's `UNROUTABLE_OUTCOME` cause, naming the choice and, for a missing node, the node;
 the turn ends `escalated`.
 
 When `record_hub_step_transition` writes nothing because the exit is a replay or is fenced — the chunk was stopped,
@@ -97,4 +97,4 @@ turns are one pass each, so the branch is held a pass at a time and never throug
 Each of those repositories lands against its own record — its own base branch, owner, forge address, and credential — so
 the flows one chunk holds may be on different branches as well as different repositories; nothing refuses a chunk whose
 repositories differ. Which policy each repository lands by, and in what order a chunk's repositories land, are the
-`policies` slice's.
+`policies` epic's.

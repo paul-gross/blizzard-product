@@ -1,14 +1,13 @@
 # Forges specifications
 
-The technical contracts behind the forges slice of `epic:advanced-delivery`. Product intent begins at the
-[slice plan](../index.md); implementation enters at the concern below. Configured records, their revisions, retirement,
-the change log, and secrets are owned by `epic:live-config`'s
-[records](../../../../delivered/live-config/spec/records.md) and
+The technical contracts behind `epic:advanced-delivery/forges`. Product intent begins at the [epic plan](../index.md);
+implementation enters at the concern below. Configured records, their revisions, retirement, the change log, and secrets
+are owned by `epic:live-config`'s [records](../../../../delivered/live-config/spec/records.md) and
 [secrets](../../../../delivered/live-config/spec/secrets.md) contracts, and landing only where a chunk's project links
-by `epic:projects`' [delivery contract](../../../../delivered/projects/hub/spec/delivery.md). This spec adds the forge
-to them; it redefines none.
+by `epic:projects/hub`' [delivery contract](../../../../delivered/projects/hub/spec/delivery.md). This spec adds the
+forge to them; it redefines none.
 
-This spec assumes the [actions slice](../../actions/spec/index.md) has landed, so landing is the hub's `land` action and
+This spec assumes the [actions epic](../../actions/spec/index.md) has landed, so landing is the hub's `land` action and
 no hub step is a process.
 
 It builds on two things already true of the code. Repositories (`repo_<ulid>`) and work sources (`wsrc_<ulid>`) carry an
@@ -17,12 +16,12 @@ and resolves it through the shared kernel in `hub/domain/kernel/id_or_slug.py`, 
 held in its kind's former-slug table through `hub/store/internal/former_slugs.py`. A forge is born with the same shape
 ([record.md](./record.md)). Wherever this spec references a repository or a work source, it holds its id. And each of a
 chunk's commit pointers already resolves to its own repository record and lands against that record's own forge address,
-owner, base branch, and credential, so one chunk may already land across servers and credentials; what this slice
-changes is how a target names its server, not which targets a chunk may have.
+owner, base branch, and credential, so one chunk may already land across servers and credentials; what this epic changes
+is how a target names its server, not which targets a chunk may have.
 
 Paths are relative to `blizzard/src/blizzard/`.
 
-The slice reaches beyond `blizzard`'s source. In `blizzard-context`, the section of
+The epic reaches beyond `blizzard`'s source. In `blizzard-context`, the section of
 `architecture/system-shape/seam-positions.md` titled *The forge has no single seam* collapses its `GitHubCommitResolver`
 and land rows into the landing seam, and `architecture/system-shape/configuration.md` and `domain/artifacts/delivery.md`
 learn the forge record; `domain/projects.md` names forges beside work sources and repositories as the tenant's. In

@@ -1,9 +1,7 @@
 ---
 epic: test-architecture
 refinement: refined
-slices:
-  - name: full
-    status: horizon
+status: horizon
 ---
 
 # Plan — `epic:test-architecture`

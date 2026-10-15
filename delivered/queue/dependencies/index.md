@@ -1,4 +1,10 @@
-# Plan — `epic:queue` (dependencies slice)
+---
+epic: queue/dependencies
+refinement: pristine
+status: delivered
+---
+
+# Plan — `epic:queue/dependencies`
 
 Some work arrives in pairs: a second chunk that stands on the first — the API before the screen that calls it, the
 migration before the code that reads the new column. Today the queue has no way to hear that coupling. It hands out

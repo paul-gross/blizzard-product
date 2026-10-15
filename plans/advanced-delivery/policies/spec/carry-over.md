@@ -1,11 +1,11 @@
 # Carry-over
 
-An installation that predates this slice lands as it did, because every repository is given the policy it is already
-landed by. The slice ships in one release.
+An installation that predates this epic lands as it did, because every repository is given the policy it is already
+landed by. The epic ships in one release.
 
 ## The migration
 
-One manual migration (`bzh:manual-migrations`) under `hub/store/migrations/versions/`, chained after the flows slice's,
+One manual migration (`bzh:manual-migrations`) under `hub/store/migrations/versions/`, chained after the flows epic's,
 frozen once released (`bzh:frozen-revisions`), inside the portable surface (`bzh:sql-portable`), and proven on Postgres
 as on SQLite with every name inside Postgres's 63 characters. Within every tenant it:
 

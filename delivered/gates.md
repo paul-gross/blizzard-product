@@ -1,9 +1,7 @@
 ---
 epic: gates
 refinement: pristine
-slices:
-  - name: full
-    status: delivered
+status: delivered
 ---
 
 # Plan — `epic:gates`

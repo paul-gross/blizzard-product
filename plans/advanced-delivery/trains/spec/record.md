@@ -2,7 +2,7 @@
 
 ## The tables
 
-Every table here is tenant-owned and written through `ScopedConnections`, beside the flows slice's tables in
+Every table here is tenant-owned and written through `ScopedConnections`, beside the flows epic's tables in
 `hub/store/schema.py`. A batch is made by the work that reaches it, so, like a flow, it has no revision and no change
 log.
 
@@ -45,7 +45,7 @@ verdict is the newest `landed` or `ejected` fact naming its submission.
 
 ## The train turn
 
-A train's passes are turns on its flow, so the flows slice's guarantees — one open turn per flow, taken and ended in a
+A train's passes are turns on its flow, so the flows epic's guarantees — one open turn per flow, taken and ended in a
 transaction under the tenant row lock, ended `interrupted` at boot and by the driver's own sweep of turns it is not
 running — hold for them unchanged. `hub_turns.submission_id` becomes nullable and `hub_turns` gains `batch_id`,
 nullable, with a check that exactly one is set. `FlowDriver` takes a train turn on a flow whenever it is free and its
@@ -55,7 +55,7 @@ its branch. A visit's turn on a batching flow is a short read of its verdict and
 
 The train's step runs on the `ActionLoop` as every action does, receiving the frozen batch and handing its facts to an
 `IEffectSink`; the driver writes each fact through `to_thread` before the step continues, and holds no store transaction
-across the step. A train turn ends with one of the flows slice's turn outcomes — `pending` while its batch proves,
+across the step. A train turn ends with one of the flows epic's turn outcomes — `pending` while its batch proves,
 `interrupted` when cut short — and a member's ejection is the verdict that closes its submission in
 `flow_submission_closures`, as any verdict does.
 
@@ -68,7 +68,7 @@ or wait behind one ([batches.md](./batches.md#readiness)). The pass ends its tur
 keeps its place on its flows and is ineligible until its next poll is due, after the node's `poll_interval`, as after
 `pending`.
 
-`hub_node_poll.kind`, which the policies slice added, gains `awaiting-queue`, written by the executor's
+`hub_node_poll.kind`, which the policies epic added, gains `awaiting-queue`, written by the executor's
 `_record_awaiting` as `awaiting-merge` is. Like `awaiting-merge`, it ends a run of `pending` rows, so the node's
 `poll_timeout` never turns back a chunk for the time a train or a forge's queue takes to prove it. Its bound is the
 train's or the queue's own: `TRAIN_PROOF_TIMEOUT` on a batch ([batches.md](./batches.md#proving)) and
@@ -80,10 +80,10 @@ A batch's landing is the flow's own write, made in one transaction keyed by the 
 `flow_store.record_batch_landed` appends, for each member, its `merged/<repo>` marker on its chunk at the batch's
 revision, its `delivery_repo_landed` row, and the flow's `landed` fact, and then the batch's `batch-landed` fact and one
 `flow-landed` event for the branch's advance. It writes those markers without a visit's fence, since the branch holds
-the work whatever has since become of the member's visit. The flows slice's own per-landing `flow-landed` is not emitted
+the work whatever has since become of the member's visit. The flows epic's own per-landing `flow-landed` is not emitted
 for a batch's members; the batch's one event stands for them.
 
-The event's `detail` keeps the flows slice's fields, describing the batch's oldest member, and gains `batch_id` and
+The event's `detail` keeps the flows epic's fields, describing the batch's oldest member, and gains `batch_id` and
 `members`, each a `chunk_id` with its `project_id`, so whatever follows a landing learns in one event that a set of
 commits landed for a set of chunks. A lone landing carries a one-element `members` and no `batch_id`.
 

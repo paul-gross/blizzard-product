@@ -12,10 +12,10 @@ and the `targets` of its `RepositoryResolution` give the set. Each resource is o
 Each pass resolves the visit's repositories again, as `_run_locked` does today. An operator who edits a repository's
 `base_branch` while a chunk is submitted therefore changes the branch that chunk's next pass lands on, while the chunk
 still holds the old branch's flow; the new branch's flow sees that chunk only at its next submission. The edit is rare
-and the operator's own, and the slice accepts it rather than guarding it.
+and the operator's own, and the epic accepts it rather than guarding it.
 
 A step holds nothing when its chunk has no commits (`NOTHING_TO_RESOLVE`), or when its action does not land: whether it
-does is its catalogue entry's `ActionSpec.lands` (`hub/domain/actions/catalogue.py`, the actions slice), never the
+does is its catalogue entry's `ActionSpec.lands` (`hub/domain/actions/catalogue.py`, the actions epic), never the
 graph's. `land` lands; `record-findings` and `garden-deliver` do not, so a chunk recording its review findings or a
 garden run delivering waits behind no landing, whichever graph version it is pinned to.
 
@@ -51,7 +51,7 @@ Each submission carries its tenant's arrival sequence ([record.md](./record.md))
 chunk's status is `delivering`, its visit is current — the chunk's newest movement enters the submission's node and its
 `latest_epoch` is the submission's epoch — its visit has no open turn, and its next poll is due: no `hub_node_poll` row,
 or the newest one older than `PollPolicy.of(node).interval` and past the `next_poll_at` its pass answered with
-(`Pass.next_poll_at`, the actions slice), when it answered with one. A submission is **next** on a flow when no eligible
+(`Pass.next_poll_at`, the actions epic), when it answered with one. A submission is **next** on a flow when no eligible
 submission there arrived before it. A visit takes a turn when it is next on every flow it holds and each of them is
 free; a visit holding nothing is next whenever it is eligible.
 
@@ -82,17 +82,17 @@ something could change who is next: a submission, a turn ending, a withdrawal, a
 hub-advance. Those come from request handlers on worker threads, so they wake the driver through
 `loop.call_soon_threadsafe(wake.set)`.
 
-A pass is bounded (`BZ_HUB_ACTION_PASS_SECONDS`, the actions slice) and spent almost wholly waiting on a forge, so
-passes need no pool and no process: each runs on the `ActionLoop`'s one thread. The actions slice has the executor write
-the effects a pass records; from this slice the driver drains them instead, writing each through `asyncio.to_thread`,
-and `effects.record()` returns to the pass only once its write is durable, so the pass never takes its next forge call
-ahead of the record of its last. Turns on different flows run side by side, which is the slice's point: a landing into
+A pass is bounded (`BZ_HUB_ACTION_PASS_SECONDS`, the actions epic) and spent almost wholly waiting on a forge, so passes
+need no pool and no process: each runs on the `ActionLoop`'s one thread. The actions epic has the executor write the
+effects a pass records; from this epic the driver drains them instead, writing each through `asyncio.to_thread`, and
+`effects.record()` returns to the pass only once its write is durable, so the pass never takes its next forge call ahead
+of the record of its last. Turns on different flows run side by side, which is the epic's point: a landing into
 `blizzard` and one into `blizzard-mock` no longer wait on each other, and a garden delivery waits on neither.
 
 The two places that ran a hub step synchronously stop doing so. `ApplyService._respond` and `_land_migration`, which
 `_migrate_across` reaches (`hub/domain/execution/apply.py`), wake the driver and answer `HUB_NODE_TAKEN` as before; the
 driver's reconcile submits the visit on its next tick, and the runner holds the chunk's environments exactly as it does
-now. The actions slice's bridge from these synchronous callers onto the `ActionLoop` goes with them, since nothing
+now. The actions epic's bridge from these synchronous callers onto the `ActionLoop` goes with them, since nothing
 outside the driver runs a pass. `POST /api/fleet/chunks/{chunk_id}/hub-advance` (`hub/api/fleet.py`) wakes the driver
 and answers with where the visit stands — "landing on blizzard/master", "3rd on blizzard/master", "pending — next poll
 at …" — in the detail it already carries. `HubAdvanceResponse` (`wire/chunk.py`) keeps `ran` and `outcome_choice` on the
@@ -111,7 +111,7 @@ when its poll is due. Turns on a branch are taken in arrival order; landings com
 finish, exactly as they do under the slot.
 
 The poll timeout and its bounce are unchanged in shape: the driver checks the timeout before it builds the visit and
-routes `_route_pending_timeout` without calling the action, against the timeout the actions slice sets, three hours by
+routes `_route_pending_timeout` without calling the action, against the timeout the actions epic sets, three hours by
 default and in every shipped graph.
 
 ## A turn that cannot end
@@ -143,7 +143,7 @@ Each window between a durable write and the next is a crash point in the `flow.`
 
 `flow.after-poll.before-turn-end` takes the place of `hubnode.after-poll.before-slot-release`, retired with the slot.
 The windows inside a pass — `action.after-effect.before-write` and `action.after-write.before-resume` — stay the actions
-slice's, armed the same way now that the driver is the writer. Two windows the slot had are closed rather than armed. A
+epic's, armed the same way now that the driver is the writer. Two windows the slot had are closed rather than armed. A
 verdict's transition and its turn's end are one transaction ([verdict.md](./verdict.md#the-verdict)). A landing's
 `merged/<repo>` marker, its `delivery_repo_landed` row, its flow's `landed` fact, and its `flow-landed` event row are
 one transaction ([record.md](./record.md#what-the-record-says)); the live publish of that event follows the commit and,

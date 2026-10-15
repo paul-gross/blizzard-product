@@ -1,9 +1,7 @@
 ---
 epic: ios
 refinement: scaffolded
-slices:
-  - name: full
-    status: horizon
+status: horizon
 ---
 
 # Plan — `epic:ios`

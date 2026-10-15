@@ -1,9 +1,7 @@
 ---
 epic: preview
 refinement: scaffolded
-slices:
-  - name: full
-    status: horizon
+status: horizon
 ---
 
 # Plan — `epic:preview`

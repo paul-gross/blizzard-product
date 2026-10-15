@@ -1,9 +1,7 @@
 ---
 epic: steering
 refinement: scaffolded
-slices:
-  - name: full
-    status: horizon
+status: horizon
 ---
 
 # Plan — `epic:steering`

@@ -1,27 +1,26 @@
 # Policies specifications
 
-The technical contracts behind the policies slice of `epic:advanced-delivery`. Product intent begins at the
-[slice plan](../index.md); implementation enters at the concern below. Configured records, their revisions, and the
-change log are owned by `epic:live-config`'s [records](../../../../delivered/live-config/spec/records.md) contract;
-landing only where a chunk's project links by `epic:projects`'
-[delivery contract](../../../../delivered/projects/hub/spec/delivery.md); the forge record, the landing seam, and the
-capability check before a pass by the [forges slice](../../forges/spec/index.md); and when a visit takes its turn, and
-how its verdict reaches its chunk, by the [flows slice](../../flows/spec/index.md). This spec decides how a repository's
-work lands once its turn comes; it changes nothing about when the turn comes.
+The technical contracts behind `epic:advanced-delivery/policies`. Product intent begins at the [epic plan](../index.md);
+implementation enters at the concern below. Configured records, their revisions, and the change log are owned by
+`epic:live-config`'s [records](../../../../delivered/live-config/spec/records.md) contract; landing only where a chunk's
+project links by `epic:projects/hub`' [delivery contract](../../../../delivered/projects/hub/spec/delivery.md); the
+forge record, the landing seam, and the capability check before a pass by the [forges epic](../../forges/spec/index.md);
+and when a visit takes its turn, and how its verdict reaches its chunk, by the [flows epic](../../flows/spec/index.md).
+This spec decides how a repository's work lands once its turn comes; it changes nothing about when the turn comes.
 
 This spec assumes the [actions](../../actions/spec/index.md), [forges](../../forges/spec/index.md), and
-[flows](../../flows/spec/index.md) slices have landed: landing is the hub's `land` action, taken a pass at a time; it
+[flows](../../flows/spec/index.md) epics have landed: landing is the hub's `land` action, taken a pass at a time; it
 speaks every forge through the roles `ForgeRegistry` hands out — `IForgeRefs`, `IForgeChanges`, and `IForgeChecks`; and
 a visit lands in turns on the flow of each branch it holds. It builds on what the code already does: each of a chunk's
 commit pointers resolves to its own repository record, and the land script lands each against that record's own server,
-owner, base branch, and credential. A chunk spanning two GitHub servers lands today; this slice adds a policy per
+owner, base branch, and credential. A chunk spanning two GitHub servers lands today; this epic adds a policy per
 repository and the order a project lands its repositories in. GitHub is the only forge kind it lands on; the seam it
-grows is forge-neutral, and the second kind is the [gitlab slice](../../gitlab/spec/index.md)'s.
+grows is forge-neutral, and the second kind is the [gitlab epic](../../gitlab/spec/index.md)'s.
 
 Paths are relative to `blizzard/src/blizzard/`.
 
-The slice reaches beyond `blizzard`'s source. In `blizzard-context`, `domain/artifacts/delivery.md` trades "the policy
-is the script's" for the policy being the repository's, names the three policies and the project's order a chunk's
+The epic reaches beyond `blizzard`'s source. In `blizzard-context`, `domain/artifacts/delivery.md` trades "the policy is
+the script's" for the policy being the repository's, names the three policies and the project's order a chunk's
 repositories land in, and says a parked change is noticed by polling; `standards/hub-nodes/outcome-protocol.md` gains
 the reserved `awaiting-merge` beside `pending`; `domain/work/statuses.md` says a `delivering` chunk may be awaiting a
 person's merge; `architecture/system-shape/configuration.md` learns the repository's policy fields; `domain/projects.md`
@@ -34,7 +33,7 @@ what the proofs need ([seam.md](./seam.md#the-mock)).
 | -------------------------------- | ------------------------------------------------------------------------------------------------------------------------ |
 | [record.md](./record.md)         | Shaping the repository's policy fields, a project's landing order, and the capability check when a policy is set         |
 | [landing.md](./landing.md)       | Building `land` as a runner of policies — the three policies, combining, escalations, awaiting a merge, crash points     |
-| [seam.md](./seam.md)             | Building the seam operations this slice adds, their GitHub implementations, and the mock forge's additions               |
+| [seam.md](./seam.md)             | Building the seam operations this epic adds, their GitHub implementations, and the mock forge's additions                |
 | [budget.md](./budget.md)         | Making a landing pass cheap, sharing one rate budget per key, and slowing down before the forge refuses                  |
 | [surfaces.md](./surfaces.md)     | Building the API, CLI, configuration document, admin screens, escalation sentences, and the flow lane's awaiting state   |
 | [carry-over.md](./carry-over.md) | Writing the migration — every repository given the policy it lands by today, the positions, the poll kind, and the proof |

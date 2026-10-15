@@ -1,6 +1,6 @@
 # Carry-over
 
-An installation that predates this slice keeps landing exactly as it did, with every forge it already talks to declared
+An installation that predates this epic keeps landing exactly as it did, with every forge it already talks to declared
 for it, in one migration and with nothing reconfigured by hand.
 
 ## The migration
@@ -47,17 +47,17 @@ the address they already held.
 
 The legacy import, `blizzard hub config import-legacy` (`hub/domain/config/carry_over.py`), builds repositories from
 `BZ_FORGE_URL` and work sources from their `api_base` and `web_base`. It resolves or creates forges exactly as the
-migration does, so an installation imported after this slice lands in the same shape as one migrated.
+migration does, so an installation imported after this epic lands in the same shape as one migrated.
 
 ## The transition, then retirement
 
-The slice lands in two releases, and it is delivered when the second has.
+The epic lands in two releases, and it is delivered when the second has.
 
 **The transition release** carries the migration, the forge record and its surfaces, the seam, and the `land` action
 ported onto it. The old fields keep working at every door, resolved to forges ([surfaces.md](./surfaces.md#old-fields)),
 and only ever to a GitHub forge, the one kind they could name: should the transition outlast the arrival of a second
 kind, an old field whose origin carries that kind's API path, GitLab's `/api/v4`, is refused naming the `forge` field to
-use instead, never turned silently into a GitHub forge. Nothing an operator wrote before the slice stops working: a
+use instead, never turned silently into a GitHub forge. Nothing an operator wrote before the epic stops working: a
 configuration document kept in their repository applies unchanged, and a CLI invocation in a runbook still runs. The
 `land` action ships with the hub, so a chunk mid-delivery when the hub restarts resumes on the ported action.
 
@@ -66,7 +66,7 @@ the old CLI flags. It ships once the `config-old-field-used` event has gone quie
 its release notes name each removed field with what replaces it. The event joins the closed `EventLogKind` and its
 severity map (`foundation/event_log.py`) as a warning, and is removed with the fields it reports.
 
-Runners are untouched by both: nothing in this slice crosses the runner's wire.
+Runners are untouched by both: nothing in this epic crosses the runner's wire.
 
 ## Proof
 
@@ -74,12 +74,12 @@ The invariant checker's `hub:forge-reference-standing` passes on a carried-over 
 the migration, carried over, serves the same repository and work-source documents with `forge` beside the addresses they
 held, resolves every chunk's commits to the same repositories, and lands a chunk against the mock forge through the seam
 with the same outcomes and markers the `land` action produced before it. A configuration document written before the
-slice applies to it unchanged, with a warning per old field, and its export applies cleanly after retirement. A store
+epic applies to it unchanged, with a warning per old field, and its export applies cleanly after retirement. A store
 holding a feature environment's `http://127.0.0.1:<port>` origin carries over with its port, and one holding two
 spellings of one coordinate is refused naming both. Beyond the carry-over:
 
 - A test adapter offering less than every capability is refused before the pass, the chunk escalated with cause
-  `forge-capability-missing`, since GitHub, the one kind this slice builds, offers them all.
+  `forge-capability-missing`, since GitHub, the one kind this epic builds, offers them all.
 - The GitHub adapter's unit tests pin every row of the vocabulary and failure tables in [seam.md](./seam.md), including
   `has_hooks`, a secondary rate limit, a merge refused 405, and a GitHub Enterprise Server `/api/v3` origin; `land`'s
   tests pin every row of [landing.md](./landing.md#what-the-forge-answers).

@@ -1,8 +1,8 @@
 # Surfaces
 
-Every surface the flows slice built reads a batch too; nothing an operator does forms, splits, abandons, or reorders
-one. The batching settings and `forge-queue` are repository fields and travel its doors — API, CLI, admin form, and the
-configuration document — as the policies slice's fields do.
+Every surface the flows epic built reads a batch too; nothing an operator does forms, splits, abandons, or reorders one.
+The batching settings and `forge-queue` are repository fields and travel its doors — API, CLI, admin form, and the
+configuration document — as the policies epic's fields do.
 
 ## API
 

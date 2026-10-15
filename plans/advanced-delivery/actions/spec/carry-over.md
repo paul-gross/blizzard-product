@@ -34,7 +34,7 @@ lands through a pull request once carried over. Both kinds of version author onl
 
 The map lives in `LEGACY_RUN_COMMANDS` (`hub/domain/graph/legacy_run.py`) and is used where a stored document is read:
 `graph_sync`'s `_parsed` and a stored version's export translate a `run:` it matches into its action, so a
-`definition_yaml` written before the slice still parses, `graph_sync` compares against it, and re-exporting an old
+`definition_yaml` written before the epic still parses, `graph_sync` compares against it, and re-exporting an old
 version yields a document that mints. A graph authored from here on is never translated; `run:` in it is refused. The
 migration restates the map in its own frozen revision rather than importing `legacy_run.py`.
 
@@ -46,7 +46,7 @@ tenant it sets `action` and `action_args` from `run` through the map, then drops
 not match keeps no action and is reported by name, graph, version, and tenant in the migration's log; `definition_yaml`
 keeps the command for the record.
 
-`graph_sync` then mints one new version of each packaged graph, since this slice changes their `poll_timeout` and the
+`graph_sync` then mints one new version of each packaged graph, since this epic changes their `poll_timeout` and the
 `advanced-development-workflow` prompts that name the landing log. Chunks already pinned stay on the version they hold;
 only chunks minted after the release take the new one. `blizzard-mock`'s seeded graph (`graph_seed.py`) writes its
 `graph_nodes` rows and its `definition_yaml` directly; both gain `action: land` on its `deliver` node.

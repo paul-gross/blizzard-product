@@ -30,11 +30,11 @@ architect can bring harness extensions and tool rules into unattended work witho
 The operator chooses normal, auto, or dangerous once for the runner, knowing each harness maps that choice to its own
 capabilities and protected branches remain the forge's to guard, not the agent's to respect on a bad night.
 
-| Epic            | Slice           | Status      |
-| --------------- | --------------- | ----------- |
-| `epic:adapters` | opencode        | delivered   |
-| `epic:adapters` | codex           | horizon     |
-| `epic:security` | worker-security | in-progress |
+| Epic                            | Status      |
+| ------------------------------- | ----------- |
+| `epic:adapters/opencode`        | delivered   |
+| `epic:adapters/codex`           | horizon     |
+| `epic:security/worker-security` | in-progress |
 
 ## `milestone:projects` — one fleet, every project
 
@@ -75,20 +75,20 @@ touched three repositories deploys all three in the order they depend on one ano
 it back, before the next one moves. Delivery and deployment stop being one fleet-wide habit and become each project's
 own declared method, carried out deterministically, with an agent's judgement called in where the project asks for it.
 
-| Epic                       | Slice    | Status      |
-| -------------------------- | -------- | ----------- |
-| `epic:live-config`         | full     | delivered   |
-| `epic:multi-tenancy`       | hub      | delivered   |
-| `epic:projects`            | hub      | delivered   |
-| `epic:projects`            | runner   | delivered   |
-| `epic:multi-tenancy`       | runner   | delivered   |
-| `epic:runner-host`         | full     | in-progress |
-| `epic:projects`            | host     | retired     |
-| `epic:advanced-delivery`   | actions  | horizon     |
-| `epic:advanced-delivery`   | forges   | horizon     |
-| `epic:advanced-delivery`   | flows    | horizon     |
-| `epic:advanced-delivery`   | policies | horizon     |
-| `epic:advanced-deployment` | full     | horizon     |
+| Epic                              | Status      |
+| --------------------------------- | ----------- |
+| `epic:live-config`                | delivered   |
+| `epic:multi-tenancy/hub`          | delivered   |
+| `epic:projects/hub`               | delivered   |
+| `epic:projects/runner`            | delivered   |
+| `epic:multi-tenancy/runner`       | delivered   |
+| `epic:runner-host`                | in-progress |
+| `epic:projects/host`              | retired     |
+| `epic:advanced-delivery/actions`  | horizon     |
+| `epic:advanced-delivery/forges`   | horizon     |
+| `epic:advanced-delivery/flows`    | horizon     |
+| `epic:advanced-delivery/policies` | horizon     |
+| `epic:advanced-deployment`        | horizon     |
 
 ## `milestone:hardening` — the platform stops guessing on your behalf
 
@@ -152,27 +152,27 @@ timing of an upgrade back to the person who has to live with it. The release tha
 Hardening is what a platform does after it works. Little of it is a new capability. Almost all of it is an assumption
 the platform made on the operator's behalf, handed back to them as a decision.
 
-| Epic                       | Slice            | Status      |
-| -------------------------- | ---------------- | ----------- |
-| `epic:runner-host`         | full             | in-progress |
-| `epic:release-engineering` | first-release    | horizon     |
-| `epic:release-engineering` | compat-floor     | horizon     |
-| `epic:release-engineering` | notes            | horizon     |
-| `epic:release-engineering` | release-lines    | horizon     |
-| `epic:release-engineering` | dark-launch      | horizon     |
-| `epic:release-engineering` | supply-chain     | horizon     |
-| `epic:throttling`          | full             | horizon     |
-| `epic:tagging`             | full             | horizon     |
-| `epic:resilience`          | full             | horizon     |
-| `epic:retention`           | full             | horizon     |
-| `epic:config`              | model-resolution | horizon     |
-| `epic:config`              | sweep            | horizon     |
-| `epic:ui-toolkit`          | full             | horizon     |
-| `epic:documentation`       | full             | horizon     |
-| `epic:test-optimization`   | full             | horizon     |
-| `epic:test-architecture`   | full             | horizon     |
-| `epic:test-shared-service` | full             | horizon     |
-| `epic:architectural-sweep` | full             | delivered   |
+| Epic                                     | Status      |
+| ---------------------------------------- | ----------- |
+| `epic:runner-host`                       | in-progress |
+| `epic:release-engineering/first-release` | horizon     |
+| `epic:release-engineering/compat-floor`  | horizon     |
+| `epic:release-engineering/notes`         | horizon     |
+| `epic:release-engineering/release-lines` | horizon     |
+| `epic:release-engineering/dark-launch`   | horizon     |
+| `epic:release-engineering/supply-chain`  | horizon     |
+| `epic:throttling`                        | horizon     |
+| `epic:tagging`                           | horizon     |
+| `epic:resilience`                        | horizon     |
+| `epic:retention`                         | horizon     |
+| `epic:config/model-resolution`           | horizon     |
+| `epic:config/sweep`                      | horizon     |
+| `epic:ui-toolkit`                        | horizon     |
+| `epic:documentation`                     | horizon     |
+| `epic:test-optimization`                 | horizon     |
+| `epic:test-architecture`                 | horizon     |
+| `epic:test-shared-service`               | horizon     |
+| `epic:architectural-sweep`               | delivered   |
 
 ## `milestone:human-in-the-loop` — the operator stops being the wire
 
@@ -195,10 +195,10 @@ honestly.
 
 The milestone is named for the distinction. A human belongs in the loop exactly where judgment lives, and nowhere else.
 
-| Epic               | Slice | Status  |
-| ------------------ | ----- | ------- |
-| `epic:chat`        | full  | horizon |
-| `epic:ci-feedback` | full  | horizon |
+| Epic               | Status  |
+| ------------------ | ------- |
+| `epic:chat`        | horizon |
+| `epic:ci-feedback` | horizon |
 
 ## `milestone:mobile` — the fleet in a pocket
 
@@ -220,11 +220,11 @@ share a single registry and aggregation design so that whichever ships first set
 All three stand on the notification fan-out that `milestone:human-in-the-loop` builds. Reaching a person is one problem,
 and it is solved once.
 
-| Epic           | Slice | Status  |
-| -------------- | ----- | ------- |
-| `epic:pwa`     | full  | horizon |
-| `epic:android` | full  | horizon |
-| `epic:ios`     | full  | horizon |
+| Epic           | Status  |
+| -------------- | ------- |
+| `epic:pwa`     | horizon |
+| `epic:android` | horizon |
+| `epic:ios`     | horizon |
 
 ## `milestone:project-management` — work assembled, not pasted
 
@@ -248,9 +248,9 @@ enumerate and search, a deliberate loosening of ingest-by-id that every future s
 It arrives after `milestone:projects` for a plain reason — a hub serving many projects that draw on many sources,
 changes the shape of the screen enough that building it first would mean building it twice.
 
-| Epic          | Slice | Status  |
-| ------------- | ----- | ------- |
-| `epic:intake` | full  | horizon |
+| Epic          | Status  |
+| ------------- | ------- |
+| `epic:intake` | horizon |
 
 ## `milestone:future-state` — the fleet you can reach into
 
@@ -340,31 +340,31 @@ each of them to that tenant's own observability backend, not only to the one its
 suites earn the proof the backend's will already carry: mutation runs over the Angular workspace, waiting on a seam in
 tooling blizzard does not own.
 
-| Epic                       | Slice          | Status  |
-| -------------------------- | -------------- | ------- |
-| `epic:cadence`             | full           | horizon |
-| `epic:steering`            | full           | horizon |
-| `epic:signals`             | full           | horizon |
-| `epic:preview`             | full           | horizon |
-| `epic:worker-profiles`     | full           | horizon |
-| `epic:provider-kit`        | full           | horizon |
-| `epic:terraform-provider`  | full           | horizon |
-| `epic:tenant-telemetry`    | full           | horizon |
-| `epic:demo`                | full           | horizon |
-| `epic:queue`               | priority       | retired |
-| `epic:urgency`             | full           | horizon |
-| `epic:chokepoint`          | chokepoint     | horizon |
-| `epic:chokepoint`          | epic-dwf       | horizon |
-| `epic:code-harness-window` | agent-observer | horizon |
-| `epic:code-harness-window` | swarm-view     | horizon |
-| `epic:mutation-testing`    | angular        | horizon |
-| `epic:lab`                 | bench          | horizon |
-| `epic:lab`                 | experiment     | horizon |
-| `epic:lab`                 | lab-runner     | horizon |
-| `epic:lab`                 | specimen       | horizon |
-| `epic:lab`                 | verdict        | horizon |
-| `epic:lab`                 | lab-board      | horizon |
-| `epic:lab`                 | seeded-defects | horizon |
-| `epic:lab`                 | evidence       | horizon |
-| `epic:advanced-delivery`   | gitlab         | horizon |
-| `epic:advanced-delivery`   | trains         | horizon |
+| Epic                                      | Status  |
+| ----------------------------------------- | ------- |
+| `epic:cadence`                            | horizon |
+| `epic:steering`                           | horizon |
+| `epic:signals`                            | horizon |
+| `epic:preview`                            | horizon |
+| `epic:worker-profiles`                    | horizon |
+| `epic:provider-kit`                       | horizon |
+| `epic:terraform-provider`                 | horizon |
+| `epic:tenant-telemetry`                   | horizon |
+| `epic:demo`                               | horizon |
+| `epic:queue/priority`                     | retired |
+| `epic:urgency`                            | horizon |
+| `epic:chokepoint/chokepoint`              | horizon |
+| `epic:chokepoint/epic-dwf`                | horizon |
+| `epic:code-harness-window/agent-observer` | horizon |
+| `epic:code-harness-window/swarm-view`     | horizon |
+| `epic:mutation-testing/angular`           | horizon |
+| `epic:lab/bench`                          | horizon |
+| `epic:lab/experiment`                     | horizon |
+| `epic:lab/lab-runner`                     | horizon |
+| `epic:lab/specimen`                       | horizon |
+| `epic:lab/verdict`                        | horizon |
+| `epic:lab/lab-board`                      | horizon |
+| `epic:lab/seeded-defects`                 | horizon |
+| `epic:lab/evidence`                       | horizon |
+| `epic:advanced-delivery/gitlab`           | horizon |
+| `epic:advanced-delivery/trains`           | horizon |

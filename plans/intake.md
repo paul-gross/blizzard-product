@@ -1,9 +1,7 @@
 ---
 epic: intake
 refinement: scaffolded
-slices:
-  - name: full
-    status: horizon
+status: horizon
 ---
 
 # Plan — `epic:intake`

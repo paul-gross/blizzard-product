@@ -102,7 +102,7 @@ Resolution follows. `_candidates` (`hub/domain/config/repositories.py`), which `
 named forge's web host and API host, so each of the three is handed the tenant's forges beside its repositories and
 `_forge_host` reads the forge row instead of `forge_api_url`. `ResolvedRepository` carries `forge_id` in place of
 `forge_api_url`. `ResolvedRepository.target` and `RepositoryResolution.agreed()` lost their one caller, the hub node's
-step environment, with the actions slice, and are deleted rather than carried over. Each commit pointer already resolves
+step environment, with the actions epic, and are deleted rather than carried over. Each commit pointer already resolves
 to its own repository and lands against its own forge, owner, base branch, and credential — the refusal
 `repositories-disagree` that once kept one chunk on one forge is gone — so naming the forge changes what a target
 carries, not which targets a chunk may have. `hub/api/chunk_views.py`, which builds branch links through

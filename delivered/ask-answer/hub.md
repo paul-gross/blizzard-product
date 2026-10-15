@@ -1,4 +1,10 @@
-# Plan — `epic:ask-answer`, hub slice
+---
+epic: ask-answer/hub
+refinement: pristine
+status: delivered
+---
+
+# Plan — `epic:ask-answer/hub`
 
 > **Shipped.** This plan is frozen: it records what the ask/answer protocol was conceived to be, and its entry in
 > [delivered.md](../../delivered.md) is the record of what landed. The reach half — fan-out to phones and chat — is the

@@ -15,20 +15,20 @@ the merged result its pipeline ran on, each by its own rules.
 
 It is the one policy that declares a fallback, and the fallback is applied before any capability is checked:
 `requires(repository)` answers the set of the policy that will actually run, so a `forge-queue` repository whose last
-probe shows no `queue.join` requires what `merge-on-checks` requires, and the forges slice's check before a pass never
+probe shows no `queue.join` requires what `merge-on-checks` requires, and the forges epic's check before a pass never
 refuses it for the queue it is about to do without. A batch size above one is refused beside `forge-queue`
 ([capabilities.md](./capabilities.md#the-batching-settings)), so the fallback lands each change alone. Setting the
 policy on a repository whose probe does not show `queue.join` is accepted with a warning naming the fallback, rather
 than refused, and a visit that finds the queue switched off since lands by the fallback, recording a
 `forge-capability-fallback` event (warning) once per visit naming the repository and the capability. Every other missing
-capability is still refused when the policy is set and escalated to a person at a visit, as the forges slice does.
+capability is still refused when the policy is set and escalated to a person at a visit, as the forges epic does.
 
 ## The queue's role
 
 `IForgeQueue` (`hub/forge/landing.py`) is a role of its own beside `IForgeRefs`, `IForgeChanges`, and `IForgeChecks`,
 handed out by `ForgeRegistry` for a repository whose probe shows `queue.join`. The frozen `RepositoryForge` an action
 receives gains `queue`, set only for such a repository, so an action never holds a queue its repository does not have.
-Its operations are async and answer through the forges slice's retry policy:
+Its operations are async and answer through the forges epic's retry policy:
 
 | Operation                        | Answers                                                                                                     |
 | -------------------------------- | ----------------------------------------------------------------------------------------------------------- |
@@ -75,7 +75,7 @@ The `forge-queue` policy (`hub/delivery/actions/landing/forge_queue.py`) is, per
    - `conflict` → `conflict`; `checks-failed` → `failure` with findings naming the queue's failing checks.
    - `cleared` → a fresh `enqueue` on the next pass, at most twice per visit before it, too, is a `failure` naming the
      reason.
-   - `manual` and `timed-out` → an escalation to a person, taken the way the policies slice escalates a parked change a
+   - `manual` and `timed-out` → an escalation to a person, taken the way the policies epic escalates a parked change a
      person closed unmerged, with `EscalationCause.FORGE_QUEUE_REMOVED` naming the change and the reason, since a person
      who took a change out of the queue, or a queue whose checks never ran, is a person's call and not a defect an agent
      can mend.
@@ -89,4 +89,4 @@ last place in the queue. The flow's lane shows the forge's position beside its o
 
 A lever that withdraws a queued submission — stop, restart, complete, migrate — also calls `dequeue`, so a stopped
 chunk's change does not merge behind the hub's back; a `dequeue` the forge refuses, or a change that merges before it is
-dequeued, is recorded as landed on the flow, as a pass already running is under the flows slice.
+dequeued, is recorded as landed on the flow, as a pass already running is under the flows epic.

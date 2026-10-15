@@ -1,4 +1,10 @@
-# Plan — `epic:hub`, remote slice
+---
+epic: hub/remote
+refinement: pristine
+status: delivered
+---
+
+# Plan — `epic:hub/remote`
 
 The hub stops living where the operator sits. Today it is colocated with its runner: one machine holds the fleet's
 shared memory, and being away from that machine means being away from the fleet. This slice moves the hub off-machine —
@@ -28,12 +34,12 @@ its held chunks, buffers its events, and flushes when the hub returns.
 
 ## What this slice is not
 
-Human-facing reach is not here. The board's login, roles, and phone-friendly shell are `epic:board`'s remote slice;
-carrying questions to people who are away is `epic:ask-answer`'s. This slice makes the hub *reachable*; those make it
+Human-facing reach is not here. The board's login, roles, and phone-friendly shell are `epic:board/remote`; carrying
+questions to people who are away is `epic:ask-answer/remote`'s. This slice makes the hub *reachable*; those make it
 *worth reaching*.
 
 ## Open questions
 
 Both questions this plan once carried — the deployment shape blizzard blesses first, and whether the hub terminates TLS
-itself — are settled by the distribution slice of `epic:hub`: the container image is the blessed shape (systemd remains
-supported), and TLS terminates at a documented reverse-proxy front.
+itself — are settled by `epic:hub/distribution`: the container image is the blessed shape (systemd remains supported),
+and TLS terminates at a documented reverse-proxy front.

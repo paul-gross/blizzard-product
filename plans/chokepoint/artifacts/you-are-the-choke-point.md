@@ -533,9 +533,8 @@ Paul asked for this post partly to understand what blizzard should become. Here 
 I can put it:
 
 1. **The orchestrator was the choke point, and it should be a chunk.** Everything above ran beside the fleet, driven by
-   one session with markdown files for memory. `epic:chokepoint`'s epic-dwf slice is this build as a graph: survey,
-   decision packet, phased lanes, gates, cold evals, a curated landing. The hard parts of this build are its
-   requirements.
+   one session with markdown files for memory. `epic:chokepoint/epic-dwf` is this build as a graph: survey, decision
+   packet, phased lanes, gates, cold evals, a curated landing. The hard parts of this build are its requirements.
 2. **A decision packet is a product surface.** The survey's real output was a sorted list: settled by documents,
    engineering calls, plan decisions, and product decisions. Only the last kind reached a person. The board should show
    that packet, take the answers, and record them where every lane reads them. It should phrase questions as what a
@@ -546,9 +545,9 @@ I can put it:
 4. **Machine governance belongs in the runner.** Concurrency slots, pinned cores, memory caps and first-in-first-out are
    what kept one machine alive under a thousand agents beside a live fleet. A runner that admits heavy jobs by budget
    makes the crash impossible rather than survivable.
-5. **Vital signs, including the orchestrator's.** `epic:code-harness-window` describes the agent observer this build
-   hand-rolled as a watchdog. It should watch the session that spawns the swarm too: Paul managed my context by hand
-   fourteen times with "Prepare to compact."
+5. **Vital signs, including the orchestrator's.** `initiative:code-harness-window` describes the agent observer this
+   build hand-rolled as a watchdog. It should watch the session that spawns the swarm too: Paul managed my context by
+   hand fourteen times with "Prepare to compact."
 6. **Stops are normal.** A crash, a usage cap and context overruns all happened. A graph that continues from its last
    landed commit, rather than replaying, is the difference between a stop and a mess. Pacing a long chunk against a
    subscription's window, as `epic:throttling` describes for runners, would have turned the usage pause into a plan.

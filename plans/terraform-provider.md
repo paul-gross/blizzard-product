@@ -1,9 +1,7 @@
 ---
 epic: terraform-provider
 refinement: scaffolded
-slices:
-  - name: full
-    status: horizon
+status: horizon
 ---
 
 # Plan — `epic:terraform-provider`
@@ -24,7 +22,7 @@ repositories is reviewed and applied like a change to a DNS record.
 
 - **A resource for every configured record.** Tenants and memberships, projects, work sources, repositories, and
   secrets, each a resource with a data source to read it; landing policies and deployment declarations join them as
-  `epic:advanced-delivery` and `epic:advanced-deployment` give them a home.
+  `initiative:advanced-delivery` and `epic:advanced-deployment` give them a home.
 - **Destroy means retire.** Removing a resource from a plan retires the record rather than erasing it, so a source's
   history stays with the chunks that came from it and a mistaken destroy can be undone from the hub.
 - **Secrets that never reach state.** A secret is write-only: the provider sends it and the hub never returns it, so
@@ -37,8 +35,8 @@ repositories is reviewed and applied like a change to a DNS record.
 The provider is a client of the hub's configuration API and nothing more. `epic:live-config` builds that API with this
 provider named as its second consumer, and the guarantees it makes — stable identifiers, idempotent writes, a difference
 shown before anything is written, retirement in place of deletion, and secrets that are written but never read — are
-what keep the provider thin. It cannot usefully start until `epic:multi-tenancy` and `epic:projects` have given the hub
-the records worth managing; built any earlier, it would be rewritten as each of them lands.
+what keep the provider thin. It cannot usefully start until `initiative:multi-tenancy` and `initiative:projects` have
+given the hub the records worth managing; built any earlier, it would be rewritten as each of them lands.
 
 ## Open questions
 

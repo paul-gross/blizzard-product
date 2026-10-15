@@ -77,8 +77,9 @@ row's `owner/repo`, so `LandRun.repo` (`hub/graphs/scripts/land_common.py`) neve
 variables are single-valued, so the chunk's resolved rows must agree on `forge_api_url`, `owner`, `base_branch`, and
 `secret_name`. An unresolved commit, or rows that disagree, refuses the hub step before its command runs, with a named
 outcome — `repository-unresolved` or `repositories-disagree` — recorded in `event_log` and routed as a failed hub step.
-Landing across forges is `epic:advanced-delivery`'s. `GitHubCommitResolver` (`hub/forge/internal/commit_resolver.py`)
-takes the forge URL, owner, and token per call from the resolved row instead of from its constructor.
+Landing across forges is `initiative:advanced-delivery`'s. `GitHubCommitResolver`
+(`hub/forge/internal/commit_resolver.py`) takes the forge URL, owner, and token per call from the resolved row instead
+of from its constructor.
 
 ## The change log
 
@@ -105,10 +106,10 @@ entity whose `revision` changes in place with its fields, the same recorded-stat
 
 ## Uniqueness
 
-Names are unique across the hub. `epic:multi-tenancy` adds `tenant_id` to each table here and makes every uniqueness
-rule above `(tenant_id, …)`. Work sources and repositories stay tenant-wide records: `epic:projects` lets a project link
-the ones it draws from and lands in, and a chunk then lands only in repositories its project links. Nothing here assumes
-a single source or a single repository.
+Names are unique across the hub. `initiative:multi-tenancy` adds `tenant_id` to each table here and makes every
+uniqueness rule above `(tenant_id, …)`. Work sources and repositories stay tenant-wide records: `initiative:projects`
+lets a project link the ones it draws from and lands in, and a chunk then lands only in repositories its project links.
+Nothing here assumes a single source or a single repository.
 
 ## Seams
 

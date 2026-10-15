@@ -2,8 +2,8 @@
 
 ## The fields
 
-The repository record carries how work lands into it, where `epic:projects` left room for it: as further configured
-fields under the record's own verbs and revisions. `repositories` (`hub/store/schema.py`) gains:
+The repository record carries how work lands into it, where `initiative:projects` left room for it: as further
+configured fields under the record's own verbs and revisions. `repositories` (`hub/store/schema.py`) gains:
 
 ```text
 repositories
@@ -84,12 +84,12 @@ anything left to land.
 The check runs twice. **When a policy is set** — a repository created, its policy edited, or its forge changed —
 `ConfigAuthoring` checks the forge's `offered` capabilities against the policy's `requires` and refuses
 `422 forge_capability_missing`, naming each missing capability, the policy, and the forge, before anything is written.
-The configuration document's apply refuses the entry the same way. **When a visit resolves**, the forges slice's check
+The configuration document's apply refuses the entry the same way. **When a visit resolves**, the forges epic's check
 before a pass reads the action's requirements, which for `land` are no longer fixed: an action's requirements become
 `requires(repository: ResolvedRepository) -> frozenset[Capability]`, declared with its `ActionSpec` in the catalogue
 (`hub/domain/actions/catalogue.py`), and `land` answers its repository's policy's set. A policy whose forge stopped
 offering a capability since it was set therefore escalates `forge-capability-missing` to a person, naming it, as the
-forges slice escalates any missing capability. `record-findings` and `garden-deliver` still require nothing.
+forges epic escalates any missing capability. `record-findings` and `garden-deliver` still require nothing.
 
 Some refusals are not capabilities at all, and only the landing finds them. A base protected so that only a pull request
 may change it is a rule of the repository on its forge, not of the forge's kind, so setting `fast-forward` on it is

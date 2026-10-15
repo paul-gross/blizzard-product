@@ -1,4 +1,10 @@
-# Plan — `epic:chokepoint`, epic-dwf slice
+---
+epic: chokepoint/epic-dwf
+refinement: refined
+status: horizon
+---
+
+# Plan — `epic:chokepoint/epic-dwf`
 
 Every lane the fleet has today is built around one agent at a time. A chunk travels its graph node by node, and at each
 node a single session does the work, however large the work turns out to be. That suits the feature-sized change most
@@ -8,7 +14,7 @@ tech debt across the whole codebase. The work behind `epic:architectural-sweep` 
 thousands of lines because dozens of agents worked in parallel against one plan, and it was driven by hand from outside
 the fleet, because no graph blizzard ships could have carried it.
 
-This slice gives that work a lane of its own: a graph, `epic-dwf`, built for epic-level development. It sits beside
+This epic gives that work a lane of its own: a graph, `epic-dwf`, built for epic-level development. It sits beside
 `bas-dwf` and `adv-dwf` as the heaviest of the development workflows, and the work it is meant for comes in two shapes.
 
 The first is **epic-level development** — a change measured in twenty thousand lines or more, too large for one session
@@ -32,11 +38,11 @@ The swarm lives inside a single node. One session takes the chunk, reads the doc
 the swarm from there as a dynamic workflow — planning, fanning out, verifying, reviewing, and assembling the change
 without handing the chunk back to the graph until it is ready to land. That is how the architectural sweep was
 delivered, and the account its orchestrating session wrote afterwards,
-[Nine Sweeps, One Line](./artifacts/nine-sweeps-one-line.md), is this slice's reference. The node's prompt is molded
-from it, practice by practice: disposable agents that hand off before their context runs long, scripted moves kept apart
-from judgment so they can be replayed onto a base that moved, every new rule paired with a gate that enforces it and a
-cold evaluation that proves agents can find it, each reviewer paired with a skeptic told to refute it, and an itemized
-audit of every decision the human made, so that nothing quietly becomes a follow-up.
+[Nine Sweeps, One Line](./artifacts/nine-sweeps-one-line.md), is this epic's reference. The node's prompt is molded from
+it, practice by practice: disposable agents that hand off before their context runs long, scripted moves kept apart from
+judgment so they can be replayed onto a base that moved, every new rule paired with a gate that enforces it and a cold
+evaluation that proves agents can find it, each reviewer paired with a skeptic told to refute it, and an itemized audit
+of every decision the human made, so that nothing quietly becomes a follow-up.
 
 That changes the shape of the graph. The traditional lanes go back and forth by design: a plan bounces off its gate,
 review sends the build round again, and every station is a separate session so that its judgment stays independent of
@@ -64,8 +70,8 @@ runs.
 
 The node runs on a harness that can orchestrate a swarm of its own, and today that means Claude Code, whose dynamic
 workflows are what drove the architectural sweep. The requirement is the capability, not the vendor: the node declares
-that it needs a swarm-capable harness, and `milestone:polyglot` already lets a node choose its harness. When the slice
-is picked up, its first piece of work is research — whether Codex, OpenCode, or any other harness blizzard runs can now
+that it needs a swarm-capable harness, and `milestone:polyglot` already lets a node choose its harness. When the epic is
+picked up, its first piece of work is research — whether Codex, OpenCode, or any other harness blizzard runs can now
 orchestrate parallel agents inside one session, and well enough to carry a change this size.
 
 ## Open questions
@@ -75,5 +81,5 @@ orchestrate parallel agents inside one session, and well enough to carry a chang
   pauses the runner from claiming more work without stopping the session already running. A swarm spends its whole
   budget inside one node, over the better part of a day — the architectural sweep ran some four hundred and fifty agents
   — so neither control would interrupt it once it started. The lane needs a ceiling that reaches inside the node, set by
-  the operator before the swarm starts and honored while it runs. The agent observer of `epic:code-harness-window` is
-  what would let that ceiling see the spend at all.
+  the operator before the swarm starts and honored while it runs. The agent observer of `initiative:code-harness-window`
+  is what would let that ceiling see the spend at all.

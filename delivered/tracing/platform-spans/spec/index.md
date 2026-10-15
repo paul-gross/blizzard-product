@@ -1,8 +1,8 @@
 # Platform-spans specifications
 
-The technical contracts behind the platform-spans slice of `epic:tracing`. Product intent begins at the
-[slice plan](../index.md); implementation enters at the concern below. The step identity these spans nest under is owned
-by the fleet-spans [span contract](../../fleet-spans/spec/spans.md).
+The technical contracts behind `epic:tracing/platform-spans`. Product intent begins at the [slice plan](../index.md);
+implementation enters at the concern below. The step identity these spans nest under is owned by the fleet-spans
+[span contract](../../fleet-spans/spec/spans.md).
 
 | Where                                      | Read when                                                                                                                |
 | ------------------------------------------ | ------------------------------------------------------------------------------------------------------------------------ |

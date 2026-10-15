@@ -147,9 +147,9 @@ loading states follow `bzh:frontend-empty-state-gated`, and a change to any of t
 
 ## Fact egress
 
-Every `epic:fact-egress` row that belongs to a chunk — each `steps`, `invocations`, and `events` row, a `dropped` row
-included — gains `project_id`, and beside it `project_slug` and `project_name` as the project was known when the row was
-written, read from the chunk's project. The columns sit beside the tenant columns the multi-tenancy
+Every `initiative:fact-egress` row that belongs to a chunk — each `steps`, `invocations`, and `events` row, a `dropped`
+row included — gains `project_id`, and beside it `project_slug` and `project_name` as the project was known when the row
+was written, read from the chunk's project. The columns sit beside the tenant columns the multi-tenancy
 [store contract](../../../../delivered/multi-tenancy/hub/spec/store.md) §Fact egress adds. They are additive, so each
 dataset keeps its major version and the writer widens its `_schema` document in place, with the goldens and the data
 dictionary moving beside them (`docs/versioning.md`). A loader groups or filters by project from the rows alone, as it

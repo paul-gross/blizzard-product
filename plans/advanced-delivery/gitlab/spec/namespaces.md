@@ -14,7 +14,7 @@ segment, as now. `repo_identity` and `pointer_key` in the same module key by the
 
 Both functions run on the runner (`runner/lifecycle/judgement/git_commits.py`) as well as at the hub, so the runner and
 hub ship the change in one release ([carry-over.md](./carry-over.md#shipping)). A GitHub origin, whose namespace is its
-one owner, keys exactly as it does today, so no stored pointer or marker written before the slice changes meaning.
+one owner, keys exactly as it does today, so no stored pointer or marker written before the epic changes meaning.
 
 ## GitLab's web addresses
 

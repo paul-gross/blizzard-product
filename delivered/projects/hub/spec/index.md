@@ -3,7 +3,7 @@
 > **Shipped.** These contracts are frozen with the [hub slice](../index.md) they specify, aligned to what landed; the
 > code and `blizzard-context:/domain/projects.md` own the behavior from here.
 
-The technical contracts behind the hub slice of `epic:projects`. Product intent begins at the [slice plan](../index.md);
+The technical contracts behind `epic:projects/hub`. Product intent begins at the [slice plan](../index.md);
 implementation enters at the concern below. The tenant key, and the store seam that scopes every read to a tenant and
 narrows it to a project on request, are owned by the multi-tenancy
 [store contract](../../../../delivered/multi-tenancy/hub/spec/store.md). Work-source and repository records, their

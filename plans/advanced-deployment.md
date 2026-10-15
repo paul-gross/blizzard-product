@@ -1,9 +1,7 @@
 ---
 epic: advanced-deployment
 refinement: refined
-slices:
-  - name: full
-    status: horizon
+status: horizon
 ---
 
 # Plan — `epic:advanced-deployment`
@@ -49,7 +47,8 @@ whatever set the deploy in motion.
   - **Probe only.** Blizzard triggers nothing and waits for the environment to report the version: the pull-based
     updater, and any process blizzard cannot see into.
   - **GitOps.** Deploying is a version bump committed to a configuration repository, then a wait for the controller to
-    report synced and healthy. That commit is itself a landing, so it travels `epic:advanced-delivery`'s policy.
+    report synced and healthy. That commit is itself a landing, so it travels the landing policy
+    `epic:advanced-delivery/policies` builds.
   - **Script.** A declared deterministic command for the runbooks that have no pipeline, with an explicit statement of
     where it runs: some deploys can only be performed on one particular machine, and the hub never reaches into a
     runner's.
@@ -75,12 +74,12 @@ make a retried deploy skip what is already live. What is new is the declaration,
 exclusivity in place of the one slot a tenant shares, dependency ordering, evidence gathering, and scripts that execute
 on a runner.
 
-The foundation is shared with `epic:advanced-delivery`: a deploy is a step holding a named resource, an environment, and
-it lives in a flow over that environment rather than in each chunk's graph. Deployment is many chunks to one deploy —
-several landings ride one pipeline run, one chunk's deploy is carried by a later one's, and a rollback undoes every
-chunk it carried — so an environment flow consumes what a branch flow landed, and reports deployed or rolled back to
-every chunk it carried. A chunk's delivery has already ended at landing, so the deploy is recorded against it and never
-holds it open.
+The foundation is shared with `initiative:advanced-delivery`: a deploy is a step holding a named resource, an
+environment, and it lives in a flow over that environment rather than in each chunk's graph. Deployment is many chunks
+to one deploy — several landings ride one pipeline run, one chunk's deploy is carried by a later one's, and a rollback
+undoes every chunk it carried — so an environment flow consumes what a branch flow landed, and reports deployed or
+rolled back to every chunk it carried. A chunk's delivery has already ended at landing, so the deploy is recorded
+against it and never holds it open.
 
 ## Principles the design holds to
 
@@ -112,11 +111,11 @@ holds it open.
 - Whether promotion between environments is a declared chain inside one train, or a separate train per environment.
 - How a script that must run on a particular machine is routed to a runner that holds the right credentials, without the
   hub ever reaching into that machine.
-- Who declares the order repositories deploy in. `epic:projects` puts a deployment declaration on the tenant's
+- Who declares the order repositories deploy in. `initiative:projects` puts a deployment declaration on the tenant's
   repository record, while this plan speaks of the dependencies a project declared. A repository two projects link is
   deployed once, so dependencies declared per project need a rule for when two projects disagree, and dependencies
   declared per repository need a home that is neither project's.
-- How a flow runs the judgement it declares. `epic:advanced-delivery` settles that a flow is not a chunk, so it has none
-  of the agent sessions a chunk is given. It could mint an ordinary chunk on a judgement graph, which must then belong
-  to one project even when the deploy it judges carried work from two, or it could run a graph's session itself without
-  becoming a chunk.
+- How a flow runs the judgement it declares. `epic:advanced-delivery/flows` settles that a flow is not a chunk, so it
+  has none of the agent sessions a chunk is given. It could mint an ordinary chunk on a judgement graph, which must then
+  belong to one project even when the deploy it judges carried work from two, or it could run a graph's session itself
+  without becoming a chunk.

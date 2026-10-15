@@ -1,9 +1,7 @@
 ---
 epic: resilience
 refinement: scaffolded
-slices:
-  - name: full
-    status: horizon
+status: horizon
 ---
 
 # Plan — `epic:resilience`
@@ -24,7 +22,7 @@ to.
 - **Waiting that says so.** A fleet that is waiting looks different from a fleet that is idle. The operator who checks
   at six sees what the fleet is waiting on and since when, without reading a log.
 - **Falling back before waiting.** Where another route exists the fleet takes it: down the model tiers first, and across
-  coding harnesses once `epic:adapters` has given it a second one to fall back to.
+  coding harnesses once `initiative:adapters` has given it a second one to fall back to.
 - **A floor under the patience.** Waiting is bounded. An outage that outlasts the bound becomes one ordinary escalation
   about the outage, not one per chunk.
 

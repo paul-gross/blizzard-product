@@ -1,4 +1,10 @@
-# Plan — `epic:advanced-delivery`, trains slice
+---
+epic: advanced-delivery/trains
+refinement: refined
+status: horizon
+---
+
+# Plan — `epic:advanced-delivery/trains`
 
 When many agents finish at once, landing them one by one is a slow way to discover that their work was fine. Each
 landing moves the branch under every chunk still waiting. The forge brings each of those chunks up to the new base
@@ -7,14 +13,14 @@ on a branch grows faster than it drains. Most of what the fleet spends on it is 
 and a chunk that waits through enough of those runs is turned back to an agent by its node's poll timeout, though its
 work was right all along.
 
-This slice makes the flow on a branch a train. It combines the ready work, proves the combination once, and wakes an
+This epic makes the flow on a branch a train. It combines the ready work, proves the combination once, and wakes an
 agent only for a conflict no machine can settle or a failure the proof pins on one chunk. On a repository that batches,
 what reaches the branch is exactly the tree that was proven, so two changes that each passed alone cannot land a break
 together.
 
-| Where                    | Read when                                                              |
-| ------------------------ | ---------------------------------------------------------------------- |
-| [spec/](./spec/index.md) | Implementing any part of the slice or resolving its technical contract |
+| Where                    | Read when                                                             |
+| ------------------------ | --------------------------------------------------------------------- |
+| [spec/](./spec/index.md) | Implementing any part of the epic or resolving its technical contract |
 
 ## What to build
 
@@ -37,7 +43,7 @@ together.
   merge train is in force, or whether the base accepts a direct advance, is a fact the hub reads about one repository,
   not its whole forge, and a policy or a train that needs one is checked against the repository.
 - **Handing the line to the forge.** A repository whose forge runs its own merge queue — GitHub's merge queue, GitLab's
-  merge trains — may hand ordering to it, as a fourth policy beside the three the `policies` slice ships. The flow
+  merge trains — may hand ordering to it, as a fourth policy beside the three the `policies` epic ships. The flow
   submits each change to the forge's queue and reports the forge's verdict, so a shop that already lives on its forge's
   train keeps it. What that queue merges is the forge's promise, not the flow's.
 - **Ejecting what cannot join.** A chunk whose work conflicts with the base, or whose work the split found responsible
@@ -48,5 +54,5 @@ together.
 
 ## Left for later
 
-Keeping chunks likely to touch the same ground from running side by side is not this epic's. An operator's hand on a
-batch — abandoning one, or ejecting a member by choice — waits with the flows slice's levers on a branch.
+Keeping chunks likely to touch the same ground from running side by side is not this initiative's. An operator's hand on
+a batch — abandoning one, or ejecting a member by choice — waits with the flows epic's levers on a branch.

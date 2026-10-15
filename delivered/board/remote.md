@@ -1,9 +1,15 @@
-# Plan — `epic:board`, remote slice
+---
+epic: board/remote
+refinement: pristine
+status: delivered
+---
+
+# Plan — `epic:board/remote`
 
 The board already answers "where is everything?" — for anyone standing at the machine. This slice takes that answer
 wherever its people are: the same app, reachable from a phone on a Saturday, safe to expose because it finally knows who
-is looking at it. It is the human-facing spoke of [`milestone:centralized-hub`](../../../milestones.md), and it is one
-app throughout — going remote adds reach and roles to the board that exists, never a second board.
+is looking at it. It is the human-facing spoke of [`milestone:centralized-hub`](../../milestones.md), and it is one app
+throughout — going remote adds reach and roles to the board that exists, never a second board.
 
 ## What to build
 
@@ -23,8 +29,7 @@ app throughout — going remote adds reach and roles to the board that exists, n
 ## Artifacts
 
 The board's founding mockups — the concept round that settled the design language the remote slice keeps — live in the
-epic's [artifacts/](../artifacts/), described in the [local slice's plan](../local/index.md), the work they were drawn
-for.
+epic's [artifacts/](./artifacts/), described in the [local slice's plan](./local.md), the work they were drawn for.
 
 ## Open questions
 

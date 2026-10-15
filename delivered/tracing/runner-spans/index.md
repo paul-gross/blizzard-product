@@ -1,4 +1,10 @@
-# Plan — `epic:tracing`, runner-spans slice
+---
+epic: tracing/runner-spans
+refinement: pristine
+status: delivered
+---
+
+# Plan — `epic:tracing/runner-spans`
 
 The hub sees a node step from a distance. It knows when the runner said the attempt began and when the runner reported
 how it ended, and [fleet-spans](../fleet-spans/index.md) tells the step from exactly that. Everything between those two
@@ -39,7 +45,7 @@ same step, under two harnesses, side by side.
 
 **The runner's account, kept to the runner's facts.** This slice tells what the runner itself recorded, and it stops
 there. What the agent did inside an invocation — the files it read, the tools it called, the subagents it started —
-stays with whatever the harness reports about itself, as the [epic plan](../index.md) promises.
+stays with whatever the harness reports about itself, as the [epic plan](../initiative.md) promises.
 
 **Told the same way as the hub's.** The runner tells a step once it has closed, reading its own record forward from
 where it last stopped, beside its loop rather than in it. It shares the hub's discipline in full: off until an endpoint

@@ -1,9 +1,7 @@
 ---
 epic: runner-panel
 refinement: pristine
-slices:
-  - name: core
-    status: delivered
+status: delivered
 ---
 
 # Plan — `epic:runner-panel`

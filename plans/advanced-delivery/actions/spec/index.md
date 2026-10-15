@@ -1,15 +1,15 @@
 # Actions specifications
 
-The technical contracts behind the actions slice of `epic:advanced-delivery`. Product intent begins at the
-[slice plan](../index.md); implementation enters at the concern below. When a hub node is taken, how its outcome routes,
-pending and its poll, bounces, and landing only where a chunk's project links stay as `domain/artifacts/delivery.md` and
-`epic:projects`' [delivery contract](../../../../delivered/projects/hub/spec/delivery.md) define them. This spec
+The technical contracts behind `epic:advanced-delivery/actions`. Product intent begins at the [epic plan](../index.md);
+implementation enters at the concern below. When a hub node is taken, how its outcome routes, pending and its poll,
+bounces, and landing only where a chunk's project links stay as `domain/artifacts/delivery.md` and
+`initiative:projects`' [delivery contract](../../../../delivered/projects/hub/spec/delivery.md) define them. This spec
 replaces what a hub node runs, and changes two things about what follows it: the default poll timeout grows from thirty
 minutes to three hours, and an answer a node's graph does not route goes to a person at once.
 
 Paths are relative to `blizzard/src/blizzard/`.
 
-The slice reaches beyond `blizzard`'s source. In `blizzard-context`, `standards/hub-nodes/run-steps.md` becomes the rule
+The epic reaches beyond `blizzard`'s source. In `blizzard-context`, `standards/hub-nodes/run-steps.md` becomes the rule
 that a hub node names an action and routes every answer it can give, and `standards/hub-nodes/action-purity.md` is new,
 owning `bzh:hub-action-purity`. `standards/hub-nodes/env-contract.md` (`bzh:hub-node-env-contract`) is retired with the
 environment it governed, along with every citation of it in `architecture/system-shape/seam-positions.md` and

@@ -1,14 +1,14 @@
 # Carry-over
 
-An installation that predates this slice keeps landing as it did, without a chunk being restarted by hand. The slice
-ships in one release.
+An installation that predates this epic keeps landing as it did, without a chunk being restarted by hand. The epic ships
+in one release.
 
 ## The migration
 
-One manual migration (`bzh:manual-migrations`) under `hub/store/migrations/versions/`, revised after the actions
-slice's, frozen once released (`bzh:frozen-revisions`) and inside the portable surface (`bzh:sql-portable`), proven on
-Postgres as on SQLite (`tests/test_store_migrations.py`) with every constraint and index name inside Postgres's 63
-characters (`tests/test_postgres_identifier_length.py`). It:
+One manual migration (`bzh:manual-migrations`) under `hub/store/migrations/versions/`, revised after the actions epic's,
+frozen once released (`bzh:frozen-revisions`) and inside the portable surface (`bzh:sql-portable`), proven on Postgres
+as on SQLite (`tests/test_store_migrations.py`) with every constraint and index name inside Postgres's 63 characters
+(`tests/test_postgres_identifier_length.py`). It:
 
 1. Creates `flows`, `flow_submissions`, `flow_submission_flows`, `flow_submission_closures`, `hub_turns`, and
    `flow_facts`, with their indexes ([record.md](./record.md)).

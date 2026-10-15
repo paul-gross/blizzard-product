@@ -1,4 +1,10 @@
-# Plan — `epic:projects`, hub slice
+---
+epic: projects/hub
+refinement: pristine
+status: delivered
+---
+
+# Plan — `epic:projects/hub`
 
 > **Shipped.** This plan is frozen: it records what the projects hub slice was conceived to be, with its
 > [specification](./spec/index.md) aligned to what landed. `blizzard-context:/domain/projects.md` owns the behavior from
@@ -47,9 +53,9 @@ that tends it.
 - **Work lands only where its project was given.** A chunk may land only in repositories its project links. Its agents
   may commit wherever their workspace lets them, but the hub will not land a commit into a repository the project was
   not given: the step is refused before anything is pushed, naming the repository and the project. Landing itself
-  behaves as it does today. How a repository is landed into and deployed — `epic:advanced-delivery`'s landing policy,
-  `epic:advanced-deployment`'s deployment declaration — belongs to the repository, because it describes the repository
-  rather than any project that uses it.
+  behaves as it does today. How a repository is landed into and deployed — `initiative:advanced-delivery`'s landing
+  policy, `epic:advanced-deployment`'s deployment declaration — belongs to the repository, because it describes the
+  repository rather than any project that uses it.
 - **Runners serve what they declare.** A runner's registration records the projects it serves, and the hub offers it
   only chunks from those projects. A runner that declares nothing serves nothing, and the board says so rather than
   leaving its idleness to be puzzled out. A runner's declaration begins when it is added rather than when it first

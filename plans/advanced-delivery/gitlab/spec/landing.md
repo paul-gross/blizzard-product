@@ -12,8 +12,8 @@ GitHub one. What differs is what the forge offers and what it can say:
   `update_from_base`, which GitLab answers by rebasing ([The head gate](#the-head-gate)).
 - **`park`** finds a person's merge in the recently-closed listing, ordered by update, as on GitHub.
 - **`fast-forward`** needs `refs.advance`, which no GitLab repository offers. Setting it on a GitLab repository is
-  refused `422 forge_capability_missing` naming `refs.advance`, by the check the policies slice runs when a policy is
-  set or a repository's forge is changed, so a fast-forwarding repository cannot be moved onto a GitLab forge either.
+  refused `422 forge_capability_missing` naming `refs.advance`, by the check the policies epic runs when a policy is set
+  or a repository's forge is changed, so a fast-forwarding repository cannot be moved onto a GitLab forge either.
 
 ## The head gate
 
@@ -43,7 +43,7 @@ reached by a `blizzard:crash-sweep` scenario:
 
 ## What each policy proves on GitLab
 
-What the policies slice says each policy proves holds on GitLab
+What the policies epic says each policy proves holds on GitLab
 ([policies' landing.md](../../policies/spec/landing.md#what-each-policy-proves)). A GitLab project merging fast-forward
 or semi-linear refuses a merge request that is not up to date with its base, so there `merge-on-checks` merges only a
 change whose checks ran on the base it lands on, and the forge closes the gap that a merge-commit project leaves open. A
@@ -56,4 +56,4 @@ A chunk whose project links a GitHub repository and a GitLab one resolves each c
 every chunk does, and its visit holds both repositories' flows. `combine.py` folds the two repositories' states into one
 answer without knowing their kinds, and lands them in the project's order: neither until every repository the hub lands
 itself is ready, then one at a time, a landed repository standing should a later one refuse. The two writes are on two
-forges, so they are never one atomic act, and the chunk reconciles what remains as the policies slice says.
+forges, so they are never one atomic act, and the chunk reconciles what remains as the policies epic says.

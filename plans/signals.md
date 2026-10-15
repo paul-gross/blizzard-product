@@ -1,9 +1,7 @@
 ---
 epic: signals
 refinement: scaffolded
-slices:
-  - name: full
-    status: horizon
+status: horizon
 ---
 
 # Plan — `epic:signals`
@@ -17,7 +15,7 @@ and the item it raises is queued before morning.
 ## What to build
 
 - **An inbound endpoint, per project.** Configured per project, against a source that project links, which is why this
-  follows `epic:projects` rather than preceding it.
+  follows `initiative:projects` rather than preceding it.
 - **Signed requests.** A push surface on a hub that is reachable from the internet is only safe if the hub can tell who
   is pushing.
 - **Rate bounds per source.** A flapping alert must flood nothing. A source that exceeds its bound is throttled rather
@@ -33,9 +31,9 @@ and the item it raises is queued before morning.
   that a stranger should be trusted with.
 - How a repeating alert is recognized as the same alert, so a service that is down for an hour raises one item rather
   than sixty.
-- What an endpoint belongs to. `epic:projects` gives a project no sources and no secrets of its own: a work source and
-  the credentials it uses belong to the tenant, and a project only links them. An endpoint "per project" therefore has
-  to keep its signing secret on some tenant record — the source it raises items in, the project's link to that source,
-  or a signal record of its own — and the rate bound above is already stated per source.
+- What an endpoint belongs to. `initiative:projects` gives a project no sources and no secrets of its own: a work source
+  and the credentials it uses belong to the tenant, and a project only links them. An endpoint "per project" therefore
+  has to keep its signing secret on some tenant record — the source it raises items in, the project's link to that
+  source, or a signal record of its own — and the rate bound above is already stated per source.
 - How a push names its tenant and project. A push carries no session and no runner credential, so the endpoint's address
   or its signing secret has to settle both, without a tenant id that is meant to stay private appearing in a public URL.

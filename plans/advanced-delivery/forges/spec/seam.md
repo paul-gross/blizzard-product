@@ -32,11 +32,11 @@ operation names a forge, an owner, or a token. Every operation is `async`.
 | `checks(ref)`     | `Check` for each check on `ref`, a revision or a branch whose tip the forge reads |
 | `rerun_check(id)` | Whether the forge accepted the re-run                                             |
 
-Later slices grow these roles rather than adding a wide one: `advance_ref` and `merge_into` join `IForgeRefs` and
-`change_checks` joins `IForgeChecks` with the `policies` slice; `create_ref` and `delete_ref` join `IForgeRefs`,
-`close_change` joins `IForgeChanges`, and a fourth role, `IForgeQueue`, arrives with the `trains` slice. Each stays
-under twelve operations, and a consumer is typed against the roles it calls: `land` takes all three, the garden's commit
-check only `IForgeRefs`.
+Later epics grow these roles rather than adding a wide one: `advance_ref` and `merge_into` join `IForgeRefs` and
+`change_checks` joins `IForgeChecks` with the `policies` epic; `create_ref` and `delete_ref` join `IForgeRefs`,
+`close_change` joins `IForgeChanges`, and a fourth role, `IForgeQueue`, arrives with the `trains` epic. Each stays under
+twelve operations, and a consumer is typed against the roles it calls: `land` takes all three, the garden's commit check
+only `IForgeRefs`.
 
 ## What crosses the seam
 
@@ -140,8 +140,8 @@ its `method` names. Each adapter declares the capabilities it offers as a class 
 hands out check every call against `OPERATION_CAPABILITY` and the repository's offered set, so an operation whose
 capability is not offered is refused with `ForgeCapabilityMissing(capability)` before it reaches the adapter.
 
-`ForgeRegistry.offered(repository)` is the one place a caller asks what a repository's forge offers. In this slice it
-answers the kind's set; a capability that varies by server or by repository narrows it in the slice that introduces it,
+`ForgeRegistry.offered(repository)` is the one place a caller asks what a repository's forge offers. In this epic it
+answers the kind's set; a capability that varies by server or by repository narrows it in the epic that introduces it,
 so it answers for a repository rather than a kind from the start.
 
 ## The GitHub adapter

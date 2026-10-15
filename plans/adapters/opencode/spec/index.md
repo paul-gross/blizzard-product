@@ -1,7 +1,7 @@
 # Adapter specifications
 
-The technical contracts behind the OpenCode slice of `epic:adapters`. Product intent begins at the
-[slice plan](../index.md); implementation enters here and descends only to the concern it is changing.
+The technical contracts behind `epic:adapters/opencode`. Product intent begins at the [slice plan](../index.md);
+implementation enters here and descends only to the concern it is changing.
 
 | Where                                              | Read when                                                                                   |
 | -------------------------------------------------- | ------------------------------------------------------------------------------------------- |

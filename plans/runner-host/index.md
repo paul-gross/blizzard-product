@@ -1,9 +1,7 @@
 ---
 epic: runner-host
 refinement: pristine
-slices:
-  - name: full
-    status: in-progress
+status: in-progress
 ---
 
 # Plan — `epic:runner-host`

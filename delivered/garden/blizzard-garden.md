@@ -149,5 +149,5 @@ What a blizzard pass can act on arrives over time, and the table's last column t
 canon's mechanical shape checks (routing-hub integrity, the auto-load tax, oversized files, rules nothing cites), the
 mature `architecture/` rules, git history, and whatever retrospective material is locally reachable. Arriving with
 `epic:transcripts` and `epic:analytics`: the usage truth — which files are actually read, which skills actually fire.
-Arriving with `epic:mutation-testing`: measured test weight — a test that kills no mutants some other test doesn't also
-kill is dead weight by evidence, not judgment.
+Arriving with `initiative:mutation-testing`: measured test weight — a test that kills no mutants some other test doesn't
+also kill is dead weight by evidence, not judgment.

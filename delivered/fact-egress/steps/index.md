@@ -1,4 +1,10 @@
-# Plan — `epic:fact-egress`, steps slice
+---
+epic: fact-egress/steps
+refinement: pristine
+status: delivered
+---
+
+# Plan — `epic:fact-egress/steps`
 
 On a Monday morning the operator wants three numbers: what the fleet cost last week, which station cost the most, and
 whether either is moving. The hub can answer each of them, once. `blizzard hub analytics summary` adds up spend by node
@@ -34,10 +40,10 @@ has been added up. So each launch, resume and judgement gets a row of its own, w
 carrying the step it belongs to. This is the finest grain the hub knows about spending, and every step total can be
 rebuilt from it.
 
-**The same steps tracing tells.** [`epic:tracing`](../../../delivered/tracing/index.md) tells these steps as traces, and
-the two must never disagree about when a step ended or what it cost. Both read the step from one shared definition,
-built in the first tracing slice, and every row carries the trace id of its step. A spike in a chart is one click from
-the trace that explains it.
+**The same steps tracing tells.** [`initiative:tracing`](../../../delivered/tracing/index.md) tells these steps as
+traces, and the two must never disagree about when a step ended or what it cost. Both read the step from one shared
+definition, built in the first tracing slice, and every row carries the trace id of its step. A spike in a chart is one
+click from the trace that explains it.
 
 **A shape that holds still.** The columns are a published interface. They are versioned, documented column by column
 with what a null means and which values are possible, and changed only on a deprecation path, so a dashboard built in

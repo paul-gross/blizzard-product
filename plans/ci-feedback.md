@@ -1,9 +1,7 @@
 ---
 epic: ci-feedback
 refinement: scaffolded
-slices:
-  - name: full
-    status: horizon
+status: horizon
 ---
 
 # Plan — `epic:ci-feedback`

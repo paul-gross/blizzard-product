@@ -1,4 +1,10 @@
-# Plan — `epic:fact-egress`, events slice
+---
+epic: fact-egress/events
+refinement: pristine
+status: delivered
+---
+
+# Plan — `epic:fact-egress/events`
 
 The hub reads every transcript a worker leaves and turns it into a short list of what happened in it: each file read,
 each skill invoked, each agent spawned, attributed to the station and the subagent that did it. That list is the most
@@ -20,7 +26,7 @@ station by station, across two harnesses.
 subject — the path, the skill, the agent type — the tool that produced it, how deep in a subagent it happened and what
 kind of subagent that was, and the step, graph, node, harness and model it belongs to, by name. Every row carries its
 step's identity and trace id, so events join to the step rows the [steps slice](../steps/index.md) exports and to the
-traces [`epic:tracing`](../../../delivered/tracing/index.md) tells.
+traces [`initiative:tracing`](../../../delivered/tracing/index.md) tells.
 
 **A ledger that corrects itself.** Unlike the facts behind a step, these events are not written once. The hub derives
 them again whenever a transcript changes, an operator asks for it, or a better extractor ships, and the old rows vanish

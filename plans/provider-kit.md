@@ -1,9 +1,7 @@
 ---
 epic: provider-kit
 refinement: scaffolded
-slices:
-  - name: full
-    status: horizon
+status: horizon
 ---
 
 # Plan — `epic:provider-kit`

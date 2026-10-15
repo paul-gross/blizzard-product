@@ -1,9 +1,7 @@
 ---
 epic: ideation
 refinement: pristine
-slices:
-  - name: full
-    status: delivered
+status: delivered
 ---
 
 # Plan — `epic:ideation`
@@ -105,9 +103,8 @@ what the people described in `charter/personas.md` still cannot do. It needs not
 makes it the first routine to run: it proves the whole loop, from survey to a triaged proposal, before either data read
 exists.
 
-**`ideation:cost`** reads what the fleet spends against what it produces. The core slice of `epic:cost` landed with
-usage facts, budget caps, and model routing, so the numbers are all there; what nobody has done is ask them what to
-change.
+**`ideation:cost`** reads what the fleet spends against what it produces. `epic:cost/core` landed with usage facts,
+budget caps, and model routing, so the numbers are all there; what nobody has done is ask them what to change.
 
 One is deliberately absent. Architecture belongs to the garden, which already tends it by judging drift from the
 constraints `blizzard-context:/architecture/` declares. An ideation routine over the same ground would propose changing

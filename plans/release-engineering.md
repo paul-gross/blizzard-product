@@ -1,22 +1,16 @@
 ---
-epic: release-engineering
+initiative: release-engineering
 refinement: scaffolded
-slices:
-  - name: first-release
-    status: horizon
-  - name: compat-floor
-    status: horizon
-  - name: notes
-    status: horizon
-  - name: release-lines
-    status: horizon
-  - name: dark-launch
-    status: horizon
-  - name: supply-chain
-    status: horizon
+epics:
+  - first-release
+  - compat-floor
+  - notes
+  - release-lines
+  - dark-launch
+  - supply-chain
 ---
 
-# Plan — `epic:release-engineering`
+# Plan — `initiative:release-engineering`
 
 Today every merge to `master` is a release in all but name. The hosted hub pulls whatever `master` most recently proved,
 the runners beside it are rebuilt from `master` after every landing, and the only version tag blizzard has ever cut is a
@@ -31,9 +25,9 @@ architect with a fleet of their own wants to upgrade when they choose, read what
 pull it, and know which of their runners will still work against which hub. A stream of commits answers none of those
 questions; a release answers all three.
 
-This epic separates three events that are one today: **landing**, **releasing**, and **deploying**. `master` is where
-work comes together. A release is a deliberate, versioned cut, made on a weekly train, that carries its own notes and is
-held to the version rules. Every deployment, blizzard's own included, runs a release.
+This initiative separates three events that are one today: **landing**, **releasing**, and **deploying**. `master` is
+where work comes together. A release is a deliberate, versioned cut, made on a weekly train, that carries its own notes
+and is held to the version rules. Every deployment, blizzard's own included, runs a release.
 
 Much of the machinery already exists in the `blizzard` repo: a version scheme naming every surface a release can break,
 the breaking-change marker on commits, the hub↔runner wire check, a working downgrade for every store revision, and a
@@ -66,7 +60,7 @@ only add, and breaking changes gathered into two predictable dates a year.
 | Release   | What it may carry                                                                  | How often                                      |
 | --------- | ---------------------------------------------------------------------------------- | ---------------------------------------------- |
 | **Major** | the removals its cycle deprecated, and nothing else breaking that was not declared | twice a year, on dates published a cycle ahead |
-| **Minor** | new capability — slices landing, flags turned on, deprecations announced           | every week, on the release train               |
+| **Minor** | new capability — epics landing, flags turned on, deprecations announced            | every week, on the release train               |
 | **Patch** | fixes only, backported onto a released line                                        | as a fix needs, with no wait for the train     |
 
 Between majors, `master` only adds. In the weeks before a major, `master` opens for its removals: its candidates carry
@@ -186,7 +180,7 @@ far as the baseline.
 
 ## The procedures live in the harness
 
-None of the slices is finished when its mechanics work. Each is finished when an agent told to perform its operation by
+None of the epics is finished when its mechanics work. Each is finished when an agent told to perform its operation by
 name can find the procedure in `blizzard-context`, follow it, and prove the outcome, in the same way `bzh:release`
 already carries a tag from a green `master` to a confirmed release. The procedures belong under `workflows/` beside it,
 and the rules they lean on — what a patch may carry, what a change note must say — under `standards/` and
@@ -218,5 +212,5 @@ redeploying onto each release, and defers to these procedures rather than restat
 ## What this is not
 
 This is not `epic:advanced-deployment`, which gives an operator's own projects a declared way to deploy what they land.
-This epic is about how blizzard itself is released. The two meet at the dogfood instance: once declared deployment
+This initiative is about how blizzard itself is released. The two meet at the dogfood instance: once declared deployment
 exists, the instance's upgrades can travel it, deploying releases rather than landings.

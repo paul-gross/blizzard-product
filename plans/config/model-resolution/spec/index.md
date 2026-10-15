@@ -1,7 +1,7 @@
 # Model resolution specifications
 
-The technical contracts behind the model-resolution slice of `epic:config`. Product intent begins at the
-[slice plan](../index.md); implementation enters at the concern below. The worked configuration in
+The technical contracts behind `epic:config/model-resolution`. Product intent begins at the [epic plan](../index.md);
+implementation enters at the concern below. The worked configuration in
 [artifacts/](../../artifacts/model-resolution.txt) is the running example both leaves refer to.
 
 | Where                            | Read when                                                                                                  |

@@ -1,4 +1,10 @@
-# Plan — `epic:adapters`, OpenCode slice
+---
+epic: adapters/opencode
+refinement: pristine
+status: delivered
+---
+
+# Plan — `epic:adapters/opencode`
 
 OpenCode is the second harness behind the adapter seam, and the first that proves the seam is real. The immediate
 proving case is ChatGPT 5.6 Luna at `max` effort through OpenCode, where early use shows the appetite of a practical

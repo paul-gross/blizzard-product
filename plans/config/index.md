@@ -1,51 +1,11 @@
----
-epic: config
-refinement: scaffolded
-slices:
-  - name: model-resolution
-    status: horizon
-    plan: ./model-resolution/index.md
-  - name: sweep
-    status: horizon
----
+# Config
 
-# Plan — `epic:config`
+The configuration surface: every operational constant as configuration, so a run can be tuned and compared one variable
+at a time.
 
-A young platform is full of numbers somebody chose once. How long a lease lives, how many times a node retries before
-escalating, how long the reconciler sleeps between sweeps — each was settled during a build by someone who was not
-running this fleet, on this machine, against this repository. They are usually close enough to right, and when one is
-wrong it is wrong in code, costing a change, a review, and a release.
-[`persona:harness-engineer`](../../charter/personas/harness-engineer.md) feels this most sharply, because their whole
-craft is comparison: run the same chunk twice with one variable moved and see what it cost. A constant they cannot reach
-is a question they cannot ask. This is a survey-then-sweep effort rather than a large build.
-
-One corner of that surface is answered early, because there the answer decides what a night costs: which model a session
-actually runs on. The epic lands in two slices:
-
-| Slice                                           | What it builds                                                                                                                    |
-| ----------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------- |
-| [model-resolution](./model-resolution/index.md) | A read-only runner command that shows how each tier, effort, and session pool resolves to a model, and which layer supplied each. |
-| sweep                                           | The inventory and promotion of every other operational constant, under one resolution order — the rest of this plan.              |
-
-The epic's worked samples live in [artifacts/](./artifacts/model-resolution.txt): the model-resolution command's
-terminal and JSON output, on one illustrative runner.
-
-## What to build
-
-- **The inventory.** A deliberate sweep for operational constants across hub, runner, and graph execution, each one
-  named and located. The sweep is the work; the plumbing after it is mechanical.
-- **Every constant promoted.** Each becomes configuration with the current value as its declared default and a written
-  account of what moving it does, so a reader can tell a tuning knob from a load-bearing invariant.
-- **One resolution order.** Where a value may be stated in more than one place, the precedence is declared once and
-  holds everywhere, so the answer to "what is this fleet actually running with" is a lookup rather than an
-  investigation.
-- **The comparable run.** The harness engineer changes one constant, runs the same chunk again, and can attribute the
-  difference — which means the values a run used are recoverable after the fact, not only before it.
-
-## Open questions
-
-- Which constants belong to the hub, which to the runner, and which to a graph node — and the few that must stay fixed
-  because correctness rests on them.
-- Whether the resolved configuration of a run is recorded as a fact, which is what makes comparison across nights
-  trustworthy and is also a new row on every run.
-- How far the sweep reaches into the harness adapters, whose own knobs are not blizzard's to redefine.
+| Where                                            | Read when                                                                                                           |
+| ------------------------------------------------ | ------------------------------------------------------------------------------------------------------------------- |
+| [initiative.md](./initiative.md)                 | Reading the initiative's intent — why the surface needs opening, and why it is cut into these epics                 |
+| [model-resolution/](./model-resolution/index.md) | Planning or building `epic:config/model-resolution` — the read-only command that shows what model a session runs on |
+| [sweep.md](./sweep.md)                           | Planning or building `epic:config/sweep` — the inventory and promotion of every other operational constant          |
+| [artifacts/](./artifacts/model-resolution.txt)   | Seeing the model-resolution command's worked terminal and JSON output                                               |

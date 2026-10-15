@@ -1,4 +1,10 @@
-# Plan — `epic:hub`, distribution slice
+---
+epic: hub/distribution
+refinement: pristine
+status: delivered
+---
+
+# Plan — `epic:hub/distribution`
 
 Today, running a hub means being the person who built it: fetch a wheel from a release, arrange a Python environment,
 copy a systemd unit out of the repo. This slice turns the hub into something a stranger can run — one public container
@@ -17,8 +23,8 @@ environment-variable indirection, never by config value, which is exactly the po
 
 The runner is deliberately absent from this plan. A runner lives on a developer's machine, among that machine's
 worktrees, toolchains, and coding-harness credentials — the things a container exists to exclude. It installs as a
-package where a development environment already is; putting the *workers* in containers is the worker-lockdown slice of
-`epic:security`, a different promise (isolation) than the one made here (distribution).
+package where a development environment already is; putting the *workers* in containers is
+`epic:security/worker-security`, a different promise (isolation) than the one made here (distribution).
 
 ## What to build
 

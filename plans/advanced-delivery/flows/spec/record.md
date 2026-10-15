@@ -93,9 +93,9 @@ and how it ended, each landing and the revision it left, and each withdrawal and
 to every flow it holds, so each flow's record stands alone.
 
 A `landed` fact is written when a turn persists a `merged/<repo>` marker for the flow's repository. Under the actions
-slice an action records that marker through its `IEffectSink` and the driver writes it through
+epic an action records that marker through its `IEffectSink` and the driver writes it through
 `HubNodeExecutor.record_marker`, which today writes the marker (`record_hub_artifact`) and then, in a second
-transaction, its `delivery_repo_landed` row. This slice makes the four writes one transaction: the marker, the
+transaction, its `delivery_repo_landed` row. This epic makes the four writes one transaction: the marker, the
 `delivery_repo_landed` row, the `landed` fact on that repository's flow with the marker's revision, and the
 `flow-landed` event row ([below](#the-landed-event)). A crash can therefore never leave a landing marked but
 unannounced, and a replay that finds the marker written finds the rest written with it.
@@ -109,11 +109,11 @@ marker a submitted visit writes names one flow.
 
 ## The landed event
 
-A `landed` fact is the event the epic joins delivery to whatever follows it by. Its write records an `event_log` row of
-the new kind `flow-landed`, severity info, with `detail`
+A `landed` fact is the event the initiative joins delivery to whatever follows it by. Its write records an `event_log`
+row of the new kind `flow-landed`, severity info, with `detail`
 `{flow_id, resource, repository_id, branch, revision, chunk_id, project_id}`, in the landing's own transaction, and
 publishes it live through the broker once that transaction commits. `project_id` is the chunk's project, so a listener
-knows whose work landed without reading the chunk. Nothing in this slice reacts to the event beyond the board.
+knows whose work landed without reading the chunk. Nothing in this epic reacts to the event beyond the board.
 
 `EventLogKind` and `EVENT_LOG_SEVERITY` (`foundation/event_log.py`) gain `flow-landed` (info) and `turn-interrupted`
 (warning, [turns.md](./turns.md#a-turn-that-cannot-end)); `tests/event_log_kind_census.py` gains both, and

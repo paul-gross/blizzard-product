@@ -1,4 +1,10 @@
-# Plan — `epic:board`, chunk-detail slice
+---
+epic: board/chunk-detail
+refinement: pristine
+status: delivered
+---
+
+# Plan — `epic:board/chunk-detail`
 
 A chunk's artifact store is where the fleet's real output accumulates — plans, diffstats, review findings, pinned
 commits — and the board currently pours all of it, verbatim, into a small dock panel. A findings transcript hundreds of
@@ -20,6 +26,6 @@ surface is wrong: long-form artifact text needs a page, not a panel.
 
 ## Artifacts
 
-| Mockup                                                        | What it explores                                                                                                                           |
-| ------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------ |
-| [chunk-detail-page.html](../artifacts/chunk-detail-page.html) | The page: General/Artifacts tabs, the artifact nav beside the full-text viewer, and the dock's compact link row that replaces inline text. |
+| Mockup                                                       | What it explores                                                                                                                           |
+| ------------------------------------------------------------ | ------------------------------------------------------------------------------------------------------------------------------------------ |
+| [chunk-detail-page.html](./artifacts/chunk-detail-page.html) | The page: General/Artifacts tabs, the artifact nav beside the full-text viewer, and the dock's compact link row that replaces inline text. |

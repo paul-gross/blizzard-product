@@ -1,22 +1,10 @@
----
-epic: ask-answer
-refinement: pristine
-slices:
-  - name: hub
-    status: delivered
-    plan: ./hub.md
-  - name: remote
-    status: delivered
-    plan: ./remote.md
----
+# Ask-answer
 
-# Plan — `epic:ask-answer`
+Ask-and-exit — an agent asks a human a question without dying for it — built as a hub protocol, then closed for a person
+answering away from the machine. Each epic is frozen as it shipped.
 
-An agent facing an undecidable choice asks a human a question **without dying for it**. Every fleet eventually meets the
-moment where the spec runs out, and the naive answers are all bad: block and burn a live process for hours, guess and be
-wrong, or fail and throw the work away. Ask-and-exit is the fourth way: the worker asks, ends its turn, and the chunk
-parks — dormant, not dead — until the answer arrives and the session is resumed around it.
-
-The [hub slice](./hub.md) built the protocol: durable questions at the hub, the parked chunk, resume-with-answer, and
-first-write-wins arbitration. The [remote slice](./remote.md) closed the exchange for a person answering away from the
-machine, so the answer's return trip — delivered, and the agent back at work — is something any surface can show.
+| Where                            | Read when                                                                                     |
+| -------------------------------- | --------------------------------------------------------------------------------------------- |
+| [initiative.md](./initiative.md) | Reasoning about ask-and-exit as a whole and the order its epics landed                        |
+| [hub.md](./hub.md)               | Looking up the protocol: durable questions, the parked chunk, resume-with-answer, arbitration |
+| [remote.md](./remote.md)         | Looking up the closed answer loop — delivery and resumption visible on any surface            |

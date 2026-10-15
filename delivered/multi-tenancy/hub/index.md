@@ -1,4 +1,10 @@
-# Plan — `epic:multi-tenancy`, hub slice
+---
+epic: multi-tenancy/hub
+refinement: pristine
+status: delivered
+---
+
+# Plan — `epic:multi-tenancy/hub`
 
 > **Shipped.** This plan is frozen: it records what tenancy's hub slice was conceived to be, with its
 > [specification](./spec/index.md) aligned to what landed. `blizzard-context:/domain/tenancy.md` owns the behavior from

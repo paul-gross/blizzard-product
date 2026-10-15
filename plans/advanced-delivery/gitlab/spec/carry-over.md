@@ -2,11 +2,11 @@
 
 ## Shipping
 
-The slice adds no table and no column, so it carries no migration: a GitLab forge is a forge record of a new kind, and a
-GitLab repository a repository record whose owner may hold a path. An installation that predates the slice lands as it
+The epic adds no table and no column, so it carries no migration: a GitLab forge is a forge record of a new kind, and a
+GitLab repository a repository record whose owner may hold a path. An installation that predates the epic lands as it
 did, since every forge it has is GitHub and no GitHub origin keys differently ([namespaces.md](./namespaces.md)).
 
-`repo_identity` and `pointer_key` change on the runner as well as at the hub, so the slice ships the runner and hub in
+`repo_identity` and `pointer_key` change on the runner as well as at the hub, so the epic ships the runner and hub in
 one release. A GitHub origin keys as before on either side, so a runner a release behind its hub keeps working for every
 GitHub repository; only a GitLab repository in a nested group needs both sides at this release.
 
@@ -16,8 +16,8 @@ GitHub repository; only a GitLab repository in a nested group needs both sides a
 the same git repositories its GitHub face serves, so one mock instance hosts both kinds and a chunk can span them. Its
 levers cover what the proofs need — `need_rebase`, a rebase that conflicts, a failing pipeline, a merged-results
 pipeline that runs on a merge ref, a retried job, a merge request passing through `locked`, a server reporting a version
-below the minimum — and its answers carry GitLab's `RateLimit-*` headers, with the lever the policies slice's GitHub
-face already has for setting the remaining and the reset.
+below the minimum — and its answers carry GitLab's `RateLimit-*` headers, with the lever the policies epic's GitHub face
+already has for setting the remaining and the reset.
 
 ## The contract suite
 
@@ -32,8 +32,8 @@ verifiability matrix and owed by any change to the GitLab adapter.
 
 Each proof runs against the mock forge's GitLab face, and the GitLab scenarios also run in the contract suite.
 
-- **Unchanged by default.** A fixture store captured before the slice carries over, and every GitHub chunk lands with
-  the outcomes and markers it would have before.
+- **Unchanged by default.** A fixture store captured before the epic carries over, and every GitHub chunk lands with the
+  outcomes and markers it would have before.
 - **A GitLab forge.** A GitLab forge is declared, a repository on it created, and `fast-forward` refused on it naming
   `refs.advance`; a server below 15.6 is refused `forge_version_unsupported` at its first call and the visit escalated
   `forge-config`.
@@ -44,9 +44,9 @@ Each proof runs against the mock forge's GitLab face, and the GitLab scenarios a
   requested, and a person's push after the rebase do not. The crash point between the marker and the request is reached
   by the kill-9 sweep, and the next pass requests the rebase again.
 - **Nested groups.** Two projects named alike in two groups on one server are two repositories, each landing its own
-  chunk, and a GitHub origin's pointer key is the one it had before the slice.
+  chunk, and a GitHub origin's pointer key is the one it had before the epic.
 - **Across kinds.** A chunk spanning a GitHub repository and a GitLab one lands both in its project's order; with the
   GitLab repository parked, the GitHub one ranked after it waits for the person's merge.
 - **Budget.** With the GitLab face's rate lever lowering the remaining, a GitLab key slows rather than fails, and
   `forge-rate-limited` is recorded at most once an hour for it.
-- **Invariants.** Every invariant the earlier slices declared passes after every scenario above.
+- **Invariants.** Every invariant the earlier epics declared passes after every scenario above.

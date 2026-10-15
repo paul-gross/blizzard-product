@@ -1,9 +1,8 @@
 # Events specifications
 
-The technical contracts behind the events slice of `epic:fact-egress`. Product intent begins at the
-[slice plan](../index.md); implementation enters at the concern below. The exporter this slice adds a dataset to — its
-sweep, directory, formats, delivery and operator surface — is owned by the steps slice's
-[export contract](../../steps/spec/export.md).
+The technical contracts behind `epic:fact-egress/events`. Product intent begins at the [slice plan](../index.md);
+implementation enters at the concern below. The exporter this slice adds a dataset to — its sweep, directory, formats,
+delivery and operator surface — is owned by the steps slice's [export contract](../../steps/spec/export.md).
 
 | Where                    | Read when                                                                                               |
 | ------------------------ | ------------------------------------------------------------------------------------------------------- |

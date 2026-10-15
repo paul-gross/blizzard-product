@@ -8,7 +8,7 @@ pass's one answer. The package is `hub/delivery/actions/landing/`:
 
 - `policy.py` — `ILandingPolicy`, with `requires`, `uses`, and `step(repo: RepoLanding) -> RepoState`, and `POLICIES`,
   keyed by `LandingPolicy`.
-- `merge_on_checks.py` — the `land` action's stages as the forges slice left them, with its one costly lookup made cheap
+- `merge_on_checks.py` — the `land` action's stages as the forges epic left them, with its one costly lookup made cheap
   ([The cost of a pass](./budget.md#the-cost-of-a-pass)).
 - `fast_forward.py` and `park.py` — the two new policies.
 - `checks.py` and `head_gate.py` — `Verdict`, its inherited-failure rule and one-time re-run, and `gate_head` with
@@ -104,7 +104,7 @@ in by the forge without a further run, unless the repository's forge itself requ
 merges — GitHub's "require branches to be up to date" — which closes that gap on the forge's side. `park` lands whatever
 a person merged, and proves nothing on their behalf. The order a chunk's repositories land in does not prove their
 combination either: a consumer waiting behind its parked library lands on checks that ran against the library as it was.
-Proving the combination whatever the policy is the `trains` slice's.
+Proving the combination whatever the policy is the `trains` epic's.
 
 ## Combining a chunk's repositories
 
@@ -119,7 +119,7 @@ slug ([record.md](./record.md#the-order-a-chunks-repositories-land-in)) — and 
    the pass answers `pending`. This is the chunk atomicity `land_pr_ci` has today, kept for every policy the hub lands
    itself.
 4. **Then one at a time, in order.** Once every repository that is not parked is prepared — `Ready` or `Landed` here,
-   joined by any state a later slice counts as prepared — the pass walks the order and takes each `Ready` repository's
+   joined by any state a later epic counts as prepared — the pass walks the order and takes each `Ready` repository's
    `land` once every repository before it has landed, handing on `merged/<repo>` after each. A `land` that fails as a
    stale write answers `pending`, and those already landed stay landed.
 5. **A parked change waits its turn.** A parked repository opens its change only once every repository before it in the
@@ -138,8 +138,7 @@ lands only what is left.
 
 Three of a landing's outcomes are not an agent's to fix, so `land` answers them with an escalation rather than a
 verdict, and the driver records it with its cause in `EscalationCause` (`foundation/escalation_causes.py`), beside the
-actions slice's `unroutable-outcome` and the forges slice's `forge-auth`, `forge-config`, and
-`forge-capability-missing`:
+actions epic's `unroutable-outcome` and the forges epic's `forge-auth`, `forge-config`, and `forge-capability-missing`:
 
 | Cause            | Raised when                                                                     | A person resolves it by                                      |
 | ---------------- | ------------------------------------------------------------------------------- | ------------------------------------------------------------ |
@@ -151,8 +150,8 @@ actions slice's `unroutable-outcome` and the forges slice's `forge-auth`, `forge
 
 An escalation is not a verdict. The chunk becomes `needs_human` and the escalation opens the node's next epoch, as every
 hub-node escalation does; its submission keeps its place on its flows and is passed over while it waits. Requeuing it
-releases its runner's lease as requeue does today and supersedes that submission, and the flows slice's reconcile
-submits the chunk again at the back of each line. Stopping it withdraws the submission as any stop does.
+releases its runner's lease as requeue does today and supersedes that submission, and the flows epic's reconcile submits
+the chunk again at the back of each line. Stopping it withdraws the submission as any stop does.
 
 ## Awaiting a merge
 
@@ -164,9 +163,9 @@ its place on its flows and is ineligible until its next poll is due, exactly as 
 ([flows' turns](../../flows/spec/turns.md#pending)).
 
 It differs from `pending` in its clock. `hub_node_poll` gains `kind`, a string column naming the wait the row records —
-`pending` or, from this slice, `awaiting-merge`, with further wait kinds joining it as later slices need them — written
-by the driver as it records the pass's answer, and the flows slice's eligibility reads the newest row's `kind` to know
-which interval applies:
+`pending` or, from this epic, `awaiting-merge`, with further wait kinds joining it as later epics need them — written by
+the driver as it records the pass's answer, and the flows epic's eligibility reads the newest row's `kind` to know which
+interval applies:
 
 - **Its poll is slower.** The next poll is due after the node's `poll_interval` or `PARK_POLL_FLOOR`, two minutes,
   whichever is longer, so a parked change is read at most every two minutes however eager its graph.
@@ -183,7 +182,7 @@ agents until it lands, is escalated and requeued, or is stopped. The park timeou
 
 The chunk is `delivering` throughout, and its card shows the change and "Awaiting your merge" from the markers above.
 Its places on its flows read `awaiting-merge` ([surfaces.md](./surfaces.md#the-board-and-the-flow-lanes)). A person
-asking for changes on a parked change rather than merging it is not something this slice listens for: the change waits,
+asking for changes on a parked change rather than merging it is not something this epic listens for: the change waits,
 and the park timeout is what brings it back to a person's attention.
 
 ## Crash points

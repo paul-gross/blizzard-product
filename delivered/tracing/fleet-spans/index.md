@@ -1,4 +1,10 @@
-# Plan — `epic:tracing`, fleet-spans slice
+---
+epic: tracing/fleet-spans
+refinement: pristine
+status: delivered
+---
+
+# Plan — `epic:tracing/fleet-spans`
 
 The morning after a chunk took six hours, the operator wants to walk the night the way they would walk a slow request:
 open the trace, see the long bar, and click into it. Today they cannot. The hub knows the answer — it recorded when the
@@ -8,9 +14,9 @@ somebody writes for one chunk and throws away.
 
 This slice gives the hub its exit. Every node step a chunk takes becomes a trace, built from the facts the hub already
 holds and sent to whatever observability backend the operator has pointed it at. It covers the whole fleet layer the
-[epic plan](../index.md) names — the step, the wait before it, the gate, the ask, the hub's own delivery, the bounce —
-using only what reaches the hub. What the runner alone saw, each harness invocation inside a step, comes in a later
-slice.
+[epic plan](../initiative.md) names — the step, the wait before it, the gate, the ask, the hub's own delivery, the
+bounce — using only what reaches the hub. What the runner alone saw, each harness invocation inside a step, comes in a
+later slice.
 
 | Where                    | Read when                                                              |
 | ------------------------ | ---------------------------------------------------------------------- |

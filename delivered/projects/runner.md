@@ -1,4 +1,10 @@
-# Plan — `epic:projects`, runner slice
+---
+epic: projects/runner
+refinement: pristine
+status: delivered
+---
+
+# Plan — `epic:projects/runner`
 
 > **Shipped.** This plan is frozen: it records what the projects runner slice was conceived to be.
 > `blizzard-context:/domain/projects.md` owns the behavior from here, and [milestones.md](../../milestones.md) records

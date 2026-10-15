@@ -59,7 +59,7 @@ The hub enforces it: a host is created in one tenant, every runner it adds is bo
 of another ([hub.md](./hub.md) §Operator verbs). Once the host is registered, the store's `host_identity` row records
 the host id and tenant the hub first answered with, and never changes after; an unregistered host holds one runner,
 whose own tenant is the host's. Each runner's own tenant check is unchanged
-([multi-tenancy runner slice](../../../delivered/multi-tenancy/runner.md)); a runner whose answered tenant differs from
+([`epic:multi-tenancy/runner`](../../../delivered/multi-tenancy/runner.md)); a runner whose answered tenant differs from
 the host's refuses to work through the gate an identity mismatch uses (`runner/hub/verified.py:37`). The row is never
 edited: a host moves to another tenant only by its operator retiring it, archiving its store, and adding a new one. The
 one path that sets it aside is a throwaway environment's re-add (§CLI, `--allow-readd`), which starts the host over

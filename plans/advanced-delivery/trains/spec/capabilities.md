@@ -2,7 +2,7 @@
 
 ## What a repository's forge has in force
 
-Until this slice a repository's capabilities are its forge kind's. Some are not: whether GitHub runs a merge queue on a
+Until this epic a repository's capabilities are its forge kind's. Some are not: whether GitHub runs a merge queue on a
 branch, or GitLab merge trains on a project, is set on the forge for one repository and not its neighbour, and a base
 branch that only pull requests may change cannot be advanced directly however capable the kind. So a capability is now
 one of two sorts, declared beside the closed capability set in `hub/forge/landing.py`:
@@ -31,7 +31,7 @@ protected is remembered on the probe as `advance_refused_at`, and leaves `refs.a
 scheduled probes follow, until an operator takes one on demand — the act that says the base's protection has changed. A
 train refused once therefore never loops into the same refusal.
 
-`ForgeRegistry.offered(repository)` — the one place a caller asks, as the forges slice made it — answers the kind's
+`ForgeRegistry.offered(repository)` — the one place a caller asks, as the forges epic made it — answers the kind's
 capabilities, narrowed by the repository's last probe. A probe is taken when a repository is created, when its policy,
 its batching, or its forge changes, and whenever its cached answer is older than ten minutes at the moment a visit's
 capability check asks. A probe the forge cannot answer — a 5xx, a timeout, a rate limit — changes nothing: the last
@@ -42,7 +42,7 @@ because the forge blinked. `GET /api/repositories/{repository}` carries the last
 
 ## New seam operations
 
-The flow's own train builds and cleans up its branches with `create_ref` and `delete_ref`, which the `policies` slice
+The flow's own train builds and cleans up its branches with `create_ref` and `delete_ref`, which the `policies` epic
 adds to `IForgeRefs` for fast-forward's landing branch. It needs one more write, joining the role its kind of work
 belongs to:
 
@@ -50,7 +50,7 @@ belongs to:
 | ------------------------------- | --------------- | --------------- | ---------------------------------------------- |
 | `close_change(number, comment)` | `IForgeChanges` | `changes.close` | `PATCH /repos/{o}/{r}/pulls/{n}` and a comment |
 
-It is async, as every role's operation is, and answers through the forges slice's retry policy. GitHub offers it. GitLab
+It is async, as every role's operation is, and answers through the forges epic's retry policy. GitHub offers it. GitLab
 offers `changes.close` alone of the writes a train needs; with neither `branches.merge` nor `refs.advance` it cannot
 host the flow's own train, and its repositories hand their line to GitLab's merge train instead
 ([queue.md](./queue.md)). The queue's own role is `queue.md`'s.
@@ -58,11 +58,11 @@ host the flow's own train, and its repositories hand their line to GitLab's merg
 ## The batching settings
 
 `repositories` gains how its flow batches, as configured fields under the record's verbs and revisions, beside the
-policy the policies slice added:
+policy the policies epic added:
 
 ```text
 repositories
-  batch_size            Integer  NOT NULL   1 to 20; 1 lands each submission alone, as the flows slice does
+  batch_size            Integer  NOT NULL   1 to 20; 1 lands each submission alone, as the flows epic does
   batch_wait_seconds    Integer  NOT NULL   how long the oldest ready submission waits for others; 60 by default
   train_prefix          String   NOT NULL   the branch prefix trains are proven under; blizzard-train/ by default
   staging_prefix        String   NOT NULL   the branch prefix trains are assembled under; blizzard-staging/ by default

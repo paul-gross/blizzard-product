@@ -1,17 +1,16 @@
 # Trains specifications
 
-The technical contracts behind the trains slice of `epic:advanced-delivery`. Product intent begins at the
-[slice plan](../index.md); implementation enters at the concern below. The flow, its submissions, its turns, its record,
-and how a verdict reaches a chunk are owned by the [flows slice](../../flows/spec/index.md); the forge roles, the
-registry that hands them out, and the capabilities by the [forges slice](../../forges/spec/index.md); and the
-repository's policy, the order a project lands its repositories in, the reserved waits, and the rate budget by the
-[policies slice](../../policies/spec/index.md); and the GitLab adapter, its vocabulary, and the mock's GitLab face by
-the [gitlab slice](../../gitlab/spec/index.md). This spec teaches a flow to land many submissions at once, and to hand
-its line to a forge that keeps one of its own.
+The technical contracts behind `epic:advanced-delivery/trains`. Product intent begins at the [epic plan](../index.md);
+implementation enters at the concern below. The flow, its submissions, its turns, its record, and how a verdict reaches
+a chunk are owned by the [flows epic](../../flows/spec/index.md); the forge roles, the registry that hands them out, and
+the capabilities by the [forges epic](../../forges/spec/index.md); and the repository's policy, the order a project
+lands its repositories in, the reserved waits, and the rate budget by the [policies epic](../../policies/spec/index.md);
+and the GitLab adapter, its vocabulary, and the mock's GitLab face by the [gitlab epic](../../gitlab/spec/index.md).
+This spec teaches a flow to land many submissions at once, and to hand its line to a forge that keeps one of its own.
 
 This spec assumes the [actions](../../actions/spec/index.md), [forges](../../forges/spec/index.md),
 [flows](../../flows/spec/index.md), [policies](../../policies/spec/index.md), and [gitlab](../../gitlab/spec/index.md)
-slices have landed: an action is pure under `bzh:hub-action-purity`, receiving a frozen input and handing its effects to
+epics have landed: an action is pure under `bzh:hub-action-purity`, receiving a frozen input and handing its effects to
 an `IEffectSink` the driver persists; `land` runs each repository's policy a pass at a time; every forge is spoken
 through the async roles `ForgeRegistry` hands out — `IForgeRefs`, including `merge_into` and the compare-and-swap
 `advance_ref`, `IForgeChanges`, and `IForgeChecks`; GitHub and GitLab both sit behind those roles, so a GitLab project's
@@ -20,7 +19,7 @@ turns, one at a time, in arrival order.
 
 Paths are relative to `blizzard/src/blizzard/`.
 
-The slice reaches beyond `blizzard`'s source. In `blizzard-context`, `domain/artifacts/delivery.md` says a branch's flow
+The epic reaches beyond `blizzard`'s source. In `blizzard-context`, `domain/artifacts/delivery.md` says a branch's flow
 may land a batch, that on a batching repository the revision landed is the revision proven, and that a chunk is ejected
 rather than rebased by an agent when it cannot join; `domain/operations.md` gains the event kinds in
 [record.md](./record.md); `architecture/crash-correctness/hub.md` gains the train's crash points

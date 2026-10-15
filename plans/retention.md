@@ -1,9 +1,7 @@
 ---
 epic: retention
 refinement: scaffolded
-slices:
-  - name: full
-    status: horizon
+status: horizon
 ---
 
 # Plan — `epic:retention`
@@ -24,8 +22,8 @@ after there are years of facts to move.
   lying.
 - **The sweep as ordinary work.** Expiry runs on a schedule rather than on a boot, riding the cadence machinery
   `epic:cadence` builds instead of growing a timer of its own.
-- **Export before drop.** `epic:fact-egress` decides what has already left the building; nothing is dropped that the
-  operator asked to keep and has not yet been handed.
+- **Export before drop.** `initiative:fact-egress` decides what has already left the building; nothing is dropped that
+  the operator asked to keep and has not yet been handed.
 
 ## Open questions
 

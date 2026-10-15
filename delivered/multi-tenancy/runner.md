@@ -1,4 +1,10 @@
-# Plan — `epic:multi-tenancy`, runner slice
+---
+epic: multi-tenancy/runner
+refinement: pristine
+status: delivered
+---
+
+# Plan — `epic:multi-tenancy/runner`
 
 > **Shipped.** This plan is frozen: it records what tenancy's runner slice was conceived to be.
 > `blizzard-context:/domain/tenancy.md` owns the behavior from here, and [milestones.md](../../milestones.md) records
@@ -81,8 +87,8 @@ filter.
 Running many runners side by side on one machine — their ports, workspace roots, and harness credentials — belongs to
 `epic:runner-host`, which gives each runner a host to share instead of a desk to fight over. Once a host runs several
 runners, the binding above belongs to each runner under it, not to the host. Which projects a runner serves inside its
-tenant belongs to `epic:projects`' runner slice. What the hub adds to its wire for this slice is specified with the hub
-slice, in its [API contract](./hub/spec/api.md).
+tenant belongs to `epic:projects/runner`. What the hub adds to its wire for this slice is specified with the hub slice,
+in its [API contract](./hub/spec/api.md).
 
 The runner-side tests `epic:test-shared-service` wants need only what this slice and the hub slice give them: each test
 adds a runner in its own tenant, starts it on a store of its own, and cannot reach another test's world, because the hub

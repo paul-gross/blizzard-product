@@ -7,8 +7,8 @@ schema (`runner/store/schema.py`) becomes the host store's: one migration chain,
 (`runner/store/migrations/versions/`), so a runner's existing `runner.db` migrates forward into a host store holding one
 runner ([carry-over.md](./carry-over.md) §Graduation).
 
-A host serves one tenant, so the store still carries no tenant column, as the multi-tenancy runner slice settled
-([runner slice](../../../delivered/multi-tenancy/runner.md)). What it gains is a runner column.
+A host serves one tenant, so the store still carries no tenant column, as `epic:multi-tenancy/runner` settled
+([plan](../../../delivered/multi-tenancy/runner.md)). What it gains is a runner column.
 
 ## Two revisions
 

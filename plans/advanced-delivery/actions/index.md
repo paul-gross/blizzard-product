@@ -1,21 +1,27 @@
-# Plan — `epic:advanced-delivery`, actions slice
+---
+epic: advanced-delivery/actions
+refinement: refined
+status: horizon
+---
+
+# Plan — `epic:advanced-delivery/actions`
 
 A hub step today is a shell command. A graph's hub node lists commands under `run:`, and the hub runs each on its own
 host, as its own user, with its own environment — the key that seals every tenant's secrets and the address of its store
 among it. Everything blizzard ships goes through that door to run code of its own: three packaged scripts, started as
 child processes and handed a token so they can call back into the hub that started them. Anyone who may author a graph,
 which is every tenant's admin, may put any command there instead, and it runs with the hub's reach into every tenant.
-And because each step is a process the hub starts and then waits on, the hub cannot do what the rest of this epic asks
-of it: take a landing a little at a time, beside every other, and decide for itself what comes next.
+And because each step is a process the hub starts and then waits on, the hub cannot do what the rest of this initiative
+asks of it: take a landing a little at a time, beside every other, and decide for itself what comes next.
 
-This slice makes a hub step a built-in action. A hub node names what it does — land the chunk's work, record its review
+This epic makes a hub step a built-in action. A hub node names what it does — land the chunk's work, record its review
 findings, deliver a garden run — and the hub does it in its own code, with nothing handed to a process. Graphs keep
 every outcome they route on, every stored graph is carried over to the actions its commands already named, and `run:` is
 retired.
 
-| Where                    | Read when                                                              |
-| ------------------------ | ---------------------------------------------------------------------- |
-| [spec/](./spec/index.md) | Implementing any part of the slice or resolving its technical contract |
+| Where                    | Read when                                                             |
+| ------------------------ | --------------------------------------------------------------------- |
+| [spec/](./spec/index.md) | Implementing any part of the epic or resolving its technical contract |
 
 ## What to build
 
@@ -36,7 +42,7 @@ retired.
 - **An action takes a pass, and says what comes next.** Each time the hub calls an action, the action does a bounded
   piece of work and answers with an outcome or with `pending`. A pass is cut off at five minutes by default, a limit an
   operator can change; a landing that waits on checks is a run of passes, never a process the hub waits on, which is the
-  shape the `flows` slice drives.
+  shape the `flows` epic drives.
 - **Patience in hours, not minutes.** A hub node that keeps answering `pending` gives up and goes back to an agent only
   after three hours by default, not thirty minutes, so a busy branch's CI no longer sends correct work back for repair.
   A graph still sets its own limit per node.

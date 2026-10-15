@@ -2,8 +2,8 @@
 
 ## The `land` action
 
-The actions slice moved `land_pr_ci` into the hub as the `land` action, speaking GitHub through its own client
-(`hub/delivery/actions/internal/github_client.py`). This slice deletes that client. `land` reads and acts through the
+The actions epic moved `land_pr_ci` into the hub as the `land` action, speaking GitHub through its own client
+(`hub/delivery/actions/internal/github_client.py`). This epic deletes that client. `land` reads and acts through the
 `RepositoryForge` handed to it for each resolved repository ([seam.md](./seam.md#the-registry)) — its `IForgeRefs`,
 `IForgeChanges`, and `IForgeChecks` — and nothing else: `PullRequest` becomes `Change`, `Verdict.of` reads a check's
 `outcome` and a change's `mergeability`, and nothing in the action names a GitHub route, field, or credential. Its
@@ -13,7 +13,7 @@ check's link, now its `details_url`.
 The credential is bound inside the adapter the registry built, so the action never handles one. `land` already awaits
 the seam on the action thread's loop, so porting it changes how it calls the forge, not where it runs.
 
-`BZ_HUB_GIT_COMMITS` is gone with the actions slice; the action reads the visit's commits, each already resolved to its
+`BZ_HUB_GIT_COMMITS` is gone with the actions epic; the action reads the visit's commits, each already resolved to its
 repository id.
 
 ## What the forge answers

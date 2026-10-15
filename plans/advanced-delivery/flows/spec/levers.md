@@ -1,7 +1,7 @@
 # Operator levers
 
 What each lever means is unchanged and owned by `CHUNK_VERB_LEGALITY` (`hub/domain/chunk/model.py`) and
-`blizzard-context:/domain/work/`. This slice changes what each does to a chunk's place in its flows, and stops any of
+`blizzard-context:/domain/work/`. This epic changes what each does to a chunk's place in its flows, and stops any of
 them from freeing a branch while a pass still runs on it. A lever that moves a chunk onto a hub step never submits it
 itself: the driver's reconcile does, on the tick the lever wakes ([verdict.md](./verdict.md#the-reconcile)).
 
@@ -31,4 +31,4 @@ A move that writes no withdrawal of its own is caught by the reconcile, which cl
 
 A chunk paused at a hub node, which hub-advance and `ApplyService` would run once today while it is paused, now takes no
 turn until it is resumed: eligibility requires `delivering` ([turns.md](./turns.md#who-is-next)). This is the one
-landing that changes under this slice, and only in when it starts.
+landing that changes under this epic, and only in when it starts.
