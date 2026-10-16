@@ -81,31 +81,36 @@ by one minor is a runner with a week to upgrade, which is no window at all. The 
 runner works against any hub of its own major at the same minor or later, and a hub of a new major still accepts runners
 from the previous major's final minor, so an operator upgrades the hub first and the runners after it, at their own
 pace. A hub never requires a runner newer than itself. This is the shape Kubernetes keeps between its control plane and
-the agents on each node, and it is the closest relative blizzard's hub and runner have.
+the agents on each node, and it is the closest relative blizzard's hub and runner have. Before 1.0 there are no majors
+to draw it around, so the window has a floor instead: a hub accepts runners of every line from the floor up to its own,
+and the floor rises only in the change that removes surface a released minor deprecated. A week's train never becomes a
+week's deadline.
 
-The baseline every compatibility check compares against becomes the **supported releases**: the newest release of each
-major still inside the window. A minor only adds, so the newest release of a major carries every promise that major's
-earlier releases made. A change that breaks a commit no release ever carried breaks nobody and should pass. A change
-that keeps the previous commit happy but breaks a runner from last month's release must fail.
+The baseline every compatibility check compares against becomes the **supported releases**: the newest release of the
+oldest line still inside the window, and the newest release of each major above it. A minor only adds, so the newest
+release of a major carries every promise that major's earlier releases made. A change that breaks a commit no release
+ever carried breaks nobody and should pass. A change that keeps the previous commit happy but breaks a runner from last
+month's release must fail.
 
 The check runs on every pull request, not only at the cut. It is a static diff and costs seconds, and a break found at
 the cut is found at the worst moment: long after it landed, tangled up with everything else in the release, and holding
 the release hostage. On a pull request it lands on the change that made it, while its author still holds the context.
 The release workflow runs it once more as a backstop before anything is published.
 
-| Where                     | Compared against                     | A break passes when…                                                                                                                          |
-| ------------------------- | ------------------------------------ | --------------------------------------------------------------------------------------------------------------------------------------------- |
-| Pull request to `master`  | every supported release              | `master` is open for a major, and the break removes surface a released minor already deprecated, with the breaking marker and an upgrade note |
-| Pull request to a release | that line's first release            | never — a patch adds or it is not a patch                                                                                                     |
-| A release tag             | every supported release, as a backup | the tag is a major, and every break it carries is named in its notes                                                                          |
+| Where                     | Compared against                       | A break passes when…                                                                                                                                                                     |
+| ------------------------- | -------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Pull request to `master`  | every supported release                | `master` is open for a major — before 1.0, the change raises the floor — and the break removes surface a released minor already deprecated, with the breaking marker and an upgrade note |
+| Pull request to a release | every release already cut on that line | never — a patch adds or it is not a patch                                                                                                                                                |
+| A release tag             | every supported release, as a backup   | the tag is a major — before 1.0, one whose floor rose — and every break it carries is named in its notes                                                                                 |
 
 The same baseline governs every surface the version scheme names, not only the hub↔runner wire: the HTTP API through a
 diff of its published OpenAPI document, configuration keys, the trace and egress contracts, and the store schema.
 
-A static diff cannot see behavior, so the checks gain an **upgrade rehearsal**: the previous release's hub, seeded with
-real-shaped data, is upgraded to the candidate, its migrations walked forward and back, and the previous release's
-runner then drives a chunk to completion against the new hub. It runs on every push to `master` and on every tag. It is
-the one proof that the promise the version scheme makes is a promise the software keeps.
+A static diff cannot see behavior, so the checks gain an **upgrade rehearsal**: each supported release's hub, seeded
+with real-shaped data, is upgraded to the candidate, its migrations walked forward and back, and that release's runner
+then drives a chunk to completion against the new hub. It runs on every push to `master` and on every candidate; a
+stable release is its candidate's commit, and stands on its candidate's proof. It is the one proof that the promise the
+version scheme makes is a promise the software keeps.
 
 At runtime, the skew window stops being a sentence in a document. A runner names its version when it registers, and a
 hub refuses one outside the window with a message that names both versions and the window, rather than failing later in
@@ -129,54 +134,30 @@ far as the baseline.
 
 ## What to build
 
-- **`first-release` — a line in the sand.** Cut the first real release from `master`, give each boundary in the upgrade
-  guide the version it belongs to, restate the skew window around majors, and move the dogfood instance onto releases:
-  the hosted hub and the runners each pinned to an exact version — never a moving tag, which by design never carries a
-  candidate — moved only by a reviewed change, and opened as that change automatically when a release publishes,
-  candidates included; the runners installed from the pinned release's own wheel; and the runner redeploy owed after a
-  release rather than after every landing. The `edge` image keeps publishing for anyone who wants it; nothing of ours
-  follows it.
-- **`compat-floor` — compatibility held against what shipped.** Every compatibility check compared against the supported
-  releases, on every pull request and again at the tag; the checks that compare against the previous commit or against
-  `edge` retired; the OpenAPI, configuration, and schema diffs alongside the wire's; the upgrade rehearsal; the version
-  handshake at registration; and expand-then-contract enforced on the store's migrations.
-- **`notes` — written with the change, not reconstructed after it.** A change an operator would notice carries a short
-  note of its own, committed beside the code and reviewed with it, and a breaking one carries its upgrade note the same
-  way. The release's notes are assembled from those, with the commit log as a fallback rather than the source — at the
-  fleet's pace, a week of commit subjects is not something a person can read. Each minor lists what it deprecates and
-  the major that will remove it, and a major's notes gather every removal its cycle announced into one upgrade guide.
-- **`release-lines` — the train and a way to patch.** A minor cut every week: a release candidate first, run by
-  blizzard's own fleet for the week, then promoted to stable as the next candidate is cut. Each release gets a branch at
-  its candidate, so a fix reaches a released line as a patch without dragging along everything `master` has learned
-  since. A fix lands on `master` first and is carried back by cherry-pick, proven by the same gate against that line's
-  first release, and tagged from the branch; only a fix for code the next major has already removed is written on the
-  old line alone. Most fixes ride the next week's train instead — a patch is for what cannot wait the week: a hole in
-  security, lost data, a fleet that has stopped. The promise of which lines receive patches is deliberately short.
-  Within a major, only the newest minor does — every minor only adds, so moving to the newest is always a safe fix. Once
-  a new major ships, the previous major's final line receives critical fixes, and only those, for three months: long
-  enough for an operator to schedule a breaking upgrade, short enough that blizzard never carries more than two lines,
-  and over before the old branch has drifted so far that each backport becomes a rewrite. Its runners keep working
-  against the new major's hub for the whole of that major, since withdrawing them mid-major would itself be a break, but
-  after the three months they are working unsupported. Before 1.0, only the newest minor is patched. A longer promise
-  for security fixes is an LTS line, and waits until operators outside blizzard ask for one. A release is proven by
-  nothing outside `blizzard` and `blizzard-mock`, the fleet of fakes its upper tiers run against, and the mock mirrors
-  it one for one: the same release branch, cut at the candidate from the commit that proved it, and the same tag on
-  every release, whether or not the mock changed. Checking out a tag in both repositories reproduces exactly what that
-  release was proven against, and a patch that needs the mock to change lands there the way it lands in `blizzard` — on
-  `master` first, carried back, tagged with the same name. The majors are cut on their published dates from a `master`
-  opened for them, and opening `master` for a major is also when the store's history is folded into a new baseline at
-  the oldest supported release. Once `epic:cadence` lands, cutting the candidate and folding the history are routines
-  the fleet runs for itself.
-- **`dark-launch` — `master` that is always releasable.** Work that spans weeks lands behind a flag that is off by
-  default, so an unfinished capability can share `master` with a weekly cut. The release that turns a flag on is the
-  release whose notes describe the capability, and the flag is retired once it has been on for a release. A flag hides
-  behavior, never contract: surface that ships behind a flag that is off — a route, a field, a configuration key, a
-  column — is released, and the compatibility checks hold it to the version rules like any other. That keeps the checks
-  blind to flags, and it means an epic whose shape is still moving keeps that shape off `master`, or behind surface it
-  is content to support, until it settles.
-- **`supply-chain` — artifacts a stranger can trust.** Images signed, with a software bill of materials and build
-  provenance attested; checksums beside every attached file; the wheel published to the Python package index; and a
-  runner installable at a named version, so an operator pins what they run as easily as they pin the hub.
+Each epic's plan owns its requirements; this is the cut, in the order the epics are meant to land.
+
+- **[`first-release`](./first-release/index.md) — a line in the sand.** The first real release, the skew window restated
+  around majors, and the dogfood instance moved off `master`: the hosted hub and the runners each pinned to an exact
+  release, moved only by a reviewed change that opens itself when a release publishes. The `edge` image keeps publishing
+  for anyone who wants it; nothing of ours follows it.
+- **[`compat-floor`](./compat-floor/index.md) — compatibility held against what shipped.** Every surface the version
+  scheme names diffed against the supported releases on every pull request and again at the tag, the per-commit
+  comparisons retired, the upgrade rehearsal, the version handshake at registration, and expand-then-contract on the
+  store.
+- **[`notes`](./notes/index.md) — written with the change, not reconstructed after it.** A change an operator would
+  notice carries its own note, committed beside the code and reviewed with it, and a release's notes are assembled from
+  them — at the fleet's pace, a week of commit subjects is not something a person can read. Deprecations name the major
+  that removes them, so a major's upgrade guide gathers itself.
+- **[`release-lines`](./release-lines/index.md) — the train and a way to patch.** A candidate every week, run by
+  blizzard's own fleet and then promoted; a branch for every release, so a fix reaches a released line by cherry-pick
+  from `master`; a deliberately short promise of which lines are patched; `blizzard-mock` mirroring every branch and
+  tag; majors on their published dates; and the store's history folded into a baseline.
+- **[`dark-launch`](./dark-launch/index.md) — `master` that is always releasable.** Work that spans weeks lands behind a
+  flag that is off by default, the release that turns it on is the one whose notes describe it, and a flag hides
+  behavior, never contract, so the compatibility checks stay blind to flags.
+- **[`supply-chain`](./supply-chain/index.md) — artifacts a stranger can trust.** Images signed, with a bill of
+  materials and build provenance attested; checksums beside every attached file; and a runner installable at a named
+  version from the release itself. Publishing to a package index waits for the project's rebrand.
 
 ## The procedures live in the harness
 
@@ -190,9 +171,9 @@ The patch is the procedure that most needs writing down, because it is the one r
 nobody remembers the last time. It starts from the fix on `master`, decides whether the fix can wait for the train,
 finds every supported line that carries the bug, carries the fix back by cherry-pick — into `blizzard-mock`'s matching
 branch too, when the fix needs the mock to change — adapts it by hand where the line has drifted, writes it on the old
-line alone when the code it fixes no longer exists on `master`, proves the branch against the line's first release,
-bumps the version on the branch, tags both repositories there, and confirms the published release — and then moves the
-dogfood instance onto it.
+line alone when the code it fixes no longer exists on `master`, proves the branch against every release already cut on
+the line, bumps the version on the branch, tags both repositories there, and confirms the published release — and then
+moves the dogfood instance onto it.
 
 | Procedure                                                                                  | Lands with      |
 | ------------------------------------------------------------------------------------------ | --------------- |
