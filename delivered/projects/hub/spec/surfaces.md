@@ -128,16 +128,16 @@ only from the profile menu (`app-nav-menu`), which offers the switcher only to s
 
 ## What each view does with the lens
 
-| View                                     | Lens on a project                                                 | Lens on All                                                                                  |
-| ---------------------------------------- | ----------------------------------------------------------------- | -------------------------------------------------------------------------------------------- |
-| Board                                    | Chunks of the project; ranking unchanged, filtered                | Every chunk in the tenant                                                                    |
-| Events                                   | Events of the project's chunks, and of runners that serve it      | Every event                                                                                  |
-| Gardening                                | That project's scopes, routines, runs and findings, and proposals | A doorway: one card per project, no tabs; a tenant with one project opens its garden instead |
-| Admin → Projects                         | Opens that project                                                | Every project                                                                                |
-| Admin → Work sources                     | The sources the project links                                     | Every source in the tenant                                                                   |
-| Admin → Repositories                     | The repositories the project links                                | Every repository in the tenant                                                               |
-| Admin → Changes                          | The project's changes and tenant-wide ones                        | Every change                                                                                 |
-| Graphs, Admin → Members, Admin → Secrets | Unchanged, with a visible note that the lens does not apply here  | —                                                                                            |
+| View                                     | Lens on a project                                                | Lens on All                                                                                  |
+| ---------------------------------------- | ---------------------------------------------------------------- | -------------------------------------------------------------------------------------------- |
+| Board                                    | Chunks of the project; ranking unchanged, filtered               | Every chunk in the tenant                                                                    |
+| Events                                   | Events of the project's chunks, and of runners that serve it     | Every event                                                                                  |
+| Gardening                                | That project's scopes, routines, runs, findings, and proposals   | A doorway: one card per project, no tabs; a tenant with one project opens its garden instead |
+| Admin → Projects                         | Opens that project                                               | Every project                                                                                |
+| Admin → Work sources                     | The sources the project links                                    | Every source in the tenant                                                                   |
+| Admin → Repositories                     | The repositories the project links                               | Every repository in the tenant                                                               |
+| Admin → Changes                          | The project's changes and tenant-wide ones                       | Every change                                                                                 |
+| Graphs, Admin → Members, Admin → Secrets | Unchanged, with a visible note that the lens does not apply here | —                                                                                            |
 
 Gardening's breadcrumb (`Gardening › {project} › {surface}`) is the lens shown in place: its project crumb switches the
 lens and keeps the surface. The [projects-era admin mockup](../../artifacts/projects-admin.html) and the
