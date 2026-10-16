@@ -69,7 +69,7 @@ that tends it.
   says so rather than quietly ignoring it. The [projects-era admin mockup](../artifacts/projects-admin.html) and the
   [per-project gardening mockup](../artifacts/projects-gardening.html) show where each level lands.
 - **Gardening per project, entirely.** With the lens on a project, the gardening tab is that project's scopes, routines,
-  runs and findings, and proposals; with the lens on all of them, it is a doorway into each project's garden. A routine
+  runs, findings, and proposals; with the lens on all of them, it is a doorway into each project's garden. A routine
   runs a graph from the tenant's shared library, and a run's work is ingested into the routine's own project.
 - **The single-project fleet, carried over.** An existing installation's state becomes one project, with the slug
   `default` for the operator to change — its chunks, scopes, routines, findings, and proposals, linked to every existing

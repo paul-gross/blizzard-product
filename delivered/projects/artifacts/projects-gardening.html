@@ -402,13 +402,13 @@
       <div class="card"><h3>Where am I</h3>
         <p>The breadcrumb is the location and mirrors the URL: <code>Gardening › blizzard › Proposals</code> is
         <code>/t/grosscode/p/blizzard/gardening/proposals</code>. <b>Gardening</b> goes back to the doorway; the project
-        crumb switches project in place and keeps you on the same surface. The four surfaces below it are tabs within
+        crumb switches project in place and keeps you on the same surface. The five surfaces below it are tabs within
         that one project.</p></div>
       <div class="card"><h3>The lens and the crumb agree</h3>
         <p>Choosing a project here sets the app-wide project lens, and setting the lens elsewhere opens that project here.
         There is one notion of &ldquo;the project I am looking at&rdquo;, shown in two places.</p></div>
-      <div class="card"><h3>Same four surfaces as today</h3>
-        <p>Scopes, routines, runs &amp; findings, and proposals keep the shape the delivered gardening screens have.
+      <div class="card"><h3>Same five surfaces as today</h3>
+        <p>Scopes, routines, runs, findings, and proposals keep the shape the delivered gardening screens have.
         What changes is that each list holds one project's records, and the strip says which project that is.</p></div>
       <div class="card"><h3>Names only need to be unique inside a project</h3>
         <p><code>hub-api</code> is a scope in both <b>blizzard</b> and <b>winter</b>, and both have a
@@ -488,22 +488,23 @@ function render(){renderLens();renderStats();
           <div style="padding:6px 10px;border-top:1px solid var(--line)"><button class="act primary" onclick="setLens('${n}')">Open ${n}'s garden</button></div></div>`}).join('')}</div></div></section>`;
     return}
   const p=projects[lens];
-  const tabs=[['scopes','Scopes',p.scopes.length],['routines','Routines',p.routines.length],['runs','Runs & findings',p.runs.length],['proposals','Proposals',p.proposals.length]];
+  p.findings=p.runs.flatMap(r=>r.findings.map(([s,t],n)=>({id:r.id+'-'+n,sev:s,title:t,run:r.id,routine:r.routine,scope:r.scope})));
+  const tabs=[['scopes','Scopes',p.scopes.length],['routines','Routines',p.routines.length],['runs','Runs',p.runs.length],['findings','Findings',p.findings.length],['proposals','Proposals',p.proposals.length]];
   $('subnav').style.display='';renderCrumbs();
   $('subnav').innerHTML=tabs.map(([k,l,c])=>`<a class="tab ${gview===k?'active':''}" href="#" onclick="gview='${k}';render();return false">${l}<span class="cnt ${k==='proposals'&&c?'hot':''}">${c}</span></a>`).join('')+
     `<div class="subnav-right xs"><span class="t-label">every record here belongs to <b class="t-snow">${lens}</b></span></div>`;
   $('layout').style.gridTemplateColumns='minmax(300px,380px) 1fr';
-  const list=p[gview], key={scopes:'slug',routines:'name',runs:'id',proposals:'id'}[gview];
+  const list=p[gview], key={scopes:'slug',routines:'name',runs:'id',findings:'id',proposals:'id'}[gview];
   if(!list.length){$('layout').style.gridTemplateColumns='1fr';
     $('layout').innerHTML=`<section class="panel"><div class="empty">${lens} has no ${gview==='runs'?'runs':gview} yet</div>
       <div class="p-foot">${gview==='scopes'?`<button class="act primary" onclick="toast('New scope: a slug and a description, inside ${lens}.')">+ New scope</button><span class="xs t-label">gardening starts with a scope — a part of ${lens}'s code a routine can tend</span>`:'<span class="xs t-label">nothing to show until a routine has run</span>'}</div></section>`;return}
   if(!list.find(x=>x[key]===sel[gview]))sel[gview]=list[0][key];
   const x=list.find(i=>i[key]===sel[gview]);
-  const newBtn={scopes:'+ New scope',routines:'+ New routine',runs:'',proposals:''}[gview];
+  const newBtn={scopes:'+ New scope',routines:'+ New routine',runs:'',findings:'',proposals:''}[gview];
   $('layout').innerHTML=`<section class="panel"><div class="p-hdr"><span class="lbl">${tabs.find(t=>t[0]===gview)[1]} · ${lens}</span>
       ${newBtn?`<button class="act primary" onclick="toast('${newBtn.slice(2)} — created inside ${lens}.')">${newBtn}</button>`:''}</div>
     <div class="p-body">${list.map(i=>`<button class="row ${i[key]===sel[gview]?'active':''}" onclick="sel['${gview}']='${i[key]}';render()">${row(i)}</button>`).join('')}</div>
-    <div class="p-foot xs t-label">${{scopes:'unique within '+lens,routines:'a routine runs a graph from the tenant\'s shared library',runs:'each run sweeps '+lens+'\'s repositories only',proposals:'accepting raises an item in the hub source, ingested into '+lens}[gview]}</div></section>
+    <div class="p-foot xs t-label">${{scopes:'unique within '+lens,routines:'a routine runs a graph from the tenant\'s shared library',runs:'each run sweeps '+lens+'\'s repositories only',findings:'every finding the runs of '+lens+' have raised',proposals:'accepting raises an item in the hub source, ingested into '+lens}[gview]}</div></section>
   <section class="panel"><div class="p-body">${detail(x)}</div></section>`;
   renderCrumbs();
 }
@@ -511,6 +512,7 @@ function row(i){
   if(gview==='scopes')return `<div class="row-top"><span class="row-name">${esc(i.slug)}</span><span class="row-right rev">${esc(i.last)}</span></div><div class="row-sub"><span>${esc(i.desc)}</span></div>`;
   if(gview==='routines')return `<div class="row-top"><span class="row-name">${esc(i.name)}</span><span class="row-right rev">${esc(i.cadence)}</span></div><div class="row-sub"><span>graph ${esc(i.graph)}</span><span>next ${esc(i.next)}</span></div>`;
   if(gview==='runs')return `<div class="row-top"><span class="row-name">${esc(i.routine)} · ${esc(i.scope)}</span><span class="row-right">${i.state==='running'?'<span class="dot amber"></span>':'<span class="dot green"></span>'}</span></div><div class="row-sub"><span>${esc(i.mode)}</span><span>${i.findings.length} findings</span><span>${esc(i.when)}</span></div>`;
+  if(gview==='findings')return `<div class="row-top"><span class="row-name">${esc(i.title)}</span><span class="row-right ${sev[i.sev]}">${i.sev}</span></div><div class="row-sub"><span>${esc(i.routine)} · ${esc(i.scope)}</span><span>${i.run}</span></div>`;
   return `<div class="row-top"><span class="row-name">${esc(i.title)}</span></div><div class="row-sub"><span>${esc(i.size)}</span><span>from ${esc(i.from)}</span><span class="t-amber">waiting ${esc(i.waiting)}</span></div>`;
 }
 function detail(x){const p=projects[lens];
@@ -526,6 +528,8 @@ function detail(x){const p=projects[lens];
   if(gview==='runs')return `<div class="detail-hdr"><h1>${esc(x.routine)} · ${esc(x.scope)}</h1><span class="pchip">${lens}</span><span class="grow"></span><span class="xs t-label">${x.id} · ${x.mode} · ${esc(x.when)}</span></div>
     ${x.state==='running'?'<div class="callout">Running now — findings arrive when it delivers.</div>':''}
     <div class="section-lbl">Findings</div>${x.findings.length?`<ul class="hist">${x.findings.map(([s,t])=>`<li><span class="${sev[s]}">${s}</span><span>${esc(t)}</span><span class="who"><button class="act">Triage</button></span></li>`).join('')}</ul>`:'<div class="callout xs">None yet.</div>'}`;
+  if(gview==='findings')return `<div class="detail-hdr"><h1>${esc(x.title)}</h1><span class="pchip">${lens}</span><span class="grow"></span><button class="act">Triage</button></div>
+    <dl class="kv"><dt>Severity</dt><dd class="${sev[x.sev]}">${x.sev}</dd><dt>Routine</dt><dd>${esc(x.routine)}</dd><dt>Scope</dt><dd>${esc(x.scope)}</dd><dt>Run</dt><dd><a class="link" onclick="gview='runs';sel.runs='${x.run}';render()">${x.run}</a></dd></dl>`;
   return `<div class="detail-hdr"><h1>${esc(x.title)}</h1><span class="grow"></span>
       <button class="act primary" onclick="toast('Accepted — raised as an item in the hub source and ingested into ${lens}.')">Accept</button>
       <button class="act danger" onclick="toast('Declined — recorded, and the finding it answered is closed.')">Decline</button></div>
@@ -534,13 +538,13 @@ function detail(x){const p=projects[lens];
 }
 document.addEventListener('click',e=>{if(!e.target.closest('.tenant'))$('tmenu').classList.remove('open')});
 
-const viewLbl={scopes:'Scopes',routines:'Routines',runs:'Runs & findings',proposals:'Proposals'};
+const viewLbl={scopes:'Scopes',routines:'Routines',runs:'Runs',findings:'Findings',proposals:'Proposals'};
 function renderCrumbs(){
   const notes='<button class="notes-toggle" onclick="toggleNotes()">Design notes</button>';
   if(lens==='all'){$('crumbs').innerHTML=`<span class="cur">Gardening</span><span class="sep">›</span><span class="cur">All projects</span>
     <span class="t-label xs" style="margin-left:10px">gardening belongs to a project — pick one to go in</span>
     <span class="url">/t/grosscode/gardening</span>${notes}`;return}
-  const key={scopes:'slug',routines:'name',runs:'id',proposals:'id'}[gview];const item=sel[gview]||'';
+  const key={scopes:'slug',routines:'name',runs:'id',findings:'id',proposals:'id'}[gview];const item=sel[gview]||'';
   $('crumbs').innerHTML=`<a onclick="setLens('all')">Gardening</a><span class="sep">›</span>
     <button class="projsw" onclick="document.getElementById('pmenu').classList.toggle('open');event.stopPropagation()">${lens} ▾</button>
     <span class="sep">›</span><span class="cur">${viewLbl[gview]}</span>
