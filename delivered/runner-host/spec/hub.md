@@ -81,10 +81,10 @@ subscription: str | None = None                # the slug it spends, one of its 
 ```
 
 Every runner a host runs sends `bindings`, from which a hub that reads them derives the served-projects declaration
-exactly as it does from `projects` today ([eligibility](../../../delivered/projects/hub/spec/eligibility.md)), in place
-of `projects`. Because a runner may run a newer release than its hub ([carry-over.md](./carry-over.md) §Hub and runners
-on different clocks), it also keeps sending what a hub from before hosts requires: the `projects` its bindings declare,
-in order, its first binding's workspace as `workspace_id` — the host's first workspace when it binds none — and that
+exactly as it does from `projects` today ([eligibility](../../projects/hub/spec/eligibility.md)), in place of
+`projects`. Because a runner may run a newer release than its hub ([carry-over.md](./carry-over.md) §Hub and runners on
+different clocks), it also keeps sending what a hub from before hosts requires: the `projects` its bindings declare, in
+order, its first binding's workspace as `workspace_id` — the host's first workspace when it binds none — and that
 workspace's size as `env_capacity`. The one runner of an unregistered host is host-less at the hub and sends its roster
 of one subscription beside them, as a runner does today; a runner under a registered host sends no roster, since its
 host reports its subscriptions. A runner from before the host keeps sending exactly what it sends today.

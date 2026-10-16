@@ -51,8 +51,7 @@ Three projects on one laptop means three workspaces and one host — never three
 everything above them. For the operator, a desk full of stacks collapses into one: queue work against any project, watch
 all of it on one board, and slice the view to a single project when only that one matters. That host is
 `epic:runner-host`'s, serving this milestone and `milestone:hardening` alike: each of its runners binds every project it
-serves to one of the host's workspaces, so a claim never has to choose where its work happens. Until it lands, a runner
-serves the projects whose repositories its one workspace holds, and a project worked apart gets a runner of its own.
+serves to one of the host's workspaces, so a claim never has to choose where its work happens.
 
 None of it could be grouped while it lived in a file on the hub's machine and its tokens in the hub's environment, where
 adding a source or rotating a token meant a redeploy and nothing could belong to one project rather than another. The
@@ -75,20 +74,20 @@ touched three repositories deploys all three in the order they depend on one ano
 it back, before the next one moves. Delivery and deployment stop being one fleet-wide habit and become each project's
 own declared method, carried out deterministically, with an agent's judgement called in where the project asks for it.
 
-| Epic                              | Status      |
-| --------------------------------- | ----------- |
-| `epic:live-config`                | delivered   |
-| `epic:multi-tenancy/hub`          | delivered   |
-| `epic:projects/hub`               | delivered   |
-| `epic:projects/runner`            | delivered   |
-| `epic:multi-tenancy/runner`       | delivered   |
-| `epic:runner-host`                | in-progress |
-| `epic:projects/host`              | retired     |
-| `epic:advanced-delivery/actions`  | horizon     |
-| `epic:advanced-delivery/forges`   | horizon     |
-| `epic:advanced-delivery/flows`    | horizon     |
-| `epic:advanced-delivery/policies` | horizon     |
-| `epic:advanced-deployment`        | horizon     |
+| Epic                              | Status    |
+| --------------------------------- | --------- |
+| `epic:live-config`                | delivered |
+| `epic:multi-tenancy/hub`          | delivered |
+| `epic:projects/hub`               | delivered |
+| `epic:projects/runner`            | delivered |
+| `epic:multi-tenancy/runner`       | delivered |
+| `epic:runner-host`                | delivered |
+| `epic:projects/host`              | retired   |
+| `epic:advanced-delivery/actions`  | horizon   |
+| `epic:advanced-delivery/forges`   | horizon   |
+| `epic:advanced-delivery/flows`    | horizon   |
+| `epic:advanced-delivery/policies` | horizon   |
+| `epic:advanced-deployment`        | horizon   |
 
 ## `milestone:hardening` — the platform stops guessing on your behalf
 
@@ -152,27 +151,27 @@ timing of an upgrade back to the person who has to live with it. The release tha
 Hardening is what a platform does after it works. Little of it is a new capability. Almost all of it is an assumption
 the platform made on the operator's behalf, handed back to them as a decision.
 
-| Epic                                     | Status      |
-| ---------------------------------------- | ----------- |
-| `epic:runner-host`                       | in-progress |
-| `epic:release-engineering/first-release` | horizon     |
-| `epic:release-engineering/compat-floor`  | horizon     |
-| `epic:release-engineering/notes`         | horizon     |
-| `epic:release-engineering/release-lines` | horizon     |
-| `epic:release-engineering/dark-launch`   | horizon     |
-| `epic:release-engineering/supply-chain`  | horizon     |
-| `epic:throttling`                        | horizon     |
-| `epic:tagging`                           | horizon     |
-| `epic:resilience`                        | horizon     |
-| `epic:retention`                         | horizon     |
-| `epic:config/model-resolution`           | horizon     |
-| `epic:config/sweep`                      | horizon     |
-| `epic:ui-toolkit`                        | horizon     |
-| `epic:documentation`                     | horizon     |
-| `epic:test-optimization`                 | horizon     |
-| `epic:test-architecture`                 | horizon     |
-| `epic:test-shared-service`               | horizon     |
-| `epic:architectural-sweep`               | delivered   |
+| Epic                                     | Status    |
+| ---------------------------------------- | --------- |
+| `epic:runner-host`                       | delivered |
+| `epic:release-engineering/first-release` | horizon   |
+| `epic:release-engineering/compat-floor`  | horizon   |
+| `epic:release-engineering/notes`         | horizon   |
+| `epic:release-engineering/release-lines` | horizon   |
+| `epic:release-engineering/dark-launch`   | horizon   |
+| `epic:release-engineering/supply-chain`  | horizon   |
+| `epic:throttling`                        | horizon   |
+| `epic:tagging`                           | horizon   |
+| `epic:resilience`                        | horizon   |
+| `epic:retention`                         | horizon   |
+| `epic:config/model-resolution`           | horizon   |
+| `epic:config/sweep`                      | horizon   |
+| `epic:ui-toolkit`                        | horizon   |
+| `epic:documentation`                     | horizon   |
+| `epic:test-optimization`                 | horizon   |
+| `epic:test-architecture`                 | horizon   |
+| `epic:test-shared-service`               | horizon   |
+| `epic:architectural-sweep`               | delivered |
 
 ## `milestone:human-in-the-loop` — the operator stops being the wire
 

@@ -26,7 +26,7 @@ An id resolves through the frontmatter that declares it, never through the path 
 ## Placement
 
 - **Standalone epic.** `plans/<slug>.md`; `plans/<slug>/index.md` once it carries supporting pieces — part plans, a
-  `spec/`, `artifacts/` — all of which live inside its folder (`plans/runner-host/`).
+  `spec/`, `artifacts/` — all of which live inside its folder (`delivered/runner-host/`).
 - **Flat initiative.** `plans/<slug>.md`, carrying the initiative's intent and naming its epics. Its epics have no files
   of their own: each is `horizon` and unwritten. The moment one of them earns a plan, a refinement grade, or a status
   other than `horizon`, the initiative becomes a grouping folder.
