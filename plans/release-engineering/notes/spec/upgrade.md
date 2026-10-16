@@ -28,9 +28,12 @@ instructions. A change whose crossing needs one adds its boundary section to `do
 its note's upgrade section says in a sentence or two what the crossing asks and sets `upgrade-guide` to the section's
 anchor; the assembler links it ([assembly.md](./assembly.md)). The note never restates the section.
 
-A boundary section is written before anyone knows which release will carry it. How a boundary carries its version is
-`epic:release-engineering/first-release`'s convention for `docs/upgrade.md`; the cut fills the version in for every
-boundary a released note's `upgrade-guide` names, in the same commit that moves the note, so the anchor the note
+A boundary section is written before anyone knows which release will carry it. `docs/upgrade.md` files its boundaries
+under one `## Upgrading to <X.Y.Z>` heading per release, newest first beneath `## Before you pull`
+(`epic:release-engineering/first-release` opens it with `## Upgrading to 0.2.0`), and beside them one staging heading,
+`## Upgrading to the next release`. A change adds its boundary under the staging heading; the cut moves every boundary a
+moved note's `upgrade-guide` names from there into the release's `## Upgrading to <X.Y.Z>`, creating that heading if it
+is absent, in the same commit that moves the note. The boundary's own heading never changes, so the anchor the note
 recorded keeps resolving.
 
 ## Deprecations

@@ -12,12 +12,19 @@ A new `scripts/verify-release.sh <tag>` checks a published release the way a str
    `gh attestation verify oci://ghcr.io/paul-gross/blizzard-hub@<digest> --repo paul-gross/blizzard` for provenance, and
    again with `--predicate-type https://spdx.dev/Document/v2.3` for each platform's bill of materials.
 3. **The attached files.** It downloads every file on the release page, runs `sha256sum -c SHA256SUMS` over them, checks
-   the page holds exactly the files `artifacts.md` lists for that version — `compat-breaks.json` among them — and
-   nothing else, and verifies each file's provenance and the wheel's bill of materials with `gh attestation verify`. It
-   checks the requirements files' project line names the wheel on this same release, at the hash `SHA256SUMS` gives it.
+   the page holds exactly the files `artifacts.md` lists for that version — `compat-breaks.json` among them once it is
+   owed (below) — and nothing else, and verifies each file's provenance and the wheel's bill of materials with
+   `gh attestation verify`. It checks the requirements files' project line names the wheel on this same release, at the
+   hash `SHA256SUMS` gives it.
 4. **The install.** It syncs a fresh virtualenv from the base requirements file, by its address on the release page,
    with `--require-hashes`, so the wheel is fetched from the release as an operator's install fetches it, and checks
    `blizzard --version` prints the version.
+
+The expected files are the fixed inventory plus `compat-breaks.json` for every release at or after one version, held as
+a constant in the script, `COMPAT_BREAKS_SINCE`. It starts unset, so the file is not yet required, and is set to the
+first release whose workflow both runs `epic:release-engineering/compat-floor`'s backstop and carries this epic's
+inventory, by whichever of the two changes lands second. A tag cut before this epic's release workflow is refused with a
+message naming the first verifiable release, rather than failed on its first missing file.
 
 The script's argument handling and its expected-file list are unit-tested; the checks themselves are proven only against
 a real release, which is what the `verify` job is.
@@ -57,20 +64,36 @@ verify always does.
 
 Blizzard's own fleet verifies every release before it runs it.
 
-**The hosted hub.** `blizzard-infra`'s updater (`deploy/bin/blizzard-update`) gains one step after it pulls the pinned
-image and before it recreates the hub: `cosign verify` of the pulled digest against the release identity. An image that
-fails verification is fenced exactly as one that fails readiness — `state/blocked-digest` and `state/last-failure`
-written, the hub left on the image it was running, cleared only by `--clear-block` — so an unverified image is never
-started. A verification that cannot run at all — Sigstore unreachable — is not a failed verification: the run exits
-without fencing and without recreating, and the next timer tick tries again, so an outage on the verifier's side delays
-an upgrade but never blocks a good image for good. The updater accepts the release identity only; `edge` images are
-never verified as releases. `deploy/bin/blizzard-install` installs a pinned `cosign` release, checked against its
-published checksum. `tests/test_deploy_contract.py` asserts the verify step precedes the recreate, and
+**The hosted hub.** The updater (`deploy/bin/blizzard-update`) is the one `epic:release-engineering/first-release`
+rewrites to converge onto a pinned release by digest, and verification is one step of that algorithm: after the pin is
+pulled and before its direction is read — so before any downgrade, recreate, or readiness wait — the updater runs
+`cosign verify` of the pulled digest against the release identity. A host already converged on its pin verifies nothing,
+since nothing is about to start.
+
+An image that fails verification is fenced exactly as one that fails readiness — `state/blocked-digest` and
+`state/last-failure` written with the reason `signature`, the hub left on the image it was running, cleared only by
+`--clear-block` — so an unverified image is never started. A verification that cannot run at all — Sigstore or the
+registry unreachable — is not a failed verification: the run exits without fencing and without recreating, and the next
+timer tick tries again, so an outage on the verifier's side delays an upgrade but never blocks a good image for good.
+The updater accepts the release identity only; `edge` images are never verified as releases, and a pin to a release cut
+before this epic's release workflow is fenced like any image that fails. A deliberate move back that far goes through
+the hold — `BLIZZARD_HUB_IMAGE` in `.env` — which bypasses the updater as it does for any emergency, and
+`docs/rollback.md` says so beside its note that every other rollback target is verified like any pin move.
+
+`deploy/bin/blizzard-install` installs a pinned `cosign` release, checked against its published checksum.
+`tests/test_deploy_contract.py` asserts the verify step sits after the pull and before the direction check, and
 `tests/local/updater-smoke.sh` runs it against a stubbed `cosign` that passes, fails, or cannot reach its verifier on
-demand, as the harness already stubs the commands it cannot run for real. `docs/deployment.md` and `docs/rollback.md`
-say that a rollback target is verified like any other, since it is an earlier release.
+demand, as the harness already stubs the commands it cannot run for real. `docs/deployment.md` describes the step.
+
+The change lands in `blizzard-infra` like any other and deploys nothing until `scripts/deploy.sh` runs it, which is an
+attended operation. It is deployed only once the instance's pin already names a release cut after this epic's verify job
+exists ([carry-over.md](./carry-over.md#the-order-of-landings)), so no pin move after it can name an unsigned release by
+accident.
 
 **The runner host.** The workspace's redeploy runbook (`context/project/local-instance.md`), once
 `epic:release-engineering/first-release` moves it onto releases, installs the host from the pinned release's
 requirements file after verifying its attestation, as [install.md](./install.md#the-runner) describes; the requirements
-file pins the release's own wheel by its hash, so it is that wheel the host runs.
+file pins the release's own wheel by its hash, so it is that wheel the host runs. The workspace's venv also serves as
+the operator's CLI, and syncing it removes whatever the file does not list, so the runbook confirms the venv holds
+nothing else before its first sync. The runbook lives in the workspace repository, which the fleet does not land to, so
+this change is made by hand.

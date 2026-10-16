@@ -6,29 +6,47 @@ is checked.
 
 ## The order of landings
 
-The epic follows `epic:release-engineering/first-release`, because a floor needs a release to stand on, but its first
-landing does not wait for it.
+The epic straddles `epic:release-engineering/first-release`'s cut of `0.2.0`. What must be in the first release lands
+before the cut; what needs a release to exist, or a `master` whose own version has reached `floor`, lands after it.
 
-1. **The documents and the window file.** `contracts/config/*.json`, `contracts/store/*.json`, the config key registries
-   with `Table`'s strict mode, `blizzard-export-contracts` and its drift step, and `src/blizzard/wire/window.toml` with
-   `floor` set to the line the first release will cut. Nothing reads them yet, and the documents are additive to every
-   surface. Landed before the first release is cut, they make it a baseline for every surface; landed after, it is a
-   baseline for the OpenAPI and dictionary surfaces only until the next release.
-2. **The handshake.** The optional `version` fields, `version_window.py` with `handshake_since` set to the line it ships
-   in, the refusal, the registration row's recorded version, the claim gate, the runner's halt, the board's column, and
-   the mock hub's mirror. It is additive on the wire and admits every runner the fleet runs today: their floor is below
-   `handshake_since`, so an unversioned runner is admitted.
-3. **The check, and the old modes retired, in one change.** `blizzard-compat`, the gate job on every trigger, the
-   release workflow's backstop, `compat-breaks.json`, and the removal of `blizzard-wire-compat`, `wire-compat-deployed`,
-   and `dev-image`'s wait on it. Retiring the old modes in the same change as the new one starts means the repository is
-   never without a check; landing it only once a release at or above `floor` exists means the new check is never empty
-   on its first day. `blizzard-context`'s rules, method ids, and the procedure for judging a break land beside it.
-4. **The rehearsal.** `rehearsal.yml`, the `tests/rehearsal/` journey and store walk, and their calls from `push.yml`
-   and `release.yml`, once a supported release with a published wheel exists.
+Before the cut:
 
-Between the first release and step 3, the per-commit checks keep running as they are. They are stricter than the new
-check about surface no release carried, and they still catch every unacknowledged break, so the interval is safe if
-occasionally inconvenient.
+1. **The store documents and the window file.** `contracts/store/*.json`, `blizzard-export-contracts` and its drift
+   step, the SQLite reflection test, and `src/blizzard/wire/window.toml` with `floor = "0.2"` and its parser. Nothing
+   reads them at runtime.
+2. **The configuration documents.** The two key registries, both daemons' strict accessor, the hub's reads moved onto
+   it, and `contracts/config/*.json`, through the same exporter and drift step.
+3. **The tool.** `blizzard-compat` with every classifier, `releases --json`, and the pre-1.0 allowance, unit-tested on
+   throwaway repositories, runnable locally, and called by nothing in CI yet; the per-commit check keeps gating.
+
+Steps 1 and 2 must both land before the cut, which waits for them: landed after, `0.2.0` would be a baseline for the
+OpenAPI and dictionary surfaces only, until the next release.
+
+After the cut:
+
+4. **The handshake.** The optional `version` fields, `version_window.py` with `handshake_since = "0.3"`, the line it
+   ships in, the refusal, the registration row's recorded version, the claim gate, the hub's start guard, the runner's
+   halt, the board's column, and the mock hub's mirror. It waits for the cut commit, not merely for the tag: before it,
+   `master`'s `pyproject.toml` names `0.1.0`, and every hub built from it would sit below its own `floor` and refuse
+   every runner — which is also why a hub whose own line is below `floor` refuses to start rather than run
+   ([handshake.md](./handshake.md) §The rule). After it, every hub and runner on the instance reports line `0.2` or
+   reports nothing, and both are admitted.
+5. **The gate, and the old modes retired, in one change.** The gate job on every trigger, the release workflow's
+   backstop, `compat-breaks.json`, the declared-break allowance on an open `master`, and the removal of
+   `blizzard-wire-compat`, `wire-compat-deployed`, and `dev-image`'s wait on it. Retiring the old modes in the change
+   that starts the new one means the repository is never without a check; landing it once `v0.2.0-rc.1` exists means the
+   new check is never empty on its first day. `blizzard-context`'s rules, method ids, and the procedure for judging a
+   break land beside it.
+6. **The rehearsal.** `rehearsal.yml` with its Postgres service, the `tests/rehearsal/` journey and store walk, their
+   calls from `push.yml` and `release.yml`, and `dev-image`'s wait on it, once `v0.2.0-rc.1` is published with its
+   wheel.
+
+Between the cut and step 5, the per-commit checks keep running as they are. They are stricter than the new check about
+surface no release carried, and they still catch every unacknowledged break, so the interval is safe if occasionally
+inconvenient.
+
+The handshake reaches the instance with the first release that carries it, by `bzh:release-deploy`, hub first and the
+runner host after. That procedure is the whole of its deployment; the epic has no attended step of its own.
 
 ## What predates the floor
 
@@ -43,7 +61,7 @@ procedure, not the rehearsal's.
 
 The dogfood instance's runner host moves onto the first release under `epic:release-engineering/first-release`. If that
 release predates the handshake, its runners register without a version and are admitted, shown as `unversioned` on the
-board. They start sending one the first time the host is moved onto a release carrying step 2. The first change that
+board. They start sending one the first time the host is moved onto a release carrying step 4. The first change that
 raises `floor` to `handshake_since` or beyond is when an unversioned runner is refused, and by then every runner inside
 the window sends a version, so the refusal only ever reaches a runner the window has already left behind.
 

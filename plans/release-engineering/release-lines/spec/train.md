@@ -12,7 +12,9 @@
 
 Before 1.0, `X` is `0`. A tag, once pushed, is never moved, deleted, or reused (`bzh:release`); a branch is never
 deleted. Both repositories carry every name in this table ([mock.md](./mock.md)). `release/*` branches and `v*` tags are
-protected on both: a branch changes only through a pull request, and only a maintainer's push creates a tag.
+protected on both by repository rulesets: a branch changes only through a pull request and is never force-pushed or
+deleted, and a tag is never updated or deleted. Creating a branch or pushing a tag is an attended step of a procedure;
+no fleet worker does either.
 
 ## Versions on `master` and on a branch
 
@@ -37,8 +39,15 @@ to the version being cut and carries the `Release-Cut: <X.Y.Z>` trailer. In it, 
 moves the release's notes, as `epic:release-engineering/notes` owns ([assembly](../../notes/spec/assembly.md) §The cut),
 and `blizzard:flag-lifecycle` runs in its cut mode, as `epic:release-engineering/dark-launch` owns
 ([lifecycle](../../dark-launch/spec/lifecycle.md)). Both must pass before the commit merges, so nothing is tagged that
-either refuses. A cut commit lands through a pull request like any other, and a candidate's or a patch's tag is pushed
-only once its `push` or pull-request run is green.
+either refuses. This epic provides the cut commit as the hook and runs neither step itself:
+`epic:release-engineering/notes` adds its `cut` and `epic:release-engineering/dark-launch` adds its
+`blizzard:flag-lifecycle` call, each in whichever of this epic's procedures and its own landing comes second, and a cut
+made before both have landed runs the steps that exist.
+
+Opening a cut commit is an attended step of a procedure — the operator's, or an agent's told by name to run it — and
+never a fleet chunk's work. The first is `epic:release-engineering/first-release`'s attended cut of its first release. A
+cut commit lands through a pull request like any other, and a candidate's or a patch's tag is pushed only once its
+`push` or pull-request run is green.
 
 | Cut                       | Where the cut commit lands                                                   | Its version |
 | ------------------------- | ---------------------------------------------------------------------------- | ----------- |
@@ -80,16 +89,17 @@ candidate is newest.
 ## Promotion
 
 A candidate is promoted when its train day comes, its `release` run is green, and no open issue on `paul-gross/blizzard`
-carrying the `release-blocker` label names its line (`release_line: "X.Y"` in the issue's metadata block). Promotion
-pushes `vX.Y.0` at the newest candidate's commit, in both repositories.
+carrying the `release-blocker` label — created on the repository by hand, beside its branch and tag protection — names
+its line (`release_line: "X.Y"` in the issue's metadata block). Promotion pushes `vX.Y.0` at the newest candidate's
+commit, in both repositories.
 
 The `release` run for a stable tag recognises a commit that already carries a candidate tag of the same version whose
-`release` run succeeded, and takes that run as its proof: it skips the gate and the three upper tiers and runs only the
-backstop compatibility check `epic:release-engineering/compat-floor` owns and `blizzard:flag-lifecycle`'s release-tag
-mode (`epic:release-engineering/dark-launch`), then builds and publishes. A promotion writes no cut commit: the notes
-were final at the candidate. A stable tag on a commit that carries no green candidate of its version is refused. The
-stable build is the same commit as the candidate the fleet ran, rebuilt with its stable version stamped; nothing in it
-is new code.
+`release` run succeeded, and takes that run as its proof: it skips the gate and the three upper tiers, runs only the
+checks its sibling epics hang on this hook — the backstop compatibility check `epic:release-engineering/compat-floor`
+adds, and the `blizzard:flag-lifecycle` release-tag call `epic:release-engineering/dark-launch` adds — then builds and
+publishes. A promotion writes no cut commit: the notes were final at the candidate. A stable tag on a commit that
+carries no green candidate of its version is refused. The stable build is the same commit as the candidate the fleet
+ran, rebuilt with its stable version stamped; nothing in it is new code.
 
 The stable release publishes the image's exact version, its `X.Y` line, and — when it is the highest stable version
 published — `latest` ([patches.md](./patches.md) §Publishing). The candidate's GitHub Release stays a prerelease.

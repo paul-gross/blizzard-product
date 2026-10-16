@@ -43,13 +43,15 @@ the smoke harness. Its algorithm becomes:
    exit 0. The prune runs before this check, so a converged host still clears superseded pulls.
 3. **Fenced.** The pin's digest is in `state/blocked-digest`: no-op, as today.
 4. **Pull** the pin by its digest, recording it in the `state/pulled-images` ledger; the prune keeps the running image
-   and the pinned one.
-5. **Direction.** Read the head revision the pinned image expects, with the no-store `script_head` one-liner
-   `blizzard`'s `docs/rollback.md` §2 gives, and the store's revision from the running hub's `/api/ready`
-   (`store_revision`). Equal, or the pinned image's migration tree holds the store's revision below its head:
-   **forward**. Otherwise ask the running image whether the pinned head is an ancestor of the store's revision, since
-   only the newer image knows both. Yes: **back**. No — the two share no line, or the running image cannot answer: fence
-   the digest with that reason and exit 1, for a person.
+   and the pinned one. Once `epic:release-engineering/supply-chain` lands, its signature verification of the pulled
+   digest sits here, after the pull and before the direction step, and fences an image that fails it
+   ([verification](../../supply-chain/spec/verification.md#the-instance)).
+5. **Direction.** Read the head revision the pinned image expects
+   (`docker run --rm --entrypoint blizzard-hub <pin> migrate --head`, [versions.md](./versions.md) §Revision queries
+   every release answers) and the store's revision from the running hub's `/api/ready` (`store_revision`). The pinned
+   image `--knows` the store's revision: **forward**. Otherwise the running image `--knows` the pinned head, since only
+   the newer image holds both: **back**. Neither — the two share no line, or an image cannot answer: fence the digest
+   with that reason and exit 1, for a person.
 6. **Record rollback state**, as today: `previous-digest`, a stopped, application-consistent copy of `hub.db` and its
    WAL sidecar, the last three kept.
 7. **Back only: downgrade on the outgoing image.** With the hub stopped, run
@@ -84,11 +86,13 @@ and its removal; nothing in the deployment tracks a channel any more.
 - **`blizzard-infra:static-contract`** (`tests/test_deploy_contract.py`): the pin's shape above; `env.example` sets no
   default `BLIZZARD_HUB_IMAGE`; every compose command the updater issues reads both env files, pin first;
   `test_default_hub_image_is_the_edge_channel_ref` is replaced by a test that no deployment artifact names `:edge`.
-- **`blizzard-infra:updater-smoke`** (`tests/local/updater-smoke.sh`): the local `registry:2` is seeded with two
-  published release images rather than the moving `edge`, so the smoke's verdict no longer depends on an upstream
-  publish. It proves a forward move, a back move across a schema revision with the downgrade on the outgoing image, a
-  failed downgrade restored and fenced, the hold, and the existing fence, pin, and prune cases. Seeded from fixed
-  releases, it is a function of the change under test, and the reason it runs on push only (`context/verification.md`
-  §CI) no longer holds: it joins the PR gate.
+- **`blizzard-infra:updater-smoke`** (`tests/local/updater-smoke.sh`): the local `registry:2` is seeded only from
+  immutable refs rather than the moving `edge`: the pinned `0.2.0-rc.1`, and a fixture image built `FROM` it under
+  `tests/local/fixtures/` that adds one revision above its head, read with `migrate --head` at build time — the second
+  image a schema delta needs while only one release exists, and the one whose revision can be made to fail its
+  downgrade. It proves a forward move, a back move across that revision with the downgrade on the outgoing image, a
+  failed downgrade restored and fenced, the hold logged and honoured, and the existing fence, pin, and prune cases.
+  Seeded from fixed refs, it is a function of the change under test, and the reason it runs on push only
+  (`context/verification.md` §CI) no longer holds: it joins the PR gate.
 - **`blizzard-infra:install-idempotence`**: a second install with an unchanged pin recreates nothing, and an install
   carrying a moved pin runs the updater once.

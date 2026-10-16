@@ -28,9 +28,10 @@ rules and `changes/README.md` own, restating none of them.
 
 ## The matrix
 
-`verification/blizzard.md` gains `blizzard:change-notes` — `mise run change-notes`, the merge-base run of
-`blizzard-change-notes owed` plus `check` — and the row for every surface the trigger watches ([owed.md](./owed.md) §The
-surface trigger) names it among the methods that prove a change to that surface.
+`verification/blizzard.md` gains `blizzard:change-notes` — `mise run change-notes` — with the rules. It runs `check`
+from the start, and gains the merge-base run of `blizzard-change-notes owed` when the gate's trigger lands
+([carry-over.md](./carry-over.md) §The order of landings); from then on the row for every surface the trigger watches
+([owed.md](./owed.md) §The surface trigger) names it among the methods that prove a change to that surface.
 
 ## Cutting a release
 

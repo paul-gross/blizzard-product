@@ -37,14 +37,17 @@ from `deprecated=True` on the route and Pydantic the property mark from `Field(d
 
 ## Configuration
 
-Neither daemon declares its keys today: each section reads its table through `Table`
-(`src/blizzard/runner/config_table.py`) and `tomllib` on demand, so the set of keys exists only as the sum of every
-read. This epic declares them. Each daemon gains a registry, `src/blizzard/hub/config_keys.py` and
-`src/blizzard/runner/config_keys.py`, of `ConfigKey(path, type, required, default,
-deprecated, replaced_by)`, where
-`path` is the TOML path with array tables marked (`tracing.endpoint`, `runner[].harness.claude_code.model`). Every
-`Table` read names a declared key; under the test suite `Table` runs strict and an undeclared read raises, so a key the
-registry does not name cannot be read. The registry also lists the durable paths under each runtime root that
+Neither daemon declares its keys today. The runner host's sections read their tables through `Table`
+(`src/blizzard/runner/config_table.py`); the hub parses its file with `tomllib` and reads raw mappings with `.get`
+throughout `src/blizzard/hub/config.py`. The set of keys exists only as the sum of every read. This epic declares them.
+Each daemon gains a registry, `src/blizzard/hub/config_keys.py` and `src/blizzard/runner/config_keys.py`, of
+`ConfigKey(path, type, required, default,
+deprecated, replaced_by)`, where `path` is the TOML path with array tables
+marked (`tracing.endpoint`, `runner[].harness.claude_code.model`). Both daemons read through one strict accessor — the
+runner's `Table`, and the hub's section parsers moved off their `.get` reads onto it — and every read names a declared
+key. Under the test suite the accessor raises on an undeclared read, so a key the registry does not name cannot be read;
+at runtime it behaves as today, and an unknown key is still ignored. The declared defaults are the ones the parsers
+already apply, read from the same constants. The registry also lists the durable paths under each runtime root that
 `docs/backup.md` documents, from the layout constants that already name them (`src/blizzard/runner/host_layout.py`, the
 hub's runtime layout).
 
@@ -71,9 +74,10 @@ the old name, which is the break `docs/versioning.md` already says it is.
 The document is generated from each store's `schema.py` metadata (`src/blizzard/hub/store/schema.py`,
 `src/blizzard/runner/store/schema.py`): every table and column, with its portable type name, nullability, whether it has
 a server default, its primary key, unique constraints, check constraints by name, foreign keys, and its `deprecated`
-mark, plus the store's head revision id. A component test migrates an empty store to head on SQLite and on Postgres and
-compares its reflection with the document, so the document is what a migrated store is, not only what `schema.py`
-claims.
+mark, plus the store's head revision id. A component test migrates an empty store to head on SQLite and compares its
+reflection with the document, so the document is what a migrated store is, not only what `schema.py` claims. No gate job
+has a live Postgres — the suite's Postgres portability is proven statically, by compiling statements for the dialect —
+so the same comparison on Postgres runs in the rehearsal's Postgres leg ([rehearsal.md](./rehearsal.md) §Where it runs).
 
 The classifier holds `bzh:store-expand-contract`. A revision may expand — a table, a nullable column or one with a
 server default, an index, a value. Everything else is a **contraction**: a table or column dropped or renamed, a type

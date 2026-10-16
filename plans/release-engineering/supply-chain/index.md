@@ -1,7 +1,7 @@
 ---
 epic: release-engineering/supply-chain
 refinement: refined
-status: horizon
+status: in-progress
 ---
 
 # Plan — `epic:release-engineering/supply-chain`

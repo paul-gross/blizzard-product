@@ -10,8 +10,8 @@ release-preparation commit carrying the trailer `Release-Cut: <X.Y.Z>` at which 
 1. validates `changes/` as `check` does ([fragments.md](./fragments.md) §Validation), and refuses a deprecation whose
    `removes-in` is not later than `X.Y` ([upgrade.md](./upgrade.md) §Deprecations);
 2. moves every note in `changes/unreleased/` into `changes/<X.Y.Z>/`, except held notes (§Held notes);
-3. fills the version into every `docs/upgrade.md` boundary a moved note's `upgrade-guide` names
-   ([upgrade.md](./upgrade.md) §Boundaries);
+3. moves every `docs/upgrade.md` boundary a moved note's `upgrade-guide` names from `## Upgrading to the next release`
+   into `## Upgrading to <X.Y.Z>` ([upgrade.md](./upgrade.md) §Boundaries);
 4. for a major, runs the guide and refuses on an unretired deprecation ([upgrade.md](./upgrade.md) §A major's guide);
 5. runs `epic:release-engineering/compat-floor`'s tag-mode check over the cut commit and refuses when a break it would
    let through is named by no `breaks` entry of a breaking note in `changes/<X.Y.Z>/` (§Breaks cross-checked).

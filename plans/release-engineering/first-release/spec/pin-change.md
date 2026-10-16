@@ -53,3 +53,6 @@ The workflow opens the change with a fine-grained personal access token, the Act
 to `paul-gross/blizzard-infra` alone with `contents: write` and `pull-requests: write`. Reading `blizzard`'s releases
 needs nothing, since the repository is public. No AWS credential enters any workflow; `context/verification.md` §CI
 keeps saying so. `docs/secrets.md` gains the token: where it lives, its scope, and how to rotate it.
+
+The token is created by hand, as an Actions secret of `blizzard-infra`, before the workflow lands: without it every
+scheduled run fails.

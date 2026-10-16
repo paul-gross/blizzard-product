@@ -5,40 +5,58 @@ document of boundaries, and whose `bzh:release` ends with a hand-written edit. N
 
 ## The order of landings
 
-1. **The format and the assembler.** `changes/` with its `README.md`, `blizzard-change-notes check`, `cut`, and
-   `render`, wired into `release.yml` and into the gate's `check` run, with the harness's rules and procedure
-   ([harness.md](./harness.md)). From this landing on, a worker writes notes; nothing yet fails it for not writing one.
-2. **The gate's trigger.** `blizzard-change-notes owed` as `gate / change notes` on pull requests, and the matrix row.
-   It lands after the format so the check never fails a change for a note its author had no way to write.
-3. **Deprecations and the major's guide.** `removes-in`, `retires`, `postpones`, and `guide`, proven against a synthetic
-   history of tags in the tool's tests, since no major exists to prove it on. Before 1.0 it gathers for every minor a
-   deprecation names ([upgrade.md](./upgrade.md) §A major's guide).
+The epic lands in two phases, split by one line: the first release `epic:release-engineering/first-release` publishes.
+That release, `v0.2.0`, is cut with `scripts/release-notes.sh` and its **Upgrade notes** placeholder replaced by hand
+with a pointer to `docs/upgrade.md` §Upgrading to 0.2.0, so nothing may take the placeholder away, or tell a worker to
+write a note, until it is published.
 
-The epic lands after `epic:release-engineering/first-release`, which settles how `docs/upgrade.md`'s boundaries carry
-their versions and leaves a release for the first cut to count from. It does not wait on
-`epic:release-engineering/compat-floor`: the breaking pair reads the `!` marker compat-floor already reads, so each
-check holds its own half whichever lands first, and the `also in` marker reads plain tags until compat-floor's
-supported-release resolution replaces them. `flag` is refused until `epic:release-engineering/dark-launch` lands its
-registry.
+**The tooling, ahead of the first release.** Each of these changes nothing anyone runs: no worker is told to write a
+note and nothing publishes from one, so each lands as soon as what it reads exists.
+
+1. **The format and its validator.** `changes/` with its `README.md` and an empty `changes/unreleased/`,
+   `blizzard-change-notes check`, and `gate / change notes` running `check` on every trigger
+   ([fragments.md](./fragments.md)). `flag` is refused until step 4.
+2. **The assembler.** `cut` and `render`, built against fixture trees and synthetic tags, with `also in` read from plain
+   release tags ([assembly.md](./assembly.md)). It follows first-release's rewrite of `docs/upgrade.md` into per-release
+   `## Upgrading to` sections, which `cut` files boundaries under ([upgrade.md](./upgrade.md) §Boundaries).
+   `release.yml` does not call it yet.
+3. **Deprecations and the major's guide.** The cut's refusals for `removes-in` and `postpones`, and `guide`, proven
+   against a synthetic history of tags, since no major exists to prove them on ([upgrade.md](./upgrade.md)).
+4. **The flag field.** `flag` admitted, held notes, and **Turned on**, once `epic:release-engineering/dark-launch`'s
+   registry exists ([assembly.md](./assembly.md) §Held notes).
+
+**The switch, once `v0.2.0` is published.**
+
+5. **Publishing from notes, and requiring them.** `release.yml` publishes `render`'s body, `scripts/release-notes.sh`
+   shrinks to the commit appendix, `docs/upgrade.md` gains its `## Upgrading to the next release` heading, `bzh:release`
+   runs `cut` in `epic:release-engineering/release-lines`' cut commit, and the harness's rules, procedure, and
+   `blizzard:change-notes` row land ([harness.md](./harness.md)), with the notes since `v0.2.0` written beside them
+   (§The first assembled release). From this landing on, every worker writes notes.
+6. **The gate's trigger.** `blizzard-change-notes owed` on pull requests ([owed.md](./owed.md)). It reads the contract
+   documents from `epic:release-engineering/compat-floor`'s surface registry and the `!` marker as `blizzard-compat`
+   reads it, so it lands once `blizzard-compat` has, which itself waits for a release to compare against; and after step
+   5, so it never fails a change for a note its author had not yet been told to write.
+7. **The cross-check.** The cut's and the release workflow's match of `compat-breaks.json` against the breaking notes,
+   and `also in` over the supported releases ([assembly.md](./assembly.md) §Breaks cross-checked), once
+   `blizzard-compat` writes the file at a tag.
 
 ## The first assembled release
 
-The changes landed between the last release and the first landing have no notes. That landing writes them: the agent
-landing it reads the commit log since the last release tag and writes an unreleased note for each change an operator
-would notice, under `bzh:change-note`, and an upgrade section for every operator-facing step the
-`## Landing and
-deployment` sections of the issues that range closed carry, so the first assembled release is complete.
-The commit appendix covers anything missed.
+The changes landed between `v0.2.0` and step 5 have no notes. Step 5 writes them: the agent landing it reads the commit
+log `v0.2.0..HEAD` and writes an unreleased note for each change an operator would notice, under `bzh:change-note`, and
+an upgrade section for every operator-facing step the `## Landing and deployment` sections of the issues that range
+closed carry, so the first assembled release is complete. The commit appendix covers anything missed.
 
 ## Landing and deployment steps
 
-Until this epic lands, a release's deployment steps live in its issues: `epic:release-engineering/first-release`'s
-runbook reads the `## Landing and deployment` sections of the issues a release's range closed beside its **Upgrade
-notes** ([runner-pin.md](../../first-release/spec/runner-pin.md)). From the first landing, an operator-facing step
-travels as a note's upgrade section instead ([upgrade.md](./upgrade.md) §The upgrade section), and once the first
-assembled release is published the runbook reads its **Upgrade notes** alone. An issue's `## Landing and deployment`
-section keeps only what is not the operator's — a step for the landing itself — and says nothing a release's operator
-must do.
+Until step 5, a release's deployment steps live in its issues: `epic:release-engineering/first-release`'s runbook reads
+the `## Landing and deployment` sections of the issues a release's range closed beside its **Upgrade notes**
+([runner-pin.md](../../first-release/spec/runner-pin.md)). From step 5, an operator-facing step travels as a note's
+upgrade section instead ([upgrade.md](./upgrade.md) §The upgrade section). Once the first assembled release is
+published, the workspace's runbook — `context/project/post-delivery.md` and the release binding in
+`context/project/local-instance.md` — is rewritten to read a release's **Upgrade notes** alone. That is an attended
+commit to the workspace repository, which no fleet chunk can land. An issue's `## Landing and deployment` section keeps
+only what is not the operator's — a step for the landing itself — and says nothing a release's operator must do.
 
 ## What moves over
 

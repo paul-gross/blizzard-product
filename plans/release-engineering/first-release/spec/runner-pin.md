@@ -27,9 +27,13 @@ exports — keeps its shape.
    being installed, or be newer within the window `docs/versioning.md` states. A runner host never moves to a release
    newer than the hub it works against; the runbook stops there.
 2. **Fetch the wheel** from the release itself, never a build:
-   `gh release download v<version> --repo paul-gross/blizzard --pattern 'blizzard-*.whl' --dir <scratch>`. Once
-   `epic:release-engineering/supply-chain` attaches checksums, the runbook verifies the wheel against them here.
+   `gh release download v<version> --repo paul-gross/blizzard --pattern 'blizzard-*.whl' --dir <scratch>`.
 3. **Install it** into the venv: `uv pip install --python ../.venv --reinstall <scratch>/blizzard-*.whl`.
+
+Once `epic:release-engineering/supply-chain` lands, steps 2 and 3 become its install: the release's attested, hashed
+requirements file, verified and then synced into the venv ([install](../../supply-chain/spec/install.md#the-runner),
+[verification](../../supply-chain/spec/verification.md#the-instance)). Because `../.venv` also holds the operator CLI,
+the runbook first checks that the venv holds nothing the sync would remove, and stops if it does.
 
 No step reads `projects/blizzard` any more: `winter ws fetch --all` and `mise run build` leave the runbook. The source
 checkout keeps serving feature environments and nothing else.
@@ -56,9 +60,8 @@ Going back is the same procedure towards an older release, runner host first and
 ([procedures.md](./procedures.md)). The host's store may be ahead of what the older release expects, so before the older
 wheel is installed:
 
-1. Read the head revision the older release expects: install its wheel into a throwaway venv and print the runner
-   store's head (`MigrationRunner(script_location=blizzard.runner.store.MIGRATIONS_DIR, …).script_head()`, the runner
-   twin of `blizzard`'s `docs/rollback.md` §2).
+1. Read the head revision the older release expects: install its wheel into a throwaway venv and run
+   `blizzard runner migrate --head` from it ([versions.md](./versions.md) §Revision queries every release answers).
 2. With the unit stopped, downgrade on the **current** venv, which holds the downgrade code:
    `../.venv/bin/blizzard runner migrate --dir ../runner --down <revision>`.
 3. Install the older wheel, check the directory, and restart, as in a forward move.

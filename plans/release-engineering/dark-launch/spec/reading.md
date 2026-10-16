@@ -55,7 +55,8 @@ renders a quiet marker beside the hub's version whenever `overridden` is not emp
 
 A host resolves one `Flags` for each of its runners: every `runner` flag at its registry default, then the host's
 `[flags]` table, then every `fleet` flag as its hub last answered it (below). The runner's panel reads its host's answer
-from the host's own `GET /api/flags`, shaped as the hub's, and shows the same marker when its host overrides anything.
+from the host's own `GET /api/flags`, shaped as the hub's over every live `runner` flag, and shows the same marker when
+its host overrides anything. The host carries `overridden` on that answer alone; its `GET /api/health` is unchanged.
 
 ## The fleet scope across skew
 

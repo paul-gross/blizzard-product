@@ -37,12 +37,13 @@ release's notes for what it asks. The sequence:
 2. **Order.** Forward: the hub first, then each runner host, so no runner ever runs ahead of its hub. Back: each runner
    host first, then the hub, for the same reason.
 3. **Move the hub.** Pin its exact version and digest, never a moving tag, and let the deployment apply it. Going back,
-   the store is downgraded on the outgoing image before the swap. Proof: `/api/health`'s `version` equals the target in
-   PEP 440 normal form, and `/api/ready` reports `ready` with the store at the expected revision.
+   the store is downgraded on the outgoing image (`migrate --down`) to the head the target names (`migrate --head`)
+   before the swap. Proof: `/api/health`'s `version` equals the target in PEP 440 normal form, and `/api/ready` reports
+   `ready` with the store at the expected revision.
 4. **Move each runner host.** Install the target release's wheel from its GitHub Release; going back, downgrade the host
-   store on the current install first. Migrate, check the directory (`blizzard runner host --check`), mint every graph
-   the range changed, restart. Proof: the host's `/api/health` version equals the target exactly, and each runner ticks
-   against the hub.
+   store on the current install first, to the head the older release names with `migrate --head`. Migrate, check the
+   directory (`blizzard runner host --check`), mint every graph the range changed, restart. Proof: the host's
+   `/api/health` version equals the target exactly, and each runner ticks against the hub.
 5. **Record the pins** wherever the deployment keeps them, in a reviewed change.
 
 A proof that fails stops the procedure where it is. The half already moved stays where it is if it is inside the window

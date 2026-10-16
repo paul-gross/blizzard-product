@@ -65,5 +65,5 @@ applied ([reading.md](./reading.md)). `Flags` is built at composition and handed
 holders configuration already travels by (`hub/composition.py`, `runner/composition.py`), never read from a module-level
 global, so a test builds the `Flags` it wants. `flags.on(name)` raises on a name the registry does not hold, live or
 retired, so a mistyped name fails its first test rather than reading as off. The registry file is the single home of
-every name; a lint (`tests/test_flag_registry.py`) fails when code names a flag the file does not hold, or the file
-holds a live flag no code reads.
+every name; a lint (`tests/test_flag_registry.py`), scanning Python under `src/blizzard/` and the board's TypeScript
+under `web/projects/`, fails when code names a flag the file does not hold, or the file holds a live flag no code reads.

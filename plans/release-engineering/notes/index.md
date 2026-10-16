@@ -1,7 +1,7 @@
 ---
 epic: release-engineering/notes
 refinement: refined
-status: horizon
+status: in-progress
 ---
 
 # Plan — `epic:release-engineering/notes`

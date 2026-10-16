@@ -40,10 +40,13 @@ the rows the history leaves in a freshly migrated store, and deletes the absorbe
 
 ## Turning an older store away
 
-`MigrationRunner` (`src/blizzard/foundation/store/migrations.py`) learns one refusal. A store whose current revision is
-not in the tree but is in the baseline's `ABSORBED` set is older than every supported release; `upgrade` and the
-daemon's start-up revision check both refuse it with a message naming the store, its revision, and the release to
-install and migrate through first — `BASELINE_FLOOR` — before upgrading to this one. A revision in neither the tree nor
+`MigrationRunner` (`src/blizzard/foundation/store/migrations.py`) learns one refusal, reading `BASELINE_FLOOR` and
+`ABSORBED` from the tree's base revision through Alembic's `ScriptDirectory`. A store whose current revision is not in
+the tree but is in `ABSORBED` is older than every supported release; `hub migrate`, `runner migrate`, both daemons'
+start-up revision checks, and `runner ingest` (`src/blizzard/runner/ingest.py`, for its source store) refuse it with a
+`StoreBelowFloorError` naming the store, its revision, and the release to install and migrate through first —
+`BASELINE_FLOOR` — and change nothing. A tree whose base revision declares neither attribute behaves as it does today,
+so the refusal lands ahead of the first fold and stays inert until one exists. A revision in neither the tree nor
 `ABSORBED` keeps today's meaning, a store a newer build migrated. A store at or past the floor revision sees nothing
 change: its `alembic_version` row already names a revision the tree holds.
 
@@ -56,11 +59,23 @@ release to step through before they meet the refusal.
 database blizzard supports, sqlite and postgres: one by migrating an empty store with the floor's released wheel, one by
 upgrading an empty store to the baseline alone. It compares them table for table — columns with their types,
 nullability, and defaults; primary keys, foreign keys, unique constraints, and indexes; and every row — and fails on any
-difference. It runs in the fold's pull request and at every candidate and patch tag, since the floor's wheel is always
-fetchable from its GitHub Release; a stable tag relies on its candidate's run ([train.md](./train.md) §Promotion), as it
-does for the rehearsal. The postgres half needs a postgres service in the job that runs it; no other gate tier does.
+difference. It skips while the base revision declares no `BASELINE_FLOOR`. It cannot run in the gate, which is
+token-free and reaches no network beyond package installs, while this proof downloads the floor's wheel from its GitHub
+Release and needs a postgres service no other tier runs. So it is a job of its own, `store-baseline`, declared as
+`blizzard:store-baseline` in `blizzard-context`'s `verification/blizzard.md`: `pr.yml` runs it on pull requests that
+touch either tree's `versions/` directory, which every fold's pull request does, and `release.yml` on every candidate
+and patch tag. A stable tag relies on its candidate's run ([train.md](./train.md) §Promotion), as it does for the
+rehearsal.
 
 **The rehearsal still walks from the floor.** The upgrade rehearsal is `epic:release-engineering/compat-floor`'s
 ([rehearsal](../../compat-floor/spec/rehearsal.md)), and it already starts from every supported release. After a fold it
 walks the oldest one's store forward to the candidate and back down only as far as the baseline, never past it, which
 proves the revisions kept above the floor still downgrade onto a store the floor itself wrote.
+
+## The procedure
+
+`blizzard-context`'s `workflows/store-fold.md` carries a fold from the floor to a merged pull request: read the floor
+from `blizzard-compat releases --json`, run `scripts/fold_store.py <floor-tag>`, open the pull request with
+`store-baseline` green and the rehearsal walking down only as far as the baseline, merge it before the train cuts its
+candidate, and name the floor beside that release in `docs/upgrade.md`. It lands with the tool and the proof. Running it
+is an operation, carried out on its day by an operator or an agent they ask, until `epic:cadence` schedules it.

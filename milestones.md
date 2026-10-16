@@ -151,27 +151,27 @@ timing of an upgrade back to the person who has to live with it. The release tha
 Hardening is what a platform does after it works. Little of it is a new capability. Almost all of it is an assumption
 the platform made on the operator's behalf, handed back to them as a decision.
 
-| Epic                                     | Status    |
-| ---------------------------------------- | --------- |
-| `epic:runner-host`                       | delivered |
-| `epic:release-engineering/first-release` | horizon   |
-| `epic:release-engineering/compat-floor`  | horizon   |
-| `epic:release-engineering/notes`         | horizon   |
-| `epic:release-engineering/release-lines` | horizon   |
-| `epic:release-engineering/dark-launch`   | horizon   |
-| `epic:release-engineering/supply-chain`  | horizon   |
-| `epic:throttling`                        | horizon   |
-| `epic:tagging`                           | horizon   |
-| `epic:resilience`                        | horizon   |
-| `epic:retention`                         | horizon   |
-| `epic:config/model-resolution`           | horizon   |
-| `epic:config/sweep`                      | horizon   |
-| `epic:ui-toolkit`                        | horizon   |
-| `epic:documentation`                     | horizon   |
-| `epic:test-optimization`                 | horizon   |
-| `epic:test-architecture`                 | horizon   |
-| `epic:test-shared-service`               | horizon   |
-| `epic:architectural-sweep`               | delivered |
+| Epic                                     | Status      |
+| ---------------------------------------- | ----------- |
+| `epic:runner-host`                       | delivered   |
+| `epic:release-engineering/first-release` | in-progress |
+| `epic:release-engineering/compat-floor`  | in-progress |
+| `epic:release-engineering/notes`         | in-progress |
+| `epic:release-engineering/release-lines` | in-progress |
+| `epic:release-engineering/dark-launch`   | in-progress |
+| `epic:release-engineering/supply-chain`  | in-progress |
+| `epic:throttling`                        | horizon     |
+| `epic:tagging`                           | horizon     |
+| `epic:resilience`                        | horizon     |
+| `epic:retention`                         | horizon     |
+| `epic:config/model-resolution`           | horizon     |
+| `epic:config/sweep`                      | horizon     |
+| `epic:ui-toolkit`                        | horizon     |
+| `epic:documentation`                     | horizon     |
+| `epic:test-optimization`                 | horizon     |
+| `epic:test-architecture`                 | horizon     |
+| `epic:test-shared-service`               | horizon     |
+| `epic:architectural-sweep`               | delivered   |
 
 ## `milestone:human-in-the-loop` — the operator stops being the wire
 

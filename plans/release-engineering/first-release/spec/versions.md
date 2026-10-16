@@ -36,6 +36,25 @@ cut commit is `0.3.0.dev<run>+<sha>` and sorts after `0.2.0` and all its candida
 ([train](../../release-lines/spec/train.md) §Versions on `master` and on a branch); this epic adds no rule of its own to
 either.
 
+## Revision queries every release answers
+
+Moving a deployment between two releases needs two questions answered of a build without touching any store: which
+revision it expects at its head, and whether its migration tree holds a given revision. They live on the CLI every
+release ships, never in an import of `blizzard.foundation.store.migrations` internals, which a later release may move
+without breaking any promise:
+
+- **`migrate --head`**, on both `blizzard-hub migrate` and `blizzard runner migrate`, prints that tree's head
+  (`MigrationRunner.script_head`) and exits 0, reading no directory, configuration, or store, so
+  `docker run --rm --entrypoint blizzard-hub <image> migrate --head` answers from any image.
+- **`migrate --knows <rev>`** exits 0 when the tree holds `<rev>` (`MigrationRunner.knows_revision`) and 1 when it does
+  not, with nothing on stdout, under the same store-free contract.
+
+`--head`, `--knows`, and `--down` are mutually exclusive, a usage error (exit 2) when combined. Both chains are linear,
+so membership in a tree is all a move needs to tell forward from back ([hub-pin.md](./hub-pin.md) §The updater applies
+the pin). The queries are in the commit `v0.2.0-rc.1` is cut from, since the hub's updater asks them of that image, and
+`docs/rollback.md` §2 uses `migrate --head` in place of its `python3 -c` one-liner, for the hub and for the runner
+host's store.
+
 The wheel's version is the tag's (`BLIZZARD_VERSION`, set by `release.yml` from `GITHUB_REF_NAME`), so the candidate's
 wheel and image report `0.2.0rc1`, the PEP 440 normal form of `0.2.0-rc.1`, and the stable release's report `0.2.0`.
 Every comparison this epic makes of a reported version against a pin compares normal forms.

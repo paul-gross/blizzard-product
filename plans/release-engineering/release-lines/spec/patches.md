@@ -27,9 +27,9 @@ nothing else. It adds no route, field, configuration key, span, event, or egress
 no store revision. A revision on a branch would sit at a different place in the chain than the same revision on
 `master`, and a store migrated by the patch would then skip whatever `master` added between them on its next upgrade; a
 fix to stored data in a patch is a repair the daemon applies idempotently at start, or a CLI verb the operator runs,
-never a revision. The rule lives in `blizzard-context` `standards/` as one rule a review asserts, and the compatibility
-check that holds a release branch to every release already cut on its line (`epic:release-engineering/compat-floor`)
-enforces the part of it a diff can see.
+never a revision. The rule lives in `blizzard-context` `standards/` as `bzh:patch-scope`, one rule a review asserts, and
+the compatibility check that holds a release branch to every release already cut on its line
+(`epic:release-engineering/compat-floor`) enforces the part of it a diff can see.
 
 ## Carrying a fix back
 
@@ -72,3 +72,7 @@ read from the repository's tags, and moves `latest` only when the version being 
 there is. Every stable release and patch publishes its exact version and moves its own `X.Y` line; a patch on an old
 major's line never moves `latest`. The GitHub Release follows the same rule, created with `--latest=false` unless it is
 the highest stable version. `tests/test_image_tags.py` covers the old-line case beside the cases it holds today.
+
+A line publishes its patches the way it published its first release. A release branch cut before
+`epic:release-engineering/supply-chain`'s signing lands keeps publishing unsigned patches for as long as it is
+supported, and signing is not backported to it.

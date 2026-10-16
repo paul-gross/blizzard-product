@@ -17,6 +17,12 @@ with no supported release skips it and says so.
 
 It runs once per supported release ([baseline.md](./baseline.md)), as a matrix over them, and each leg runs the hub
 store on SQLite and on Postgres, the backend the hosted hub runs (`packaging/docker/`); the runner store is SQLite only.
+The Postgres leg is a `services: postgres` container on the job, the first live Postgres in CI, and it also migrates an
+empty hub store and compares its reflection with `contracts/store/hub.json` ([surfaces.md](./surfaces.md) §Store
+schema).
+
+`push.yml`'s `dev-image` needs the rehearsal beside `[gate, upper-tiers, dev-build]`, so `edge` advances only on a
+commit whose upgrade from every supported release succeeded.
 
 ## Two installations side by side
 

@@ -17,11 +17,14 @@ its `v` (`0.7.0`, `0.7.0-rc.1`); the wheel alone keeps the PEP 440 filename the 
 | `compat-breaks.json`                           | Every break the release's compatibility backstop let through, owned by `epic:release-engineering/compat-floor` (`compat-floor/spec/gates.md`) |
 | `SHA256SUMS`                                   | `sha256sum` output over every other attached file, sorted by name                                                                             |
 
-Nothing else is attached, and every one of these is attached on every release, candidates and patches alike;
-`compat-breaks.json` is attached even when it lists no break, so its absence is never mistaken for a release without
-any. The release notes are the release's body, not a file (`epic:release-engineering/notes`). The image's tag fan-out is
-unchanged (`scripts/image-tags.sh`); the image file names the digest so a person who trusts the checksums file can pin
-the image by content rather than by a tag that a registry lets move.
+Nothing else is attached, and every one of these is attached on every release, candidates and patches alike, save
+`compat-breaks.json`: it is attached whenever the build produced it, which is every release from the first one whose
+workflow runs `epic:release-engineering/compat-floor`'s backstop, and from then on it is attached even when it lists no
+break, so its absence is never mistaken for a release without any. Before that release, the file does not exist and is
+not attached; no stand-in is written in its place, since its shape is compat-floor's. The release notes are the
+release's body, not a file (`epic:release-engineering/notes`). The image's tag fan-out is unchanged
+(`scripts/image-tags.sh`); the image file names the digest so a person who trusts the checksums file can pin the image
+by content rather than by a tag that a registry lets move.
 
 ## The hashed requirements
 

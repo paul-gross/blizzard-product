@@ -7,14 +7,15 @@ Comparing a change against the supported releases, and refusing a runner outside
 `epic:release-engineering/release-lines`'; the content of a release's notes is `epic:release-engineering/notes`'. This
 spec cuts one release and moves one instance onto releases; it defines none of theirs.
 
-The epic spans four repositories and the workspace. In `blizzard`: the release tooling under `scripts/` and
-`.github/workflows/`, and the operator documents `docs/versioning.md`, `docs/upgrade.md`, `docs/rollback.md`, and
-`docs/ci.md`. In `blizzard-infra`: the deployment payload under `deploy/`, its contract and smoke tests under `tests/`,
-a new workflow under `.github/workflows/`, and `docs/deployment.md` and `docs/rollback.md`. In `blizzard-context`:
-`workflows/release.md` and a new workflow beside it. In the workspace: `context/project/local-instance.md` and
-`context/project/post-delivery.md`. `blizzard-mock` is unchanged by this epic: the release workflow checks it out at its
-default branch for the first cut, and its matching `release/0.2` branch and tag are created after the fact by
-`epic:release-engineering/release-lines`' [carry-over](../../release-lines/spec/carry-over.md).
+The epic spans four repositories and the workspace. In `blizzard`: the revision queries on both `migrate` verbs, the
+release tooling under `scripts/` and `.github/workflows/`, and the operator documents `docs/versioning.md`,
+`docs/upgrade.md`, `docs/rollback.md`, and `docs/ci.md`. In `blizzard-infra`: the deployment payload under `deploy/`,
+its contract and smoke tests under `tests/`, a new workflow under `.github/workflows/`, and `docs/deployment.md` and
+`docs/rollback.md`. In `blizzard-context`: `workflows/release.md` and a new workflow beside it. In the workspace:
+`context/project/local-instance.md` and `context/project/post-delivery.md`. `blizzard-mock` is unchanged by this epic:
+the release workflow checks it out at its default branch for the first cut, and its matching `release/0.2` branch and
+tag are created after the fact, as an attended step of `epic:release-engineering/release-lines`'
+[carry-over](../../release-lines/spec/carry-over.md).
 
 | Where                            | Read when                                                                                                                                       |
 | -------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------- |

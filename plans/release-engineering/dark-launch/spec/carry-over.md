@@ -6,26 +6,38 @@ empty, every process resolves an empty `Flags`, and every answer this epic adds 
 ## The order of landings
 
 1. **The registry and its reading.** `foundation/flags/`, the empty `registry.toml`, the `[flags]` table in both
-   configuration files, `GET /api/flags` on the hub and on the host, `overridden` on `GET /api/health`, and the registry
-   lint ([registry.md](./registry.md), [reading.md](./reading.md)). Nothing reads a flag yet, so it lands alone.
+   configuration files, `GET /api/flags` on the hub and on the host, `overridden` on the hub's `GET /api/health`, and
+   the registry lint over Python ([registry.md](./registry.md), [reading.md](./reading.md)). Nothing reads a flag yet,
+   so it lands alone. `[flags]` is one entry of type `open table` in `epic:release-engineering/compat-floor`'s
+   configuration key registries, whose strict mode would otherwise refuse it; whichever of the two lands second declares
+   the entry.
 2. **The fleet scope.** `fleet_flags` on `RunnerIdentityView`, the runner applying it at the head of its tick, and
    `mock_hub`'s lever for it, in `blizzard` and `blizzard-mock` together. A runner from before this step meets a hub
    that answers the field and ignores it; a runner after it meets a hub from before and reads every fleet flag off,
    which is the behavior that hub carries.
-3. **Surface behind a flag.** `FlagOff` in `wire/`, the CLI's refusal, the configuration warning for a key whose flag is
-   off, the board's flag store, guard, and marker, and the rule `bzh:flag-hides-behavior` in `blizzard-context`
-   ([contract.md](./contract.md)).
-4. **The lifecycle check.** `blizzard-flag-lifecycle` in the merge gate ([lifecycle.md](./lifecycle.md)). It reads
-   release tags, so its release rules have nothing to hold until `epic:release-engineering/first-release` has cut one,
-   and its supported-release rules read `epic:release-engineering/compat-floor`'s baseline once that lands; until then
-   it checks structure and creation alone. The rule tying a flip to its change note waits for the note format of
-   `epic:release-engineering/notes`. Its run at the cut joins the release procedure of
-   `epic:release-engineering/release-lines`, in whichever of the two epics lands second.
-5. **The procedure.** The workflow in `blizzard-context`, the check's row in `verification/blizzard.md`, and
-   `docs/flags.md`, written against what the four steps above built.
+3. **Surface behind a flag.** `FlagOff` in `wire/`, the route guard, the CLI's refusal, the configuration warning for a
+   key whose flag is off, and the rule `bzh:flag-hides-behavior` in `blizzard-context` ([contract.md](./contract.md)),
+   in `blizzard` and `blizzard-context` together.
+4. **The board and the host panel.** Each app's flag store, route guard, and override marker, and the registry lint's
+   scan of `web/projects/` ([reading.md](./reading.md) §The board). It needs only step 1, so it lands beside step 3 in
+   either order.
+5. **The lifecycle check, on its own rules.** `blizzard-flag-lifecycle` with its three modes, the derivation from
+   release tags, every rule that reads only the registry and the tags, and `gate / flag lifecycle` on pull requests
+   ([lifecycle.md](./lifecycle.md)). Its tag rules are proven against a synthetic history of tags in the tool's tests,
+   so it needs no release to land, and with no tag holding a registry it checks structure alone.
+6. **The lifecycle check, against its siblings.** The tombstone rules, read through `blizzard-compat releases` of
+   `epic:release-engineering/compat-floor`; the rule tying a flip to a note whose `flag` field names it, in the format
+   of `epic:release-engineering/notes`; and the calls into the release: `cut` mode in the gate on a pull request whose
+   head carries the `Release-Cut` trailer, and `tag` mode in `release.yml` on every `v*` tag before anything is
+   published, the stable tag's borrowed-proof run included. `epic:release-engineering/release-lines` defines the cut
+   commit and the borrowed proof; this epic adds the check's calls to both. The step waits for all three siblings, and
+   so behind `epic:release-engineering/first-release`'s cut of the first candidate, since compat-floor's check lands
+   only once a release at or above its floor exists.
+7. **The procedure.** The workflow in `blizzard-context`, the check's row in `verification/blizzard.md`, and
+   `docs/flags.md`, written against what the steps above built.
 
-The first flag declared after step 3 is the proof: the next piece of whichever epic is landing dark at the time, carried
-through the procedure by an agent told only its name.
+The first flag declared after steps 3 and 4 is the proof: the next piece of whichever epic is landing dark at the time,
+carried through the procedure by an agent told only its name.
 
 ## What stays as it is
 

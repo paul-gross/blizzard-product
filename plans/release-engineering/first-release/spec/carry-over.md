@@ -6,18 +6,21 @@ cutover moves each half onto `v0.2.0-rc.1` once, and from then on neither half r
 
 ## The order of landings
 
-1. **`blizzard`: the release tooling and documents.** The rewrites of `docs/versioning.md`, `docs/upgrade.md`,
-   `docs/rollback.md`, and `docs/ci.md` ([versions.md](./versions.md)), and the part of
-   `epic:release-engineering/release-lines` that the first cut needs ([versions.md](./versions.md) §What the first cut
-   needs of the version tooling), which [its carry-over](../../release-lines/spec/carry-over.md) lands before
-   `v0.2.0-rc.1`; its release branches, and the mock's matching branch and tag, follow after the cut, created for `0.2`
-   after the fact by that same carry-over. Nothing here changes a running deployment. Beside it, and also before the
-   candidate is cut, lands `epic:release-engineering/compat-floor`'s first step — its contract documents and
-   `window.toml` with `floor` at `0.2` ([its carry-over](../../compat-floor/spec/carry-over.md), step 1) — so that
-   `0.2.0` is a baseline for every surface, not only the OpenAPI and dictionary ones. With it, `blizzard-context`'s
-   `bzh:release` and `bzh:release-deploy` ([procedures.md](./procedures.md)).
-2. **The candidate.** The cut commit for `0.2.0` merges to `master`, and `v0.2.0-rc.1` is tagged at it by `bzh:release`
-   ([versions.md](./versions.md) §The first release). The instance is still on `edge`, which at that moment is the same
+1. **`blizzard`: the release tooling and documents.** The revision queries on both `migrate` verbs
+   ([versions.md](./versions.md) §Revision queries every release answers), which the candidate must carry; then the
+   rewrites of `docs/versioning.md`, `docs/upgrade.md`, `docs/rollback.md`, and `docs/ci.md`
+   ([versions.md](./versions.md)), and the part of `epic:release-engineering/release-lines` that the first cut needs
+   ([versions.md](./versions.md) §What the first cut needs of the version tooling), which
+   [its carry-over](../../release-lines/spec/carry-over.md) lands before `v0.2.0-rc.1`; its release branches, and the
+   mock's matching branch and tag, follow after the cut, created for `0.2` after the fact as an attended step of that
+   same carry-over, not a landing. Nothing here changes a running deployment. Beside it, and also before the candidate
+   is cut, lands `epic:release-engineering/compat-floor`'s first step — its contract documents and `window.toml` with
+   `floor` at `0.2` ([its carry-over](../../compat-floor/spec/carry-over.md), step 1) — so that `0.2.0` is a baseline
+   for every surface, not only the OpenAPI and dictionary ones. With it, `blizzard-context`'s `bzh:release` and
+   `bzh:release-deploy` ([procedures.md](./procedures.md)).
+2. **The candidate**, by hand. The operator opens the cut commit for `0.2.0`, merges it to `master` once its checks
+   pass, and tags `v0.2.0-rc.1` at it by `bzh:release` once its `push` run is green ([versions.md](./versions.md) §The
+   first release); no fleet worker cuts a release. The instance is still on `edge`, which at that moment is the same
    source.
 3. **`blizzard-infra`: the pin and the updater.** `deploy/release.env` arrives pinning `0.2.0-rc.1` by digest, never
    anything else: the file is born naming a release. With it the updater's rewrite, the hold, the env-file order, the

@@ -25,8 +25,12 @@ as its line. A runner is admitted when its line is at or above `floor` and at or
 is refused, as `too-old` or `too-new`. A version that does not parse is treated as absent.
 
 An absent version is admitted while the window's `floor` is below `handshake_since`, a constant beside the rule naming
-the first line that sends a version, and refused once the floor reaches it, since every runner the window still admits
-then sends one ([carry-over.md](./carry-over.md)).
+the first line that sends a version — `"0.3"`, the line after the first release — and refused once the floor reaches it,
+since every runner the window still admits then sends one ([carry-over.md](./carry-over.md)).
+
+A hub whose own line is below its window's `floor` refuses to start, naming both versions. Such a hub would refuse every
+runner, so a tree whose version and window disagree fails loudly at start, in its own tests, rather than by stopping the
+fleet.
 
 A hub never requires a runner newer than itself, and never admits one newer than itself either: a newer runner may call
 a route or send a value its hub does not have. So the window's upper edge is the hub's own version and needs no

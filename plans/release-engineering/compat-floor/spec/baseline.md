@@ -96,6 +96,7 @@ uv run blizzard-compat                       # HEAD against its supported releas
 uv run blizzard-compat --line release/0.9    # HEAD against every release on a line
 uv run blizzard-compat --against v0.9.2      # HEAD against one named release
 uv run blizzard-compat --json                # the findings, machine-readable
+uv run blizzard-compat --tag 0.3.0-rc.1     # the tree judged as that tag, writing compat-breaks.json
 ```
 
 `blizzard-compat releases` is the one place the supported releases are computed for anything outside this tool. Its

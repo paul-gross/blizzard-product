@@ -23,8 +23,9 @@ out the mock's default branch. Both stores are Alembic trees driven by `src/bliz
 Paths are relative to the `blizzard` repository's root.
 
 The epic reaches beyond `blizzard`'s source. `blizzard-mock` gains release branches and tags of its own
-([mock.md](./mock.md)). In `blizzard-context`, `workflows/` gains a procedure per operation beside `bzh:release`, and
-`standards/` gains the rule for what a patch may carry ([patches.md](./patches.md) §What a patch may carry). In
+([mock.md](./mock.md)). In `blizzard-context`, `workflows/` gains a procedure per operation beside `bzh:release`,
+`standards/` gains `bzh:patch-scope`, the rule for what a patch may carry ([patches.md](./patches.md) §What a patch may
+carry), and `verification/blizzard.md` declares `blizzard:store-baseline` ([fold.md](./fold.md) §The two proofs). In
 `blizzard`'s own docs, `docs/versioning.md` gains the train, the branches, the support promise, and the published major
 dates, and `docs/ci.md` describes the workflows on release branches; `docs/upgrade.md` names the baseline floor each
 fold sets ([fold.md](./fold.md)).
