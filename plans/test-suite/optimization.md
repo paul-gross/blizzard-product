@@ -1,10 +1,10 @@
 ---
-epic: test-optimization
+epic: test-suite/optimization
 refinement: refined
 status: horizon
 ---
 
-# Plan — `epic:test-optimization`
+# Plan — `epic:test-suite/optimization`
 
 Every chunk the fleet lands waits on the gate. The unit and component tier, already split into four parallel shards,
 takes 17–19 min per shard, so a PR waits about 18–21 min and a push to `master` about 23–25. The goal is to cut that
@@ -92,56 +92,21 @@ worker a disjoint band, and its directories come from `tmp_path`, so most of its
 
 Target: e2e job ≤ 33% of its serial time.
 
-### 5. Per-test service cost (spike)
+### 5. Event-driven waits
 
-Each test runs, in order:
+The fixed waits outside the service tier get the treatment the hub-tier epic gives `sse_tap` as it ports those tests:
+waits that return when the expected thing has happened, and a barrier event where an assertion is negative. That covers
+e2e's `sleep(0.5)` tick spacing, `poll_until` intervals, the 10 s termination allowance, and the unit-tier sleeps in
+`test_cli.py` and `test_runner_harness_opencode_diagnostic.py`.
 
-- `blizzard-mock-fixture reset` (~2.3 s on a laptop);
-- mock forge start;
-- `blizzard-hub init` (all migrations);
-- `blizzard-hub host`;
-- optional mock runner and IdP;
-- teardown with up to 10 s SIGTERM per process.
-
-Tests count hub-wide SSE events, read the whole queue and feed, and register graphs by name, and crash tests kill the
-hub, so no two tests share one today. `epic:test-shared-service` is the path to sharing, a tenant per test on one hub.
-Until it lands:
-
-- Measure each phase first: mint, forge, init, ready, act, teardown.
-- Reuse a minted fixture per worker, by reset or copy. Absolute `file://` origins complicate copying.
-- Start the hub from a pre-migrated database (the unit tier's prototype database applied to a subprocess). This
-  conflicts with `epic:test-architecture`'s ban on touching store files, so state the trade-off explicitly.
-- Shorten teardown: expect a clean exit instead of spending the SIGTERM allowance.
-
-### 6. Event-driven waits
-
-`sse_tap` has two fixed waits:
-
-- **Drain, 1.5–2 s:** discards the connect-time replay, because the end of the replay can't be detected.
-- **`collect(window=6.0)`:** the assertions are negative ("exactly one `queue-changed`", "zero `chunk-changed`"), and
-  the fixed window is the only current way to show nothing more arrived.
-
-Replacements:
-
-- **Replay:** events carry integer ids. Read the current cursor and subscribe with `Last-Event-ID`, or drain until that
-  id.
-- **Positive assertions:** return as soon as the expected events have arrived.
-- **Negative assertions:** after the act, trigger a known harmless barrier event and wait for it. The stream is ordered,
-  so anything the act emitted arrives before it. **This is valid only where fan-out is emitted before the request
-  returns.** Verify each event path. Any path that fails keeps a bounded window and a comment explaining why.
-
-SSE windows cover ~7 tests, about 1 min. The same treatment applies to e2e's `sleep(0.5)` tick spacing, `poll_until`
-intervals, the 10 s termination allowance, and the unit-tier sleeps in `test_cli.py` and
-`test_runner_harness_opencode_diagnostic.py`.
-
-### 7. Slow unit outliers
+### 6. Slow unit outliers
 
 - **`test_runner_harness_opencode_diagnostic.py`** takes ~164 s of CPU: one 35 s test and ~30 tests at 4–5 s, all
   spawning subprocesses. Decide per test whether the subprocess is what's under test. Share one fake binary per module
   where possible.
 - **`test_runner_winter_provider.py`'s real-winter tests** take 11–15 s each. Placement follows area 3.
 
-### 8. Store migrations and statement guards in the fast tiers
+### 7. Store migrations and statement guards in the fast tiers
 
 Most of the unit and component tier's time goes to three costs that grow with the store rather than with what a test
 proves. Measured on one shard locally, out of about 5,030 s of summed test time:
@@ -164,5 +129,7 @@ each major.
 
 ## Out of scope
 
-Making tests implementation-independent belongs to `epic:test-architecture`, which owns any conflict such as area 5's
-pre-migrated hub.
+The service tier's per-test cost is not this epic's: the foundation and the two tier epics replace a stack per test with
+a tenant per test on a shared hub, so nothing here shortens a stack the initiative is retiring. Making tests
+implementation-independent belongs to the initiative's other epics and to `epic:test-architecture`, and where speed
+conflicts with it, the black-box line wins.

@@ -103,7 +103,7 @@ never counts the tenant first: the drain itself discovers how much there is. Whe
 the request runs the complete phase and answers `200` with `rows_removed`. When the budget runs out first, it answers
 `202` and the `tenant_teardown` sweep carries on from wherever the request stopped. A tenant of the size a service test
 creates — a few graphs, a handful of chunks and their facts — is expected to tear down in well under a second on SQLite;
-`epic:test-shared-service` measures it and owns the number it relies on.
+`epic:test-suite/foundation` measures it and owns the number it relies on.
 
 ### Retrying, and watching a deletion finish
 

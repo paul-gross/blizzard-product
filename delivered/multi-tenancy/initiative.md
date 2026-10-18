@@ -23,10 +23,10 @@ exists.
 
 The first person who needs that boundary is the test suite. A service test cannot share a running hub with its
 neighbours today, because the hub has no unit below the installation that a test could claim as its own.
-`epic:test-shared-service` runs many tests against one hub, each inside a tenant of its own, and it cannot start until
-this epic lands. The same boundary also serves anyone who wants to run separate fleets without standing up separate
-hubs. This is not a SaaS epic: there is no sign-up, billing, or self-service tenant creation. Tenants are created by
-whoever administers the hub.
+`initiative:test-suite` runs many tests against one hub, each inside a tenant of its own, and it cannot start until this
+epic lands. The same boundary also serves anyone who wants to run separate fleets without standing up separate hubs.
+This is not a SaaS epic: there is no sign-up, billing, or self-service tenant creation. Tenants are created by whoever
+administers the hub.
 
 ## Why it travels with `initiative:projects`
 

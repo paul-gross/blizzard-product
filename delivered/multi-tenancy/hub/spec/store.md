@@ -295,6 +295,6 @@ store is measured and stated in the release note that ships it.
   ([slice plan](../index.md) §Left for later); nothing here precludes it.
 - **Write contention.** All tenants on one SQLite hub share one writer: WAL mode with `busy_timeout=5000`
   (`foundation/store/engine.py`) queues concurrent writers rather than failing them. A tenant's write latency therefore
-  includes every other tenant's writes. This slice changes nothing about that; `epic:test-shared-service` measures how
+  includes every other tenant's writes. This slice changes nothing about that; `epic:test-suite/foundation` measures how
   many concurrent tenants a SQLite hub carries before it promises a number, and the hub's own fleet is unaffected while
   it holds one tenant.
