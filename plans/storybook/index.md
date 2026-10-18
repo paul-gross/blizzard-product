@@ -1,7 +1,7 @@
 ---
 epic: storybook
 refinement: refined
-status: horizon
+status: in-progress
 ---
 
 # Plan — `epic:storybook`
