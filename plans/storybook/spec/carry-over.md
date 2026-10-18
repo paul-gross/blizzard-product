@@ -69,10 +69,9 @@ on each other may land in parallel. A piece that changes `blizzard-context` land
 8. **The chunk page's header and tabs, and the transcripts.** Waits for pieces 3, 5, and 6, and may land beside piece 7.
    A stories file for each of `ChunkPageHeader`, `ChunkGeneralTab`, `ChunkNodeHistoryTab`, `ChunkTranscriptsTab`,
    `TranscriptSegmentView`, and `TranscriptViewer`. Proven by `web:story-render`, `web:lint`, and `web:manual-workshop`.
-9. **The shell's chrome and the lens selectors.** Waits for pieces 3, 5, and 6, and for the hub shell change that makes
-   the lens selectors presentational ([stories.md](./stories.md) §The lens selectors). A stories file for each of
-   `BoardHeader`, `MobileTabBar`, `MobileTitlebar`, `ProjectLensControl`, and `ProjectMenu`. Proven by
-   `web:story-render`, `web:lint`, and `web:manual-workshop`.
+9. **The shell's chrome and the lens selectors.** Waits for pieces 3, 5, and 6 ([stories.md](./stories.md) §The lens
+   selectors). A stories file for each of `BoardHeader`, `MobileTabBar`, `MobileTitlebar`, `ProjectLensControl`, and
+   `ProjectMenu`. Proven by `web:story-render`, `web:lint`, and `web:manual-workshop`.
 
 The epic is delivered when every piece has landed; pieces 7, 8, and 9 may land in any order, and the last of them closes
 it.

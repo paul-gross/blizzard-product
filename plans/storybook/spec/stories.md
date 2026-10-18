@@ -167,11 +167,9 @@ piece's own states.
 
 The hub shell's two project lens selectors — `ProjectLensControl`, the desktop chip row
 (`web/projects/hub/src/app/shell/nav/project-lens-control.ts`), and `ProjectMenu`, the mobile titlebar's submenu
-(`project-menu.ts`) — each read the tenant's projects through `injectProjectsQuery` and switch the lens through an
-injected `ProjectLens`, so neither renders without a live query client and router state. This epic does not reshape
-them. A change to the hub shell outside it makes both presentational: one shell-level container owns the projects read
-and the lens state, and each selector takes `choices: readonly LensChoice[]` and `current: string | null` as inputs,
-emits `choose`, and injects nothing. The selectors' stories wait for that change.
+(`project-menu.ts`) — are presentational. One shell-level container owns the projects read and the lens state, and each
+selector takes `choices: readonly LensChoice[]` and `current: string | null` as inputs, emits `choose`, and injects
+nothing, so each renders in the workshop from its inputs alone.
 
 `project-lens-control.stories.ts`, titled `Hub shell/Project lens`, shows All alone, a handful of projects, a tenant
 with enough projects that the chips scroll inside the control, and a long project name, at `desktop`, the only width the
