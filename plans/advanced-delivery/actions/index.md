@@ -1,6 +1,6 @@
 ---
 epic: advanced-delivery/actions
-refinement: refined
+refinement: pristine
 status: horizon
 ---
 

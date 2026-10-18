@@ -1,6 +1,6 @@
 ---
 epic: advanced-delivery/flows
-refinement: refined
+refinement: pristine
 status: horizon
 ---
 

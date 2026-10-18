@@ -1,6 +1,6 @@
 ---
 epic: advanced-delivery/forges
-refinement: refined
+refinement: pristine
 status: horizon
 ---
 
