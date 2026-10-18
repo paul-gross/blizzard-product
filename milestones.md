@@ -112,7 +112,10 @@ small, safe fixes says so once instead of watching the queue.
 The board has the same problem in a different material. Every small surface it grows — a form, a picker, a confirmation
 sheet — is invented, styled, and maintained by hand, and the count climbs with every epic that touches it. Hand-built
 parts drift: two dialogs written six months apart agree on nothing, and the operator learns each of them separately.
-Assembling the next one from a toolkit is faster to write, but the reason it matters is that it is quieter to use.
+Assembling the next one from a toolkit is faster to write, but the reason it matters is that it is quieter to use. The
+parts also need somewhere to be seen: a component judged only through the page that happens to render it is judged in
+the dark, and a workshop where each one stands alone in every state turns the owner's taste into feedback before the
+next surface is built.
 
 Two assumptions remain, and both concern what happens when things go badly or go on for a long time. The fleet presumes
 its model provider is reachable, so an outage or a rate limit at one in the morning becomes a queue of failures and a
@@ -160,6 +163,7 @@ the platform made on the operator's behalf, handed back to them as a decision.
 | `epic:release-engineering/release-lines` | in-progress |
 | `epic:release-engineering/dark-launch`   | in-progress |
 | `epic:release-engineering/supply-chain`  | in-progress |
+| `epic:storybook`                         | horizon     |
 | `epic:throttling`                        | horizon     |
 | `epic:tagging`                           | horizon     |
 | `epic:resilience`                        | horizon     |
