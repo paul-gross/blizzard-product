@@ -1,6 +1,6 @@
 ---
 epic: test-architecture
-refinement: refined
+refinement: scaffolded
 status: horizon
 ---
 
@@ -14,12 +14,12 @@ scope.
 
 ## Current coupling
 
-| Tier            | State            | Coupling                                                                                                                                                                                                                                                                     |
-| --------------- | ---------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| E2E             | Hybrid           | Forge, hub, and browser are real processes. The runner loop is ticked in-process in 10 files, and the runner API runs in-process in 6. Config goes through `init_environment` and `RunnerConfig`. 2 files read SQLAlchemy stores. Only 3 files start `blizzard-runner host`. |
-| Crash sweep     | Coupled          | The kill is external. Crash points are found by importing 14 Python modules. Leases and tokens are seeded directly into the store. Recovery is asserted through `blizzard.tools.invariants.Invariants` and the store schemas.                                                |
-| Journey         | Nearly black-box | Real daemons, HTTP, and CLI. Imports the config dataclasses, `Invariants`, and the crash tier's helpers.                                                                                                                                                                     |
-| `blizzard-mock` | Decoupled        | Never imports `blizzard`. Its wire-parity guard reads `wire/facts.py` as source text. `blizzard-mock-data` reflects the SQL schema. No CI of its own.                                                                                                                        |
+| Tier            | State            | Coupling                                                                                                                                                                                                                                                                                  |
+| --------------- | ---------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| E2E             | Hybrid           | Forge, hub, and browser are real processes. The runner loop is ticked in-process in about 20 files, and the runner API runs in-process in about 10. Config goes through `init_environment` and `RunnerConfig`. 3 files read SQLAlchemy stores. Only 3 files start `blizzard-runner host`. |
+| Crash sweep     | Coupled          | The kill is external. Crash points are found by importing 20 Python modules. Leases and tokens are seeded directly into the store. Recovery is asserted through `blizzard.tools.invariants.Invariants` and the store schemas.                                                             |
+| Journey         | Nearly black-box | Real daemons, HTTP, and CLI. Imports the config dataclasses, `Invariants`, and the crash tier's helpers.                                                                                                                                                                                  |
+| `blizzard-mock` | Decoupled        | Never imports `blizzard`. Its wire-parity guard reads `foundation/fact_kinds.py` and several other modules as source text, and runs outside its CI. `blizzard-mock-data` reflects the SQL schema.                                                                                         |
 
 Four couplings recur across the tiers:
 
@@ -40,31 +40,30 @@ Four couplings recur across the tiers:
 - **`blizzard-mock`** provides real services over real wires for every seam: a forge on bare git repos, mock harnesses,
   a mock hub, a mock runner, an OAuth IdP, the fixture scaffold, and `blizzard-mock-data`. Each has *levers* that force
   a named misbehaviour.
-- **`blizzard-runner tick`** already runs one REAP → PULL → FILL → ADVANCE pass from the CLI (`bzh:steppable-loop`). It
-  is a black-box replacement for the in-process `tick_once`.
+- **A host that steps on request**, which `epic:test-suite/runner-tier` builds, runs one REAP → PULL → FILL → ADVANCE
+  pass per call while serving the runner's local API. It is the black-box replacement for the in-process `tick_once`.
 
 ## Work areas
 
-Area 1 blocks the others, and builds on `epic:test-suite/foundation`.
+Area 1 blocks the others, and builds on `epic:test-suite/hub-tier` and `epic:test-suite/runner-tier`.
 
 ### 1. External test surface
 
 `initiative:test-suite` publishes most of the surface these tiers need: hub and runner configuration as documented
-files, the fact-kind vocabulary under `contracts/`, the runner's host layout as a contract, and a read for each runner
-store value its service tests needed. This epic consumes those and adds only what its own tiers still lack, under the
-same rule: for each store value read or seeded today, an API or CLI surface, or the SQL schema declared a contract that
-tests may query with plain SQL. The ORM is never the contract. `blizzard-mock-data` already seeds both stores from
-outside, so a fixture the API cannot create belongs there.
+files, the fact-kind vocabulary under `contracts/`, the runner's host layout as a contract, a host that steps on
+request, and a read for each runner store value its service tests needed. This epic consumes those and adds only what
+its own tiers still lack, under the same rule: for each store value read or seeded today, an API or CLI surface, or the
+SQL schema declared a contract that tests may query with plain SQL. The ORM is never the contract. `blizzard-mock-data`
+already seeds both stores from outside, so a fixture the API cannot create belongs there.
 
 Whether these tiers follow the service tier onto Playwright Test, or stay in pytest behind the guard below, is decided
 when this epic comes within striking distance.
 
 ### 2. E2E
 
-- `_drive_until_done` calls `blizzard-runner tick --dir <runner>` as a subprocess instead of `tick_once()`. The harness
-  environment goes to the child process instead of `os.environ`. Measure the per-tick process cost. If it matters,
-  compare it with a `blizzard-runner host` running a short loop interval.
-- `_runner_api` starts `blizzard-runner host` instead of serving `build_hosted_app` on a thread.
+- `drive_until_done` and `runner_api` in `tests/fleet_launchers.py` give way to a `blizzard-runner host` started in its
+  stepping configuration, stepped through its local API instead of `tick_once()` and serving that API itself instead of
+  `build_hosted_app` on a thread. The harness environment goes to the host process instead of `os.environ`.
 - Replace the store reads in `test_resume_preamble_e2e.py` and `test_session_modes_e2e.py`, and the imports of
   `harness.preamble`, `events.broker`, and `foundation.chunk_status`, with area 1's surfaces.
 - The browser scenarios stay as they are. They already drive the built board through a real hub.
@@ -88,7 +87,7 @@ The output is a decided design and an issue sequence, not the migration itself.
 - **Journey.** Switch to area 1's config files and area 3's invariant surface. Move the helpers it borrows from the
   crash tier into a shared black-box support module.
 - **`blizzard-mock`.** Keep or retire the schema reflection in `blizzard-mock-data` according to area 1's schema
-  decision. Add CI: lint, types, tests, and the parity guard against `blizzard` `master`.
+  decision. Its CI already runs lint, types, and tests; add the parity guard against `blizzard` `master`.
 - **Guard.** Add an ast-grep or ruff banned-import rule that fails when anything under `tests/e2e/`, `tests/crash/`, or
   `tests/journey/` imports `blizzard.*`. The allowlist shrinks to empty as the areas land.
 

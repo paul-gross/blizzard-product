@@ -7,30 +7,31 @@ status: horizon
 # Plan — `epic:test-suite/optimization`
 
 Every chunk the fleet lands waits on the gate. The unit and component tier, already split into four parallel shards,
-takes 17–19 min per shard, so a PR waits about 18–21 min and a push to `master` about 23–25. The goal is to cut that
-time without weakening any assertion, and to close the coverage gaps in the PR gate.
+takes 11–17 min per shard, and a PR waits on the slowest of them, about 17 min. The goal is to cut that time without
+weakening any assertion, and to close the coverage gaps in the PR gate.
 
 ## Baseline
 
-Recent successful runs on `master`, October 2026:
+Successful pushes to `master`, 18 October 2026:
 
-| Job                            | Duration                | Shape                                                                                        |
-| ------------------------------ | ----------------------- | -------------------------------------------------------------------------------------------- |
-| pytest unit + component        | 17.4–18.5 min per shard | ~14,100 tests in 4 shards, `-n auto` on 4 vCPU each (~6.3 min per shard on a 20-core laptop) |
-| service tier                   | 3.9–5.0 min per shard   | 231 tests in 3 shards, `-n auto` on 4 vCPU, each test with its own stack                     |
-| crash sweep, CI profile        | 7.2 min                 | 43 tests, `-n auto` on 4 vCPU                                                                |
-| dev hub image                  | 3.1 min                 | multi-arch QEMU build on every push to `master`                                              |
-| eslint + vitest + client drift | 2.2 min                 | four `ng test` projects run one after another                                                |
+| Job                            | Duration                | Shape                                                                    |
+| ------------------------------ | ----------------------- | ------------------------------------------------------------------------ |
+| pytest unit + component        | 11.0–16.9 min per shard | 4 shards split by a hash of each test's id, `-n auto` on 4 vCPU each     |
+| crash sweep, CI profile        | 7.0–7.2 min             | 43 tests, `-n auto` on 4 vCPU                                            |
+| service tier                   | 3.2–5.8 min per shard   | 237 tests in 3 shards, `-n auto` on 4 vCPU, each test with its own stack |
+| dev hub image                  | 3.0–4.5 min             | multi-arch QEMU build on every push to `master`                          |
+| eslint + vitest + client drift | 1.9–2.2 min             | four `ng test` projects run one after another                            |
 
-Every check starts at once, so the PR critical path is the slowest single job, a pytest unit + component shard. Queue
-time is negligible, about 2 s.
+Every check starts at once, so the PR critical path is the slowest single job, a pytest unit + component shard, and the
+crash sweep is next behind it. Queue time is negligible, about 2 s.
 
 ## Work areas
 
-Areas 4 onward each contain a decision.
-
 ### 1. Pipeline
 
+- **Balance the shards by duration.** A hash of each test's id spreads tests evenly by count but not by time, so one
+  shard runs six minutes longer than another. Splitting by recorded durations brings every shard toward the mean, which
+  shortens the critical path with no test touched.
 - **Build arm64 only for releases.** `dev-image` becomes `linux/amd64` only, saving most of its QEMU time on every push.
   This requires the hosted hub, which follows `edge`, to be on amd64 first; `blizzard-infra` owns that answer.
 
@@ -38,47 +39,13 @@ Areas 4 onward each contain a decision.
 
 - **Angular AOT build on every PR.** Run `npm run build` in the frontend job, which today first runs on push or tag.
   Hand the output to the e2e job.
-- **E2E on every PR.** Add a job in `upper-tiers.yml` with the three-repo checkout and Chromium, running against the
-  frontend job's build. Measure its runtime before enabling it. Area 4 keeps it affordable.
-- **Real-winter tests in CI** against a pinned winter (area 3).
-- **Journey in CI.** It is currently red: a local run on `master` times out at its first wait, with the first chunk
-  still `ready` after 300 s, 5 min into the run. First determine whether that is rot or the local environment, then make
-  it green. Its CI needs match the crash sweep's: three-repo checkout, mise, both `uv sync`s, and a git identity, with
-  no token or network. Add it as an `upper-tiers.yml` job using the pinned winter. Measure its wall time, then decide
-  between every PR and push/tag only. It is a single test that can't be parallelized, so it sets a floor on the pipeline
-  it joins.
+- **E2E on every PR.** Add a job in `upper-tiers.yml` with the two-repo checkout and Chromium, running against the
+  frontend job's build. Measure its runtime before enabling it. Area 3 keeps it affordable.
+- **Journey stays local.** It mints a real winter workspace, and the CI workflows carry no winter source on purpose. It
+  is also currently red: a local run on `master` times out at its first wait, with the first chunk still `ready` after
+  300 s, 5 min into the run. Determine whether that is rot or the local environment, then make it green where it runs.
 
-### 3. Pinned winter source
-
-The fixture scaffold `git clone --local`s a *winter source*: any repo with `tools/winter-cli/`. It runs that CLI via
-`mise exec -- uv run`, so nothing is installed. Today the source is resolved inconsistently:
-
-- **Upper tiers** check out `paul-gross/blizzard-workspace` at its current `master`, unpinned, through
-  `BLIZZARD_MOCK_WINTER_SOURCE`. A winter change can break blizzard CI, and a red run can't be reproduced.
-- **`test_runner_winter_provider.py`** walks up the directory tree to find an enclosing workspace. In the gate job,
-  which has a single-repo checkout, it finds none and silently skips.
-
-Source preference:
-
-1. **`paul-gross/winter`** is upstream. Its CLI has every command the runner calls (`capabilities --json`,
-   `ws worktrees --json`, `ws pull --standalone`, `ws init`, `ws checkout`, `ws fetch`, `ws disconnect`, `provision`,
-   `service down`). Still unproven: that the fixture mints a working workspace from it and the upper tiers pass. The
-   first issue settles this with a real run.
-2. **`paul-gross/blizzard-workspace`** is the fallback. It works today, but it is blizzard's fork. If `winter` falls
-   short, record the gap and fix it upstream.
-
-Not usable: `winter-workspace` (unstable) and `winter-blizzard` (README only). Both choices above are public, so no
-token is needed.
-
-- **Pin to a SHA** (`winter` has no tags) in one committed place that every job reads. Bumps are deliberate PRs;
-  consider a Renovate regex manager.
-- **One resolution order.** `test_runner_winter_provider.py` checks `BLIZZARD_MOCK_WINTER_SOURCE` before walking the
-  tree. Its real-winter tests move to the upper-tier jobs.
-- **Detached HEAD.** A SHA checkout has no named branch. Verify that the fixture clone and the minted workspace still
-  work.
-- **Local runs stay unpinned.** Add a `mise` task that fetches the pinned source, so CI failures can be reproduced.
-
-### 4. E2E under xdist
+### 3. E2E under xdist
 
 E2E is the one upper tier still run serially. Its ports come from `tests.support.free_port()`, which hands each xdist
 worker a disjoint band, and its directories come from `tmp_path`, so most of its state is already per worker.
@@ -92,44 +59,22 @@ worker a disjoint band, and its directories come from `tmp_path`, so most of its
 
 Target: e2e job ≤ 33% of its serial time.
 
-### 5. Event-driven waits
+### 4. Event-driven waits
 
 The fixed waits outside the service tier get the treatment the hub-tier epic gives `sse_tap` as it ports those tests:
 waits that return when the expected thing has happened, and a barrier event where an assertion is negative. That covers
 e2e's `sleep(0.5)` tick spacing, `poll_until` intervals, the 10 s termination allowance, and the unit-tier sleeps in
 `test_cli.py` and `test_runner_harness_opencode_diagnostic.py`.
 
-### 6. Slow unit outliers
+### 5. Slow unit outliers
 
-- **`test_runner_harness_opencode_diagnostic.py`** takes ~164 s of CPU: one 35 s test and ~30 tests at 4–5 s, all
-  spawning subprocesses. Decide per test whether the subprocess is what's under test. Share one fake binary per module
-  where possible.
-- **`test_runner_winter_provider.py`'s real-winter tests** take 11–15 s each. Placement follows area 3.
-
-### 7. Store migrations and statement guards in the fast tiers
-
-Most of the unit and component tier's time goes to three costs that grow with the store rather than with what a test
-proves. Measured on one shard locally, out of about 5,030 s of summed test time:
-
-- **Replaying the chain to reach head, up to ~700 s.** A full hub migration takes ~2.9 s. `build_hub` already copies a
-  once-per-worker prototype database, but about 70 store test files still replay every revision per test, through
-  `upgrade("head")` or `migrate_to(tmp_path, "head")`. They take the prototype copy instead, and a check refuses a new
-  replay to head outside the migration tests.
-- **Migration tests that outlive their subject, ~800 s.** A test that seeds old-shape rows at a pinned revision protects
-  only stores that have not run that revision, and every live store runs it within days. Each such test names its
-  revision with a `migration_revision` marker and is skipped once the revision is 30 days old; the tests then move
-  beside their revisions, under each store's `migrations/tests/`.
-- **Statement guards walking every statement, 25–30% of test time on a sampled set.** The tenant and runner guards walk
-  every statement's tree on every execution, though the suite repeats a few hundred shapes thousands of times. Each
-  guard remembers its verdict per statement shape, keyed by SQLAlchemy's cache key, and a refused shape is refused on
-  every repeat.
-
-Shortening the chain itself is `initiative:release-engineering`'s, which folds the store's history into a baseline at
-each major.
+`test_runner_harness_opencode_diagnostic.py` takes ~164 s of CPU: one 35 s test and ~30 tests at 4–5 s, all spawning
+subprocesses. Decide per test whether the subprocess is what's under test. Share one fake binary per module where
+possible.
 
 ## Out of scope
 
-The service tier's per-test cost is not this epic's: the foundation and the two tier epics replace a stack per test with
-a tenant per test on a shared hub, so nothing here shortens a stack the initiative is retiring. Making tests
-implementation-independent belongs to the initiative's other epics and to `epic:test-architecture`, and where speed
-conflicts with it, the black-box line wins.
+The service tier's cost is not this epic's: the foundation and the two tier epics replace a stack per test with a tenant
+per test on a shared hub, under the initiative's guard that the tier never becomes the gate's slowest job, so nothing
+here shortens a stack the initiative is retiring. Making tests implementation-independent belongs to the initiative's
+other epics and to `epic:test-architecture`, and where speed conflicts with it, the black-box line wins.
