@@ -35,7 +35,7 @@ port = "WINTER_PORT_BASE + 6"
 
 [service.health]
 type = "url"
-target = "http://localhost:${BZ_STORYBOOK_PORT}/"
+target = "http://localhost:${BZ_STORYBOOK_PORT}/index.json"
 ```
 
 `layout-hook.sh` splits the web window's second pane to give it a third, titled `storybook`, and the window's comment
@@ -43,8 +43,9 @@ names three panes. `winter service up <env> --wait` then starts the workshop wit
 `winter service logs <env> storybook` reads its build output. Provisioning needs no change: the packages arrive with
 `npm ci` through the existing lockfile-stamped step, since they are `web/package.json` dev dependencies.
 
-A first start after a fresh install spends time optimising Vite's dependencies. The health probe is the URL's first
-answer, which comes after that work, so `--wait` reports the workshop healthy only when it can be opened.
+The health probe asks for the story index, which the workshop answers only once it has indexed every story, so `--wait`
+reports the workshop healthy when its stories are known. The preview compiles lazily, on the first story a reader opens,
+so the first story after a fresh install takes longer to appear than the ones after it.
 
 `blizzard-context`'s `verification/blizzard/tools.md` adds the workshop to `tool:service-up`'s account of the stack: the
 workshop at band +6 (`$BZ_STORYBOOK_PORT`), compiling the worktree's current kit and depending on no daemon.
@@ -52,7 +53,9 @@ workshop at band +6 (`$BZ_STORYBOOK_PORT`), compiling the worktree's current kit
 ## The manual method
 
 `blizzard-context`'s `verification/blizzard.md` gains a row in Manual testing, and `verification/blizzard/manual-web.md`
-gains its section, in the spoke's existing shape:
+gains its section, in the spoke's existing shape. The spoke's preamble, which says both its methods start with the env's
+daemons up, says instead that every method starts from the same provisioned env and that the workshop needs no daemon of
+its own:
 
 | Method                | Surface                                                                                              |
 | --------------------- | ---------------------------------------------------------------------------------------------------- |
@@ -89,6 +92,9 @@ does what it needs, and reuses it before inventing another. It shapes its change
 builds, and before it calls the work done, it performs this method over every part it touched. A change that adds or
 reshapes a part brings that part's stories in the same change (`bzh:frontend-kit-stories`), so the next build finds
 them.
+
+The guidance's last sentence cites `bzh:frontend-kit-stories`, so it lands with that rule rather than with the rest of
+the section ([carry-over.md](./carry-over.md)).
 
 The matrix's note on the general rows, which says that `web:manual-board` and `web:manual-panel` are the general
 exercises, gains a sentence: a change to a storied part names `web:manual-workshop` beside the general row for its

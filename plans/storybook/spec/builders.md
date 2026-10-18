@@ -10,7 +10,7 @@ name:
 | File            | Builds                                                                                                                                                                         |
 | --------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
 | `chunk.ts`      | `ChunkDetail` and what it carries: `TransitionView`, `WorkRefView`, `ChunkEscalationView`, `ChunkNeighborView`, `RouteView`, `PrView`, `LandedRepoView`, `ChunkUsageTotalView` |
-| `artifact.ts`   | `ArtifactView`, one named builder per `ArtifactKind` that carries a structured body, and the finding shapes inside a survey and a delta                                        |
+| `artifact.ts`   | `ArtifactView` of each kind, the `FindingSurvey` and `FindingDelta` an asset's content carries, and the assets that carry them, a bounce envelope among them                   |
 | `transcript.ts` | `TranscriptSegmentIndexEntry`, `TranscriptSegmentContentView`, and the hub's turn, tool-call, and sidechain segment views                                                      |
 | `board.ts`      | `ChunkCountsView`, `FleetSpendView`                                                                                                                                            |
 | `project.ts`    | `ProjectView`                                                                                                                                                                  |
@@ -21,6 +21,28 @@ each imports its types from the generated client, `../../api/hub` and `../../api
 `fleet`'s own aliases over the wire takes a builder's output unchanged. `TranscriptViewer`'s `TranscriptTurn`, for one,
 is the union of the hub's and the runner's generated turn views. A family grows a file when a story or spec first needs
 it; the table above is the set the roster in [stories.md](./stories.md) needs.
+
+## The artifact family
+
+An `ArtifactView` is one of two kinds on the wire, `git_commit` or `asset`. A survey, a delta, and a bounce envelope are
+not kinds: each is an asset whose `content` is a JSON string, which `ChunkArtifactBody` parses to choose a view. Survey
+and delta are told apart by their shape, and a bounce envelope by the asset's key, `bounce-envelope`. `artifact.ts`
+follows the wire rather than the views:
+
+- **One builder per kind.** `assetArtifactView` builds an asset whose content is plain text, and `commitArtifactView` a
+  `git_commit` with its repository, commit hash, and branch.
+- **The content shapes, typed against the generated client.** `findingSurvey` and `findingCandidate` build a
+  `FindingSurvey`; `findingDelta`, with `addFindingOp`, `observedFindingOp`, and `goneFindingOp` for its findings,
+  builds a `FindingDelta`. `ChunkArtifactSurvey` and `ChunkArtifactDelta` take these as their inputs, so their stories
+  use them as they are.
+- **The assets that carry them.** `surveyArtifactView(survey)` and `deltaArtifactView(delta)` build an asset whose
+  content is the shape serialized, and `bounceArtifactView(envelope)` an asset keyed `bounce-envelope` whose content
+  serializes a plain record of `cause`, `detail`, and any further keys. `ChunkArtifactBody`'s stories build from these,
+  so each story goes through the body's real parsing, its fallback to verbatim text included.
+
+No builder makes a `BounceEnvelope`. It is the bounce view's own reading of the content, declared in `chunk/`, which
+`testing` may not import, and it has three fields. `ChunkArtifactBounce`'s stories, beside it in `chunk/chunk-detail/`,
+write their envelopes as literals.
 
 ## What a builder is
 
@@ -70,9 +92,8 @@ A family may export a few named states the roster asks for repeatedly, such as `
 ## Stories and specs
 
 Stories and specs share the builders and keep their states to themselves. A story file declares the states it shows,
-built from the builders, and no spec imports a story's state. A spec builds its own subject from the same builders and
-spells out, in its own overrides, every field its assertion depends on, even where the builder's default already holds
-the value:
+built from the builders. A spec builds its own subject from the same builders and spells out, in its own overrides,
+every field its assertion depends on, even where the builder's default already holds the value:
 
 ```ts
 const detail = chunkDetail({
@@ -89,5 +110,6 @@ on a default would be silently re-pointed by that tuning, which is the one coupl
 Specs move onto the builders when a change next touches them, never in a sweep of their own. The specs of the pieces on
 the roster are the likeliest first movers, since the stories land beside them.
 
-Whether a spec may take a story as its fixture, so that a state is described once rather than twice, is left open
-([the epic plan](../index.md)). Nothing in this epic builds toward it or rules it out.
+Once the builders and the stories both exist, a spec may take a story as its fixture, so that a state is described once
+rather than twice ([the epic plan](../index.md)). Whether specs should is the owner's question after living with them,
+so this epic builds nothing toward it, and no spec takes a story as its fixture in it.
