@@ -11,7 +11,8 @@ as on SQLite (`tests/test_store_migrations.py`) with every constraint and index 
 (`tests/test_postgres_identifier_length.py`). It:
 
 1. Creates `flows`, `flow_submissions`, `flow_submission_flows`, `flow_submission_closures`, `hub_turns`, and
-   `flow_facts`, with their indexes ([record.md](./record.md)).
+   `flow_facts`, with their indexes ([record.md](./record.md)). It writes no `landed` fact for a landing made before it
+   ([record.md](./record.md#the-landed-event)).
 2. Drops `hub_exec_slot`. A row still live at upgrade belonged to a pass in a process that has stopped, which is what
    `release_orphaned_slots` assumed of it at every boot. Its rows go with it, and with them the `HUB_EXEC` intervals of
    chunks traced before the upgrade ([record.md](./record.md#invariants)).
@@ -28,11 +29,14 @@ the hub serves and before the flow driver starts:
    place and is eligible at once, and its next turn takes a fresh pass, which skips whatever its markers say is done, as
    a re-run does today.
 2. **Chunks mid-delivery.** One reconcile ([verdict.md](./verdict.md#the-reconcile)) runs before the driver's first
-   tick. On the first boot of this release it submits every chunk `delivering` at a hub node, in the order each entered
-   its node, so each heads its flows in the order it reached them, ahead of any chunk that arrives after the upgrade. A
-   chunk that last polled `pending` keeps its poll history, so it is next when its poll is due, as it would have been
-   under the slot. A chunk standing at a hub node while paused or `needs_human` at the upgrade is submitted by the
-   reconcile of the tick after it is resumed or requeued.
+   tick, after the actions epic's boot pass has escalated every chunk standing at a hub node with no action, so the
+   reconcile finds those chunks `needs_human` and escalates none of them again. On the first boot of this release it
+   submits every chunk `delivering` at a hub node, in the order each entered its node, so each heads its flows in the
+   order it reached them, ahead of any chunk that arrives after the upgrade. A chunk that last polled `pending` keeps
+   its poll history, so it is next when its poll is due, as it would have been under the slot. A chunk standing at a hub
+   node while paused or `needs_human` at the upgrade is submitted by the reconcile of the tick after it is resumed or
+   requeued. A chunk that landed some of its repositories before the upgrade submits holding only the flows of those it
+   has left ([turns.md](./turns.md#what-a-step-holds)).
 
 Both steps are idempotent, so a boot that dies midway is finished by the next.
 
@@ -56,14 +60,23 @@ Each proof runs against the mock forge.
 - **Unroutable answers.** An answer the chunk's graph authors no edge for escalates the chunk at once, the turn ends
   `escalated`, and the branch moves on.
 - **A turn that cannot end.** A turn whose ending write is made to fail is ended `interrupted` within one tick, with its
-  event, and its submission lands on its next turn.
+  event, and its submission lands on its next turn. A visit build that raises routes `failure` with its traceback. A
+  test action that blocks its thread past the turn's deadline is cut off: its turn ends `interrupted` with the deadline
+  named, an effect it hands over afterwards is refused, it makes no forge write after its turn ends, and the branch
+  moves on.
+- **Capabilities.** A repository whose forge's test adapter lacks a capability `land` requires escalates its chunk with
+  `forge-capability-missing` from the driver's visit build, before any pass, and the turn ends `escalated`.
 - **Levers.** A chunk stopped mid-turn keeps its branch busy until its pass ends and never lets a second landing onto it
-  meanwhile; a stopped, restarted, or completed chunk waiting its turn leaves its flows.
+  meanwhile; the merge it made in that pass has its marker, its `delivery_repo_landed` row, its `landed` fact, and its
+  `flow-landed` event, and a second repository it had not reached stays unmerged. A stopped, restarted, or completed
+  chunk waiting its turn leaves its flows. A chunk escalated in line, paused by its person, then requeued and resumed
+  keeps its old place, passed over, until it is `delivering` again, then joins at the back.
+- **Escalation is one write.** A hub killed between an escalation and its turn's end leaves neither without the other.
 - **Restart of the hub.** A hub killed at each `flow.` crash point ([turns.md](./turns.md#crash-points)), driven by the
   kill-9 sweep, recovers at boot and lands the chunk without merging twice.
 - **One landing, one transaction.** A hub killed between a merge's effect and the driver's write of its marker, and
-  after it, never leaves a `merged/<repo>` marker without its `delivery_repo_landed` row, its `landed` fact, and its
-  `flow-landed` event.
+  after it, never leaves a `merged/<repo>` marker without its `delivery_repo_landed` row, its close intents, its
+  `landed` fact, and its `flow-landed` event.
 - **Carried over.** A fixture store captured before the migration with chunks mid-delivery, one of them `pending` and
   one paused, is carried over and lands every chunk with the outcomes and markers the slot produced, the paused one once
   it is resumed.

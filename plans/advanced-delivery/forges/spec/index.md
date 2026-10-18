@@ -7,8 +7,11 @@ are owned by `epic:live-config`'s [records](../../../../delivered/live-config/sp
 by `epic:projects/hub`' [delivery contract](../../../../delivered/projects/hub/spec/delivery.md). This spec adds the
 forge to them; it redefines none.
 
-This spec assumes the [actions epic](../../actions/spec/index.md) has landed, so landing is the hub's `land` action and
-no hub step is a process.
+The initiative's epics land one after another — actions, forges, flows, policies — and this spec assumes the
+[actions epic](../../actions/spec/index.md) has landed and nothing after it: landing is the hub's `land` action, handed
+its forge through `VisitForges` beside its `Visit`, no hub step is a process, and `HubNodeExecutor` still builds each
+visit. Where this spec puts work in the executor — revealing credentials, bundling each `RepositoryForge`, checking
+capabilities before a pass — the [flows epic](../../flows/spec/index.md) moves it, unchanged, into its driver.
 
 It builds on two things already true of the code. Repositories (`repo_<ulid>`) and work sources (`wsrc_<ulid>`) carry an
 id, a slug, and a name as a project does: every stored reference holds the id, every boundary accepts an id or a slug
@@ -24,11 +27,14 @@ Paths are relative to `blizzard/src/blizzard/`.
 The epic reaches beyond `blizzard`'s source. In `blizzard-context`, the section of
 `architecture/system-shape/seam-positions.md` titled *The forge has no single seam* collapses its `GitHubCommitResolver`
 and land rows into the landing seam, and `architecture/system-shape/configuration.md` and `domain/artifacts/delivery.md`
-learn the forge record; `domain/projects.md` names forges beside work sources and repositories as the tenant's. In
-`blizzard`'s own docs, `docs/deployment/repositories.md`, `work-sources.md`, and `config-documents.md` name the forge,
-and a new `docs/deployment/forges.md` describes it. The census `tests/store_read_census.py` learns the new reads. The
-workspace's feature-environment seeding (`hub-host.sh`) names its forge by `forge` in the transition release, so a
-feature environment never keeps `config-old-field-used` firing. `blizzard-mock`'s forge is unchanged.
+learn the forge record; `domain/projects.md` names forges beside work sources and repositories as the tenant's; and
+`domain/operations.md` gains `forge-capability-missing` and `config-old-field-used`. In `blizzard`'s own docs,
+`docs/deployment/repositories.md`, `work-sources.md`, and `config-documents.md` name the forge, and a new
+`docs/deployment/forges.md` describes it. The census `tests/store_read_census.py` learns the new reads. The workspace's
+feature-environment seeding (`hub-host.sh`) names its forge by `forge` once the transition release reaches the feature
+environments, so a feature environment never keeps `config-old-field-used` firing
+([carry-over.md](./carry-over.md#the-transition-then-retirement)). `blizzard-mock`'s forge grows the few states and
+answers the end-to-end proofs need ([carry-over.md](./carry-over.md#the-mock-forge)).
 
 | Where                            | Read when                                                                                                                     |
 | -------------------------------- | ----------------------------------------------------------------------------------------------------------------------------- |

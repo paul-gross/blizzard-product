@@ -8,7 +8,7 @@ an operator, so it has no revision, no lifecycle, and no change log.
 
 ```text
 flows
-  flow_id        String       NOT NULL   flw_<ulid>, minted on the first submission to its resource
+  flow_id        String       NOT NULL   flw_<ulid>, minted on the first submission to its resource; hub_unique
   tenant_id      String       NOT NULL
   resource       String       NOT NULL   repo:<repository_id>/<branch>
   repository_id  String       NOT NULL   the repository record's id
@@ -18,7 +18,7 @@ flows
   UNIQUE (tenant_id, resource)
 
 flow_submissions                          one per hub-node visit that reaches the hub
-  submission_id  String       NOT NULL   fsub_<ulid>
+  submission_id  String       NOT NULL   fsub_<ulid>; hub_unique
   tenant_id      String       NOT NULL
   chunk_id       String       NOT NULL   FK chunks
   node_id        String       NOT NULL
@@ -40,14 +40,15 @@ flow_submission_closures                  append-only; at most one per submissio
   outcome        String       NOT NULL   the verdict's choice, or stopped | restarted | completed | migrated | superseded
   closed_at      UtcDateTime  NOT NULL
   PRIMARY KEY (submission_id)
+  INDEX (tenant_id, submission_id)
 
 hub_turns                                 replaces hub_exec_slot
-  turn_id        String       NOT NULL   htn_<ulid>
+  turn_id        String       NOT NULL   htn_<ulid>; hub_unique
   tenant_id      String       NOT NULL
   submission_id  String       NOT NULL   FK flow_submissions
   started_at     UtcDateTime  NOT NULL
   ended_at       UtcDateTime  NULL       null while the turn runs
-  outcome        String       NULL       the answered choice, pending, escalated, or interrupted
+  outcome        String       NULL       the answered choice, a reserved wait, escalated, or interrupted
   PRIMARY KEY (turn_id)
   INDEX (tenant_id, submission_id)
   INDEX (tenant_id, ended_at)
@@ -66,6 +67,15 @@ flow_facts                                append-only; the flow's record
   INDEX (tenant_id, submission_id)
 ```
 
+Each minted string key — `flow_id`, `submission_id`, `turn_id` — is declared `info={"hub_unique": True}` in
+`hub/store/schema.py`, and every other key is either one of those, a foreign key onto one, or led by `tenant_id`, so the
+tenant schema gate (`tests/test_tenant_schema_gate.py`) finds no natural key two tenants could both claim and no table
+without a tenant-led index. `flow_facts.id` is the table's autoincrement surrogate, which the gate already admits.
+
+A turn belongs to exactly one submission in this epic. The `trains` epic widens it to a batch — `submission_id` becomes
+nullable beside a `batch_id`, with a check that exactly one is set — and nothing here assumes the column can never be
+null beyond this epic's own reads.
+
 `IdPrefix` (`foundation/ids.py`) gains `FLOW = "flw"`, `FLOW_SUBMISSION = "fsub"`, and `HUB_TURN = "htn"`, and loses
 `HUB_EXEC_SLOT` with the table it named. The arrival sequence is the newest `arrival` in the tenant plus one, read and
 written under the tenant row lock — a tenant-wide read-then-insert, the shape `next_route_seq`
@@ -79,9 +89,12 @@ Whether a flow is busy, who is in its line, and who is landing are all derived f
 never stored: a flow is busy while a turn of a submission it holds has no `ended_at`, and a submission is open while it
 has no closure. A closure is written once, in the transaction that ends the submission: a verdict
 ([verdict.md](./verdict.md#the-verdict)), a lever's withdrawal ([levers.md](./levers.md)), or the reconcile's
-supersession ([verdict.md](./verdict.md#the-reconcile)). Every read the driver makes each tick — open submissions per
-tenant, the flows each holds, open turns, the newest poll — is served by an index above or an existing one, so
-`IReadFlows` needs no entry in the store-read-index gate's allow-list (`tests/store_scan_allowlist.py`).
+supersession ([verdict.md](./verdict.md#the-reconcile)). Three writers can race to close one submission, so every
+closure is an insert made only when no closure exists, checked inside the writer's transaction under the tenant row
+lock: the first to commit wins, its outcome is the one recorded, and a later writer finds the closure and writes neither
+a second closure nor a second `withdrawn` fact. Every read the driver makes each tick — open submissions per tenant, the
+flows each holds, open turns, the newest poll — is served by an index above or an existing one, so `IReadFlows` needs no
+entry in the store-read-index gate's allow-list (`tests/store_scan_allowlist.py`).
 
 `flow_facts` and the closures are kept as long as chunk facts are; bounding how long the hub keeps either is
 `epic:retention`'s.
@@ -93,12 +106,13 @@ and how it ended, each landing and the revision it left, and each withdrawal and
 to every flow it holds, so each flow's record stands alone.
 
 A `landed` fact is written when a turn persists a `merged/<repo>` marker for the flow's repository. Under the actions
-epic an action records that marker through its `IEffectSink` and the driver writes it through
-`HubNodeExecutor.record_marker`, which today writes the marker (`record_hub_artifact`) and then, in a second
-transaction, its `delivery_repo_landed` row. This epic makes the four writes one transaction: the marker, the
-`delivery_repo_landed` row, the `landed` fact on that repository's flow with the marker's revision, and the
-`flow-landed` event row ([below](#the-landed-event)). A crash can therefore never leave a landing marked but
-unannounced, and a replay that finds the marker written finds the rest written with it.
+epic an action hands that marker over as a `LandingRecord` effect, which the writer admits past the chunk's fence — a
+stopped or completed chunk, or a stale epoch — because it records a merge the forge has already made, and writes with
+its `delivery_repo_landed` row and its close intents. This epic widens that admitted transaction to five writes: the
+marker, the `delivery_repo_landed` row, the close intents, the `landed` fact on that repository's flow with the marker's
+revision, and the `flow-landed` event row ([below](#the-landed-event)). A crash can therefore never leave a landing
+marked but unannounced, a replay that finds the marker written finds the rest written with it, and a merge made by a
+chunk stopped mid-pass is on its flow's record like any other ([levers.md](./levers.md)).
 
 A marker is keyed by `owner/repo`, which names no record; it reaches its flow through the repository id the visit
 resolved for it, as `delivery_repo_landed.repository_id` is stamped today. Since each commit pointer resolves to its own
@@ -115,6 +129,11 @@ row of the new kind `flow-landed`, severity info, with `detail`
 publishes it live through the broker once that transaction commits. `project_id` is the chunk's project, so a listener
 knows whose work landed without reading the chunk. Nothing in this epic reacts to the event beyond the board.
 
+The record starts at the upgrade. A repository a chunk landed before it carries its marker and its
+`delivery_repo_landed` row, which the board and the chunk's delivery rows keep reading as they do today, but no `landed`
+fact and no `flow-landed` event: the migration cannot tell which branch a past landing went to, since the repository's
+`base_branch` may have changed since, and a flow's record does not claim what it did not see.
+
 `EventLogKind` and `EVENT_LOG_SEVERITY` (`foundation/event_log.py`) gain `flow-landed` (info) and `turn-interrupted`
 (warning, [turns.md](./turns.md#a-turn-that-cannot-end)); `tests/event_log_kind_census.py` gains both, and
 `blizzard-context:/domain/operations.md`'s table gains a row for each.
@@ -126,7 +145,9 @@ knows whose work landed without reading the chunk. Nothing in this epic reacts t
 - `hub:one-turn-per-flow` — no flow has two open turns.
 - `hub:one-turn-per-visit` — no submission has two open turns.
 - `hub:flow-line-standing` — every open submission's chunk stands at its node, at its epoch, or at a later one while the
-  chunk is `needs_human`, so no visit that has left a node still holds a place.
+  chunk is `needs_human` or `paused`, so no visit that has left a node still holds a place. The reconcile converges the
+  line within one tick of a move, so the checker reads it only after the driver has ticked since the last move: the
+  crash sweep and the scenarios run it once the hub is quiescent.
 
 The trace corpus follows the table: `TracedHubExecSlot` (`hub/domain/observability/tracing/facts.py`, loaded by
 `hub/store/internal/corpus_rows.py`'s `_slots`) becomes `TracedHubTurn`, `tracing/summary.py` derives its `HUB_EXEC`

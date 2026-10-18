@@ -47,9 +47,10 @@ order, and a record.
   whose chunk has moved on is closed. No path a chunk takes onto a hub step — the hub's own move from one hub step to
   the next, a requeue, a resume, an upgrade — can leave it waiting in a line it is not in, and nothing that has left a
   step can keep a line waiting behind it.
-- **A chunk handed to a person keeps its place.** A chunk escalated to `needs_human` while in line is passed over, and
-  the branch moves on without it. An outcome its graph has no edge for goes to a person at once rather than being tried
-  again. When a person requeues the chunk, it takes its place again at the back of the line.
+- **A chunk handed to a person steps aside.** A chunk escalated to `needs_human` while in line still shows in the line,
+  passed over, and the branch moves on without it. An outcome its graph has no edge for goes to a person at once rather
+  than being tried again. When a person requeues the chunk, it is a fresh request to land and joins at the back of the
+  line.
 - **Today's landing is a batch of one.** Nothing in this epic batches, reorders, or rebases. A chunk is landed as the
   slot lands it now, only behind the work queued on its own branch rather than everything in the tenant, and a chunk
   paused before it reached its hub step now waits for its resume rather than being run while paused.
@@ -57,12 +58,15 @@ order, and a record.
   what it last landed or turned back. A chunk's card says which flow it waits on and where in the line it stands, and
   links to the record of the run that landed it.
 - **An operator's levers still mean what they meant.** Pausing a chunk in `delivering` is refused, as it is today.
-  Stopping one withdraws its submission from every flow still holding it; one already landing runs to its verdict first.
-  Restarting a chunk onto an earlier node withdraws it the same way.
+  Stopping one withdraws its submission from every flow still holding it; one already landing finishes the pass it is
+  in, the merge it made there is recorded on its flow like any other, and it touches no further repository. Restarting a
+  chunk onto an earlier node withdraws it the same way.
 - **A branch is never frozen by a turn that cannot end.** A turn whose ending failed to record is noticed by the hub
-  within seconds and ended, so a branch never waits on work nobody is doing.
-- **Carried over in place.** A chunk mid-delivery when the hub restarts onto this epic resumes as a submission at the
-  head of its branch's flow, and the tenant-wide slot is retired once nothing holds it.
+  within seconds and ended, and a turn whose work stops answering is cut off a little past the five-minute bound every
+  pass has, so a branch never waits on work nobody is doing.
+- **Carried over in place.** Every chunk mid-delivery when the hub restarts onto this epic resumes as a submission on
+  its branch's flow, in the order the chunks reached their delivery nodes and ahead of any chunk that arrives after the
+  upgrade, and the tenant-wide slot is retired once nothing holds it.
 
 ## Left for later
 

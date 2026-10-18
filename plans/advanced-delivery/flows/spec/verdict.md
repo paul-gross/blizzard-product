@@ -4,11 +4,12 @@
 
 A chunk submits when it stands at a hub node that names an action and its visit has no submission yet. Submission is
 never an event some caller remembers to send; it is what the driver's reconcile finds true ([below](#the-reconcile)).
-The submit resolves the visit's repositories ([turns.md](./turns.md#what-a-step-holds)); on a refusal it routes
-`failure` there and then, as `_refuse` does, and submits nothing. Otherwise, in one transaction, it creates any flow its
-resources name that does not yet exist, writes the submission with the next arrival, a row per flow it holds, and a
-`submitted` fact to each. A submission is unique on its visit, `(chunk, node, epoch)`, so a replayed completion, a
-repeated hub-advance, or two ticks seeing the same chunk never queue it twice.
+The submit resolves the visit's repositories and names the resources it holds
+([turns.md](./turns.md#what-a-step-holds)); on a refusal it routes `failure` there and then, as `_refuse` does, and
+submits nothing. Otherwise, in one transaction, it creates any flow its resources name that does not yet exist, writes
+the submission with the next arrival, a row per flow it holds, and a `submitted` fact to each. A submission is unique on
+its visit, `(chunk, node, epoch)`, so a replayed completion, a repeated hub-advance, or two ticks seeing the same chunk
+never queue it twice.
 
 The chunk is `delivering` from the moment it stands at the node, as it is today: `_latest_movement_enters_hub_node`
 decides it, and the submission changes nothing about status.
@@ -22,12 +23,15 @@ its chunks stand, before it admits anyone, in two passes:
    whose newest movement enters a hub node (`NodeShape.is_hub_command_node`, which the actions epic makes
    `executor is HUB`) naming an action, with no submission for that node at its `latest_epoch`, is submitted, oldest
    entry to the node first. A chunk standing at a hub node that names no action is escalated to a person with the
-   actions epic's `hub-action-missing` cause instead, and submits nothing.
+   actions epic's `hub-action-missing` cause instead, and submits nothing. The actions epic's boot pass escalates the
+   same chunks before the driver's first tick, and the escalation is recorded once per `(chunk, node, epoch)`, so
+   whichever reaches a chunk first escalates it and the other finds it escalated.
 2. **Nothing that has left a step holds a place.** Every open submission whose chunk has ended, whose chunk's newest
    movement no longer enters the submission's node, or whose chunk is `delivering` at that node in a later epoch is
    closed with outcome `superseded`, as a `withdrawn` fact on each flow it held. A submission whose chunk is
-   `needs_human` at a later epoch is left open: it is passed over while a person holds the chunk
-   ([escalation](#escalation)).
+   `needs_human` at a later epoch, or `paused` there — a person may pause a chunk they hold before requeuing it — is
+   left open: it is passed over while a person holds the chunk ([escalation](#escalation)), and closed by the first
+   reconcile that finds the chunk `delivering` again.
 
 Because the reconcile reads what is true rather than waiting to be told, every path a chunk takes onto or off a hub step
 is covered by the same rule: a transition from a worker node, the hub's own transition from one hub node to the next
@@ -54,11 +58,11 @@ transition, so a flow never shows a verdict its chunk did not take, and a chunk 
 shows it landing. A verdict closes the submission on every flow it held.
 
 A turn that ends `pending` is no verdict: the submission stays open on its flows ([turns.md](./turns.md#pending)). A
-turn whose answer routes nowhere — a choice the graph authored no edge for, which `_route` records as
-`hub-unroutable-outcome`, or an edge to a node the graph does not have, which `_route` treats the same way — is a fault
-in the graph rather than in the chunk's work, and trying again would only answer the same. The chunk is escalated to a
-person at once with the actions epic's `UNROUTABLE_OUTCOME` cause, naming the choice and, for a missing node, the node;
-the turn ends `escalated`.
+turn whose answer routes nowhere — a choice the graph authored no edge for, or an edge to a node the graph does not
+have, which `_route` treats the same way — is a fault in the graph rather than in the chunk's work, and trying again
+would only answer the same. `_route` records it as it does today, with the `hub-unroutable-outcome` artifact and the
+`hub-node-unroutable-outcome` event, and the actions epic escalates the chunk at once with cause `UNROUTABLE_OUTCOME`,
+naming the choice and, for a missing node, the node, where today it re-polls; the turn ends `escalated`.
 
 When `record_hub_step_transition` writes nothing because the exit is a replay or is fenced — the chunk was stopped,
 restarted, or moved past the visit while the pass ran — the turn's end and its `turn-ended` facts are still written in
@@ -67,10 +71,19 @@ that transaction, so a flow never shows a turn open that has ended ([levers.md](
 ## Escalation
 
 A turn can end by handing its chunk to a person: when the bounce cap is crossed — by an incomplete delivery in `_route`
-or by a poll timeout in `_route_pending_timeout` — when an answer routes nowhere, and when the action itself escalates a
-cause no agent can fix. The turn ends with outcome `escalated`, which is not a verdict. The submission stays open and
-keeps its place, passed over while the chunk is `needs_human` ([turns.md](./turns.md#who-is-next)), so the board still
-shows it in line and the branch moves on without it.
+or by a poll timeout in `_route_pending_timeout` — when an answer routes nowhere, when the visit build finds a
+capability missing, and when the action itself escalates a cause no agent can fix. The turn ends with outcome
+`escalated`, which is not a verdict.
+
+Today the writes an escalation makes are separate transactions: `record_bounce` and `record_bounce_escalation`
+(`hub/store/internal/chunk_escalations_store.py`) each open their own, and `record_bounce` writes unfenced. A turn that
+escalates makes its writes in one transaction instead: the bounce where one is counted, the escalation with its hub
+lease, the turn's end with outcome `escalated`, and its `turn-ended` facts. The two store methods gain locked variants
+that take the transaction the turn's end opens, as `record_hub_step_transition` takes the verdict's, and the bounce is
+fenced like the rest. A crash therefore never leaves a chunk escalated with its turn still open, nor a turn ended
+`escalated` with no escalation behind it; each write keeps its own replay guard, so a turn ended twice writes nothing
+the second time. The submission stays open and keeps its place, passed over while the chunk is `needs_human`
+([turns.md](./turns.md#who-is-next)), so the board still shows it in line and the branch moves on without it.
 
 Every escalation of a hub-node visit opens the next epoch at the node, as `record_bounce_escalation`'s hub lease does
 today (`hub/store/internal/chunk_escalations_store.py`), so a requeued chunk is always a new visit. A person resolves

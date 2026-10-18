@@ -46,10 +46,10 @@ whose work is sound while its train proves; `awaiting-merge` takes precedence wh
 
 A submission is **ready** on a batching flow when its `train-ready` marker is written, its chunk is `delivering`, it is
 open on every flow it holds, its own checks have not failed, and every repository its chunk reaches that comes before
-this one in its project's landing order — the `landing_position` the policies epic reads onto `ResolvedRepository`,
-unranked repositories after ranked ones and ties broken by slug — has landed for its chunk. That order is strict, so a
-chunk reaching two batching repositories joins their trains one after the other, each once the one before it has landed,
-and no repository's readiness waits on another's that waits on it.
+this one in its project's landing order — the `landing_position` the policies epic fixes in the visit's landing terms at
+its first turn, unranked repositories after ranked ones and ties broken by slug — has landed for its chunk. That order
+is strict, so a chunk reaching two batching repositories joins their trains one after the other, each once the one
+before it has landed, and no repository's readiness waits on another's that waits on it.
 
 ## Forming
 

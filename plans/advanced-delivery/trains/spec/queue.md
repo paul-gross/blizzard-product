@@ -13,13 +13,13 @@ the merged result its pipeline ran on, each by its own rules.
 | ------------- | ----------------------------------------------------------------------------------- | ----------------------------------- |
 | `forge-queue` | `refs.read`, `compare`, `changes.open`, `changes.read`, `checks.read`, `queue.join` | `merge-on-checks`, unbatched        |
 
-It is the one policy that declares a fallback, and the fallback is applied before any capability is checked:
-`requires(repository)` answers the set of the policy that will actually run, so a `forge-queue` repository whose last
-probe shows no `queue.join` requires what `merge-on-checks` requires, and the forges epic's check before a pass never
-refuses it for the queue it is about to do without. A batch size above one is refused beside `forge-queue`
-([capabilities.md](./capabilities.md#the-batching-settings)), so the fallback lands each change alone. Setting the
-policy on a repository whose probe does not show `queue.join` is accepted with a warning naming the fallback, rather
-than refused, and a visit that finds the queue switched off since lands by the fallback, recording a
+It is the one policy that declares a fallback, and the fallback is applied before any capability is checked: `land`'s
+`ActionSpec.requires(repository)` answers `POLICY_CAPABILITIES`' set for the policy that will actually run, so a
+`forge-queue` repository whose last probe shows no `queue.join` requires what `merge-on-checks` requires, and the forges
+epic's check before a pass never refuses it for the queue it is about to do without. A batch size above one is refused
+beside `forge-queue` ([capabilities.md](./capabilities.md#the-batching-settings)), so the fallback lands each change
+alone. Setting the policy on a repository whose probe does not show `queue.join` is accepted with a warning naming the
+fallback, rather than refused, and a visit that finds the queue switched off since lands by the fallback, recording a
 `forge-capability-fallback` event (warning) once per visit naming the repository and the capability. Every other missing
 capability is still refused when the policy is set and escalated to a person at a visit, as the forges epic does.
 

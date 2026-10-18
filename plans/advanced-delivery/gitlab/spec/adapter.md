@@ -34,7 +34,7 @@ since both may hold `/`. It pages with `per_page=100` to the same bounds the Git
 | `change_checks`    | The change's `head_pipeline`, read from `change`, and its jobs from `GET /projects/:id/pipelines/:pipeline_id/jobs`                      |
 | `rerun_check`      | `POST /projects/:id/jobs/:job_id/retry`; an external status cannot be re-run and answers `False`                                         |
 
-`park`'s recently-closed listing (`ForgeRegistry.recently_closed`) reads `GET /projects/:id/merge_requests` into the
+`park`'s recently-closed listing (`IForgeChanges.recently_closed`) reads `GET /projects/:id/merge_requests` into the
 base with `state=all&order_by=updated_at&sort=desc`, since GitLab keeps merged and closed apart as two states, and keeps
 the merged and closed among them; a change parked for a week and then merged is at the top of the listing however busy
 the project.

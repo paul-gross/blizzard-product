@@ -41,8 +41,11 @@ retired.
   the build rather than the night. Actions run apart from the hub's requests, so a slow forge never slows the board.
 - **An action takes a pass, and says what comes next.** Each time the hub calls an action, the action does a bounded
   piece of work and answers with an outcome or with `pending`. A pass is cut off at five minutes by default, a limit an
-  operator can change; a landing that waits on checks is a run of passes, never a process the hub waits on, which is the
-  shape the `flows` epic drives.
+  operator can change in the hub's configuration; a landing that waits on checks is a run of passes, never a process the
+  hub waits on, which is the shape the `flows` epic drives.
+- **A merge, once made, is on the record.** A chunk stopped, restarted, or moved on while its landing merges still has
+  that merge recorded, since the branch carries the work whatever became of the chunk, and the landing stops there
+  rather than merging the chunk's next repository on its behalf.
 - **Patience in hours, not minutes.** A hub node that keeps answering `pending` gives up and goes back to an agent only
   after three hours by default, not thirty minutes, so a busy branch's CI no longer sends correct work back for repair.
   A graph still sets its own limit per node.

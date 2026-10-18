@@ -30,7 +30,8 @@ Both writes require `Permission.CONFIG_EDIT`, as the links do, and refuse a repo
 ## CLI
 
 `blizzard hub repo create` and `edit` gain `--policy fast-forward|merge-on-checks|park` and `--park-timeout <hours>`;
-`edit`'s `--clear` accepts `park-timeout`. `blizzard hub repo show` prints the policy. `blizzard hub project show`
+`edit`'s `--clear` accepts `park-timeout`, and an `edit --policy` that moves a repository off `park` clears its timeout
+with it ([record.md](./record.md#the-fields)). `blizzard hub repo show` prints the policy. `blizzard hub project show`
 prints the project's repositories in landing order, each with its position or "unranked", and
 `blizzard hub project order <project> <repository>…` sets the whole order, while
 `blizzard hub project position <project> <repository> (--after <repository> | --first | --unranked)` moves one.
@@ -40,7 +41,9 @@ regenerated.
 ## The configuration document
 
 A repository entry in `ConfigDocument` (`wire/config.py`) carries `landing_policy` and `park_timeout_hours`. An entry
-without `landing_policy` leaves a stored repository's policy as it is and gives a new one `merge-on-checks`.
+without `landing_policy` leaves a stored repository's policy as it is and gives a new one `merge-on-checks`; an entry
+that moves a repository off `park` clears its `park_timeout_hours`, and one that sets a timeout on a repository that
+does not end up parked is refused, as the API refuses it.
 
 A project entry (`ProjectDocument`) gains an optional `landing_order`, a list of repositories by id or slug, each one
 the entry links. Apply plans it after the entry's links, so a document may link a repository and rank it together; it
@@ -57,10 +60,10 @@ for `park`. A policy the chosen forge cannot honour is shown disabled with the c
 schema and the forge's `offered`. The repository detail shows the policy. The forge detail shows its capabilities and
 its budgets.
 
-The project detail (`web/projects/hub/src/app/admin/projects/project-detail`) shows the project's repositories as one
-list in landing order that an operator drags to reorder, the ranked ones first and an "Unranked" section after them,
-ordered by slug, into and out of which a repository may be dragged. Each drop writes one position. The client is
-regenerated from `openapi/hub.openapi.json`.
+The project detail (`web/projects/hub/src/app/admin/projects/project-detail.ts`) shows the project's repositories, in
+the link panel it already has (`project-link-panel.ts`), as one list in landing order that an operator drags to reorder,
+the ranked ones first and an "Unranked" section after them, ordered by slug, into and out of which a repository may be
+dragged. Each drop writes one position. The client is regenerated from `openapi/hub.openapi.json`.
 
 ## Escalations
 

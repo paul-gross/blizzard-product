@@ -38,7 +38,9 @@ runs when the repository's forge lacks one, rather than letting it discover the 
   exists — cut into narrow roles along the lines its callers use, so the garden's check that a delivered commit exists
   depends on reading commits and nothing more. Each forge kind answers in the seam's own vocabulary, so an action reads
   that a change is behind its base or in conflict, never GitHub's `mergeable_state`, and every one of GitHub's words has
-  a written place in it. GitHub is the one kind this epic builds; the hub's other forge readers move onto the same seam.
+  a written place in it. GitHub is the one kind this epic builds. The garden's check that a delivered commit exists
+  moves onto the same seam; the work-source family's reads, labels, and closes keep their own seam and only learn their
+  address from the forge.
 - **A forge's refusals sorted by who can act on them.** Every answer a forge gives is classified once: a forge that is
   briefly unreachable or out of patience is waited out, a race the forge reports is re-read, a conflict goes back to the
   chunk's worker, and a wrong credential or a repository the forge does not know goes to a person, since no worker can

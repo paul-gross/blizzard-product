@@ -12,8 +12,8 @@ This spec assumes the [actions](../../actions/spec/index.md), [forges](../../for
 [flows](../../flows/spec/index.md) epics have landed: landing is the hub's `land` action, taken a pass at a time; it
 speaks every forge through the roles `ForgeRegistry` hands out — `IForgeRefs`, `IForgeChanges`, and `IForgeChecks`; and
 a visit lands in turns on the flow of each branch it holds. It builds on what the code already does: each of a chunk's
-commit pointers resolves to its own repository record, and the land script lands each against that record's own server,
-owner, base branch, and credential. A chunk spanning two GitHub servers lands today; this epic adds a policy per
+commit pointers resolves to its own repository record, and the `land` action lands each against that record's own
+server, owner, base branch, and credential. A chunk spanning two GitHub servers lands today; this epic adds a policy per
 repository and the order a project lands its repositories in. GitHub is the only forge kind it lands on; the seam it
 grows is forge-neutral, and the second kind is the [gitlab epic](../../gitlab/spec/index.md)'s.
 
@@ -22,16 +22,18 @@ Paths are relative to `blizzard/src/blizzard/`.
 The epic reaches beyond `blizzard`'s source. In `blizzard-context`, `domain/artifacts/delivery.md` trades "the policy is
 the script's" for the policy being the repository's, names the three policies and the project's order a chunk's
 repositories land in, and says a parked change is noticed by polling; `standards/hub-nodes/outcome-protocol.md` gains
-the reserved `awaiting-merge` beside `pending`; `domain/work/statuses.md` says a `delivering` chunk may be awaiting a
-person's merge; `architecture/system-shape/configuration.md` learns the repository's policy fields; `domain/projects.md`
-says a project orders the repositories it links; `domain/operations.md` gains the event kinds and the escalation causes
-below; and `verification/blizzard/e2e-scenarios/delivery-policy.md` gains a scenario per policy. `docs/deployment/`
-gains a page on choosing a policy, including the CI a fast-forwarding repository needs. `blizzard-mock`'s forge grows
-what the proofs need ([seam.md](./seam.md#the-mock)).
+the reserved `awaiting-merge` beside `pending` and measures the poll timeout from the first pending attempt since the
+last wait of another kind; `domain/work/statuses.md` says a `delivering` chunk may be awaiting a person's merge;
+`architecture/system-shape/configuration.md` learns the repository's policy fields; `domain/projects.md` says a project
+orders the repositories it links; `domain/operations.md` gains the event kinds and the escalation causes below;
+`architecture/crash-correctness/hub.md` registers the policies' crash points ([landing.md](./landing.md#crash-points));
+and `verification/blizzard/e2e-scenarios/delivery-policy.md` gains a scenario per policy. `docs/deployment/` gains a
+page on choosing a policy, including the CI a fast-forwarding repository needs. `blizzard-mock`'s forge grows what the
+proofs need ([seam.md](./seam.md#the-mock)).
 
 | Where                            | Read when                                                                                                                |
 | -------------------------------- | ------------------------------------------------------------------------------------------------------------------------ |
-| [record.md](./record.md)         | Shaping the repository's policy fields, a project's landing order, and the capability check when a policy is set         |
+| [record.md](./record.md)         | Shaping the repository's policy fields, a project's landing order, the terms a visit takes, and the capability check     |
 | [landing.md](./landing.md)       | Building `land` as a runner of policies — the three policies, combining, escalations, awaiting a merge, crash points     |
 | [seam.md](./seam.md)             | Building the seam operations this epic adds, their GitHub implementations, and the mock forge's additions                |
 | [budget.md](./budget.md)         | Making a landing pass cheap, sharing one rate budget per key, and slowing down before the forge refuses                  |

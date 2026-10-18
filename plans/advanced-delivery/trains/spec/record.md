@@ -68,11 +68,12 @@ or wait behind one ([batches.md](./batches.md#readiness)). The pass ends its tur
 keeps its place on its flows and is ineligible until its next poll is due, after the node's `poll_interval`, as after
 `pending`.
 
-`hub_node_poll.kind`, which the policies epic added, gains `awaiting-queue`, written by the executor's
-`_record_awaiting` as `awaiting-merge` is. Like `awaiting-merge`, it ends a run of `pending` rows, so the node's
-`poll_timeout` never turns back a chunk for the time a train or a forge's queue takes to prove it. Its bound is the
-train's or the queue's own: `TRAIN_PROOF_TIMEOUT` on a batch ([batches.md](./batches.md#proving)) and
-`QUEUE_WAIT_TIMEOUT` on a change in a forge's queue ([queue.md](./queue.md#landing-through-the-queue)).
+`hub_node_poll.kind`, which the policies epic added, gains `awaiting-queue`, written by the driver's `_record_wait` as
+`awaiting-merge` is, and `awaiting-queue` joins the actions epic's `RESERVED_WAITS`. Like `awaiting-merge`, it ends a
+run of `pending` rows, so the node's `poll_timeout` never turns back a chunk for the time a train or a forge's queue
+takes to prove it. Its bound is the train's or the queue's own: `TRAIN_PROOF_TIMEOUT` on a batch
+([batches.md](./batches.md#proving)) and `QUEUE_WAIT_TIMEOUT` on a change in a forge's queue
+([queue.md](./queue.md#landing-through-the-queue)).
 
 ## The landed event
 

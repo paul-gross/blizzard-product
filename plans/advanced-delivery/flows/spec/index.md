@@ -7,35 +7,60 @@ a chunk's project links is owned by `initiative:projects`'
 [delivery contract](../../../../delivered/projects/hub/spec/delivery.md). This spec changes when a hub step runs and
 what it waits behind; it changes nothing an action does once it runs.
 
-This spec assumes only the [actions](../../actions/spec/index.md) epic has landed: a hub step is one of the hub's
-actions, taken a bounded pass at a time on the `ActionLoop`'s dedicated thread (`hub/delivery/action_loop.py`), handing
-every effect it makes to an `IEffectSink` rather than writing it, and declaring in its catalogue entry,
-`ActionSpec.lands` (`hub/domain/actions/catalogue.py`), whether it holds the branches its chunk lands on. It builds on
-what is already true of the code: a repository carries an id (`repo_<ulid>`), a slug it may change, and a name, and
-every reference holds the id, so a resource names its repository by id and every surface joins the current slug and name
-when it reads; and each of a chunk's commit pointers resolves to its own repository record, with its own base branch,
-forge address, owner, and credential.
+This spec assumes the [actions](../../actions/spec/index.md) and [forges](../../forges/spec/index.md) epics have landed.
+From actions: a hub step is one of the hub's actions, taken a bounded pass at a time on the `ActionLoop`'s dedicated
+thread (`hub/delivery/action_loop.py`), handing every effect it makes to an `IEffectSink` rather than writing it, and
+declaring in its catalogue entry, `ActionSpec.lands` (`hub/domain/actions/catalogue.py`), whether it holds the branches
+its chunk lands on and is handed forge handles; `RESERVED_WAITS` names the answers that are waits rather than choices,
+`pending` alone until the `policies` epic. From forges: `ForgeRegistry` hands out each repository's forge roles, bundled
+as a `RepositoryForge`, and an action's catalogue entry answers the capabilities it requires of each repository
+(`ActionSpec.requires`). Forges checks those capabilities and bundles the handles in `HubNodeExecutor` before a pass;
+this epic moves both into the flow driver's visit build ([turns.md](./turns.md#building-the-visit)), since nothing calls
+the executor's `run` once the driver takes turns. It builds on what is already true of the code: a repository carries an
+id (`repo_<ulid>`), a slug it may change, and a name, and every reference holds the id, so a resource names its
+repository by id and every surface joins the current slug and name when it reads; and each of a chunk's commit pointers
+resolves to its own repository record, with its own base branch, forge, owner, and credential.
 
 Paths are relative to `blizzard/src/blizzard/`.
 
 The epic reaches beyond `blizzard`'s source. In `blizzard-context`:
 
+- `architecture/clean-architecture.md`'s `bzh:domain-package-layers` table, and `tests/test_layering.py`'s
+  `_DOMAIN_PACKAGE_LAYERS` with it, gain a `delivery` row for `hub/domain/delivery/` at L4, importing `actions`,
+  `chunk`, `graph`, `config`, and `artifact`. It is a domain package, distinct from the `hub/delivery/` edge beside the
+  domain, which the layer walker tells apart by comparing whole path segments.
 - `domain/artifacts/delivery.md` replaces its fleet-wide serialization paragraph with resources and flows, and corrects
   the scope the code already has: one slot per tenant, never one per fleet. Its "only a live, promoted chunk is driven"
-  rule stands, now as the condition the driver's reconcile submits on ([verdict.md](./verdict.md#submitting)).
+  rule changes rather than stands: a chunk is driven at a hub node only while it is `delivering`, so a paused chunk,
+  which hub-advance drives today, now waits for its resume ([levers.md](./levers.md)). That is the condition the
+  driver's reconcile submits on ([verdict.md](./verdict.md#submitting)).
 - `domain/work/statuses.md` says a `delivering` chunk is submitted to its flows or taking its turn in them.
 - `domain/operations.md` gains the event kinds in [record.md](./record.md).
+- `standards/hub-nodes/outcome-protocol.md` stops saying a `pending` answer releases the tenant's `hub_exec_slot`: it
+  ends the turn ([turns.md](./turns.md#pending)).
 - `architecture/crash-correctness/hub.md` replaces §The boot release of live hub-execution slots with the boot recovery
-  of open turns ([carry-over.md](./carry-over.md#at-boot)), registers the `flow.` crash-point family
-  ([turns.md](./turns.md#crash-points)), and names `FlowDriver` among the hub's lanes in
-  `architecture/crash-correctness/lanes.md`.
+  of open turns ([carry-over.md](./carry-over.md#at-boot)) and registers the `flow.` crash-point family
+  ([turns.md](./turns.md#crash-points)).
+- `architecture/lanes.md`'s `bzh:lane-contract` names `FlowDriver` as the one hub lane that is not a `Sweep`: clause 5's
+  "on the hub, every lane is a `Sweep`" gains the exception, and clause 4 says the driver catches each tick and each
+  turn's task on its own ([turns.md](./turns.md#the-flow-driver)). `bzh:probe-gated-pass`'s table gains the driver's
+  reconcile as a converging pass and its admission as work that comes due.
 - `architecture/system-shape/exclusive-writes.md`'s single-process known debt replaces the boot slot release with the
   boot turn recovery and the driver's in-memory sweep of open turns ([turns.md](./turns.md#a-turn-that-cannot-end)).
 - `architecture/system-shape/tenancy.md`'s list of hub-wide jobs that loop over open tenants replaces "boot slot
   release" with "boot turn recovery".
+- `architecture/system-shape/store-facts.md` stops citing `hub_exec_slot.released_at` as its example of a released-at
+  column, and `verification/blizzard/gaps.md` drops its entry on the slot's per-tenant lock.
 
-`verification/blizzard/e2e-scenarios/board.md` gains the flow lanes. Runners are untouched: the runner still calls
-hub-advance while its chunk is `delivering` and reads nothing new from the answer.
+`verification/blizzard/e2e-scenarios/board.md` gains the flow lanes. In `blizzard`'s own docs,
+`docs/deployment/recovery.md` names the `flow.` crash points in place of `hubnode.after-poll.before-slot-release`, which
+the actions epic left there until the slot retired. Runners are untouched: the runner still calls hub-advance while its
+chunk is `delivering` and reads nothing new from the answer.
+
+The slot is described in docstrings the code keeps after it is gone, and each is rewritten with the change:
+`hub/api/fleet.py`'s hub-advance route, `HubAdvanceResponse` (`wire/chunk.py`), `hub/domain/operations/stop.py`,
+`hub/domain/operations/complete.py`, `hub/cli/chunk.py`, `hub/api/chunks.py`, `hub/domain/chunk/ports/lifecycle.py`, and
+`hub/domain/garden/delivery/service.py`.
 
 | Where                            | Read when                                                                                                                                     |
 | -------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------- |

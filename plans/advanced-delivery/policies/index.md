@@ -35,6 +35,11 @@ seam only for what any forge could offer, so a second kind can join later withou
 
   A project's link to a repository may carry a default of its own only when one earns its place; until then the
   repository's policy is the only one, and every project that links the repository shares it, as they share its branch.
+  An operator who changes a policy wants it to take hold now, not after whatever was already queued has drained, so a
+  chunk takes its repositories' policies at the moment the hub starts landing it rather than when it joined the line: a
+  chunk that waited three hours behind others lands by the policy the repository has when its turn first comes. Once the
+  hub has begun landing a chunk, that chunk keeps the policies it started with, so no landing switches from merging a
+  pull request to parking it halfway through; the chunk's next visit, after a requeue or a restart, takes them fresh.
 - **Graphs that land anywhere.** A delivery node submits to its branch's flow and routes on the verdict, never naming a
   policy, so one graph lands into a fast-forwarding repository and a parking one without a change. Every policy answers
   in the same words — landed, conflict, failure, or inherited-failure — and a graph authors an edge for each it cares
@@ -71,9 +76,10 @@ seam only for what any forge could offer, so a second kind can join later withou
   repositories one at a time in its project's order, so a library ranked ahead of its consumer lands first; repositories
   no one has ranked land after the ranked ones, alphabetically. Two projects linking the same repositories may order
   them differently. Landing across repositories is never one atomic act: the hub lands none of the repositories it lands
-  itself until every one is ready, then lands them in order, and a parked repository holds every repository after it
-  until a person merges. If one is refused after another has landed, the landed one stands and the chunk reconciles as
-  it does today.
+  itself until every one is ready, then lands them in order. A parked repository's change opens only once every
+  repository ahead of it has landed and every repository the hub lands itself is proven, so a person is asked to review
+  only when the rest of the chunk is ready, and every repository after a parked one waits until the person merges. If
+  one is refused after another has landed, the landed one stands and the chunk reconciles as it does today.
 - **Carried over without a change in behavior.** Every existing repository is given the policy it is landed by today,
   merge once checks pass, so the fleet lands as before until an operator chooses otherwise.
 
