@@ -95,7 +95,7 @@ Storybook 10.6 turns on Vite 8's own resolution of `tsconfig.json` `paths`, so t
 alias of its own.
 
 `main.ts` globs `../src/lib/**/*.stories.ts` and `../../hub/src/app/shell/**/*.stories.ts`, the second reaching only the
-hub shell's chrome ([stories.md](./stories.md) §The lens control). Nothing in `fleet` imports the hub; the glob is the
+hub shell's chrome ([stories.md](./stories.md) §The lens selectors). Nothing in `fleet` imports the hub; the glob is the
 workshop's reach, not the library's.
 
 ## What every story renders inside

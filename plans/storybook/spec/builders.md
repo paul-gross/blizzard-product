@@ -13,7 +13,6 @@ name:
 | `artifact.ts`   | `ArtifactView` of each kind, the `FindingSurvey` and `FindingDelta` an asset's content carries, and the assets that carry them, a bounce envelope among them                   |
 | `transcript.ts` | `TranscriptSegmentIndexEntry`, `TranscriptSegmentContentView`, and the hub's turn, tool-call, and sidechain segment views                                                      |
 | `board.ts`      | `ChunkCountsView`, `FleetSpendView`                                                                                                                                            |
-| `project.ts`    | `ProjectView`                                                                                                                                                                  |
 | `clock.ts`      | `FIXTURE_NOW`, the instant every builder dates its records from                                                                                                                |
 
 `bzh:frontend-package-layers` lets the `testing` unit import `api` and nothing else, and the builders need nothing else:

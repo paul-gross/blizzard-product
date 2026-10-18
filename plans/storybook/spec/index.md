@@ -21,11 +21,11 @@ builds blizzard, `.winter/config.toml` gives the workshop a port in every featur
 `blizzard`'s own docs, `web/README.md` gains the workshop beside the dev servers, and `docs/ci.md` names the render
 check among the frontend checks.
 
-| Where                            | Read when                                                                                                                       |
-| -------------------------------- | ------------------------------------------------------------------------------------------------------------------------------- |
-| [toolchain.md](./toolchain.md)   | Installing and configuring the workshop — the framework, the install, the build, the styles, the providers, the scripts         |
-| [stories.md](./stories.md)       | Writing a story — where it lives, what a part owes, the roster of kit parts and composed pieces, and the lens control's reshape |
-| [builders.md](./builders.md)     | Building the wire-shape builders in `fleet/testing`, or moving a spec onto them                                                 |
-| [gates.md](./gates.md)           | Holding the workshop — the kit's stories sweep, stories among the existing sweeps, the render check, and the rule behind them   |
-| [workspace.md](./workspace.md)   | Serving the workshop in every feature environment, and the manual method that makes it part of frontend work                    |
-| [carry-over.md](./carry-over.md) | Landing the epic — the order of its pieces, and what each one leaves the next                                                   |
+| Where                            | Read when                                                                                                                     |
+| -------------------------------- | ----------------------------------------------------------------------------------------------------------------------------- |
+| [toolchain.md](./toolchain.md)   | Installing and configuring the workshop — the framework, the install, the build, the styles, the providers, the scripts       |
+| [stories.md](./stories.md)       | Writing a story — where it lives, what a part owes, the roster of kit parts and composed pieces, and the lens selectors       |
+| [builders.md](./builders.md)     | Building the wire-shape builders in `fleet/testing`, or moving a spec onto them                                               |
+| [gates.md](./gates.md)           | Holding the workshop — the kit's stories sweep, stories among the existing sweeps, the render check, and the rule behind them |
+| [workspace.md](./workspace.md)   | Serving the workshop in every feature environment, and the manual method that makes it part of frontend work                  |
+| [carry-over.md](./carry-over.md) | Landing the epic — the order of its pieces, and what each one leaves the next                                                 |

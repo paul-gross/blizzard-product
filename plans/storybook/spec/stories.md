@@ -163,26 +163,21 @@ Where a piece composes another on the roster — the general tab renders the fac
 renders the transcript viewer — the outer piece's stories show it whole, and the inner piece's stories carry the inner
 piece's own states.
 
-## The lens control
+## The lens selectors
 
-The hub shell's project lens control (`web/projects/hub/src/app/shell/nav/project-lens-control.ts`) reads the tenant's
-projects through its own `injectProjectsQuery` and switches the lens through an injected `ProjectLens`, so it cannot
-render without a live query client and router state. This epic reshapes it into a presentational part, then gives it
-stories.
-
-`ProjectLensControl` takes `projects: readonly ProjectView[]` and `current: string | null` as inputs and emits
-`choose: string | null`; it keeps `lensChoices` and its sort, and injects nothing. Its container, `AppNav`
-(`app-nav.html`), reads the projects through `injectProjectsQuery(() => this.lensEnabled())` and the slug through
-`ProjectLens`, binds both, and calls `ProjectLens.switchTo` on `choose` unless the choice is already current. The
-control's `enabled` input goes, since the query's enablement now belongs to its container. The derivation stays a plain
-function in the control's file, so `AppNav`'s `computed()`s only compose (`bzh:frontend-containers-compose`).
-`project-lens-control.spec.ts` moves onto inputs, and `app-nav.spec.ts` gains the wiring. The control's shell-sweep
-spec, `project-lens-control.shell-sweep.spec.ts`, keeps mounting `AppNav`, which now owns the query its fixture answers,
-so it still proves the whole tab row — route tabs and chips together — across the widths it sweeps.
+The hub shell's two project lens selectors — `ProjectLensControl`, the desktop chip row
+(`web/projects/hub/src/app/shell/nav/project-lens-control.ts`), and `ProjectMenu`, the mobile titlebar's submenu
+(`project-menu.ts`) — each read the tenant's projects through `injectProjectsQuery` and switch the lens through an
+injected `ProjectLens`, so neither renders without a live query client and router state. This epic does not reshape
+them. A change to the hub shell outside it makes both presentational: one shell-level container owns the projects read
+and the lens state, and each selector takes `choices: readonly LensChoice[]` and `current: string | null` as inputs,
+emits `choose`, and injects nothing. The selectors' stories wait for that change.
 
 `project-lens-control.stories.ts`, titled `Hub shell/Project lens`, shows All alone, a handful of projects, a tenant
-with enough projects that the chips scroll inside the control, and a long project name, at `desktop`, the only width
-`AppNav` renders at. It imports `fleet/testing`'s `projectView` builder through the package entry, as a hub spec would.
+with enough projects that the chips scroll inside the control, and a long project name, at `desktop`, the only width the
+tab row renders at. `project-menu.stories.ts`, titled `Hub shell/Project menu`, shows the same choices at `phone` and
+`phone-sm`. Both build their choices as `LensChoice` literals, since a choice is the hub's own derived type rather than
+a wire shape.
 
 ## What stays out
 
