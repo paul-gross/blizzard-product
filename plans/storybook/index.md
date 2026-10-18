@@ -14,6 +14,10 @@ epic gives the kit a place of its own: a Storybook where every part stands alone
 push on it, so the owner can browse what exists, play with it, and say what should change before the next surface is
 built from it.
 
+| Where                    | Read when                                                             |
+| ------------------------ | --------------------------------------------------------------------- |
+| [spec/](./spec/index.md) | Implementing any part of the epic or resolving its technical contract |
+
 ## What to build
 
 - **A Storybook over the fleet kit.** Every reusable part in the `fleet` library's kit has stories that show it in each
