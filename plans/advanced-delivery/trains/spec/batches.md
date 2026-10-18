@@ -7,12 +7,14 @@ visit's pass is ([record.md](./record.md#the-train-turn)), so a train never hold
 that restarts mid-train picks it up at the step its record says it reached.
 
 `hub/delivery/trains/` holds it: `readiness.py`, `train.py`, `split.py`, and `eject.py`. A train step is an action under
-`bzh:hub-action-purity`, as `land` is, and runs on the `ActionLoop`: `step(batch, forge, effects)` receives the batch as
-a frozen value — its members, their revisions, its facts so far, the flow's repository and settings — the flow's
-repository's `RepositoryForge`, and an `IEffectSink` through which it hands over each fact it records; the driver
-persists each before the step continues, so a forge write and its record are never further apart than one crash point
-([record.md](./record.md#crash-points)). A step that needs more than its batch carries declares it as an input the
-driver loads; it never reads the store.
+`bzh:hub-action-purity`, as `land` is — the import allowlist
+(`tests/test_layering.py::test_hub_actions_import_only_their_allowlist`) and the frozen-input check
+(`tests/test_hub_actions.py`) walk `hub/delivery/trains/` beside `hub/delivery/actions/` — and runs on the `ActionLoop`:
+`step(batch, forge, effects)` receives the batch as a frozen value — its members, their revisions, its facts so far, the
+flow's repository and settings — the flow's repository's `RepositoryForge`, and an `IEffectSink` through which it hands
+over each fact it records; the driver persists each before the step continues, so a forge write and its record are never
+further apart than one crash point ([record.md](./record.md#crash-points)). A step that needs more than its batch
+carries declares it as an input the driver loads; it never reads the store.
 
 ## Mechanical first
 
@@ -168,8 +170,8 @@ closes its submission everywhere, so every other batch in progress that carries 
 naming the ejection and rebuilt without it, unless that batch's advance has already been made — then its landing stands
 and is recorded. A chunk turned back to an agent never has the same work landed behind the agent's back.
 
-A lever on a member — stop, restart, complete, migrate — withdraws it as the flows epic withdraws any submission, and
-the same rule holds: a member withdrawn from a batch still building simply leaves it; one withdrawn while its batch
-proves abandons that batch, which is rebuilt without it; and one withdrawn after its batch's advance was made has
-landed, which the flow records as it records any member. Work a person stopped is never landed by a proof that finished
-after the stop.
+A lever on a member — stop, restart, complete — withdraws it as the flows epic withdraws any submission, its outcome
+from `withdrawal_for` and deferred to the end of any turn still open on it, and the same rule holds: a member withdrawn
+from a batch still building simply leaves it; one withdrawn while its batch proves abandons that batch, which is rebuilt
+without it; and one withdrawn after its batch's advance was made has landed, which the flow records as it records any
+member. Work a person stopped is never landed by a proof that finished after the stop.

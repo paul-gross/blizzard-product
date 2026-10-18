@@ -48,8 +48,9 @@ seam only for what any forge could offer, so a second kind can join later withou
   delivery node. The `land` action runs the repository's policy, so the shipped graphs' delivery nodes name `land` and
   never a policy.
 - **What only a person can settle goes to a person.** A person who closes a parked change without merging it has said
-  no, and a base its forge will not let anything but a pull request move is a setting to change; neither is a failure an
-  agent could repair, so each escalates to a person rather than routing back into the graph.
+  no, and a base its forge will not let anything but a pull request move, or a repository that refuses the merge commit
+  the hub makes, is a setting to change; none of these is a failure an agent could repair, so each escalates to a person
+  rather than routing back into the graph.
 - **Capabilities checked when the policy is set.** Each policy needs capabilities of the repository's forge — a pull
   request to park one, advancing a ref to fast-forward — and setting a policy the forge cannot honour is refused then,
   naming what is missing, with the same check repeated when a chunk's repositories resolve at landing. What a forge's

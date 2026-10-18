@@ -19,12 +19,15 @@ them:
 
 - **Unchanged answers are free.** The GitHub adapter keeps each `GET`'s `ETag` per URL, in memory per adapter, and sends
   it back as `If-None-Match`; a `304 Not Modified` answers from what it kept, and GitHub does not count a 304 against
-  the key's limit. This is where nearly all of the saving comes from.
+  the key's limit when the request is authenticated. This is where nearly all of the saving comes from. A work source
+  that calls the forge with no secret is anonymous, and its 304s still count.
 - **What cannot change is read once.** A compare between two fixed revisions is kept per adapter, so the head gate reads
-  it once per pair rather than once per pass. Checks are not kept the same way, however complete they look: a forge
-  creates check runs as each workflow starts, so a revision whose every check has finished can still gain one, and a
-  green read kept forever could merge ahead of a slower workflow. Their re-reads are answered 304 when nothing moved,
-  which costs nothing anyway.
+  it once per pair rather than once per pass. An adapter lives as long as its repository's record goes unedited, and a
+  compare carries its files' patches, so both stores are bounded, least recently used first out: 512 kept answers per
+  adapter, and 64 compares. Checks are not kept the same way, however complete they look: a forge creates check runs as
+  each workflow starts, so a revision whose every check has finished can still gain one, and a green read kept forever
+  could merge ahead of a slower workflow. Their re-reads are answered 304 when nothing moved, which costs nothing
+  anyway.
 - **The already-merged lookup becomes one call.** Whether the chunk's branch already merged is
   `changes(closed, base, head=<owner>:<branch>)`, a filtered read, in place of paging through every closed pull request
   into the base. On most repositories that was one page already; on a busy one it was ten.
@@ -35,10 +38,11 @@ them:
 
 The arithmetic, for one key on GitHub: a delivering repository in its steady state costs a counted call a pass at most,
 sixty an hour, and usually fewer, and a pass where something moved — a new head, a moved base, a finished check — costs
-four or five. A chunk's handful of writes (opening the change, an update, a re-run, the merge) count once each. A
-repository with parked changes costs its one recently-closed listing every two minutes, at most thirty counted an hour
-and mostly answered 304, however many changes are parked on it. So a key comfortably carries several dozen repositories
-delivering at once, where today it carries ten.
+four or five. A chunk's handful of writes (opening the change, an update, a re-run, the merge) count once each. A parked
+change reads its repository's recently-closed listing every two minutes, and every parked change on the repository reads
+the same address, so the listing is counted only when something into the base has closed since the last read — the first
+reader after it pays, and the rest are answered 304 — however many changes are parked on it. So a key comfortably
+carries several dozen repositories delivering at once, where today it carries ten.
 
 ## The budget
 
@@ -66,14 +70,30 @@ read or replace a handful of numbers and never across a request, so the action l
 that. What counts as the forge refusing for rate is the forges epic's retry rules, which already raise
 `ForgeRateLimited(resume_at)` for a spent remaining, a `Retry-After`, or a secondary limit; the budget hears of each one
 and marks itself spent until `resume_at`. A budget the hub has not yet heard from admits every caller; it is held in
-memory, and a restarted hub relearns it from its first answer.
+memory, and a restarted hub relearns it from its first answer. A GitHub Enterprise server with rate limiting turned off
+sends no rate headers at all, so its budgets never learn a limit and admit every caller; there is nothing to share, and
+the forges epic's retry rules still meet whatever refusal the server does send.
+
+Admission happens before the request, so it must know which bucket a call spends before the forge says. Each call
+declares it: every operation on the landing seam and the work-source family declares `core`, and a later caller that
+speaks another of the forge's buckets — the trains epic's GraphQL reads, a search — declares that one. The answer's
+`X-RateLimit-Resource` then says which bucket it actually spent, and the reading goes to that bucket whichever was
+declared.
 
 ## Who goes first
 
 Each call carries how much it matters, and a budget running low turns the least important away first, before any request
 is made. Priority belongs to the call, not to the pass: a `land` pass spends `landing` on the repositories the hub lands
-itself and `watching` on a parked repository's listing. The driver binds each `RepositoryForge` it hands a pass with the
-priority its repository's policy earns, so a policy never names one.
+itself and `watching` on a parked repository. Adapters are built and cached once per repository and shared by every
+caller of it — a landing chunk and a parked one on the same repository read through one adapter — so the priority cannot
+live on the adapter. It lives on the role handle instead: `ForgeRegistry.refs`, `changes`, and `checks` each take a
+`priority`, and hand back a thin handle that carries it into every call on the shared adapter, where the budget reads
+it. The driver asks for `landing` handles for the repositories the hub lands itself and `watching` handles for a parked
+one, so a policy never names a priority; the garden's commit check asks `ForgeRegistry.refs` for a `sweeping` handle
+directly, with no driver in between. The work-source family has no handle to carry one, and one client serves callers of
+every kind, so each of its operations has a fixed priority of its own, which its adapter hands the budget with the call:
+`IWorkEditor`'s operations are `landing`, being a person's own edit, and every operation of `IWorkSource`,
+`IWorkAnnotator`, and `IWorkCloser` is `sweeping`.
 
 | Priority   | Callers                                                                                                          | Admitted while the remaining budget is |
 | ---------- | ---------------------------------------------------------------------------------------------------------------- | -------------------------------------- |

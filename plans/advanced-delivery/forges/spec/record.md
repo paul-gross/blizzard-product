@@ -38,21 +38,34 @@ as it now stands, and holds:
 - `KNOWN_FORGE_KINDS = {"github"}`, and beside it `FORGE_KIND_CAPABILITIES`, the `Capability` set
   (`hub/domain/config/capabilities.py`) each kind offers ([seam.md](./seam.md#capabilities)).
 - `canonical_origin(url)`, the one form an address is stored and compared in. Today nothing normalizes an address —
-  `forge_api_url`, `api_base`, and `web_base` are stored as they were typed, and `validate_fields` checks only that a
-  repository's has an `http` or `https` scheme and a host — so the rule is stated whole:
-  - The scheme is `http` or `https`, lowercased; any other is refused.
-  - The host is lowercased; an internationalized host is stored in its ASCII (IDNA) form, and an IPv6 literal keeps its
-    brackets, lowercased.
-  - A scheme's default port, 80 or 443, is dropped, and any other port is kept.
-  - The path is kept exactly, its case included, since a forge's paths are case-sensitive, and trailing slashes are
+  `forge_api_url`, `api_base`, and `web_base` are stored as they were typed; a repository's `validate_fields` checks
+  only that its address has an `http` or `https` scheme and a host, and a work source's checks neither of its addresses
+  at all, so a stored `api_base` may lack a scheme or be an empty string, which the work-source factory reads as
+  github.com — so the rule is stated whole:
+  - Surrounding whitespace is trimmed; whitespace inside the address is refused.
+  - The scheme is `http` or `https`, lowercased; an address with any other scheme, or none, is refused, as is one with
+    no host.
+  - The host is lowercased and one trailing dot is dropped. An internationalized host is stored in its ASCII form
+    through Python's built-in `idna` codec (IDNA 2003), named so that the hub and the frozen migration encode alike, and
+    an IPv6 literal keeps its brackets, lowercased. A host carrying a percent-escape is refused.
+  - A scheme's default port, 80 or 443, is dropped, and so is an empty port (`host:`); any other port is kept.
+  - The path keeps its case, since a forge's paths are case-sensitive. Its percent-escapes are normalized as RFC 3986
+    asks — hexadecimal digits uppercased, and an escape of an unreserved character decoded — and trailing slashes are
     stripped; an empty path stays empty.
   - An address carrying a user or password, a query, or a fragment is refused rather than cleaned. The hub authenticates
     with a header, never with an address, and a credential written into one would otherwise sit in the change log in the
     clear.
 
   So `http://127.0.0.1:8123/` is stored as `http://127.0.0.1:8123`, `https://API.GitHub.com:443/` and
-  `https://api.github.com` are one origin, and `https://ghe.acme.internal/api/v3` and `https://ghe.acme.internal/API/v3`
-  are two.
+  `https://api.github.com.` and `https://api.github.com` are one origin, and `https://ghe.acme.internal/api/v3` and
+  `https://ghe.acme.internal/API/v3` are two. Where an address is optional, an empty or whitespace-only value is no
+  value, as the work-source factory's `or` already reads it. The rule is pinned by one table of cases,
+  `tests/fixtures/canonical_origin_cases.json` — every bullet above, an empty port, a trailing dot, an IDNA host, an
+  escaped path, and each refusal — read by both `canonical_origin`'s unit test and the migration's test of its own
+  frozen copy, so the two can never disagree about an address.
+- `derived_web_origin(kind, api_base)`, the web origin a forge of that kind implies from its API origin, which moves
+  here from `hub/forge/web.py::web_origin` so the domain can derive a forge's web host without importing the forge edge;
+  for `github` it is the derivation the work-source factory makes today, and `hub/forge/web.py` calls it.
 - `ForgeSlug(Slug)` and `ForgeName(DisplayName)`, whose grammars come from `hub/domain/kernel/slugs.py`, and
   `FORGE_KIND = SluggedKind(IdPrefix.FORGE, ForgeId, ForgeSlug.of)`.
 - `ForgeFields(api_base, web_base)`, the mutable fields only; the slug, name, and kind sit on the record, as
@@ -70,9 +83,17 @@ The store is `hub/store/internal/forge_record_store.py`, which claims and releas
 stores `api_base` and `web_base` through `canonical_origin`, and two forges never share an API origin, so one server is
 one record: a create or edit whose origin another forge of the tenant holds is refused `ForgeOriginTaken`, naming that
 forge, as `RepositoryCoordinateTaken` refuses a taken coordinate. `web_base`, when null, derives through
-`hub/forge/web.py::web_origin` as the work-source factory derives it today; the derivation moves off `GithubEntry` and
-onto the forge. The forge's effective web origin — its own `web_base`, else the derived one — now serves every record
-that names it. Today a repository's branch links always derive from its `forge_api_url`, while a work source on the same
+`derived_web_origin`; the derivation moves off `GithubEntry` and onto the forge.
+
+A forge's row is locked as a secret's is. `lock_forge_row(conn, forge_id)` in the forge store, patterned on
+`lock_secret_row` (`hub/store/internal/secret_store.py`), is the first statement after the scoped write's tenant-row
+lock in a forge's retire and enable and in every repository or work-source write that names a forge, so a retire and an
+enable racing on one forge wait for each other's commit rather than leaving an enabled record on a retired forge;
+`tests/test_forge_row_lock.py` proves it as `tests/test_secret_row_lock.py` proves the secret's. `IWriteForgeRepository`
+joins `_CONFIGURED_WRITE_NAMES` and `hub/domain/config/forges.py` joins `_CONFIGURED_WRITE_HOMES`
+(`tests/test_layering.py`), so only the authoring service writes a forge, as only it writes the other configured
+records. The forge's effective web origin — its own `web_base`, else the derived one — now serves every record that
+names it. Today a repository's branch links always derive from its `forge_api_url`, while a work source on the same
 server may declare a `web_base` of its own; once both name one forge, a `web_base` set on that forge moves the
 repository's branch links with it.
 
@@ -100,11 +121,14 @@ should one arrive, relaxes the column in the change that adds it. A work source 
 `provider`. Whether it does needs the forge, so the work-source store's write checks it, as the repository store checks
 that a secret is available (`RepositorySecretUnavailable`).
 
-`uq_work_sources_tenant_provider_locator` becomes `(tenant_id, provider, forge_id, locator)`, as the repository's
-coordinate gains its forge: a GitHub locator is `owner/name`, and `acme/app` on github.com and `acme/app` on an
-Enterprise server are two trackers, which an installation may now configure side by side. The store's own check before
-it (`_locator_holder`, `WorkSourceLocatorTaken`, in `work_source_record_store.py`) and the legacy import's locator set
-(`hub/domain/config/carry_over.py`) key on the forge too.
+`uq_work_sources_tenant_provider_locator` stays `(tenant_id, provider, locator)` through the transition release. A
+GitHub locator is `owner/name`, and `acme/app` on github.com and `acme/app` on an Enterprise server are in truth two
+trackers, but letting an installation configure both side by side would leave a store the transition's downgrade could
+not walk back, since the column that told them apart is the one being dropped
+([carry-over.md](./carry-over.md#the-migration)). The constraint widens to `(tenant_id, provider, forge_id, locator)` in
+the retirement release, which breaks the old fields anyway, and the store's own check before it (`_locator_holder`,
+`WorkSourceLocatorTaken`, in `work_source_record_store.py`) and the legacy import's locator set
+(`hub/domain/config/carry_over.py`) key on the forge with it.
 
 Each referring record keeps its own `secret_name`. The credential belongs to the use, never to the forge.
 
@@ -116,22 +140,24 @@ secret's — a secret in use is refused today with a plain-string detail, which 
 conflict. The referrer lookup joins `store/internal/secret_referrers.py`'s `_REFERRING` pattern in a
 `forge_referrers.py` beside it. A retired forge can still be read, and records retired while naming it keep naming it.
 Enabling such a record is refused while its forge is retired: `ConfigAuthoring`'s `enable_repository` and
-`enable_work_source` read the named forge and refuse `409` with the coded detail `forge_retired`, naming it, and the
+`enable_work_source` read the named forge and refuse `422` with the coded detail `forge_retired`, naming it, as enabling
+a repository whose secret has since been retired is refused `422` today (`hub/api/repositories.py`), and the
 configuration document's apply, which re-enables a retired record it declares, refuses the entry the same way. A retired
 forge keeps its slug and its API origin, so no other forge can take either while the retired one could be enabled again.
 
 Resolution follows. `_candidates` (`hub/domain/config/repositories.py`), which `resolve_chunk_repositories`,
 `resolve_origin_record`, and `resolve_repository` all match through, compares a commit's `forge` origin host against the
 named forge's web host and API host, so each of the three is handed the tenant's forges beside its repositories and
-`_forge_host` reads the forge row instead of `forge_api_url`. Every caller that reads `list_all` on the repositories for
-one of them reads `IReadForgeRepository.list_all(include_retired=True)` beside it, retired forges included as retired
-repositories are, and passes both. `ResolvedRepository` carries `forge_id` in place of `forge_api_url`.
-`ResolvedRepository.target` and `RepositoryResolution.agreed()` lost their one caller, the hub node's step environment,
-with the actions epic, and are deleted rather than carried over. Each commit pointer already resolves to its own
-repository and lands against its own forge, owner, base branch, and credential — the refusal `repositories-disagree`
-that once kept one chunk on one forge is gone — so naming the forge changes what a target carries, not which targets a
-chunk may have. `hub/api/chunk_views.py`, which builds branch links through `hub/forge/web.py::branch_url`, reads the
-forges of the repositories it links in one read.
+`_forge_host` reads the forge row instead of `forge_api_url`, taking the web host from the forge's own `web_base` or
+`derived_web_origin`, both in the domain. Every caller that reads `list_all` on the repositories for one of them reads
+`IReadForgeRepository.list_all(include_retired=True)` beside it, retired forges included as retired repositories are,
+and passes both. `ResolvedRepository` carries `forge_id` in place of `forge_api_url`. `ResolvedRepository.target` and
+`RepositoryResolution.agreed()` lost their one caller, the hub node's step environment, with the actions epic, and are
+deleted rather than carried over. Each commit pointer already resolves to its own repository and lands against its own
+forge, owner, base branch, and credential — the refusal `repositories-disagree` that once kept one chunk on one forge is
+gone — so naming the forge changes what a target carries, not which targets a chunk may have. `hub/api/chunk_views.py`,
+which builds branch links through `hub/forge/web.py::branch_url`, reads the forges of the repositories it links in one
+read.
 
 ## The change log
 
@@ -144,9 +170,13 @@ generated `RecordKind`, `SURFACE_SEGMENT` (`admin/config-links.model.ts`), `Admi
 (`admin/config-cli.model.ts`), `admin.routes.ts`, and the tab counts in `admin-shell.ts`.
 
 A repository's and a work source's diff (`_DIFF_FIELDS`) swap their address fields for `forge`, recorded as the forge's
-id, as every reference is held, and shown with the forge's current slug and name when the change log is read. A row
-written before the epic keeps the field names it was written with — `forge_api_url`, `api_base`, `web_base` — and is
-shown as written: the change log is a record of what changed, and it never rewrites its past to the present shape.
+id, as every reference is held, and shown with the forge's current slug and name when the change log is read. That
+showing is new: `FieldChangeView` (`wire/config.py`) is `(field, old, new)` today, and `_labels` (`hub/api/config.py`)
+labels only the record a change row is keyed by. `FieldChangeView` gains `old_label` and `new_label`, optional, filled
+for a `forge` field from one read of the forges a page of changes names, beside `_labels`' reads, while `old` and `new`
+keep the ids. A row written before the epic keeps the field names it was written with — `forge_api_url`, `api_base`,
+`web_base` — and is shown as written: the change log is a record of what changed, and it never rewrites its past to the
+present shape.
 
 A forge holds no secret, so it takes no entry in `config_revisions_store.py`'s `_REFERRING`, which joins each kind's
 `secret_name`. What it changes instead is the cache key of every record that names it: `ConfigRevisions`

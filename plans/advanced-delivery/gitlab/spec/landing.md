@@ -26,9 +26,9 @@ hub's own word, checked against what GitLab can say:
 1. When `update_from_base` answers method `rebase`, `land` hands `rebase-requested/<repo>/<head>` to its effects, naming
    the head it rebased from, before it asks the forge to act.
 2. `gate_head` (`hub/delivery/actions/landing/head_gate.py`) admits a later head that does not descend from the
-   submitted commit only when such a marker names the head it replaced, the change's `diff_refs.base_sha` is the base's
-   current tip, the rebased head carries as many commits past that base as the replaced head carried past its own, and
-   the set of paths it changes is the set the replaced head changed.
+   submitted commit only when such a marker names the head it replaced, the change's `base_revision` (GitLab's
+   `diff_refs.base_sha`) is the base's current tip, the rebased head carries as many commits past that base as the
+   replaced head carried past its own, and the set of paths it changes is the set the replaced head changed.
 
 A head that fails any of these — a rebase nobody asked the hub for, a person's push in between, a rebase that dropped or
 added a file — is a foreign head, and `failure`, as today. The check trades the proof GitHub's base merges get for one

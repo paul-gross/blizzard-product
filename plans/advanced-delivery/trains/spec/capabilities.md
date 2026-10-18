@@ -5,15 +5,15 @@
 Until this epic a repository's capabilities are its forge kind's. Some are not: whether GitHub runs a merge queue on a
 branch, or GitLab merge trains on a project, is set on the forge for one repository and not its neighbour, and a base
 branch that only pull requests may change cannot be advanced directly however capable the kind. So a capability is now
-one of two sorts, declared beside the closed capability set in `hub/forge/landing.py`:
+one of two sorts, declared beside the closed capability set in `hub/domain/config/capabilities.py`:
 
 - **Kind capabilities**, offered by every repository on a forge of that kind, as before.
 - **Probed capabilities**, which a kind may offer but each repository must be shown to have: `queue.join`, and
   `refs.advance`.
 
 `ForgeRegistry.probe(repository) -> Probes` reads the repository's forge-side settings for its base branch. A probe
-belongs to the registry, beside `offered(repository)`, not to any role a caller is handed: each kind's adapter supplies
-the reads below, and the registry calls them.
+belongs to the registry, beside `offered(forge, repository)`, not to any role a caller is handed: each kind's adapter
+supplies the reads below, and the registry calls them.
 
 | Capability     | GitHub                                                                                                                                                                                                                                                           | GitLab                                                              |
 | -------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------- |
@@ -31,11 +31,11 @@ protected is remembered on the probe as `advance_refused_at`, and leaves `refs.a
 scheduled probes follow, until an operator takes one on demand — the act that says the base's protection has changed. A
 train refused once therefore never loops into the same refusal.
 
-`ForgeRegistry.offered(repository)` — the one place a caller asks, as the forges epic made it — answers the kind's
-capabilities, narrowed by the repository's last probe. A probe is taken when a repository is created, when its policy,
-its batching, or its forge changes, and whenever its cached answer is older than ten minutes at the moment a visit's
-capability check asks. A probe the forge cannot answer — a 5xx, a timeout, a rate limit — changes nothing: the last
-answer stands and is retried at the next check. A repository never yet probed has no answer to stand on, so a visit
+`ForgeRegistry.offered(forge, repository)` — the one place a caller asks, as the forges epic made it — answers the
+kind's capabilities, narrowed by the repository's last probe. A probe is taken when a repository is created, when its
+policy, its batching, or its forge changes, and whenever its cached answer is older than ten minutes at the moment a
+visit's capability check asks. A probe the forge cannot answer — a 5xx, a timeout, a rate limit — changes nothing: the
+last answer stands and is retried at the next check. A repository never yet probed has no answer to stand on, so a visit
 whose capability check needs a probed capability answers `pending` until a probe succeeds, rather than refusing work
 because the forge blinked. `GET /api/repositories/{repository}` carries the last probe, when it was taken, and its
 `advance_refused_at`, and `blizzard hub repo probe <repository>` takes one on demand and clears `advance_refused_at`.
@@ -72,12 +72,12 @@ repositories
 for a repository whose policy the hub lands itself — `fast-forward` or `merge-on-checks` — and is refused
 `422 batching_not_applicable` beside `park` or `forge-queue`. It requires `refs.create`, `refs.delete`,
 `branches.merge`, `refs.advance`, and `checks.read`, and `changes.close` for `merge-on-checks`, checked against
-`offered(repository)` when it is set, refused `422 forge_capability_missing` as a policy is, and again as each batch
-forms: a flow whose repository has lost one since forms no batch, and its ready members fall back to landing alone, with
-a `forge-capability-fallback` event naming the capability. Because a probe leaves `refs.advance` out wherever the base
-requires linear history or signed commits, a repository with either cannot batch: a train lands merge commits, whatever
-squash or rebase convention the repository's people keep. `train_prefix` and `staging_prefix` must be valid branch
-prefixes, may not be the base branch or a prefix of it, and may not be prefixes of each other.
+`offered(forge, repository)` when it is set, refused `422 forge_capability_missing` as a policy is, and again as each
+batch forms: a flow whose repository has lost one since forms no batch, and its ready members fall back to landing
+alone, with a `forge-capability-fallback` event naming the capability. Because a probe leaves `refs.advance` out
+wherever the base requires linear history or signed commits, a repository with either cannot batch: a train lands merge
+commits, whatever squash or rebase convention the repository's people keep. `train_prefix` and `staging_prefix` must be
+valid branch prefixes, may not be the base branch or a prefix of it, and may not be prefixes of each other.
 
 A repository that batches must run its checks on pushes to its `train_prefix` branches, since a train is a branch the
 hub pushes and nothing else would run them, and should not run them on its `staging_prefix` branches, where a train is

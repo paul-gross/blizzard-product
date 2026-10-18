@@ -48,8 +48,8 @@ resource, and an act followed by patient observation until the world settles.
   delivery ends there, and never holds the chunk or its environments open past it.
 - **Patience where waiting is expected.** A wait the hub expects — a train proving its batch, a forge's queue moving, a
   forge asking the hub to slow down — is given hours rather than the half hour a landing has today before anyone calls
-  it stuck, and a wait no machine will end, such as a change a person closed without merging, goes to a person rather
-  than an agent.
+  it stuck, and a wait no machine will end, such as a parked change a person closed without merging, goes to a person
+  rather than an agent.
 
 ## What to build
 

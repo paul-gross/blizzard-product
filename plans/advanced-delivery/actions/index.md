@@ -38,7 +38,9 @@ retired.
   on — and it reaches nothing else: not the store, not a secret, not the hub's configuration. What it records, it hands
   back to the hub, which makes each record durable before the action goes on. An action that needs more declares it as
   an input and is handed it; the rule is enforced by the hub's own tests, so a later change that reaches past it fails
-  the build rather than the night. Actions run apart from the hub's requests, so a slow forge never slows the board.
+  the build rather than the night. Actions run on a thread of their own, so a slow forge never slows the board's pages
+  or its event stream; until the `flows` epic, the runner's call that reached a hub node still waits on its pass, as it
+  waits on a script today.
 - **An action takes a pass, and says what comes next.** Each time the hub calls an action, the action does a bounded
   piece of work and answers with an outcome or with `pending`. A pass is cut off at five minutes by default, a limit an
   operator can change in the hub's configuration; a landing that waits on checks is a run of passes, never a process the

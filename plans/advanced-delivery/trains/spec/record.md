@@ -61,19 +61,18 @@ across the step. A train turn ends with one of the flows epic's turn outcomes �
 
 ## Awaiting the queue
 
-`awaiting-queue` is reserved beside `pending` and `awaiting-merge` (`HUB_AWAITING_QUEUE_CHOICE` in
-`hub/domain/graph/model.py`): never authored, refused as a choice at mint by `validation.py` as they are, and never a
-verdict. A pass answers it when its chunk's unlanded repositories are `Queued` on a batching flow or in a forge's queue,
-or wait behind one ([batches.md](./batches.md#readiness)). The pass ends its turn with that outcome; its submission
-keeps its place on its flows and is ineligible until its next poll is due, after the node's `poll_interval`, as after
-`pending`.
+`awaiting-queue` is reserved beside `pending` and `awaiting-merge`, in `RESERVED_WAITS` (`hub/domain/graph/actions.py`):
+never authored, refused as a choice at mint by `validation.py` as they are, and never a verdict. A pass answers it when
+its chunk's unlanded repositories are `Queued` on a batching flow or in a forge's queue, or wait behind one
+([batches.md](./batches.md#readiness)). The pass ends its turn with that outcome; its submission keeps its place on its
+flows and is ineligible until its next poll is due, after the node's `poll_interval`, as after `pending`.
 
-`hub_node_poll.kind`, which the policies epic added, gains `awaiting-queue`, written by the driver's `_record_wait` as
-`awaiting-merge` is, and `awaiting-queue` joins the actions epic's `RESERVED_WAITS`. Like `awaiting-merge`, it ends a
-run of `pending` rows, so the node's `poll_timeout` never turns back a chunk for the time a train or a forge's queue
-takes to prove it. Its bound is the train's or the queue's own: `TRAIN_PROOF_TIMEOUT` on a batch
-([batches.md](./batches.md#proving)) and `QUEUE_WAIT_TIMEOUT` on a change in a forge's queue
-([queue.md](./queue.md#landing-through-the-queue)).
+`hub_node_poll.kind`, which the policies epic added, gains `awaiting-queue`, written by `HubNodeRouter.record_wait` as
+`awaiting-merge` is, and a run of them is one row whose `last_polled_at` moves forward in place
+([policies](../../policies/spec/landing.md#awaiting-a-merge)). Like `awaiting-merge`, it ends a run of `pending` rows,
+so the node's `poll_timeout` never turns back a chunk for the time a train or a forge's queue takes to prove it. Its
+bound is the train's or the queue's own: `TRAIN_PROOF_TIMEOUT` on a batch ([batches.md](./batches.md#proving)) and
+`QUEUE_WAIT_TIMEOUT` on a change in a forge's queue ([queue.md](./queue.md#landing-through-the-queue)).
 
 ## The landed event
 
@@ -84,9 +83,10 @@ revision, its `delivery_repo_landed` row, and the flow's `landed` fact, and then
 the work whatever has since become of the member's visit. The flows epic's own per-landing `flow-landed` is not emitted
 for a batch's members; the batch's one event stands for them.
 
-The event's `detail` keeps the flows epic's fields, describing the batch's oldest member, and gains `batch_id` and
-`members`, each a `chunk_id` with its `project_id`, so whatever follows a landing learns in one event that a set of
-commits landed for a set of chunks. A lone landing carries a one-element `members` and no `batch_id`.
+The event's `detail` keeps the flows epic's fields, its `chunk_id` and `project_id` describing the batch's oldest member
+and its `members` — each a `chunk_id` with its `project_id` — listing every member, and gains `batch_id`, so whatever
+follows a landing learns in one event that a set of commits landed for a set of chunks. A lone landing carries the
+one-element `members` the flows epic gives it and no `batch_id`.
 
 ## Events and escalation causes
 

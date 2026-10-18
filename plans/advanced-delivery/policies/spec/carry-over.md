@@ -1,26 +1,42 @@
 # Carry-over
 
 An installation that predates this epic lands as it did, because every repository is given the policy it is already
-landed by. The epic ships in one release.
+landed by. The epic lands in the steps its [spec index](./index.md#landing-order) orders, each safe on a `master` that
+redeploys the hosted hub on every merge, and two of them carry a migration.
 
-## The migration
+## The migrations
 
-One manual migration (`bzh:manual-migrations`) under `hub/store/migrations/versions/`, chained after the flows epic's,
-frozen once released (`bzh:frozen-revisions`), inside the portable surface (`bzh:sql-portable`), and proven on Postgres
-as on SQLite with every name inside Postgres's 63 characters. Within every tenant it:
+Two manual migrations (`bzh:manual-migrations`) under `hub/store/migrations/versions/`, chained after the flows epic's
+and each frozen as soon as it merges (`bzh:frozen-revisions`), since the hosted hub runs every merge; each inside the
+portable surface (`bzh:sql-portable`), proven on Postgres as on SQLite with every name inside Postgres's 63 characters,
+and each with a colocated test of its upgrade and its downgrade (`bzh:colocated-migration-tests`).
+
+**The budget's**, with the budget's step, adds `close_intent_attempts.resume_at`, null, admitting the new `deferred`
+outcome ([budget.md](./budget.md#who-goes-first)). Its downgrade deletes the `deferred` rows, which the older hub's
+`close_intent_is_due` would misread as failures, and drops the column.
+
+**The policies'**, with the step that makes `land` a runner of policies, within every tenant:
 
 1. Adds `repositories.landing_policy`, filled `merge-on-checks` for every row, retired ones included, then tightened to
    `NOT NULL`; and `repositories.park_timeout_hours`, null.
 2. Creates `project_repository_positions`, empty, so every project's repositories start unranked and land in slug order.
 3. Creates `flow_submission_terms`, empty ([record.md](./record.md#when-a-visit-takes-its-terms)).
-4. Adds `hub_node_poll.kind`, filled `pending` for every row, then tightened to `NOT NULL`.
-5. Adds `close_intent_attempts.resume_at`, null, admitting the new `deferred` outcome
-   ([budget.md](./budget.md#who-goes-first)).
+4. Adds `hub_node_poll.kind`, filled `pending` for every row, then tightened to `NOT NULL`; and
+   `hub_node_poll.last_polled_at`, null ([landing.md](./landing.md#awaiting-a-merge)).
 
 No repository changes revision and no `config_changes` row is written: the policy each is given is the one it already
 landed by. A chunk mid-delivery when the hub restarts has a submission with no terms; its next turn takes them, as a
 first turn does, and they are `merge-on-checks` for every repository, so it resumes on `land` as a runner of policies,
 whose `merge-on-checks` is the action it was running, with the markers it had already written.
+
+Its downgrade must not quietly change how a repository lands: the older hub lands every repository by merging once
+checks pass, so a repository set to `park` would have its pull requests merged without the person it was waiting on. The
+downgrade therefore refuses, before it changes anything, while any repository's `landing_policy` is not
+`merge-on-checks`, naming each one and its tenant, so the operator sets them back by hand first and the choice to stop
+honouring a policy is theirs. Past that check it deletes the `awaiting-merge` rows of `hub_node_poll`, which the older
+hub's poll timeout would count as pending polls and bounce a chunk at once, drops `hub_node_poll.kind` and
+`last_polled_at`, drops `flow_submission_terms` and `project_repository_positions` — every project's landing order is
+lost, and chunks land in the order their commits name them again — and drops the two repository columns.
 
 Two things a carried-over fleet sees differently. A chunk landing in several repositories lands them one at a time in
 slug order, where the `land` action merges them in the order its commits name them, until an operator ranks the
@@ -54,22 +70,34 @@ Each proof runs against the mock forge's GitHub face unless it says otherwise.
   base that moved is merged in base first on a `-landing` branch, the merge's first parent the old tip, proven by its
   own checks on that branch, and the base advanced to it; the landing branch is gone afterwards. A conflicting base is
   `conflict`, its landing branch deleted; a base moved while the candidate proved finds the landing branch on a stale
-  tip, deletes it, builds it again on the new tip, and lands that; a base moved between the compare and the advance
-  refuses the advance, and the next pass lands it; a protected base escalates `base-protected`.
+  tip, deletes it, builds it again on the new tip, and lands that; a landing branch holding an older revision of the
+  chunk is rebuilt the same way; a base moved between the compare and the advance refuses the advance, and the next pass
+  lands it; a crash after the advance, with the base moved on by another chunk before the next pass, records the
+  candidate rather than the base's tip; a protected base, and a ruleset refusing the `-landing` branch, each escalate
+  `branch-protected`.
+- **Merge method.** A `merge-on-checks` repository whose forge admits no merge commits escalates `merge-method-refused`
+  at its first merge rather than waiting out its poll timeout.
 - **Park.** A chunk opens its change, writes `awaiting-external-merge`, and waits past its node's `poll_timeout` without
-  a bounce; a person's merge — by merge commit, squash, or rebase — lands it at the merge revision within two minutes,
-  found in the recently-closed listing however many other changes closed since, and read alone when it has fallen off a
-  full listing; a change closed unmerged escalates `change-closed`, and requeuing it opens a fresh change; a change
-  merged while its chunk sat escalated lands the requeued visit at once; a change unmerged past its timeout escalates
-  `park-timeout`, and requeuing it resumes the wait with the clock restarted.
+  a bounce, its waits coalesced into one `hub_node_poll` row; a person's merge — by merge commit, squash, or rebase —
+  lands it at the merge revision by the first poll after it, within two minutes and one driver tick, found in the
+  recently-closed listing however many other changes closed since, and read alone when it has fallen off a full listing;
+  a change closed unmerged escalates `change-closed`, and requeuing it opens a fresh change; a change closed while its
+  chunk sat escalated, then requeued, opens a fresh change without escalating again; a change merged while its chunk sat
+  escalated lands the requeued visit at once; a change unmerged past its timeout escalates `park-timeout`, and requeuing
+  it resumes the wait with the clock restarted and the board reading "Awaiting your merge" again. While the change is
+  open, a later repository whose base moved makes no forge call, and is brought up to its base and proven again after
+  the merge. A chunk parked in two repositories gives the second change its whole timeout, measured from when it opened.
 - **Order.** A project ranking a library before its consumer lands the library first; with the library parked, its
   change opens only once the consumer is proven, and the consumer lands after the person's merge; with the consumer
   parked, its change opens only once the library has landed. With a parked library ranked first and the consumer's
   checks still running, the library's change stays unopened and the pass answers `pending`; once the change is open, a
-  consumer whose base moved keeps the pass at `awaiting-merge`. A second project linking the same two repositories and
-  ranking them the other way lands its own chunk consumer first. A project with one repository ranked and two unranked
-  lands the ranked one first, then the others by slug. Unlinking a ranked repository and linking it again restores its
-  position. The configuration document exports a project's `landing_order` and applies it back unchanged.
+  consumer whose base moved keeps the pass at `awaiting-merge`, and a consumer that showed a failure before the change
+  opened does not decide the pass while it is open. A second project linking the same two repositories and ranking them
+  the other way lands its own chunk consumer first. A project with one repository ranked and two unranked lands the
+  ranked one first, then the others by slug. Unlinking a ranked repository and linking it again restores its position.
+  The configuration document exports a project's `landing_order` and applies it back unchanged, writing no fact the
+  second time. A project whose positions have run out of room between two neighbours is renumbered by the next move, and
+  keeps its order.
 - **Terms.** A repository's policy changed from `merge-on-checks` to `park` while a chunk waits in line behind another
   lands that chunk parked; changed after the chunk's first turn, the chunk lands by the policy it started with, and its
   next visit after a requeue takes the new one. A project reordered while a chunk waits behind another lands it in the
@@ -81,9 +109,13 @@ Each proof runs against the mock forge's GitHub face unless it says otherwise.
   GitHub server lands both in its project's order, each through its own forge and credential; with the second refusing
   after the first has landed, the first stands and the chunk reconciles the second.
 - **Budget.** With the mock's rate lever lowering the remaining, parked polls and the sweeps are turned away first and
-  landings last; with the remaining spent, or a secondary limit answered, landings slow to `pending` with their next
-  poll at the reset and resume after it; a close intent turned away is deferred to the reset with its backoff untouched;
-  `forge-budget-low` and `forge-rate-limited` are each recorded once per window.
+  landings last, a landing chunk and a parked one on the same repository each at its own priority; with the remaining
+  spent, or a secondary limit answered, landings slow to `pending` with their next poll at the reset and resume after
+  it; a close intent turned away is deferred to the reset with its backoff untouched; `forge-budget-low` and
+  `forge-rate-limited` are each recorded once per window.
+- **Downgrades.** Each migration's downgrade runs on a store the upgrade produced; the policies' downgrade refuses while
+  a repository is not `merge-on-checks`, naming it, and once they are set back leaves a store the older hub lands from
+  with no chunk bounced for an `awaiting-merge` row.
 - **Crash points.** Each of the policies' six crash points ([landing.md](./landing.md#crash-points)) is reached by a
   `blizzard:crash-sweep` scenario, and the chunk lands exactly once with its markers whole.
 - **Invariants.** `hub:landing-position-on-link`, `hub:submission-terms-standing`, and the widened

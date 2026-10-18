@@ -18,11 +18,13 @@ order is (`hub/api/queue.py`):
 - `GET /api/projects/{project}/repository-links` carries each link's `position`, null when unranked, and lists the links
   in landing order.
 - `PUT /api/projects/{project}/landing-order` takes the whole order as a list of repositories, each an id or a slug, and
-  writes one position fact per repository listed; a linked repository the list leaves out becomes unranked. It stands
+  ranks them `1.0`, `2.0`, … in the list's order; a linked repository the list leaves out becomes unranked. It writes a
+  fact only for a link whose position changes, so putting the order the project already has writes nothing. It stands
   apart from `repository-links/{repository}`, whose `PUT` already links one.
 - `POST /api/projects/{project}/landing-order/position` moves one `repository` to just after `after_repository`, or to
   the front when that is null, or to unranked with `unranked: true`, writing one fact at the midpoint between its new
-  neighbours.
+  neighbours, after renumbering the ranked ones when no midpoint is left
+  ([record.md](./record.md#the-order-a-chunks-repositories-land-in)).
 
 Both writes require `Permission.CONFIG_EDIT`, as the links do, and refuse a repository the project does not link
 `422 repository_not_linked`. Each answers with the project's links in their new order.
@@ -47,11 +49,12 @@ does not end up parked is refused, as the API refuses it.
 
 A project entry (`ProjectDocument`) gains an optional `landing_order`, a list of repositories by id or slug, each one
 the entry links. Apply plans it after the entry's links, so a document may link a repository and rank it together; it
-writes one position fact per repository listed, ranking them in the list's order, and leaves every other linked
-repository unranked. A repository it names that the project does not link refuses the entry `repository_not_linked`. An
-entry that omits `landing_order` leaves the project's order as it stands. Export writes `landing_order` for every
-project with a ranked repository, so a document exported after this epic rebuilds each project's order, and
-`epic:terraform-provider` has a field to manage it through.
+ranks the listed repositories in the list's order and leaves every other linked repository unranked, writing a fact only
+where a link's position changes, as the `PUT` does, so applying a document twice writes nothing the second time. A
+repository it names that the project does not link refuses the entry `repository_not_linked`. An entry that omits
+`landing_order` leaves the project's order as it stands. Export writes `landing_order` for every project with a ranked
+repository, so a document exported after this epic rebuilds each project's order, and `epic:terraform-provider` has a
+field to manage it through.
 
 ## Admin screens
 
@@ -69,8 +72,10 @@ dragged. Each drop writes one position. The client is regenerated from `openapi/
 
 The board's escalation sentences (`CAUSE_SENTENCES` in `web/projects/fleet/src/lib/chunk/chunk-detail/`), an exhaustive
 record over `EscalationCause`, gain one each for `change-closed` ("A person closed the parked change without merging
-it"), `base-protected` ("The base branch only accepts pull requests, so it cannot be fast-forwarded"), and
-`park-timeout` ("The parked change has waited longer than its repository allows").
+it"), `branch-protected` ("The forge will not let the hub move this branch outside a pull request"), with the branch and
+the forge's own message beside it from the escalation's detail, `merge-method-refused` ("This repository does not allow
+merge commits, so the hub cannot merge its pull request"), and `park-timeout` ("The parked change has waited longer than
+its repository allows").
 
 ## The board and the flow lanes
 

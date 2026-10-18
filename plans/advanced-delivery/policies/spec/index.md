@@ -8,14 +8,16 @@ forge record, the landing seam, and the capability check before a pass by the [f
 and when a visit takes its turn, and how its verdict reaches its chunk, by the [flows epic](../../flows/spec/index.md).
 This spec decides how a repository's work lands once its turn comes; it changes nothing about when the turn comes.
 
-This spec assumes the [actions](../../actions/spec/index.md), [forges](../../forges/spec/index.md), and
-[flows](../../flows/spec/index.md) epics have landed: landing is the hub's `land` action, taken a pass at a time; it
-speaks every forge through the roles `ForgeRegistry` hands out — `IForgeRefs`, `IForgeChanges`, and `IForgeChecks`; and
-a visit lands in turns on the flow of each branch it holds. It builds on what the code already does: each of a chunk's
-commit pointers resolves to its own repository record, and the `land` action lands each against that record's own
-server, owner, base branch, and credential. A chunk spanning two GitHub servers lands today; this epic adds a policy per
-repository and the order a project lands its repositories in. GitHub is the only forge kind it lands on; the seam it
-grows is forge-neutral, and the second kind is the [gitlab epic](../../gitlab/spec/index.md)'s.
+This spec assumes the [actions](../../actions/spec/index.md) and [flows](../../flows/spec/index.md) epics have landed,
+and the [forges](../../forges/spec/index.md) epic's transition release — the seam, the forge record, and `land` ported
+onto them — not its later release retiring the old address fields, which nothing here needs: landing is the hub's `land`
+action, taken a pass at a time; it speaks every forge through the roles `ForgeRegistry` hands out — `IForgeRefs`,
+`IForgeChanges`, and `IForgeChecks`; and a visit lands in turns on the flow of each branch it holds. It builds on what
+the code already does: each of a chunk's commit pointers resolves to its own repository record, and the `land` action
+lands each against that record's own server, owner, base branch, and credential. A chunk spanning two GitHub servers
+lands today; this epic adds a policy per repository and the order a project lands its repositories in. GitHub is the
+only forge kind it lands on; the seam it grows is forge-neutral, and the second kind is the
+[gitlab epic](../../gitlab/spec/index.md)'s.
 
 Paths are relative to `blizzard/src/blizzard/`.
 
@@ -30,6 +32,41 @@ orders the repositories it links; `domain/operations.md` gains the event kinds a
 and `verification/blizzard/e2e-scenarios/delivery-policy.md` gains a scenario per policy. `docs/deployment/` gains a
 page on choosing a policy, including the CI a fast-forwarding repository needs. `blizzard-mock`'s forge grows what the
 proofs need ([seam.md](./seam.md#the-mock)).
+
+## Landing order
+
+The hosted hub redeploys from every merge to `master`, and the fleet lands its own work through the very `land` this
+epic rewrites, so the epic arrives as six steps, each a chunk or a few, in this order. Each leaves `master` landing as
+it did before it, and no step depends on one after it.
+
+1. **The mock's forge** ([seam.md](./seam.md#the-mock)), in `blizzard-mock` alone. Every addition is new — routes,
+   parameters, headers, levers — or answers as GitHub does where the mock had answered loosely, so the hub's existing
+   proofs pass against it unchanged, and every later step has the forge its proofs need. It merges first because the
+   hub's steps cannot be proven without it.
+2. **The seam and the cheaper pass** ([seam.md](./seam.md#the-seam-grows), [budget.md](./budget.md#the-cost-of-a-pass)).
+   The new seam operations, their capabilities, and their GitHub implementations; conditional reads and the compare
+   store; the already-merged lookup as one filtered read; and the shipped graphs polling every minute. `land` still
+   merges once checks pass, now more cheaply, and nothing calls the new operations yet. No migration.
+3. **The budget** ([budget.md](./budget.md#the-budget)): `ForgeBudgets`, priorities carried by the registry's role
+   handles and the work-source family, the close drain's `deferred` outcome, and the two event kinds, with the budget's
+   migration ([carry-over.md](./carry-over.md#the-migrations)). Nothing is turned away until a forge reports itself low,
+   so a healthy fleet sees no difference.
+4. **`land` as a runner of policies** ([landing.md](./landing.md#land-runs-policies), [record.md](./record.md)), with
+   `merge-on-checks` its only policy. The policies' migration, the repository's policy fields, the landing order, the
+   visit's terms, combining, the poll row's kind, and the repository and project doors — API, CLI, and configuration
+   document — for the policy and the order. `LandingPolicy` has one member here, so the doors refuse any other as
+   unknown, and every repository still lands by merging once checks pass; the one change a fleet sees is the order a
+   chunk's repositories land in, slug order until its project sets one
+   ([carry-over.md](./carry-over.md#the-migrations)).
+5. **`fast-forward` and `park`** ([landing.md](./landing.md#the-three-policies)). `LandingPolicy` gains its two members
+   and `POLICY_CAPABILITIES` their rows; the reserved `awaiting-merge`, the escalation causes, and their board sentences
+   arrive with them. No migration: the columns step 4 added already hold any policy. Nothing changes for a repository
+   until an operator sets one of them.
+6. **The board** ([surfaces.md](./surfaces.md#admin-screens)): the repository form's policy picker, the project's
+   drag-to-order list, the forge detail's capabilities and budgets, and the flow lane's `awaiting-merge`, each reading
+   doors earlier steps opened.
+
+The `blizzard-context` and `docs/` changes listed above land with the step whose behaviour they describe.
 
 | Where                            | Read when                                                                                                                |
 | -------------------------------- | ------------------------------------------------------------------------------------------------------------------------ |

@@ -29,7 +29,9 @@ order, and a record.
   repository its chunk's commits resolve to, and two steps conflict only when they hold the same resource. A step that
   lands nowhere — recording a garden delivery, recording review findings — holds nothing and runs whenever its chunk
   reaches it. A step holding several resources takes them together or not at all, so two multi-repository chunks never
-  wait on each other with one branch apiece.
+  wait on each other with one branch apiece. A chunk lands only on the branches it is in line for: should an operator
+  change a repository's base branch while a chunk waits, the chunk lines up again on the new branch rather than landing
+  on one whose line it never joined.
 - **A flow per branch, at the hub.** A flow is its own subject, named by the resource it holds, and never a chunk. It
   keeps an append-only record of what it admitted, landed, and turned back, in what order, and why, so the question
   "what happened on `master` last night" has one place to be answered.
@@ -63,7 +65,8 @@ order, and a record.
   chunk onto an earlier node withdraws it the same way.
 - **A branch is never frozen by a turn that cannot end.** A turn whose ending failed to record is noticed by the hub
   within seconds and ended, and a turn whose work stops answering is cut off a little past the five-minute bound every
-  pass has, so a branch never waits on work nobody is doing.
+  pass has, so a branch never waits on work nobody is doing. A step cut off three times running goes to a person, since
+  work that hangs every time it runs will not answer on the fourth.
 - **Carried over in place.** Every chunk mid-delivery when the hub restarts onto this epic resumes as a submission on
   its branch's flow, in the order the chunks reached their delivery nodes and ahead of any chunk that arrives after the
   upgrade, and the tenant-wide slot is retired once nothing holds it.

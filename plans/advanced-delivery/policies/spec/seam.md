@@ -6,12 +6,18 @@ The forges epic split the seam by the caller that needs each part, and this epic
 needs it, every new operation behind its own capability. `IForgeRefs` (`hub/forge/landing.py`) gains the four
 `fast-forward` needs:
 
-| Operation                                 | Capability       | Answers                                                                                                                               |
-| ----------------------------------------- | ---------------- | ------------------------------------------------------------------------------------------------------------------------------------- |
-| `advance_ref(branch, expected, revision)` | `refs.advance`   | Moves `branch` from `expected` to `revision`, a fast-forward; `ForgeRejected("stale")` when it was not at `expected`                  |
-| `merge_into(branch, revision, message)`   | `branches.merge` | The merge commit on `branch` bringing `revision` in, `None` when `branch` already holds it, `ForgeRejected("conflict")` on a conflict |
-| `create_ref(branch, revision)`            | `refs.create`    | Creates `branch` at `revision`; an existing branch already at `revision` is not an error                                              |
-| `delete_ref(branch)`                      | `refs.delete`    | Deletes `branch`; a branch already gone is not an error                                                                               |
+| Operation                                 | Capability       | Answers                                                                                                                                                                                     |
+| ----------------------------------------- | ---------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `advance_ref(branch, expected, revision)` | `refs.advance`   | Moves `branch` from `expected` to `revision`, a fast-forward; `ForgeRejected("stale")` when it was not at `expected`, `ForgeRejected("protected")` when a rule of the repository forbids it |
+| `merge_into(branch, revision, message)`   | `branches.merge` | The merge commit on `branch` bringing `revision` in, `None` when `branch` already holds it, `ForgeRejected("conflict")` on a conflict, `ForgeRejected("protected")` when a rule forbids it  |
+| `create_ref(branch, revision)`            | `refs.create`    | Creates `branch` at `revision`; an existing branch already at `revision` is not an error, one at another revision is `ForgeRejected("stale")`                                               |
+| `delete_ref(branch)`                      | `refs.delete`    | Deletes `branch`; a branch already gone is not an error                                                                                                                                     |
+
+The four are writes, so each goes out under the forges epic's per-credential write lock
+([forges' failures and retries](../../forges/spec/seam.md#failures-and-retries)), one at a time per forge and secret,
+like opening, updating, and merging a change. `ForgeRejected`'s reasons gain `method`, a merge refused because the
+repository does not admit the method asked for; `stale`, `conflict`, and `protected`, which the forges epic named
+without yet raising, are raised from here.
 
 `IForgeChanges` gains `recently_closed(base, limit)` under `changes.read`: the changes into `base` that are closed or
 merged, most recently updated first, at most `limit` of them. It is the one listing `park` reads to notice a person's
@@ -41,23 +47,30 @@ spends one rate bucket:
 - **`advance_ref`** is `PATCH /repos/{o}/{r}/git/refs/heads/{branch}` with `force: false`. A non-forced update succeeds
   only when the new revision descends from the branch's tip, and that is the compare-and-swap a fast-forward needs: the
   policy builds its candidate on the tip it compared against, so a base that has since moved to anything the candidate
-  does not descend from refuses the advance. The adapter answers a refusal by its message: GitHub's 422 "Update is not a
-  fast forward" is `ForgeRejected("stale")`; a 422 naming a protected branch ("Protected branch update failed", "Cannot
-  update this protected ref", or a required status check the update lacks) is `ForgeRejected("protected")`. `expected`
-  is what the adapter compares the branch's tip against before it sends the update, so a tip it already knows has moved
-  is answered `stale` without a write.
-- **`merge_into`** is `POST /repos/{o}/{r}/merges`, 201 a merge, 204 nothing to merge, 409 a conflict; it merges into
-  the landing branch, so the merge commit's first parent is the branch it lands on.
-- **`create_ref`** is `POST git/refs` and **`delete_ref`** `DELETE git/refs/heads/{b}`; a 422 "Reference already exists"
-  at the same revision and a 422 or 404 on a branch already gone are not errors.
+  does not descend from refuses the advance. The adapter answers a refusal by its message, matched by prefix, since
+  GitHub and the mock both append detail: a 422 beginning "Update is not a fast forward" is `ForgeRejected("stale")`; a
+  422 naming a protected branch or a repository rule — "Protected branch update failed", "Cannot update this protected
+  ref", "Repository rule violations found", or a required status check the update lacks — is
+  `ForgeRejected("protected")`. `expected` is what the adapter compares the branch's tip against before it sends the
+  update, so a tip it already knows has moved is answered `stale` without a write.
+- **`merge_into`** is `POST /repos/{o}/{r}/merges`, 201 a merge, 204 nothing to merge, 409 a conflict, and a 422 naming
+  a protected branch or a repository rule `ForgeRejected("protected")` — a ruleset whose pattern covers the hub's
+  `-landing` branches refuses here; it merges into the landing branch, so the merge commit's first parent is the branch
+  it lands on.
+- **`create_ref`** is `POST git/refs` and **`delete_ref`** `DELETE git/refs/heads/{b}`. A 422 "Reference already exists"
+  is read back with `branch_tip`: at the same revision it is not an error, at another it is `ForgeRejected("stale")`. A
+  422 or 404 on a branch already gone is not an error. A 422 naming a repository rule is `ForgeRejected("protected")`.
 - **`recently_closed`** is `GET pulls?state=closed&base=<base>&sort=updated&direction=desc&per_page=<limit>`, one page.
-  The adapter keeps the answer for `PARK_POLL_FLOOR` ([landing.md](./landing.md#awaiting-a-merge)). Adapters are built
-  and cached per repository ([the forges epic's registry](../../forges/spec/seam.md#the-registry)), so every parked
-  change on a repository is answered from one listing, and the cache lives inside the adapter, never in an action.
+  The adapter keeps no answer between calls: every parked change on a repository asks for the same address, and the
+  conditional read answers it `304` for free until something closes ([budget.md](./budget.md#the-cost-of-a-pass)), so a
+  merge is seen at the first poll after it.
 - **`change_checks`** is `checks` of the change's head revision.
+- **`changes.merge`**'s 405 "Merge commits are not allowed on this repository" is `ForgeRejected("method")`, where the
+  forges epic answered every 405 with its message.
 
 A base protected so that only pull requests may change it refuses the advance as `ForgeRejected("protected")`, which
-`fast-forward` answers as `NeedsPerson(base-protected)` ([landing.md](./landing.md#what-goes-to-a-person)). A base that
+`fast-forward` answers as `NeedsPerson(branch-protected)` ([landing.md](./landing.md#what-goes-to-a-person)), and so
+does a base requiring a status check that runs only on pull requests, which no pushed candidate can carry. A base that
 merely requires status checks the candidate has already passed admits the advance, since the candidate's checks ran on
 the very revision that lands.
 
@@ -73,21 +86,34 @@ already has. Its forge today answers `PATCH git/refs` with a real fast-forward-o
 - **Branch merges and refs** — `POST /repos/{o}/{r}/merges` (201, 204, and 409 on a conflict), `POST git/refs`, and
   `DELETE git/refs/heads/{b}`. `update_ref`'s docstring stops calling its fast-forward check a compare-and-swap.
 - **Pull listings that honour their parameters** — `list_pulls` (`api/pulls.py`, `internal/state_store.py`) today takes
-  only `state` and answers every pull oldest first. It learns `base`, `head` (as `<owner>:<branch>`), `sort` (`created`
-  or `updated`), `direction`, `page`, and `per_page`, and keeps an `updated_at` per pull that every state change moves,
-  so the recently-closed listing and its paging are exercised as GitHub answers them.
-- **Checks per ref** — today a check run is derived from the levers of the open pull request whose head matches the ref
-  (`list_check_runs`), and a revision with no pull request reads green at once. A per-ref check lever arms `pending`,
-  `failed`, or no check at all against any revision or branch, so a fast-forward candidate on a `-landing` branch can
-  wait, fail its own check, fail only what the base fails, or carry no check.
+  only `state` and answers every pull oldest first by number. It learns `base`, `head` (as `<owner>:<branch>`), `sort`
+  (`created` or `updated`), `direction`, `page`, and `per_page`, answers GitHub's `Link` header with `next` and `last`
+  when a page is not the last, and keeps an `updated_at` per pull that every state change moves, so the recently-closed
+  listing and its paging are exercised as GitHub answers them. With no `sort` it answers as GitHub does, newest first;
+  the hub's adapter always names `sort` and `direction`, so nothing in `blizzard` leans on the default, and any test in
+  `blizzard-mock` that relied on oldest first names its order instead.
+- **Checks per ref, several and named** — today a check run is derived from the levers of the open pull request whose
+  head matches the ref (`list_check_runs`, `domain/service.py`), it is always one run named `ci`, and a revision with no
+  pull request reads green at once. A per-ref check lever arms named check runs against any revision or branch, each
+  `pending`, `failed`, or `success`, or arms none at all, and a lever set later adds a run beside those already there,
+  so a fast-forward candidate on a `-landing` branch can wait, fail its own check, fail only what the base fails, or
+  carry no check, and a revision whose one check finished green can gain a second, pending one. `base_checks_failed`
+  matches by the resolved revision of the repository's default branch rather than by the ref's spelling, so a check read
+  of the base's tip by its sha reads red, as GitHub's would.
 - **Every merge method** — `merge_pull` makes a squash commit for `squash` where today it falls through to a merge
   commit, and the `externally_merged` lever takes a method, so a person's squash or rebase merge lands a revision that
   is neither the change's head nor a merge of it, as on GitHub.
-- **A protected-branch lever**, which refuses `PATCH git/refs` on the branch with GitHub's 422, so `base-protected` is
-  provable.
-- **Conditional reads** — every `GET` answers an `ETag` and a `304 Not Modified` to a matching `If-None-Match`,
-  uncounted against the rate headers, so the cheaper pass is provable.
-- **Rate headers on every answer** — GitHub's `X-RateLimit-Limit`, `-Remaining`, `-Reset`, and `-Resource` — with a
-  lever setting the remaining and the reset, and a second answering a secondary limit, a 403 whose remaining is not
-  spent and whose body names it, so the budget's thresholds and the forges epic's retry rules are provable. The
+- **Protection levers** — one refusing `PATCH git/refs` on a branch with GitHub's 422, and one refusing `POST git/refs`
+  and `POST /merges` on branches matching a pattern with GitHub's "Repository rule violations found", so
+  `branch-protected` is provable for the base and for a `-landing` branch.
+- **A merge-method lever**, under which `merge_pull` refuses the `merge` method with GitHub's 405 "Merge commits are not
+  allowed on this repository", so `merge-method-refused` is provable.
+- **Conditional reads** — every `GET` answers an `ETag` derived from its response body, so it changes exactly when the
+  answer does, and a `304 Not Modified` to a matching `If-None-Match`, uncounted against the rate headers, so the
+  cheaper pass is provable.
+- **Rate headers on every answer that counts** — GitHub's `X-RateLimit-Limit`, `-Remaining`, `-Reset`, and `-Resource` —
+  with the remaining counting down by one on every answer that is not a `304`, per token the request carries, and
+  restored to the limit when the window resets, an hour by default, so a long end-to-end run never spends itself out by
+  accident. A lever sets the remaining and the reset, and a second answers a secondary limit, a 403 whose remaining is
+  not spent and whose body names it, so the budget's thresholds and the forges epic's retry rules are provable. The
   `rate_limited` lever (`api/middleware.py`) answers a real reset where it answers `X-RateLimit-Reset: 0` today.

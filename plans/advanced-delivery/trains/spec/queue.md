@@ -14,12 +14,13 @@ the merged result its pipeline ran on, each by its own rules.
 | `forge-queue` | `refs.read`, `compare`, `changes.open`, `changes.read`, `checks.read`, `queue.join` | `merge-on-checks`, unbatched        |
 
 It is the one policy that declares a fallback, and the fallback is applied before any capability is checked: `land`'s
-`ActionSpec.requires(repository)` answers `POLICY_CAPABILITIES`' set for the policy that will actually run, so a
-`forge-queue` repository whose last probe shows no `queue.join` requires what `merge-on-checks` requires, and the forges
-epic's check before a pass never refuses it for the queue it is about to do without. A batch size above one is refused
-beside `forge-queue` ([capabilities.md](./capabilities.md#the-batching-settings)), so the fallback lands each change
-alone. Setting the policy on a repository whose probe does not show `queue.join` is accepted with a warning naming the
-fallback, rather than refused, and a visit that finds the queue switched off since lands by the fallback, recording a
+entry in `ACTION_REQUIREMENTS` (`hub/domain/actions/requirements.py`) answers `POLICY_CAPABILITIES`' set for the policy
+that will actually run, so a `forge-queue` repository whose last probe shows no `queue.join` requires what
+`merge-on-checks` requires, and the forges epic's check before a pass never refuses it for the queue it is about to do
+without. A batch size above one is refused beside `forge-queue`
+([capabilities.md](./capabilities.md#the-batching-settings)), so the fallback lands each change alone. Setting the
+policy on a repository whose probe does not show `queue.join` is accepted with a warning naming the fallback, rather
+than refused, and a visit that finds the queue switched off since lands by the fallback, recording a
 `forge-capability-fallback` event (warning) once per visit naming the repository and the capability. Every other missing
 capability is still refused when the policy is set and escalated to a person at a visit, as the forges epic does.
 
@@ -87,6 +88,6 @@ running long, so the node's poll timeout never turns it back; it is bounded inst
 from the enqueue, past which the visit escalates with `EscalationCause.FORGE_QUEUE_STALLED`, naming the change and its
 last place in the queue. The flow's lane shows the forge's position beside its own ([surfaces.md](./surfaces.md)).
 
-A lever that withdraws a queued submission — stop, restart, complete, migrate — also calls `dequeue`, so a stopped
-chunk's change does not merge behind the hub's back; a `dequeue` the forge refuses, or a change that merges before it is
-dequeued, is recorded as landed on the flow, as a pass already running is under the flows epic.
+A lever that withdraws a queued submission — stop, restart, complete — also calls `dequeue`, so a stopped chunk's change
+does not merge behind the hub's back; a `dequeue` the forge refuses, or a change that merges before it is dequeued, is
+recorded as landed on the flow, as a pass already running is under the flows epic.
