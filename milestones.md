@@ -18,11 +18,11 @@ way around.
 
 Blizzard was built around a harness seam — spawn, resume, verdict — precisely so that no single coding agent would ever
 be load-bearing. The seam now has two occupants — Claude Code and OpenCode, mixable by session lineage on one runner —
-but Codex is still outside it, and unattended workers run with broad tool approval. This milestone completes the harness
-story in both directions. Breadth: Codex joins the same seam, chosen per fleet or mixed by node the way models already
-are. Control: each runner's operator brings a set of native harness configurations alongside the runner's own hooks and
-headless rules, and chooses one autonomy level that maps to each harness without leaving a headless run stuck on a
-prompt. The name is what the fleet becomes: polyglot, fluent in more than one harness and able to set terms for each.
+but Codex is still outside it. This milestone completes the harness story in both directions. Breadth: Codex joins the
+same seam, chosen per fleet or mixed by node the way models already are. Control: each runner's operator brings a set of
+native harness configurations alongside the runner's own hooks and headless rules, and chooses one autonomy level that
+maps to each harness without leaving a headless run stuck on a prompt. The name is what the fleet becomes: polyglot,
+fluent in more than one harness and able to set terms for each.
 
 Through the charter's people: the harness engineer runs the same chunk through two harnesses and compares the runs on
 cost and quality, because harness choice has become a tunable rather than a fact of the platform. The application
@@ -30,11 +30,11 @@ architect can bring harness extensions and tool rules into unattended work witho
 The operator chooses normal, auto, or dangerous once for the runner, knowing each harness maps that choice to its own
 capabilities and protected branches remain the forge's to guard, not the agent's to respect on a bad night.
 
-| Epic                            | Status      |
-| ------------------------------- | ----------- |
-| `epic:adapters/opencode`        | delivered   |
-| `epic:adapters/codex`           | horizon     |
-| `epic:security/worker-security` | in-progress |
+| Epic                            | Status    |
+| ------------------------------- | --------- |
+| `epic:adapters/opencode`        | delivered |
+| `epic:adapters/codex`           | horizon   |
+| `epic:security/worker-security` | delivered |
 
 ## `milestone:projects` — one fleet, every project
 

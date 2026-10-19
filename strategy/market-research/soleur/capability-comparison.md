@@ -242,10 +242,10 @@ Four decisions fall out of this comparison, and one of them is urgent.
 condition [`milestone:polyglot`](../../../milestones.md) promises to end, and the Landlock boundary the Fusion
 comparison relied on to soften that gap does not govern live workers. Soleur demonstrates that a fail-closed sandbox
 with a network allowlist is buildable by one person and can be proven on every deploy.
-[`epic:security/worker-security`](../../../epics.md) currently frames the work as harness configuration plus one
-autonomy level. Either that framing meets the milestone through a safer default and a narrower permission posture, or
-the epic needs an operating-system boundary added to its scope. Which of the two is the decision. The Fusion
-comparison's sandboxing row should be corrected in the same change.
+[`epic:security/worker-security`](../../../delivered/security/worker-security/index.md) currently frames the work as
+harness configuration plus one autonomy level. Either that framing meets the milestone through a safer default and a
+narrower permission posture, or the epic needs an operating-system boundary added to its scope. Which of the two is the
+decision. The Fusion comparison's sandboxing row should be corrected in the same change.
 
 **Learning deserves a decision, not a copy.** Agent memory is now the idea from two competitors that the mission does
 not refuse and the registry does not hold. Soleur's evidence argues against the automatic half: write-back swelled its

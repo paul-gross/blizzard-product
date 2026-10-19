@@ -1,6 +1,6 @@
 ---
 initiative: security
-refinement: scaffolded
+refinement: pristine
 epics:
   - runner-auth
   - worker-security

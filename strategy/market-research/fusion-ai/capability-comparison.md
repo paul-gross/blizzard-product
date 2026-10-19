@@ -135,8 +135,9 @@ deliberately withholds the runner's source tree from them.
 The gap is coverage, not capability. That boundary is the OpenCode adapter's; the Claude Code path is governed by the
 harness's own `--permission-mode`, which is a coarser instrument. So the accurate statement is that blizzard has built
 the better confinement mechanism and has not yet spread it across every adapter, while Fusion has built the more uniform
-one and leaves it off by default. [`epic:security/worker-security`](../../../epics.md) is about finishing the spread and
-adding the network and credential dimensions, not about starting from nothing.
+one and leaves it off by default.
+[`epic:security/worker-security`](../../../delivered/security/worker-security/index.md) is about finishing the spread
+and adding the network and credential dimensions, not about starting from nothing.
 
 ### Secrets, protocol servers, and inbound signals
 
@@ -336,9 +337,10 @@ Four decisions fall out of this comparison, and only one of them is urgent.
 **Worker lockdown is uneven rather than absent.** The Landlock boundary blizzard already enforces is the better
 mechanism of the two — inherited by descendants, fail-closed, refusing a workdir outside a disposable directory — but it
 governs the OpenCode adapter, while the Claude Code path relies on the harness's own permission mode. Fusion's coverage
-is uniform and its default is off. The argument for promoting [`epic:security/worker-security`](../../../epics.md)
-therefore rests on spreading a boundary that already exists to every adapter, and on the network and credential
-dimensions neither product has finished, rather than on a bare gap.
+is uniform and its default is off. The argument for promoting
+[`epic:security/worker-security`](../../../delivered/security/worker-security/index.md) therefore rests on spreading a
+boundary that already exists to every adapter, and on the network and credential dimensions neither product has
+finished, rather than on a bare gap.
 
 **Surface breadth changes the schedule, not the thesis.** Phones, chat, an intake workbench, and a component toolkit are
 all already in the registry. Fusion having them first is a reminder of what an operator notices in the first ten

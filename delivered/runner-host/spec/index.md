@@ -5,8 +5,8 @@ enters at the concern below. The runner's tenant rule — one runner, one store,
 [`epic:multi-tenancy/runner`](../../multi-tenancy/runner.md); the served-projects declaration and its wire are owned by
 `epic:projects/hub`' [eligibility contract](../../projects/hub/spec/eligibility.md); the harness bundle and autonomy are
 owned by `epic:security/worker-security`'s
-[configuration contract](../../../plans/security/worker-security/spec/configuration.md). This spec places each of them
-on the host; it redefines none.
+[configuration contract](../../security/worker-security/spec/configuration.md). This spec places each of them on the
+host; it redefines none.
 
 Paths are relative to `blizzard/src/blizzard/`.
 

@@ -107,7 +107,7 @@ An epic's status, in its own frontmatter:
 - **`retired`** — the epic was dropped unbuilt.
 
 An epic that landed or was dropped without a plan still has a file: its frontmatter and a sentence saying so
-(`plans/security/runner-auth.md`).
+(`delivered/security/runner-auth.md`).
 
 ## Lifecycle
 
