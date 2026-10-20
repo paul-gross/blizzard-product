@@ -3,8 +3,8 @@
 The epic lands on a fleet whose runners take any work at any hour, whose only stops are breakers, and whose usage limits
 brake every runner spending the plan until a person lifts each one. It leaves a fleet whose runners wait behind their
 subscription's floor and their own levers and carry on by themselves, whose breakers count the same dollars the board
-shows, and whose runners can hand a parked chunk to a neighbour with room. Nothing deployed needs re-enrolling, loses a
-chunk, or changes id.
+shows, and whose runners can put a parked chunk back in the queue for whichever runner claims it next. Nothing deployed
+needs re-enrolling, loses a chunk, or changes id.
 
 ## The order of landings
 
@@ -68,43 +68,43 @@ proven by `blizzard-mock:unit-test` (`bzh:wire-change-extends-mock`).
    ceiling, the lever, and its status line. Proven by `blizzard:unit-test`, `blizzard:config-contract`, and
    `blizzard:service-test` with a runner throttled at its budget and carrying on as its spend ages out of the window,
    and a runner spending through it tripping its ceiling and staying tripped.
-7. **Hold or release.** Waits for pieces 3 and 5: the hub decides who has room from the declining report, and the
-   setting lives in the throttle table. `gate_type` and `usage_limit_gate_type` and their validation; the hub's route,
-   `HandBackService`, `ChunkVerb.HAND_BACK`, `route_released`'s two columns, and the activity feed's wording;
-   `IHubClient.hand_back`, `HandBack.offer` at the two entry sites and from `DormantSession.on_unpause` for a
-   usage-limited park, `pause_parks.cause` in the runner store's additive revision, the abandon that closes a released
-   usage-limited attempt, and the two registered crash points ([hand-back.md](./hand-back.md)). Its context half:
-   `recovery.md` §Hand-back and `acquisition.md` §Giving tenure back. Proven by `blizzard:unit-test` over
-   `refuse_hand_back` and `admitting_elsewhere`; `blizzard:service-test` with one runner set to release handing a parked
-   chunk to a neighbour with room, and holding it when no neighbour has any; a usage-limited lease on a runner set to
-   release handed to a runner on another subscription, which enters the node from its start with no retry spent, the
-   half-done step's usage booked, and nothing left to wake on the first runner; the same lease holding on
-   `no_runner_admitting` and waking in place once its floor opens; `blizzard:crash-sweep` over
-   `handback.after-release.before-env-release` and `handback.usage-limited.after-release.before-abandon`;
-   `blizzard:store-contract`; `blizzard:compat`; and `blizzard:manual-runner` with one runner of the fleet set to
-   release.
+7. **Hold or release.** Waits for pieces 1 and 5: the release is offered where the gate's decline is read, and the two
+   settings live in the throttle table. It reads nothing of piece 3's declining report, so it may land beside or before
+   it. `gate_type` and `usage_limit_gate_type` and their validation; the hub's route, `ReleaseService`,
+   `ChunkVerb.RELEASE`, `route_released`'s two columns, and the activity feed's wording; `IHubClient.release`,
+   `Release.offer` at the two entry sites and from `DormantSession.on_unpause` for a usage-limited park,
+   `pause_parks.cause` in the runner store's additive revision, the abandon that closes a released usage-limited
+   attempt, and the two registered crash points ([release.md](./release.md)). Its context half: `recovery.md` §Release
+   and `acquisition.md` §Giving tenure back. Proven by `blizzard:unit-test` over `refuse_release`;
+   `blizzard:service-test` with one runner set to release putting a parked chunk back `ready` and a neighbour whose gate
+   admits claiming it, the same chunk left `ready` while every neighbour declines and claimed cold by its first runner
+   once its gate reopens, and a usage-limited lease on a runner set to release claimed elsewhere and entered from its
+   start with no retry spent, the half-done step's usage booked, and nothing left to wake on the first runner;
+   `blizzard:crash-sweep` over `release.after-hub.before-environments` and
+   `release.usage-limited.after-hub.before-abandon`; `blizzard:store-contract`; `blizzard:compat`; and
+   `blizzard:manual-runner` with one runner of the fleet set to release.
 
 The epic is delivered when piece 7 lands.
 
-## Hub and runners on different releases
+## Hub and runners on different versions
 
-Every wire change is additive in both directions (`bzh:fleet-wire-additive`), so a hub and its runners can sit on either
-side of any piece. A runner that predates piece 3 sends no `declining`: the hub shows it declining nothing, and piece
-7's hub counts it among those with room, since it has no throttle to hold it back. A hub that predates piece 3 ignores
-the field a newer runner sends. A hub that predates piece 7 answers the hand-back route `404`, which a runner reads as a
-refusal and holds ([hand-back.md](./hand-back.md) §The runner's side).
+Every wire change is additive in both directions (`bzh:fleet-wire-additive`), so a hub and its runners can run versions
+on either side of any piece. A runner that predates piece 3 sends no `declining`, and the hub shows it declining
+nothing. A hub that predates piece 3 ignores the field a newer runner sends. A hub that predates piece 7 answers the
+release route `404`, which a runner reads as a refusal and holds ([release.md](./release.md) §The runner's side).
 
 ## What an operator does once
 
 Two changes reach a running fleet that the fleet cannot make for itself, and `docs/upgrade.md` names each for the
-release that carries it.
+version of blizzard that carries it.
 
-**A brake a usage limit engaged before piece 1.** The runner's own brake is a fact only an operator clears, and a
-release does not clear one by itself. A runner braked by a usage limit when piece 1 reaches it stays braked, its reason
-still reading `usage limit: …`, until the operator runs `blizzard runner start --runner <id>` for it. From then on the
-floor holds it for as long as the subscription is exhausted, and its parked leases wake when the floor opens.
+**A brake a usage limit engaged before piece 1.** The runner's own brake is a fact only an operator clears, and
+upgrading blizzard does not clear one by itself. A runner braked by a usage limit when piece 1 reaches it stays braked,
+its reason still reading `usage limit: …`, until the operator runs `blizzard runner start --runner <id>` for it. From
+then on the floor holds it for as long as the subscription is exhausted, and its parked leases wake when the floor
+opens.
 
 **Breakers that start seeing estimates.** From piece 4, `runner_ceiling_usd` and `chunk_cap_usd` count estimated spend
 they were blind to, so a runner whose work is mostly estimated — an OpenCode runner on a ChatGPT subscription above all
-— reaches them sooner than it did. Before moving onto that release, an operator reviews each runner's `[runner.cost]`
+— reaches them sooner than it did. Before moving onto that version, an operator reviews each runner's `[runner.cost]`
 against its recent `~`-marked spend on the board, and raises a cap that was only ever set against billed spend.

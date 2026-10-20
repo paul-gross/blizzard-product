@@ -1,6 +1,6 @@
 ---
 epic: throttling
-refinement: scaffolded
+refinement: refined
 status: horizon
 ---
 
@@ -65,14 +65,16 @@ expiry printed on it, and it ought to clear the way it arrived, without waking a
   claimed in time. Every lever is therefore asked again before each step of a chunk already held, and a chunk the gate
   declines parks between steps, its claim, session, and retries intact, until the gate opens. The lease that met an
   outright usage limit mid-step parks in place the same way.
-- **Holding or letting go.** Whether a chunk parked mid-graph waits for its own runner's gate to reopen, or is released
-  to a runner whose subscription still has room, is one more setting in the runner's throttling configuration. Holding
-  is the default: the chunk keeps its place and its warm session. Releasing keeps the work moving at the price of a cold
-  session on the other side, and an operator can turn it on for one runner to see how it behaves without committing the
-  fleet to it. A release is the same move `epic:resilience` makes when it falls back to another route before waiting,
-  and the two share it rather than each building their own. A second setting makes the same choice for a lease the usage
-  limit stops mid-step, and there letting go costs more: the half-done step goes with the warm session, and the runner
-  that takes the chunk starts that step again from its beginning. Holding is the default there too.
+- **Holding or letting go.** Whether a chunk parked mid-graph waits for its own runner's gate to reopen, or is released,
+  is one more setting in the runner's throttling configuration. Holding is the default: the chunk keeps its place and
+  its warm session. Releasing puts the chunk back in the queue for whichever runner claims it next — a neighbour whose
+  gate is open, or this same runner once its own reopens — and the warm session and the environment it had built are the
+  price, paid knowingly. An operator can turn it on for one runner to see how it behaves without committing the fleet to
+  it. A second setting makes the same choice for a lease the usage limit stops mid-step, and there letting go costs
+  more: the half-done step goes too, and whoever claims the chunk starts that step again from its beginning. Holding is
+  the default there as well. This is the fleet's first use of a mid-graph release it means to rely on more broadly, as
+  the way an agent's work changes hands without anyone stepping in: `epic:resilience` makes the same move when it falls
+  back to another route before waiting, and every later caller shares the one release rather than building its own.
 - **It clears the way it arrived.** Once the reset has passed and a fresh sample shows the window open again, the
   subscription is green: its runners claim again and its parked leases resume on their own, with nobody at the keyboard.
   A usage limit is a throttle and never a breaker: it trips nothing a person must clear, because exhaustion is a fact

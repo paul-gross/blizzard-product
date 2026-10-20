@@ -21,8 +21,8 @@ as `identity` is (`:133`). Its members:
 | `state`                 | `braked` while a breaker holds the runner, else `declining` while any throttle says no, else `admitting`                                                                           |
 | `floor`                 | Always present: the subscription it reads (`null` for a runner that names none), whether it admits, the hold that stands, its expected reset, and whether it awaits a fresh sample |
 | `levers`                | One entry per configured lever, in the gate's order: its name, its setting in operator words, whether it admits, the reading it judged, and `until`                                |
-| `gate_type`             | `hold` or `release`, for a chunk the gate parks between steps ([hand-back.md](./hand-back.md))                                                                                     |
-| `usage_limit_gate_type` | `hold` or `release`, for a lease a usage limit parks mid-step ([hand-back.md](./hand-back.md) §Releasing a usage-limited lease)                                                    |
+| `gate_type`             | `hold` or `release`, for a chunk the gate parks between steps ([release.md](./release.md))                                                                                         |
+| `usage_limit_gate_type` | `hold` or `release`, for a lease a usage limit parks mid-step ([release.md](./release.md) §Releasing a usage-limited lease)                                                        |
 
 A lever the runner does not configure has no entry; the floor is never absent. While a breaker holds the runner, `state`
 says so and every answer is still shown, so an operator about to clear a breaker can see whether a throttle would hold

@@ -100,7 +100,7 @@ their expected reset alone, as a runner naming no subscription's do.
 The lease whose worker or judge met the limit parks in place, its claim, route, epoch, and session intact, through
 `Attempt.park_usage_limited` (`runner/lifecycle/attempt.py:439`) — the same `pause_parks` row an operator's per-chunk
 pause leaves (`runner/store/schema.py:331`), now carrying the cause `usage-limit` so the two can be told apart
-([hand-back.md](./hand-back.md) §Releasing a usage-limited lease). What wakes it changes. `DormantSession.on_unpause`
+([release.md](./release.md) §Releasing a usage-limited lease). What wakes it changes. `DormantSession.on_unpause`
 (`runner/lifecycle/dormant.py:231`) already waits while `Spawner.suppressed` says no (`:275`); that call names
 `CONTINUATION` ([gate.md](./gate.md) §Every start asks it), so the park waits while the floor holds and wakes the
 session — or relaunches the judge for a judge-side park (`_resume_judge_usage_limit_park`, `:455`) — on the first tick
@@ -109,9 +109,8 @@ the floor opens, with nobody at the keyboard. A chunk an operator also paused st
 (`attempt.py:445`–`446`), says it resumes once its floor opens.
 
 That is the lease's course under `[runner.throttle] usage_limit_gate_type = "hold"`, the default. Under `"release"`,
-each tick the floor still holds it, `on_unpause` offers the chunk back to the hub instead of waiting, at the price of
-the half-done step; a refusal leaves it holding as above ([hand-back.md](./hand-back.md) §Releasing a usage-limited
-lease).
+each tick the floor still holds it, `on_unpause` releases the chunk to the queue instead of waiting, at the price of the
+half-done step; a refusal leaves it holding as above ([release.md](./release.md) §Releasing a usage-limited lease).
 
 ## The rule
 

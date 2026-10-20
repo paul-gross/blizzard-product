@@ -92,7 +92,7 @@ own pause have said nothing:
 
 The registry test gains the rule that every gate call names its `start`, so a new start site cannot slip in under a
 default. A sibling, `Spawner.suppression`, returns the cause — braked, chunk paused, or declined with its verdict — for
-the two callers that act on it ([hand-back.md](./hand-back.md)); `suppressed` stays the boolean every other site reads.
+the two callers that act on it ([release.md](./release.md)); `suppressed` stays the boolean every other site reads.
 
 ## The line holds mid-graph
 
@@ -108,7 +108,7 @@ a chunk held over a per-chunk pause is entered today (`adopt_enters_node`, `runn
 
 A lease that meets an outright usage limit mid-step parks in place as it does now ([exhaustion.md](./exhaustion.md) §A
 lease limited mid-step); what changes is what wakes it, and, on a runner set to release such a lease, what lets it go
-([hand-back.md](./hand-back.md) §Releasing a usage-limited lease).
+([release.md](./release.md) §Releasing a usage-limited lease).
 
 ## What it leaves
 
