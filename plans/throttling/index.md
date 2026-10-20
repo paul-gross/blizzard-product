@@ -17,6 +17,10 @@ that plan stands idle behind a pause only the operator can lift — still standi
 reset and the allowance came back. The limit was never the runner's: it is a fact about the subscription, with its
 expiry printed on it, and it ought to clear the way it arrived, without waking anyone.
 
+| Where                    | Read when                                                             |
+| ------------------------ | --------------------------------------------------------------------- |
+| [spec/](./spec/index.md) | Implementing any part of the epic or resolving its technical contract |
+
 ## What to build
 
 - **Throttles and breakers.** Every lever this epic adds is a throttle: a temporary pause, under which a runner waits
@@ -31,7 +35,9 @@ expiry printed on it, and it ought to clear the way it arrived, without waking a
   window elapsed: a runner five days into a seven-day window with only a day's allowance left is running ahead of its
   week, and declines to start anything new. The reading is the host's own sampling of each subscription's usage windows
   — the same utilization and reset times the board's subscription rows already show — so a pacing lever, or a plain
-  threshold such as "only while under 95%", judges by figures the operator can see.
+  threshold such as "only while under 95%", judges by figures the operator can see. The lead a pace allows may narrow as
+  the window fills, so a runner that may run a little ahead early in the week is held close to the line as the allowance
+  runs out.
 - **A budget in dollars.** A daily figure is a budget, and a budget throttles: a runner that has spent its day's
   allowance waits for the day to make room, then carries on. It stands beside the dollar ceiling rather than in its
   place. The budget is the line an operator plans their spending against; the ceiling, set above it, is the alarm for
@@ -64,7 +70,9 @@ expiry printed on it, and it ought to clear the way it arrived, without waking a
   is the default: the chunk keeps its place and its warm session. Releasing keeps the work moving at the price of a cold
   session on the other side, and an operator can turn it on for one runner to see how it behaves without committing the
   fleet to it. A release is the same move `epic:resilience` makes when it falls back to another route before waiting,
-  and the two share it rather than each building their own.
+  and the two share it rather than each building their own. A second setting makes the same choice for a lease the usage
+  limit stops mid-step, and there letting go costs more: the half-done step goes with the warm session, and the runner
+  that takes the chunk starts that step again from its beginning. Holding is the default there too.
 - **It clears the way it arrived.** Once the reset has passed and a fresh sample shows the window open again, the
   subscription is green: its runners claim again and its parked leases resume on their own, with nobody at the keyboard.
   A usage limit is a throttle and never a breaker: it trips nothing a person must clear, because exhaustion is a fact
@@ -74,3 +82,9 @@ expiry printed on it, and it ought to clear the way it arrived, without waking a
   board and from the CLI, naming the subscription and its expected reset when that is the reason. Declining leaves no
   fact behind: a row per refusal would be noise rather than record. A pair marking when throttling engages and lifts may
   earn its place later.
+- **The settings in plain view.** An operator who wrote a pacing line into a file weeks ago should not have to open that
+  file to learn why the machine is idle tonight. Wherever the runner itself shows its details — `blizzard runner status`
+  and the runner's own panel — it shows every lever it is configured with, each with its value and whether it says yes
+  or no right now, and beside them the subscription's floor, which is always there whether or not anything was
+  configured. The settings stay on the machine that owns them: the hub learns which lever is declining, and nothing
+  more, so the board is not committed to showing them and registration does not carry them.
