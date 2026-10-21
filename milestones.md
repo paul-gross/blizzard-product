@@ -145,11 +145,9 @@ package a one-way place in the order, and every rule a home on the model it gove
 
 Another presumption is about when a change reaches the people running it. Every merge to `master` is a release in all
 but name: the moment it lands, the hosted hub pulls it and the runners are rebuilt onto it. The operator who runs
-blizzard for themselves has no way to say not yet, no notes telling them what an upgrade will ask of them, and no
-promise about which runner still works against which hub — because compatibility is only ever judged against the commit
-before. Releases cut on a cadence, held to their version rules against what earlier releases actually shipped, hand the
-timing of an upgrade back to the person who has to live with it. The release that reaches this milestone is blizzard's
-1.0.
+blizzard for themselves has no way to say not yet, and no notes telling them what an upgrade will ask of them. Releases
+cut on a cadence, held to their version rules against what earlier releases actually shipped, hand the timing of an
+upgrade back to the person who has to live with it. The release that reaches this milestone is blizzard's 1.0.
 
 Hardening is what a platform does after it works. Little of it is a new capability. Almost all of it is an assumption
 the platform made on the operator's behalf, handed back to them as a decision.
@@ -158,12 +156,12 @@ the platform made on the operator's behalf, handed back to them as a decision.
 | ---------------------------------------- | ----------- |
 | `epic:runner-host`                       | delivered   |
 | `epic:release-engineering/first-release` | in-progress |
-| `epic:release-engineering/compat-floor`  | in-progress |
+| `epic:release-engineering/compat-floor`  | delivered   |
 | `epic:release-engineering/notes`         | in-progress |
 | `epic:release-engineering/release-lines` | in-progress |
 | `epic:release-engineering/dark-launch`   | in-progress |
 | `epic:release-engineering/supply-chain`  | in-progress |
-| `epic:storybook`                         | in-progress |
+| `epic:storybook`                         | delivered   |
 | `epic:throttling`                        | horizon     |
 | `epic:tagging`                           | horizon     |
 | `epic:resilience`                        | horizon     |

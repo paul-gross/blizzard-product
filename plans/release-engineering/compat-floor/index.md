@@ -1,7 +1,7 @@
 ---
 epic: release-engineering/compat-floor
-refinement: refined
-status: in-progress
+refinement: pristine
+status: delivered
 ---
 
 # Plan — `epic:release-engineering/compat-floor`

@@ -1,7 +1,7 @@
 ---
 epic: storybook
-refinement: refined
-status: in-progress
+refinement: pristine
+status: delivered
 ---
 
 # Plan — `epic:storybook`
