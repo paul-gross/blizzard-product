@@ -162,7 +162,7 @@ the platform made on the operator's behalf, handed back to them as a decision.
 | `epic:release-engineering/dark-launch`   | in-progress |
 | `epic:release-engineering/supply-chain`  | in-progress |
 | `epic:storybook`                         | delivered   |
-| `epic:throttling`                        | horizon     |
+| `epic:throttling`                        | in-progress |
 | `epic:tagging`                           | horizon     |
 | `epic:resilience`                        | horizon     |
 | `epic:retention`                         | horizon     |

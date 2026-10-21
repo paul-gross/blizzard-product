@@ -1,7 +1,7 @@
 ---
 epic: throttling
 refinement: refined
-status: horizon
+status: in-progress
 ---
 
 # Plan — `epic:throttling`
