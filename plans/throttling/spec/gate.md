@@ -54,8 +54,8 @@ utilization, budget, schedule — so the runner can say every reason it is waiti
 - the runner's `ThrottleSettings` and the slug and sample interval of the one subscription it names, if any;
 - the newest sample of that slug (`IReadExternalUsageRepository.latest_external_usage_windows`,
   `runner/usage/repository.py:369`), one indexed read, when the floor or a reading lever needs it;
-- the newest usage-limit mark of that subscription, or the runner's own when it names none, one indexed read
-  ([exhaustion.md](./exhaustion.md) §The mark);
+- the newest usage-limit mark and the newest hand clear of that subscription, or the runner's own when it names none,
+  two indexed reads ([exhaustion.md](./exhaustion.md) §The mark, §Clearing by hand);
 - the runner's spend over the budget's window (`IReadUsageRepository.usage_since`, `runner/usage/repository.py:298`),
   one aggregate read, only when a budget is configured;
 - the clock.

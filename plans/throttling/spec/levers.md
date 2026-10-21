@@ -76,7 +76,9 @@ and does not start on Saturday evening. `days` alone admits those whole days; `h
 day. Spans are wall-clock times, so a span runs by the clock on the wall across a daylight-saving change: a start that
 does not exist that night begins at the first minute that does, and a time that occurs twice is taken at its first
 occurrence. When it declines, `until` is the start of the next span, and the answer reads
-`outside mon–fri 19:00–08:00, next 19:00`.
+`outside mon–fri 19:00–08:00 PDT, next Mon 02:00Z`: the spans in the host's wall-clock time, as they are configured,
+named by the host's zone, and the instant in UTC, as every instant the runner prints is ([surfaces.md](./surfaces.md)
+§`blizzard runner status`).
 
 The schedule decides only whether work starts. A step admitted at 07:58 runs to its end, since a continuation is never
 asked about the schedule ([gate.md](./gate.md) §Where it lives).

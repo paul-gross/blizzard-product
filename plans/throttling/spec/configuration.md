@@ -6,7 +6,8 @@ Every throttle is configured under its runner's `[[runner]]` entry in `blizzard-
 `[runner.throttle]`, beside the breakers' `[runner.cost]`. A lever is a sub-table of it, and a lever whose sub-table is
 absent does not exist: it is not asked, it says nothing, and it shows nothing on the runner's status. A runner with no
 `[runner.throttle]` at all is held back by its subscription's floor alone ([exhaustion.md](./exhaustion.md)), which has
-no key, since nothing about it is the operator's to set.
+no key, since nothing about it is the operator's to set; an operator may still clear a hold by hand
+([exhaustion.md](./exhaustion.md) §Clearing by hand), which writes a reading, not a setting.
 
 The file is the only place a lever is set. No route, CLI verb, or panel control writes one, and the settings never leave
 the machine: the hub learns which lever is declining, never what a lever is set to ([surfaces.md](./surfaces.md)). Like
@@ -28,8 +29,8 @@ chunk_cap_usd = 15
 
 # The throttles: each declines while it says no, and lifts itself when it says yes again.
 [runner.throttle]
-gate_type = "hold"             # or "release" — what a chunk the gate parks between steps does
-usage_limit_gate_type = "hold" # or "release" — what a lease a usage limit stops mid-step does
+on_decline = "hold"            # or "release" — what a chunk the gate parks between steps does
+on_usage_limit = "hold"        # or "release" — what a lease a usage limit stops mid-step does
 
 [runner.throttle.pace]
 window = "7d"                  # a window label the subscription's samples report; its longest when absent
@@ -57,8 +58,8 @@ hours = ["19:00-08:00"]
 | Key                                       | Type            | Default               | Meaning                                                                                                                                                                                                              |
 | ----------------------------------------- | --------------- | --------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | `runner[].throttle`                       | table           | absent                | The runner's throttles. Absent, only the subscription floor holds it back                                                                                                                                            |
-| `runner[].throttle.gate_type`             | string          | `"hold"`              | `"hold"` keeps a chunk the gate parks between steps; `"release"` puts it back in the queue for whichever runner claims it next ([release.md](./release.md))                                                          |
-| `runner[].throttle.usage_limit_gate_type` | string          | `"hold"`              | `"hold"` keeps a lease a usage limit parks mid-step until the floor opens; `"release"` puts its chunk back in the queue, abandoning the half-done step ([release.md](./release.md) §Releasing a usage-limited lease) |
+| `runner[].throttle.on_decline`            | string          | `"hold"`              | `"hold"` keeps a chunk the gate parks between steps; `"release"` puts it back in the queue for whichever runner claims it next ([release.md](./release.md))                                                          |
+| `runner[].throttle.on_usage_limit`        | string          | `"hold"`              | `"hold"` keeps a lease a usage limit parks mid-step until the floor opens; `"release"` puts its chunk back in the queue, abandoning the half-done step ([release.md](./release.md) §Releasing a usage-limited lease) |
 | `runner[].throttle.pace`                  | table           | absent                | The pacing lever ([levers.md](./levers.md) §Pacing)                                                                                                                                                                  |
 | `runner[].throttle.pace.window`           | string          | the longest reported  | The label of the window paced against, as the subscription's samples name it (`5h`, `7d`)                                                                                                                            |
 | `runner[].throttle.pace.lead_pct`         | number          | `5`                   | How many percentage points the window's spent share may run ahead of its elapsed share, `0` to `100`                                                                                                                 |
@@ -84,12 +85,12 @@ breakers; only how its dollars are counted changes ([dollars.md](./dollars.md)).
 
 The levers are a domain value of the `throttle` package, `ThrottleSettings` in `runner/throttle/settings.py`: one
 optional record per lever — `PaceSettings`, carrying its base lead and its taper as an ordered tuple of `TaperStep`s,
-`UtilizationSettings`, `BudgetSettings`, `ScheduleSettings` — and the `gate_type` and `usage_limit_gate_type` choices,
-each a `GateType` enum, `HOLD` or `RELEASE`. The config edge builds it: a `Throttle` section parser in
-`runner/config.py`, beside `Spend` (`:188`), reads the table through the strict view, and `_own_tables` in
-`runner/host_config.py` (`:1003`) places it on the runner's `RunnerConfig` as `throttle`, exactly as it places `Spend`'s
-three values today (`:1011`, `:1026`–`:1028`). No concept package imports `RunnerConfig` (`bzh:domain-package-layers`):
-the gate takes `ThrottleSettings` by injection ([gate.md](./gate.md)).
+`UtilizationSettings`, `BudgetSettings`, `ScheduleSettings` — and the `on_decline` and `on_usage_limit` choices, each a
+`HoldOrRelease` enum, `HOLD` or `RELEASE`. The config edge builds it: a `Throttle` section parser in `runner/config.py`,
+beside `Spend` (`:188`), reads the table through the strict view, and `_own_tables` in `runner/host_config.py` (`:1003`)
+places it on the runner's `RunnerConfig` as `throttle`, exactly as it places `Spend`'s three values today (`:1011`,
+`:1026`–`:1028`). No concept package imports `RunnerConfig` (`bzh:domain-package-layers`): the gate takes
+`ThrottleSettings` by injection ([gate.md](./gate.md)).
 
 A schedule's spans are parsed to minutes of the day once, at load, so nothing the gate does on a tick parses text. The
 host-file renderer that graduation and ingest use (`runner/host_config.py:1159`), which writes `[runner.cost]` back out
@@ -102,7 +103,7 @@ Every throttle error is a runner error in `HostConfig.load`'s sort
 ([`delivered/runner-host`'s configuration contract](../../../delivered/runner-host/spec/configuration.md) §Validation):
 it halts that runner alone, names the key, and `blizzard runner host --check` reports it with the rest. They are:
 
-- a `gate_type` or `usage_limit_gate_type` other than `"hold"` or `"release"`;
+- an `on_decline` or `on_usage_limit` other than `"hold"` or `"release"`;
 - a `pace` or `utilization` table on a runner that names no `subscription`, or whose subscription's `provider` binds no
   sampler (`select_sampler`, `runner/subscriptions/internal/subscription_sampler_factory.py:24`) — a lever that judges
   by samples, on a runner whose plan is never sampled, could only ever say no;

@@ -16,13 +16,13 @@ stored on the runner, and no fact is written for either.
 (`DashboardView.runner`, `:286`), gains `throttle: ThrottleStatusView | None` — `None` only from a runner with no loop,
 as `identity` is (`:133`). Its members:
 
-| Field                   | Holds                                                                                                                                                                              |
-| ----------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `state`                 | `braked` while a breaker holds the runner, else `declining` while any throttle says no, else `admitting`                                                                           |
-| `floor`                 | Always present: the subscription it reads (`null` for a runner that names none), whether it admits, the hold that stands, its expected reset, and whether it awaits a fresh sample |
-| `levers`                | One entry per configured lever, in the gate's order: its name, its setting in operator words, whether it admits, the reading it judged, and `until`                                |
-| `gate_type`             | `hold` or `release`, for a chunk the gate parks between steps ([release.md](./release.md))                                                                                         |
-| `usage_limit_gate_type` | `hold` or `release`, for a lease a usage limit parks mid-step ([release.md](./release.md) §Releasing a usage-limited lease)                                                        |
+| Field            | Holds                                                                                                                                                                                                                                                                   |
+| ---------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `state`          | `braked` while a breaker holds the runner, else `declining` while any throttle says no, else `admitting`                                                                                                                                                                |
+| `floor`          | Always present: the subscription it reads (`null` for a runner that names none), whether it admits, the hold that stands, its expected reset, whether it awaits a fresh sample, when the grace opens it unconfirmed, and the hand clear that holds it open, if one does |
+| `levers`         | One entry per configured lever, in the gate's order: its name, its setting in operator words, whether it admits, the reading it judged, and `until`                                                                                                                     |
+| `on_decline`     | `hold` or `release`, for a chunk the gate parks between steps ([release.md](./release.md))                                                                                                                                                                              |
+| `on_usage_limit` | `hold` or `release`, for a lease a usage limit parks mid-step ([release.md](./release.md) §Releasing a usage-limited lease)                                                                                                                                             |
 
 A lever the runner does not configure has no entry; the floor is never absent. While a breaker holds the runner, `state`
 says so and every answer is still shown, so an operator about to clear a breaker can see whether a throttle would hold
@@ -47,14 +47,23 @@ runner r-claude (rn_01M3MY1NGQR8WE1ZBRKNREFNE4)  workspace=blizzard-claude
     pace         7d, lead 5 points, 1 above 90%: 86% spent, 71% elapsed                   no   until Thu 02:10Z
     utilization  below 95% on 5h, 7d: 5h 40%, 7d 86%                                       yes
     budget       $40.00 over 24h: ~$12.40                                                  yes
-    schedule     mon–fri 19:00–08:00: inside                                               yes
-    gate_type    hold          usage_limit_gate_type   release
+    schedule     mon–fri 19:00–08:00 PDT: inside                                           yes
+    on_decline   hold          on_usage_limit   release
 ```
 
 A pace with a taper shows each step after its base lead, as above, and its reading names the step in force once one is
 (`lead 1 above 90%`, [levers.md](./levers.md) §Pacing). A runner with no `[runner.throttle]` prints the floor and both
-choices at `hold` alone; a runner naming no subscription prints its own floor as `floor        this runner: open`.
-`docs/deployment/control-verbs.md` names the block beside the `gates:` line it already describes.
+choices at `hold` alone; a runner naming no subscription prints its own floor as `floor        this runner: open`. A
+hold past its reset says which way it is waiting —
+`anthropic: exhausted — reset passed, no sample since, opens at
+15:00Z` while the grace runs — and a floor a hand clear
+holds open says so for as long as the clear is what keeps it open: `anthropic: open — cleared by paul at 09:14Z`
+([exhaustion.md](./exhaustion.md) §Clearing by hand).
+
+Every instant the block prints is UTC with its `Z`, as the floor's reset is. A schedule's spans are the one exception:
+they are the host's wall-clock time, as configured ([levers.md](./levers.md) §The schedule), so the schedule's line
+names the host's zone beside them, and its `until` is UTC like every other instant. `docs/deployment/control-verbs.md`
+names the block beside the `gates:` line it already describes.
 
 ## The runner's panel
 
@@ -64,8 +73,16 @@ pause control it ranks under. It is a self-fetching container, `LocalThrottle` i
 rendering a presentational `ThrottleView` that takes the `ThrottleStatusView` as its input and injects nothing
 (`bzh:frontend-container-presentational`): a fact-list row for the floor and one per lever, as `app-info-view.ts`
 renders its rows, each with its setting — a pace's taper steps listed under its base lead — its reading, its yes or no,
-and its `until`, and one line holding both hold-or-release choices, `gate_type` beside `usage_limit_gate_type`. The
-pause control's reason (`app-pause-control.ts:65`) keeps showing only the breaker's.
+and its `until`, and one line holding both hold-or-release choices, `on_decline` beside `on_usage_limit`. The pause
+control's reason (`app-pause-control.ts:65`) keeps showing only the breaker's.
+
+While the floor holds, its row carries a Clear action ([exhaustion.md](./exhaustion.md) §Clearing by hand). The view
+asks first through `KitConfirmDialog`, as the chunk dock's pause does (`board/chunk-dock/machine-detail-header.ts:113`),
+naming what the clear lifts — `Clear anthropic's floor for every runner on this host spending it?`, or this runner alone
+when it names no subscription — and emits `clearFloor` once confirmed. The container runs `injectFloorClearMutation` in
+`core/status.query.ts`, beside `injectLocalPauseMutation` (`:74`), against the subscription's route or the runner's as
+the floor names, under a key of its own in `core/mutation-keys.ts`, and the dashboard read refetches on success. The
+host page's rows carry no action: clearing is done from the runner it lifts.
 
 The host page shows each runner's details in its row (`web/projects/runner/src/app/host/host-runners-view.html`), and
 the throttle goes there too: `hostRunnerRows` (`host/host-runners.model.ts:32`) gains a `throttle` label beside its

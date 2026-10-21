@@ -18,17 +18,17 @@ choose who may take it. Losing the warm session and the environment is the accep
 
 ## Hold or release
 
-`[runner.throttle] gate_type` ([configuration.md](./configuration.md)) decides what a chunk does when the gate parks it
+`[runner.throttle] on_decline` ([configuration.md](./configuration.md)) decides what a chunk does when the gate parks it
 between steps: `hold`, the default, keeps it where it is — its route, environments, and warm session — until this
 runner's gate reopens, as [gate.md](./gate.md) §The line holds mid-graph describes; `release` puts it back in the queue.
 The setting is per runner, so one runner can be set to release while the rest of the fleet holds.
 
-`gate_type` reaches only a chunk the gate holds between steps: one whose next start is a `STEP` the floor or a lever
+`on_decline` reaches only a chunk the gate holds between steps: one whose next start is a `STEP` the floor or a lever
 declines, with no lease open. It never reaches a chunk a breaker holds, one an operator paused, one parked at a human
 gate or held by a takeover, or one at a hub node, all of which hold as they do today.
 
-A lease a usage limit stops mid-step answers to a second setting, `[runner.throttle] usage_limit_gate_type`, with the
-same two values and the same default, `hold`. Holding, the lease stays parked in place until its floor opens
+A lease a usage limit stops mid-step answers to a second setting, `[runner.throttle] on_usage_limit`, with the same two
+values and the same default, `hold`. Holding, the lease stays parked in place until its floor opens
 ([exhaustion.md](./exhaustion.md) §A lease limited mid-step). Releasing it costs more than a release between steps: the
 step the session had half done is abandoned, its partial work goes with the environments the runner gives up, and the
 runner that claims the chunk enters the node from its start with a cold session (§Releasing a usage-limited lease). That
@@ -82,7 +82,7 @@ let go of a chunk the hub no longer holds (`held_chunk.py:70`–`73`). No outcom
 **Between steps.** The gate's caller offers from the two places a held chunk's node is entered each tick —
 `HeldChunk._spawn_advanced_node` (`runner/lifecycle/held_chunk.py:135`) and FILL's adopt
 (`runner/lifecycle/claim.py:404`) — before either fetches the envelope. Each asks `Spawner.suppression` for a `STEP`
-([gate.md](./gate.md) §Every start asks it); when the cause is the gate's decline and the runner's `gate_type` is
+([gate.md](./gate.md) §Every start asks it); when the cause is the gate's decline and the runner's `on_decline` is
 `release`, it calls `Release.offer` with the reason `throttled` instead of entering. Its completion gives up the chunk's
 environments (`EnvironmentRelease.release_chunk`) and invalidates the chunk's cached view; no lease is open to close.
 
@@ -104,9 +104,9 @@ park written before the column reads as an operator's and holds.
 every open pause park each tick (`runner/loop/steps.py:517`–`526`). After the park's teardown has settled and the
 chunk's view is read, a park whose cause is `usage-limit`, whose chunk no operator has paused, with no open ask and no
 takeover holding it, and whose wake `Spawner.suppression` declines for a `CONTINUATION` on the floor alone — not on a
-breaker — is offered through `Release.offer` with the reason `usage-limited` when the runner's `usage_limit_gate_type`
-is `release`. The registry test admits `suppression` as the gate call at this site. A park whose floor has opened is
-woken, not offered: there is nothing left to wait out.
+breaker — is offered through `Release.offer` with the reason `usage-limited` when the runner's `on_usage_limit` is
+`release`. The registry test admits `suppression` as the gate call at this site. A park whose floor has opened is woken,
+not offered: there is nothing left to wait out.
 
 **How the attempt closes.** The completion first books whatever usage the parked invocation has not yet booked, as a
 wake does before it mints the next generation (`ctx.usage.record_worker`, `dormant.py:300`), so the half-done step's

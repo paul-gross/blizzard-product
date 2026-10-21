@@ -18,28 +18,36 @@ proven by `blizzard-mock:unit-test` (`bzh:wire-change-extends-mock`).
    the question every start asks. `runner/throttle/gate.py` and `floor.py` with a verdict of the floor alone;
    `StartKind` on `Spawner.suppressed` at every start site, and the registry test's new rule; FILL's one call and
    `InterruptedClaims`' widened `braked` ([gate.md](./gate.md)). The runner store's additive revision adding
-   `subscription_usage_limits` and `runner_usage_limits`; the `usage_limits` host member and its runner twin; `_mark` in
-   place of `_engage`; the retired fan-out and everything only it used; the renamed crash points and the rewritten
-   crash-correctness section; the sampling pass's two early-sample triggers; and the retention prune
-   ([exhaustion.md](./exhaustion.md)). `docs/deployment/spend.md` §Usage limits and §External subscription usage, and
-   `docs/upgrade.md`'s first one-time step (§What an operator does once). Its context half:
-   `domain/execution/throttling.md` with `bzh:subscription-floor-reach` and the routing row in `execution.md` that names
-   it, `pause.md` without the usage-limit engagement or `bzh:subscription-brake-reach`, and `hosts.md`'s repointed
-   sentence. Proven by `blizzard:unit-test` over the floor's derivation at every edge of a hold — reset ahead, passed
-   and unsampled, passed and sampled open, a mark naming no reset, an unsampled subscription, a runner naming none;
-   `blizzard:service-test` with two runners of one host spending one plan and a third on another, a limit met by the
-   first holding back the first two and not the third, and all of them claiming again, and the limited lease waking,
-   after a fresh open sample with nobody acting; `blizzard:crash-sweep` over the renamed points;
+   `subscription_usage_limits` and `runner_usage_limits`, and `subscription_floor_clears` and `runner_floor_clears`; the
+   `usage_limits` host member and its runner twin; `_mark` in place of `_engage`; the retired fan-out and everything
+   only it used; the renamed crash points and the rewritten crash-correctness section; the sampling pass's two
+   early-sample triggers; the grace; `blizzard runner clear-floor` and its two routes; and the retention prune
+   ([exhaustion.md](./exhaustion.md)). `docs/deployment/control-verbs.md` names `clear-floor`.
+   `docs/deployment/spend.md` §Usage limits and §External subscription usage, and `docs/upgrade.md`'s first one-time
+   step (§What an operator does once). Its context half: `domain/execution/throttling.md` with
+   `bzh:subscription-floor-reach` and the routing row in `execution.md` that names it, `pause.md` without the
+   usage-limit engagement or `bzh:subscription-brake-reach`, and `hosts.md`'s repointed sentence. Proven by
+   `blizzard:unit-test` over the floor's derivation at every edge of a hold — reset ahead and its held window turned
+   over early, a sample at 99 percent in the period the limit was met in that cannot open its mark before the reset or
+   after it, a mark with no held window that no sample opens early, passed and unsampled, passed and sampled open in a
+   new period, an hour past the reset with only misses or passed-period samples since and opening on the grace, a new
+   period sampled at 100 percent holding past the hour, a mark naming no reset, an unsampled subscription, a runner
+   naming none, a clear setting aside a mark and an exhausted window, a later sample of the cleared window at the same
+   reset leaving it open, and a mark after the clear holding again; `blizzard:service-test` with two runners of one host
+   spending one plan and a third on another, a limit met by the first holding back the first two and not the third, and
+   all of them claiming again, and the limited lease waking, after a fresh open sample with nobody acting, and again
+   after an operator's `clear-floor` with the sample still shut; `blizzard:crash-sweep` over the renamed points;
    `blizzard:store-contract`; and `blizzard:manual-runner` against a harness made to report a limit.
 2. **The settings in view.** Waits for piece 1, and lands right after it, so the floor an operator cannot configure is
    visible the moment it starts holding runners back. `ThrottleStatusView` on `RunnerStatusView` and `HostRunnerView`,
    built by `RunnerStatusService`; the `throttle` block of `blizzard runner status`; the machine page's `throttle` panel
-   with its container and view; and the host page's lines, through `throttleLines` ([surfaces.md](./surfaces.md) §The
-   runner's own status, §`blizzard runner status`, §The runner's panel). With no lever yet it shows the floor and both
-   hold-or-release choices at `hold`; each later piece adds its lever's line in the change that adds the lever.
-   `docs/deployment/control-verbs.md` names the block. Proven by `blizzard:unit-test` over the view in every floor
-   state, `web:client-drift`, `web:unit-test`, `web:lint`, and `web:manual-panel` on a runner whose subscription is
-   exhausted and on one naming none.
+   with its container and view, and the floor row's Clear action over piece 1's routes; and the host page's lines,
+   through `throttleLines` ([surfaces.md](./surfaces.md) §The runner's own status, §`blizzard runner status`, §The
+   runner's panel). With no lever yet it shows the floor and both hold-or-release choices at `hold`; each later piece
+   adds its lever's line in the change that adds the lever. `docs/deployment/control-verbs.md` names the block. Proven
+   by `blizzard:unit-test` over the view in every floor state, `web:client-drift`, `web:unit-test`, `web:lint`, and
+   `web:manual-panel` on a runner whose subscription is exhausted and on one naming none, clearing each from its floor
+   row.
 3. **The reason at the hub.** Its hub half — the `declining` column, the views' field, the board's label, and the hub
    CLI's segment — waits for nothing and may land first, since a hub that stores a field no runner sends shows nothing.
    Its runner half, `declining` sent on every registration, waits for piece 1 and for the hub half
@@ -70,17 +78,16 @@ proven by `blizzard-mock:unit-test` (`bzh:wire-change-extends-mock`).
    and a runner spending through it tripping its ceiling and staying tripped.
 7. **Hold or release.** Waits for pieces 1 and 5: the release is offered where the gate's decline is read, and the two
    settings live in the throttle table. It reads nothing of piece 3's declining report, so it may land beside or before
-   it. `gate_type` and `usage_limit_gate_type` and their validation; the hub's route, `ReleaseService`,
-   `ChunkVerb.RELEASE`, `route_released`'s two columns, and the activity feed's wording; `IHubClient.release`,
-   `Release.offer` at the two entry sites and from `DormantSession.on_unpause` for a usage-limited park,
-   `pause_parks.cause` in the runner store's additive revision, the abandon that closes a released usage-limited
-   attempt, and the two registered crash points ([release.md](./release.md)). Its context half: `recovery.md` §Release
-   and `acquisition.md` §Giving tenure back. Proven by `blizzard:unit-test` over `refuse_release`;
-   `blizzard:service-test` with one runner set to release putting a parked chunk back `ready` and a neighbour whose gate
-   admits claiming it, the same chunk left `ready` while every neighbour declines and claimed cold by its first runner
-   once its gate reopens, and a usage-limited lease on a runner set to release claimed elsewhere and entered from its
-   start with no retry spent, the half-done step's usage booked, and nothing left to wake on the first runner;
-   `blizzard:crash-sweep` over `release.after-hub.before-environments` and
+   it. `on_decline` and `on_usage_limit` and their validation; the hub's route, `ReleaseService`, `ChunkVerb.RELEASE`,
+   `route_released`'s two columns, and the activity feed's wording; `IHubClient.release`, `Release.offer` at the two
+   entry sites and from `DormantSession.on_unpause` for a usage-limited park, `pause_parks.cause` in the runner store's
+   additive revision, the abandon that closes a released usage-limited attempt, and the two registered crash points
+   ([release.md](./release.md)). Its context half: `recovery.md` §Release and `acquisition.md` §Giving tenure back.
+   Proven by `blizzard:unit-test` over `refuse_release`; `blizzard:service-test` with one runner set to release putting
+   a parked chunk back `ready` and a neighbour whose gate admits claiming it, the same chunk left `ready` while every
+   neighbour declines and claimed cold by its first runner once its gate reopens, and a usage-limited lease on a runner
+   set to release claimed elsewhere and entered from its start with no retry spent, the half-done step's usage booked,
+   and nothing left to wake on the first runner; `blizzard:crash-sweep` over `release.after-hub.before-environments` and
    `release.usage-limited.after-hub.before-abandon`; `blizzard:store-contract`; `blizzard:compat`; and
    `blizzard:manual-runner` with one runner of the fleet set to release.
 
