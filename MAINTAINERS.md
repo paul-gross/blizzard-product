@@ -26,16 +26,18 @@ epic its status; their shape is owned by [context/structure/plans.md](./context/
    (`blizzard-context:/architecture/system-shape/released-surfaces.md`), and what it replaces is deprecated, not
    removed. The removal is not the epic's. Its plan names it as a follow-up cleanup, so the epic is delivered when its
    additive landings land.
-3. **Filed issues.** File the GitHub epic issue and its child issues (the `/wg-issue` flow), each citing the epic's id,
-   and set the epic `in-progress` in its plan and in every milestone epic chart naming it. The registry row stays put in
-   [epics.md](./epics.md) and is never annotated. The issue tracker is the factory's intake queue, not its memory: file
-   only work that is startable. Work is startable when every prerequisite it builds on has landed or is filed beside it,
-   so each dependency can be named. The hub cannot wait on work it cannot name: a chunk whose prerequisite is not yet
-   filed starts the moment it is promoted, against code that does not exist. A chain of dependencies is startable
-   however long it runs, so long as every link in it is filed. Ingest a chain whole and link its dependencies in the
-   same pass (`workspace:/context/project/workflows/marshalling.md` owes them the moment a chunk is minted), never
-   ingesting now and linking later. A follow-up removal is filed beside the epic as a standalone `(BREAK)` issue,
-   belonging to no epic, which waits uningested until an operator decides a release may carry the break
+3. **Filed issues.** File the GitHub epic issue and its child issues (the `/wg-issue` flow), each citing the epic's id
+   and blocked by every prerequisite it names — the child before it in the landing order, another epic's child, work
+   already in flight (`workspace:/context/project/contributing.md` §Issue dependencies) — and set the epic `in-progress`
+   in its plan and in every milestone epic chart naming it. The registry row stays put in [epics.md](./epics.md) and is
+   never annotated. The issue tracker is the factory's intake queue, not its memory: file only work that is startable.
+   Work is startable when every prerequisite it builds on has landed or is filed beside it, so each dependency can be
+   named. The hub cannot wait on work it cannot name: a chunk whose prerequisite is not yet filed starts the moment it
+   is promoted, against code that does not exist. A chain of dependencies is startable however long it runs, so long as
+   every link in it is filed. Ingest a chain whole and link its dependencies in the same pass
+   (`workspace:/context/project/workflows/marshalling.md` owes them the moment a chunk is minted), never ingesting now
+   and linking later. A follow-up removal is filed beside the epic as a standalone `(BREAK)` issue, belonging to no
+   epic, which waits uningested until an operator decides a release may carry the break
    (`workspace:/context/project/contributing.md` §Issue titles).
 
 Exceptions and the far end of the lifecycle:
