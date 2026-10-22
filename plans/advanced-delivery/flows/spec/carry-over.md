@@ -2,37 +2,68 @@
 
 An installation that predates this epic keeps landing as it did, without a chunk being restarted by hand. The epic lands
 as four chunks in the order the [spec index](./index.md#landing-order) gives, and every one of them leaves `master`
-landing work; an installation that takes them one at a time, as the hosted hub does, is carried over at each.
+landing work and releasable. A release can be cut between any two of them, so an installation may take them one release
+at a time or several in one, and it is carried over either way. The epic is delivered when the four have landed; the
+slot's table, which they leave deprecated, is dropped by a cleanup after it
+([below](#the-deprecation-then-the-cleanup)).
 
 ## The migrations
 
 Two manual migrations (`bzh:manual-migrations`) under `hub/store/migrations/versions/`, the first revised after the
-forges epic's — the chain head when it merges — and the second after the first, each frozen once it merges
-(`bzh:frozen-revisions`), inside the portable surface (`bzh:sql-portable`), proven on Postgres as on SQLite
-(`tests/test_store_migrations.py`) with a colocated test of its own (`bzh:colocated-migration-tests`), and with every
-constraint and index name inside Postgres's 63 characters (`tests/test_migration_identifier_length.py`).
+forges epic's — the chain head when it merges — and the second after whatever heads the chain when the cleanup merges,
+each frozen once it merges (`bzh:frozen-revisions`), inside the portable surface (`bzh:sql-portable`), proven on
+Postgres as on SQLite (`tests/test_store_migrations.py`) with a colocated test of its own
+(`bzh:colocated-migration-tests`), and with every constraint and index name inside Postgres's 63 characters
+(`tests/test_migration_identifier_length.py`).
 
 1. **The first, with the record.** It creates `flows`, `flow_submissions`, `flow_submission_flows`,
    `flow_submission_closures`, `hub_turns`, and `flow_facts`, with their indexes ([record.md](./record.md)). It writes
-   no `landed` fact for a landing made before it ([record.md](./record.md#the-landed-event)). Its `downgrade()` drops
-   the six tables, and the line goes with them: a hub rolled back past it lands through the slot, which never left, and
-   the flows' record of what happened while it stood is lost.
-2. **The second, retiring the slot.** It drops `hub_exec_slot`. By then nothing has acquired the slot since the chunk
-   before it, so the table is empty on any hub that has booted since; a row still live belonged to a pass in a process
-   that has stopped, which is what `release_orphaned_slots` assumed of it at every boot. Its rows go with it, and with
-   them the `HUB_EXEC` intervals of chunks traced before the upgrade ([record.md](./record.md#invariants)). Its
-   `downgrade()` recreates `hub_exec_slot` empty, with its indexes as they stood: the chunk before it lands through
-   turns and never touches the table, and a hub rolled back further, onto the slot, needs nothing more: no pass is in
-   flight across a restart, so there is nothing to put in it.
+   no `landed` fact for a landing made before it ([record.md](./record.md#the-landed-event)). It only expands
+   (`bzh:store-expand-contract`). Its `downgrade()` drops the six tables, and the line goes with them: a hub rolled back
+   past it lands through the slot, which never left, and the flows' record of what happened while it stood is lost.
+2. **The second, dropping the slot's table.** It drops `hub_exec_slot`, in the cleanup that follows the epic, never in
+   one of its four chunks. By then nothing has acquired the slot for at least a release, so the table is empty on any
+   hub that has booted since; a row still live belonged to a pass in a process that has stopped, which is what
+   `release_orphaned_slots` assumed of it at every boot. Its rows go with it, and with them the `HUB_EXEC` intervals of
+   chunks traced before the turns began ([record.md](./record.md#invariants)). Its `downgrade()` recreates
+   `hub_exec_slot` empty, with its indexes as they stood: no build since the second chunk writes the table, and a hub
+   rolled back further, onto the slot, needs nothing more, since no pass is in flight across a restart.
 
 Neither migration admits a chunk, since repository resolution is the domain's and a migration does not run it.
+
+## The deprecation, then the cleanup
+
+Dropping a table is a contraction (`bzh:store-expand-contract`), which a release may make only once every supported
+release has marked the table deprecated, so the slot's table leaves as anything released does: deprecated in one
+release, dropped in a later one. The epic does the first half and is delivered without the second; none of its four
+chunks is breaking.
+
+**Deprecated in the second chunk**, the one that stops acquiring the slot: `hub_exec_slot`'s `Table` in
+`hub/store/schema.py` carries `info={"deprecated": "<line>"}`, naming the line of the release that first ships the mark,
+and `contracts/store/hub.json` with it; a `deprecated` note under `changes/unreleased/` names the table, with `surfaces`
+`store` and a `removes-in` of the minor after that release. From then until the drop, no build writes the table; the
+third chunk retires the code that did and keeps only the trace corpus's read of its past rows.
+
+**Dropped by a follow-up cleanup** that belongs to no epic: a breaking change filed beside the epic and taken up only
+once an operator decides a release may carry it, which is no sooner than a release carrying the deprecation has shipped,
+and before the line its `removes-in` names is cut. It runs the second migration, removes `TracedHubExecSlot`, `_slots`,
+and the corpus's read of the slot's rows, and raises `floor` in `wire/window.toml` to the line that deprecated the
+table, as the window requires of the change that removes what a released minor deprecated (`docs/versioning.md`); from
+it, a runner of an earlier line is refused registration. Its `removed` note `retires` the deprecation, is
+`breaking: true` with `breaks` naming the table, and carries the `## Upgrade` section that says the table and the older
+traces' `hub exec` intervals are gone; its commit is marked breaking, `feat!`. Those intervals, of every chunk traced
+before the turns began, are an accepted loss: nothing carries them into `hub_turns`. The cleanup is taken up together
+with the actions and forges epics' cleanups, which raise `floor` for the same reason, so that the fleet's oldest runners
+are let go once, in one release, rather than three times. `blizzard-context`'s
+`architecture/system-shape/store-facts.md` stops citing `hub_exec_slot.released_at` as its example of a released-at
+column in the same change.
 
 ## At boot
 
 `release_orphaned_slots` (`hub/app.py`, `HubNodeExecutor`) is replaced by `recover_turns`, run per open tenant before
 the hub serves and before the flow driver starts. In the first chunk, while the slot still runs passes, boot runs
-`release_orphaned_slots` and then `recover_turns`'s reconcile alone, since no turn exists to recover; from the second,
-`recover_turns` runs whole and `release_orphaned_slots` is gone:
+`release_orphaned_slots` and then `recover_turns` whole, whose first step finds no turn on a store no later chunk has
+run; from the second, `recover_turns` runs alone and `release_orphaned_slots` is gone:
 
 1. **Interrupted turns.** Every turn with no `ended_at` ended with the process that ran it, whether it crashed or shut
    down. It is ended `interrupted`, with a `turn-ended` fact on each flow it held and a `turn-interrupted` event
@@ -54,18 +85,38 @@ line the first chunk kept, already in arrival order, and takes turns from it; a 
 the first chunk stood has had its submission closed `superseded` by the reconcile, and its landing stands on its
 markers.
 
+Going back from the second chunk to the first touches no schema, since the second adds no revision: the operator
+reinstalls the first chunk's build on the same store. A hub stopped mid-turn leaves its turns open, and the first
+chunk's boot ends each of them `interrupted`, with the closure `withdrawal_for` answers for a chunk a lever moved, so
+the line it reads is the one the second chunk left. The slot then runs every pass again, and a submission whose chunk
+the slot lands is closed `superseded` by the next reconcile. A merge a cancelled pass had already made is found by the
+slot's next pass, which reads the forge before it acts, as after a crash.
+
+## What an operator meets
+
+The second chunk is the one an operator notices, and it carries a `changed` note under `changes/unreleased/` and a
+`docs/upgrade.md` section, linked by the note's `upgrade-guide`, for the release that first ships it. Landings on
+different branches now run side by side, and a garden delivery or a review's findings no longer wait behind any landing.
+A chunk's landing no longer needs its runner, and hub-advance no longer runs a step: it wakes the hub and answers
+`ran: false`, saying in its detail where the visit stands. Stopping, restarting, or completing a chunk mid-pass lets
+that pass finish and holds its branch until it does. A step cut off at its deadline three times running goes to a person
+with the cause `hub-action-stuck`. And a chunk paused at a hub node no longer lands while it is paused: it waits for its
+resume. That is the one change that asks something of the operator, and the section says it plainly: a chunk paused at a
+hub node when the release is installed lands only once someone resumes it.
+
 ## Tests
 
-The tests written against the slot follow it out, in the chunk that drops it. `tests/test_hub_exec_slot_tenancy.py` and
-`tests/test_chunk_artifact_order_and_hub_exec_slot_store.py` lose their slot cases, and their flow equivalents are the
-store tests of `flow_store`; `tests/test_hub_command_node.py`, `tests/test_chunk_stop.py`,
-`tests/test_chunk_complete.py`, `tests/test_attempt_coherence.py`, `tests/test_hub_store_seam.py`,
-`tests/test_hub_wide_jobs_across_tenants.py`, and `tests/test_pin_foundation.py` assert turns and withdrawals where they
-asserted the slot's acquisition and release; `tests/trace_fixtures.py`, `tests/test_trace_assembly.py`,
-`tests/test_trace_contract.py`, and `tests/test_hub_platform_tracing.py` build turns where they built slot rows; and
-`tests/crash/test_kill9_sweep.py` gains the `flow.` family and loses `hubnode.after-poll.before-slot-release`.
-`tests/store_scan_allowlist.py` loses the slot's scans and `tests/store_read_census.py` its slot recipes, gaining one
-per `IReadFlows` method.
+The tests written against the slot follow it out across the second and third chunks. In the second, which stops
+acquiring it, `tests/test_hub_command_node.py`, `tests/test_chunk_stop.py`, `tests/test_chunk_complete.py`,
+`tests/test_attempt_coherence.py`, `tests/test_hub_store_seam.py`, and `tests/test_hub_wide_jobs_across_tenants.py`
+assert turns and withdrawals where they asserted the slot's acquisition and release; `tests/trace_fixtures.py`,
+`tests/test_trace_assembly.py`, `tests/test_trace_contract.py`, and `tests/test_hub_platform_tracing.py` build turns
+where they built slot rows, keeping one case of a slot row from before the turns; and `tests/crash/test_kill9_sweep.py`
+gains the `flow.` family and loses `hubnode.after-poll.before-slot-release`. In the third, which retires the slot's
+code, `tests/test_hub_exec_slot_tenancy.py` and `tests/test_chunk_artifact_order_and_hub_exec_slot_store.py` lose their
+slot cases, whose flow equivalents are the store tests of `flow_store`; `tests/test_pin_foundation.py` pins the flow
+invariants in place of `OneLiveExecSlot`; and `tests/store_scan_allowlist.py` loses the slot's scans and
+`tests/store_read_census.py` its slot recipes. The census gains a recipe per `IReadFlows` method in the first.
 
 The end-to-end and crash tiers need one more test action than the actions epic ships. **`test.block`**, with required
 argument `seconds`, blocks the `ActionLoop`'s thread in synchronous code for that long and then answers `success`; it
@@ -95,10 +146,11 @@ Each proof runs against the mock forge.
   its event, and its submission lands on its next turn. A tick made to raise after committing one turn and before
   returning leaves that turn with no task, and the sweep ends it within two ticks. A visit build that raises routes
   `failure` with its traceback, and one held past its bound ends `cut-off`. A `test.block` pass that blocks past the
-  turn's deadline is cut off: its turn ends `cut-off` with the bound named, an effect it hands over afterwards is
-  refused, a forge call it attempts after the deadline is refused before it is sent, an effect write in flight at the
-  deadline commits before the turn's end, and the branch moves on. A visit cut off three times running escalates with
-  `hub-action-stuck` on its fourth turn, and one interrupted by hub restarts does not.
+  turn's deadline is cut off: its turn ends `cut-off` and `hub-action-overran` names the bound, an effect it hands over
+  afterwards raises into the pass and writes nothing, a forge call it attempts after the deadline is refused before it
+  is sent, an effect write in flight at the deadline commits before the turn's end, and the branch moves on. A visit cut
+  off three times running escalates with `hub-action-stuck` on its fourth turn, and one interrupted by hub restarts does
+  not.
 - **Ground moved under a submission.** A repository whose base branch is edited while a chunk waits in its line lands
   nothing on either branch from the old submission: its next turn ends `superseded` without a pass, and the visit is
   resubmitted, at the next generation, at the back of the new branch's line.
@@ -124,9 +176,16 @@ Each proof runs against the mock forge.
   after it, never leaves a `merged/<repo>` marker without its `delivery_repo_landed` row, its close intents, its
   `landed` fact, and its `flow-landed` event.
 - **Carried over.** A fixture store captured before the first migration with chunks mid-delivery, one of them `pending`
-  and one paused, is carried over through each of the four chunks in turn and lands every chunk with the outcomes and
-  markers the slot produced, the paused one once it is resumed. Each migration's `downgrade()` runs against the store
-  its upgrade produced and leaves a hub that boots and lands on the code before it: through turns below the second, and
-  through the slot below the first.
+  and one paused, is carried over through each of the four chunks in turn, and straight from before the first onto the
+  fourth, as a release carrying several of them takes it, and lands every chunk with the outcomes and markers the slot
+  produced, the paused one once it is resumed. The first migration's `downgrade()` runs against the store its upgrade
+  produced and leaves a hub that boots and lands through the slot, and the second chunk's build walked back to the
+  first's ends the turns it left open at boot and lands through the slot.
+- **Every step a span.** A hub step taken by a turn has its `hub exec` interval, keyed by the turn id, in the second
+  chunk and every one after it, and a step the slot ran before the turns keeps its own while the table stands.
+- **Deprecated, then dropped.** From the second chunk `contracts/store/hub.json` marks `hub_exec_slot` deprecated and
+  `blizzard:compat` reports nothing on any of the epic's four chunks; in the cleanup, the second migration's
+  `downgrade()` leaves a hub that boots and lands through turns, and `blizzard:compat` admits the drop only with the
+  deprecation released and `floor` raised.
 - **Invariants.** `hub:one-turn-per-flow`, `hub:one-turn-per-visit`, and `hub:flow-line-standing` pass on the
   carried-over store and after every scenario above.

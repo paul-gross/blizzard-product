@@ -17,11 +17,14 @@ GET /api/flows/{flow}/record         ?before=&limit=
 `{flow}` is a `flw_<ulid>`. `GET /api/flows` lists the tenant's flows as `FlowView`: id, resource, repository id, slug
 and name, branch, the turn open now (chunk, started at), the line (`FlowPlaceView` per open submission in arrival order:
 chunk id, arrival, `state` of `landing`, `next`, `waiting`, `polling` with its next poll time, or `passed-over` while
-its chunk is `needs_human` or `paused`), and the last verdict and the last landing. `state` is a closed `StrEnum` in
-`wire/flow.py` that later epics extend — the `policies` epic adds `awaiting-merge` — so a client renders an unknown
-state as `waiting` rather than failing. `active=true` keeps flows with an open submission or a fact in the board
-window's 48 hours, the board's own default. `GET /api/flows/{flow}` answers one `FlowView`. `/record` pages the flow's
-facts newest first as `FlowFactView`, joined to each chunk's short id and title.
+its chunk is `needs_human` or `paused`), and the last verdict and the last landing. `state` is a `StrEnum` in
+`wire/flow.py` that later epics extend — the `policies` epic adds `awaiting-merge` — so every field that carries it is
+open on the wire (`bzh:open-response-vocabulary`): a client of an older release reads a state it does not know as
+unrecognized rather than failing, and the board renders it raw, in the idle tone (`bzh:frontend-open-vocabulary`). The
+same holds for every other vocabulary these models carry: a fact's `kind` and `outcome`, and the live frame's `kind`.
+`active=true` keeps flows with an open submission or a fact in the board window's 48 hours, the board's own default.
+`GET /api/flows/{flow}` answers one `FlowView`. `/record` pages the flow's facts newest first as `FlowFactView`, joined
+to each chunk's short id and title.
 
 The chunk reads gain the chunk's places. `ChunkSummary` and `ChunkDetail` (`wire/chunk.py`) carry
 `flow_places: list[ChunkFlowPlaceView]`, one per flow its open submission holds: flow id, resource, repository slug,

@@ -36,10 +36,11 @@ A step refused before it can name its resources holds nothing and is refused at 
 refuses it today. That holds for every hub step, landing or not, exactly as `_run_locked` resolves and refuses for every
 hub node now: resolution refuses with `repository-unresolved` or `repository-not-linked`, and `GitCommits.of` (moved by
 the actions epic to `hub/domain/actions/visit.py`) with `unconverged-delivery`. One refusal applies only to a step that
-lands, since only a landing writes markers: a visit whose resolved repositories share an `owner/repo` is refused at
-submit ([record.md](./record.md#what-the-record-says)). `repository-secret-unavailable` is different: a repository's
-secret is revealed when the driver builds the visit for a turn ([below](#building-the-visit)), so a visit that meets it
-has already submitted. Its turn ends with outcome `failure` and routes `failure` as `_refuse` does, which is its verdict
+lands, since only a landing writes markers: a visit whose resolved repositories share an `owner/repo` is refused with
+the actions epic's `hub-log.repository-ambiguous`, at submit and again in each turn's build, as the one refusal it is
+([record.md](./record.md#what-the-record-says)). `repository-secret-unavailable` is different: a repository's secret is
+revealed when the driver builds the visit for a turn ([below](#building-the-visit)), so a visit that meets it has
+already submitted. Its turn ends with outcome `failure` and routes `failure` as `_refuse` does, which is its verdict
 ([verdict.md](./verdict.md)), with the cause in its `hub-log.repository-secret-unavailable` artifact. Whatever else an
 action answers inside a turn — a choice it routes, or a cause it escalates to a person — ends the turn as any answer
 does: a routed choice is the verdict, an escalation is not ([verdict.md](./verdict.md#escalation)).
@@ -65,12 +66,14 @@ taken together or not at all, and two multi-repository chunks never hold one bra
 
 Once a turn has started, the driver builds what the pass is handed, off the event loop: the `Visit` as the actions epic
 defines it, and, for an action whose spec `lands`, one `RepositoryForge` per resolved repository from `ForgeRegistry`
-(the forges epic), which reveals each repository's secret as it builds. Before handing the pass over, it checks each
-resolved repository's capabilities, `ForgeRegistry.offered(forge, repository)`, against what `ACTION_REQUIREMENTS`
-(`hub/domain/actions/requirements.py`) says the action requires of it; a repository lacking one escalates the chunk with
-cause `forge-capability-missing`, records the forges epic's event and `hub-log.forge-capability-missing` artifact, and
-ends the turn `escalated` without a pass. Both steps are the ones the forges epic places in `HubNodeExecutor`, moved
-here unchanged in what they check and answer.
+(the forges epic), which reveals each repository's secret as it builds. A resolution that holds one `owner/repo` for two
+records is refused here as the actions epic refuses it, `failure` with `hub-log.repository-ambiguous`, before anything
+else is built. Before handing the pass over, it checks each resolved repository's capabilities,
+`ForgeRegistry.offered(forge, repository)`, against what `ACTION_REQUIREMENTS` (`hub/domain/actions/requirements.py`)
+says the action requires of it; a repository lacking one escalates the chunk with cause `forge-capability-missing`,
+records the forges epic's event and `hub-log.forge-capability-missing` artifact, and ends the turn `escalated` without a
+pass. These are the steps the actions and forges epics place in `HubNodeExecutor`, moved here unchanged in what they
+check and answer.
 
 Building can fail. A secret that cannot be revealed ends the turn `failure`, as above. Any other exception raised while
 building — a resolution the code did not expect, a malformed artifact — ends the turn and routes `failure` with its
@@ -78,8 +81,9 @@ traceback in the action's `hub-log.<action>` artifact, as the actions epic answe
 fault that would recur on every turn reaches the graph's failure edge and its bounce cap rather than retrying forever.
 Building can also hang: it reads the work source for the feature title, and a read that never answers would hold the
 turn open with no pass to cut off. The build is therefore bounded on its own, at sixty seconds on the turn's clock; a
-build still running at its bound ends the turn `cut-off` exactly as a pass past its deadline does
-([below](#a-turn-that-cannot-end)). Only a turn whose end cannot be written at all is left to the driver's sweep.
+build still running at its bound ends the turn `cut-off` as a pass past its deadline does, recording a
+`turn-interrupted` event that names the build's bound, since no pass ran to overrun ([below](#a-turn-that-cannot-end)).
+Only a turn whose end cannot be written at all is left to the driver's sweep.
 
 ## Who is next
 
@@ -132,16 +136,17 @@ The work splits in two, along the line between what reads the store and what wai
 - **A turn's task** is an `asyncio` task the driver creates on the hub's event loop for each turn the tick started. Its
   first act is to add its turn's id to the set of running turns the driver owns ([below](#a-turn-that-cannot-end)), and
   every exit from it, normal or not, passes through one `finally` that removes the id. The task builds the visit through
-  `asyncio.to_thread`, hands the pass to the `ActionLoop` and awaits it through `asyncio.wrap_future` on the loop's
-  `run_coroutine_threadsafe` future, writes each effect the pass hands its sink, and, when the pass answers, routes the
+  `asyncio.to_thread`, submits the pass to the `ActionLoop` and awaits it through `asyncio.wrap_future` on the loop's
+  `run_coroutine_threadsafe` future, drains the pass's effects as they come, and, when the pass answers, routes the
   answer and ends the turn in one more `to_thread` write. No store call runs on the event loop, and no transaction is
   held open across a wait.
 
 The pass runs on the `ActionLoop`'s own event loop and the turn's task on the hub's, so an effect crosses between them.
-The sink a pass is handed is the task's: `effects.record()` runs on the `ActionLoop`'s loop, schedules the task's write
-of that effect onto the hub's loop with `asyncio.run_coroutine_threadsafe`, and awaits the returned future through
-`asyncio.wrap_future`; the write itself runs through `asyncio.to_thread`. The task remembers the future of the write in
-flight, so it always knows whether one is, and the pass resumes only once the write is durable.
+The actions epic has every pass hand its effects through an effect queue that the pass's caller drains, writing each
+effect and releasing the action once it is durable, and it names this epic's driver as the caller that takes that role
+over. So the turn's task drains its pass's queue, writes each effect through `asyncio.to_thread`, and releases the
+action only once the write has committed; it always knows whether a write is in flight, and the pass never resumes ahead
+of the record of what it did.
 
 A tick never waits for a turn's task. The driver ticks every two seconds, and a `wake: asyncio.Event` it owns cuts the
 wait short, set whenever something could change who is next: a submission, a turn ending, a withdrawal, a pause or
@@ -155,13 +160,10 @@ the domain names. `ApplyService` (`hub/domain/execution/apply.py`) takes an `IHu
 in `apply.py` — in place of `IHubNodeExecutor`, which goes with this epic; composition hands it the driver's wake.
 
 A pass is bounded (the hub configuration key `action_pass_seconds`, the actions epic) and spent almost wholly waiting on
-a forge, so passes need no pool and no process: each runs on the `ActionLoop`'s one thread. The actions epic has the
-executor write the effects a pass records; from this epic the turn's task does, and `effects.record()` returns to the
-pass only once its write is durable, so the pass never takes its next forge call ahead of the record of its last. Turns
-on different flows run side by side, which is the epic's point: a landing into `blizzard` and one into `blizzard-mock`
-no longer wait on each other, and a garden delivery waits on neither. The number of passes in flight is bounded by the
-number of open flows and hold-nothing visits a tenant has at once, never by a pool size; each forge handle's client
-bounds its own connections.
+a forge, so passes need no pool and no process: each runs on the `ActionLoop`'s one thread. Turns on different flows run
+side by side, which is the epic's point: a landing into `blizzard` and one into `blizzard-mock` no longer wait on each
+other, and a garden delivery waits on neither. The number of passes in flight is bounded by the number of open flows and
+hold-nothing visits a tenant has at once, never by a pool size; each forge adapter's client bounds its own connections.
 
 The two places that ran a hub step synchronously stop doing so. `ApplyService._respond` and `_land_migration`, which
 `_migrate_across` reaches (`hub/domain/execution/apply.py`), wake the driver and answer `HUB_NODE_TAKEN` as before; the
@@ -174,10 +176,13 @@ wire, answering `false` and null, since a hub-advance never runs a pass; no runn
 describing a slot. A runner that disappears no longer stalls its chunk's landing, since the driver lands it regardless,
 and no runner request waits on a pass any longer.
 
-On shutdown the driver stops ticking and cancels its turns' tasks without writing their ends. A turn left open is the
-next boot's to end `interrupted` ([carry-over.md](./carry-over.md#at-boot)), exactly as after a crash, so shutdown makes
-no write against an engine about to be disposed and needs none of the seconds a container is given to stop. A merge a
-cancelled pass had already made is found by the next turn's fresh pass, which reads the forge and records it.
+On shutdown the driver stops ticking and cancels its turns' tasks without writing their ends; a cancelled task cancels
+its pass's future, and with it the pass on the `ActionLoop`. A turn left open is the next boot's to end `interrupted`
+([carry-over.md](./carry-over.md#at-boot)), exactly as after a crash, so shutdown makes no write against an engine about
+to be disposed and needs none of the seconds a container is given to stop. The driver stops first in `_lifespan`; the
+forges epic then closes each tenant's `ConfigObjectCache`, whose adapters close on the `ActionLoop`, before the
+`ActionLoop` stops and the engine is disposed. A merge a cancelled pass had already made is found by the next turn's
+fresh pass, which reads the forge and records it.
 
 The driver serves one hub process, as the slot did: the open-turn rule is enforced in the store, but recovering turns at
 boot ([carry-over.md](./carry-over.md)) and ending turns that cannot end assume no other process is running them. A
@@ -237,17 +242,24 @@ with the failed write, and its submission is eligible again at once: its next tu
 whatever its markers say is done, as a re-run does today, and answers again.
 
 A pass that never answers is bounded by the driver as well as by the actions epic's cancellation. The `ActionLoop`
-cancels an overrunning pass at its next `await`, but a pass stuck in synchronous code never reaches one, and while it is
-stuck it holds the `ActionLoop`'s one thread, so no other pass runs either. The driver therefore bounds each turn on its
-own clock, from the moment the turn starts: the build at sixty seconds ([above](#building-the-visit)), and the pass at
-the pass bound plus thirty seconds from when it is handed over. A task still waiting at either bound cuts the turn off,
-in this order. It closes the turn's forge handles first: every handle the driver builds for a pass checks a flag the
-turn owns before it sends a request, and refuses once the flag is set, so nothing the pass does afterwards reaches a
-forge. It closes the pass's sink, so any effect handed over afterwards is refused. It waits for the effect write in
-flight, if there is one, so a write already running cannot commit under a turn that has ended. Then it cancels the
-pass's future, records a `turn-interrupted` event naming the bound and the action, and ends the turn `cut-off` itself. A
-request already on the wire when the flag is set cannot be recalled; whatever it did at the forge is found by the next
-turn's fresh pass, which reads the forge before it acts, as after a crash.
+cancels an overrunning pass at its next `await`, and the pass answers as an overrun, as the actions epic has it; but a
+pass stuck in synchronous code never reaches one, and while it is stuck it holds the `ActionLoop`'s one thread, so no
+other pass runs either. The actions epic gives the caller a deadline of its own for that, the pass bound plus thirty
+seconds, and the driver, which is the caller from this epic on, keeps it, adding a bound on the build: it bounds each
+turn on its own clock, from the moment the turn starts, the build at sixty seconds ([above](#building-the-visit)) and
+the pass at the pass bound plus thirty seconds from when it is handed over. A task still waiting at the pass's deadline
+cuts the turn off, in this order. It closes the turn's forge handles first: the role handles the driver bundles into
+each `RepositoryForge` for the turn check a flag the turn owns before they send a request, and refuse once it is set, so
+nothing the pass does afterwards reaches a forge. The flag lives on the turn's handles, never on the adapter
+`ForgeRegistry` caches for a repository, which every turn landing there shares. It closes the pass's sink, as the
+actions epic's caller does, so a record the pass makes afterwards raises into it and writes nothing. It waits for the
+effect write in flight, if there is one, so a write already running cannot commit under a turn that has ended. Then it
+cancels the pass's future and records the actions epic's `hub-action-overran` event, naming the action, the chunk, and
+the bound. The actions epic's caller answered a pass let go at its deadline as an overrun, routing `pending` or
+`failure`; once the driver owns passes, its rule replaces that one. It routes nothing: it ends the turn `cut-off`
+itself, the submission keeps its place, and the visit is eligible again, until three cut-offs in a row send it to a
+person, as the next paragraph says. A request already on the wire when the flag is set cannot be recalled; whatever it
+did at the forge is found by the next turn's fresh pass, which reads the forge before it acts, as after a crash.
 
 A pass that hangs once may have met a forge on a bad minute; one that hangs every time will never answer, and each turn
 it takes holds the `ActionLoop`'s thread for the whole hub until its deadline. So a visit whose last three turns all
@@ -255,7 +267,7 @@ ended `cut-off` takes no fourth: its next turn escalates the chunk to a person w
 (`foundation/escalation_causes.py`, with its sentence in the board's `CAUSE_SENTENCES`), naming the action and the
 bound, and ends `escalated` ([verdict.md](./verdict.md#escalation)). A turn ended `interrupted` — by a hub that stopped,
 or a turn end that failed to write — does not count, since neither is the pass's doing. A stuck loop also keeps every
-later pass from starting, which the operator sees as a run of `turn-interrupted` events naming the bound.
+later pass from starting, which the operator sees as a run of `hub-action-overran` events naming the bound.
 
 `DEFAULT_SLOT_STALE_AFTER` and its injection are removed.
 
@@ -281,10 +293,12 @@ Each window between a durable write and the next is a crash point in the `flow.`
 | `flow.after-poll.before-turn-end`   | A `pending` pass's `hub_node_poll` row      | The turn's end                | Boot recovery ends the turn; the poll row keeps the chunk waiting  |
 | `flow.boot.after-interrupt`         | One tenant's open turns ended `interrupted` | The next tenant's, the driver | The next boot ends the rest; ending a turn twice writes nothing    |
 
-`flow.after-poll.before-turn-end` takes the place of `hubnode.after-poll.before-slot-release`, retired with the slot.
-The windows inside a pass — `action.after-effect.before-write` and `action.after-write.before-resume` — stay the actions
-epic's, armed the same way now that the turn's task is the writer. Two windows the slot had are closed rather than
-armed. A verdict's transition and its turn's end are one transaction ([verdict.md](./verdict.md#the-verdict)). A
-landing's `merged/<repo>` marker, its `delivery_repo_landed` row, its close intents, its flow's `landed` fact, and its
-`flow-landed` event row are one transaction ([record.md](./record.md#what-the-record-says)); the live publish of that
-event follows the commit and, like every live frame, is not durable.
+`flow.after-poll.before-turn-end` takes the place of `hubnode.after-poll.before-slot-release`, which leaves the registry
+and the kill-9 sweep in the chunk that stops acquiring the slot, since nothing can reach it after that
+([index.md](./index.md#landing-order)). The windows inside a pass — `action.after-effect.before-write` and
+`action.after-write.before-resume` — stay the actions epic's, armed the same way now that the turn's task is the writer.
+Two windows the slot had are closed rather than armed. A verdict's transition and its turn's end are one transaction
+([verdict.md](./verdict.md#the-verdict)). A landing's `merged/<repo>` marker, its `delivery_repo_landed` row, its close
+intents, its flow's `landed` fact, and its `flow-landed` event row are one transaction
+([record.md](./record.md#what-the-record-says)); the live publish of that event follows the commit and, like every live
+frame, is not durable.

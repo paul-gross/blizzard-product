@@ -85,13 +85,13 @@ nullable beside a `batch_id`, with a check that exactly one is set — and nothi
 null beyond this epic's own reads.
 
 `IdPrefix` (`foundation/ids.py`) gains `FLOW = "flw"`, `FLOW_SUBMISSION = "fsub"`, and `HUB_TURN = "htn"`, and loses
-`HUB_EXEC_SLOT` with the table it named. The arrival sequence is the newest `arrival` in the tenant plus one, read and
-written under the tenant row lock — a tenant-wide read-then-insert, the shape `next_route_seq`
-(`hub/store/internal/chunk_rows.py`) gives `route_created`'s per-chunk `seq` under `lock_chunk_row`. No sequence spans a
-tenant today; `work_item_sequence` counts per work source. Domain types live in `hub/domain/delivery/flows.py` — `Flow`,
-`Submission`, `Turn`, `FlowFact`, and the `FlowLine` that answers who is next ([turns.md](./turns.md#who-is-next)) from
-a flow's open submissions — and the store in `hub/store/internal/flow_store.py`, behind `IReadFlows` and `IWriteFlows`
-ports in `hub/domain/delivery/ports/`.
+`HUB_EXEC_SLOT` once nothing mints a slot ([index.md](./index.md#landing-order)). The arrival sequence is the newest
+`arrival` in the tenant plus one, read and written under the tenant row lock — a tenant-wide read-then-insert, the shape
+`next_route_seq` (`hub/store/internal/chunk_rows.py`) gives `route_created`'s per-chunk `seq` under `lock_chunk_row`. No
+sequence spans a tenant today; `work_item_sequence` counts per work source. Domain types live in
+`hub/domain/delivery/flows.py` — `Flow`, `Submission`, `Turn`, `FlowFact`, and the `FlowLine` that answers who is next
+([turns.md](./turns.md#who-is-next)) from a flow's open submissions — and the store in
+`hub/store/internal/flow_store.py`, behind `IReadFlows` and `IWriteFlows` ports in `hub/domain/delivery/ports/`.
 
 Whether a flow is busy, who is in its line, and who is landing are all derived from these rows (`bzh:facts-not-status`),
 never stored. A flow is busy while any turn of any submission it holds has no `ended_at`, read from `hub_turns` joined
@@ -117,9 +117,9 @@ closure nor a second `withdrawn` fact.
 Every read the driver makes each tick — the open submissions from the tenant's arrival floor
 ([turns.md](./turns.md#the-flow-driver)), the flows each holds, open turns, the newest poll — is served by an index
 above or an existing one, so `IReadFlows` needs no entry in the store-read-index gate's allow-list
-(`tests/store_scan_allowlist.py`), whose entries for the slot's scans are removed with the slot. Each `IReadFlows`
-method gains its recipe in `tests/store_read_census.py`, which `test_hub_census_is_exhaustive` requires of every
-`IRead*` method.
+(`tests/store_scan_allowlist.py`), whose entries for the slot's scans leave with the store methods that make them. Each
+`IReadFlows` method gains its recipe in `tests/store_read_census.py`, which `test_hub_census_is_exhaustive` requires of
+every `IRead*` method.
 
 `flow_facts` and the closures are kept as long as chunk facts are; bounding how long the hub keeps either is
 `epic:retention`'s.
@@ -141,10 +141,16 @@ chunk stopped mid-pass is on its flow's record like any other ([levers.md](./lev
 
 A marker is keyed by `owner/repo`, which names no record; it reaches its flow through the repository id the visit
 resolved for it, as `delivery_repo_landed.repository_id` is stamped today. Since each commit pointer resolves to its own
-record, one `owner/repo` can stand for two records on two forges; a visit whose resolved repositories share an
-`owner/repo` is refused at submit, routing `failure` as `_refuse` does — today the land script answers `failure` for it
-(`land_common.py`) and the marker route raises `AmbiguousMarkerRepository` (`hub/delivery/marker_auth.py`) — so every
-marker a submitted visit writes names one flow.
+record, one `owner/repo` can stand for two records on two forges, and two landings would then write one `merged/<repo>`
+marker. The actions epic refuses such a visit when it builds it, before any pass: it answers `failure` with a
+`hub-log.repository-ambiguous` artifact naming both records. This epic keeps that one refusal and runs it wherever a
+landing visit resolves: at submit, so the visit never holds a flow, and again in each turn's build
+([turns.md](./turns.md#building-the-visit)), since a turn resolves afresh and an operator may have edited a record's
+`owner/repo` without changing the resources the visit holds. It is the same refusal in both places, with the same
+artifact and the same `failure` route, and a visit meets it at most once: the artifact is written once per
+`(chunk, node, name, epoch)` and the transition once per `(chunk, from_node, epoch)`. While the slot still runs passes,
+in the first chunk, the reconcile does not refuse at all and leaves the visit to the slot's run, which refuses it as the
+actions epic has it. So every marker a submitted visit writes names one flow.
 
 ## The landed event
 
@@ -164,12 +170,15 @@ fact and no `flow-landed` event: the migration cannot tell which branch a past l
 `base_branch` may have changed since, and a flow's record does not claim what it did not see.
 
 `EventLogKind` and `EVENT_LOG_SEVERITY` (`foundation/event_log.py`) gain `flow-landed` (info) and `turn-interrupted`
-(warning, [turns.md](./turns.md#a-turn-that-cannot-end)); `tests/event_log_kind_census.py` gains both, and
-`blizzard-context:/domain/operations.md`'s table gains a row for each.
+(warning, a turn ended without its pass's answer — [turns.md](./turns.md#a-turn-that-cannot-end));
+`tests/event_log_kind_census.py` gains both, and `blizzard-context:/domain/operations.md`'s table gains a row for each.
+`turn-interrupted` arrives with the record, since the first chunk's boot recovery may already end a turn
+([carry-over.md](./carry-over.md#at-boot)); `flow-landed` arrives with the turns that write it.
 
 ## Invariants
 
-`tools/invariants.py`'s `OneLiveExecSlot` is replaced by three checks:
+`tools/invariants.py` gains three checks with the record, so the line is held to live traffic from the chunk that first
+keeps it, while the slot still lands every pass; `OneLiveExecSlot` stands beside them until the slot's code is retired:
 
 - `hub:one-turn-per-flow` — no flow has two open turns.
 - `hub:one-turn-per-visit` — no submission has two open turns.
@@ -180,8 +189,12 @@ fact and no `flow-landed` event: the migration cannot tell which branch a past l
   the check holds at any moment, so `blizzard dev` may run it against a live store as the crash sweep and the scenarios
   do once the hub is quiescent.
 
-The trace corpus follows the table: `TracedHubExecSlot` (`hub/domain/observability/tracing/facts.py`, loaded by
-`hub/store/internal/corpus_rows.py`'s `_slots`) becomes `TracedHubTurn`, `tracing/summary.py` derives its `HUB_EXEC`
-intervals from turns, and the `HUB_EXEC` span is keyed by the turn id where it was keyed by the slot's. The slot's rows
-are dropped with its table, so a chunk traced before the upgrade loses its `HUB_EXEC` intervals; the rest of its trace
-stands.
+The trace corpus moves onto turns in the chunk that starts them, so no release carries a hub step without its `hub exec`
+interval. `TracedHubTurn` (`hub/domain/observability/tracing/facts.py`), loaded from `hub_turns` by
+`hub/store/internal/corpus_rows.py`, gives `tracing/summary.py` a `HUB_EXEC` interval for every turn, and the `HUB_EXEC`
+context a pass's span parents on is keyed by the turn id where it was keyed by the slot's. The span keeps its name, its
+role, and its derivation, whose discriminator is still the source row's own id; the dictionary's meaning for `hub exec`
+(`contracts/traces/dictionary.json`) and `docs/deployment/tracing.md`'s account of span ids name the turn. The corpus
+keeps reading the slot's past rows through `TracedHubExecSlot` and `_slots` while the table stands, so a chunk traced
+before the turns began keeps its intervals; both leave with the table, and with them those intervals, while the rest of
+such a trace stands.
