@@ -9,7 +9,8 @@ thirty minutes to three hours, an answer a node's graph does not route goes to a
 has made is recorded even when its chunk moved on while the pass ran.
 
 The initiative's epics land one after another — actions, then `forges`, then `flows`, then `policies` — and this is the
-first. It assumes nothing of the others, and each of them assumes it has landed.
+first. It assumes nothing of the others, and each of them assumes its four landings are on `master`; none waits for the
+retirement release after them ([carry-over.md](./carry-over.md#the-deprecation-then-retirement)).
 
 Paths are relative to `blizzard/src/blizzard/`.
 
@@ -47,17 +48,20 @@ The epic reaches beyond `blizzard`'s source. In `blizzard-context`:
   ([carry-over.md](./carry-over.md#documentation)).
 
 In `blizzard`, `docs/` drops every mention of `run:` ([carry-over.md](./carry-over.md#documentation)), and the contracts
-follow the code: `contracts/store/hub.json` with each migration, `contracts/config/hub.json` losing the
-`data/hub_workdirs` durable path, `contracts/cli/hub.json` losing `record-marker`, and
-`contracts/traces/dictionary.json` trading the step span for the pass's. `blizzard-mock`'s seeded graph names no `run:`
+follow the code: `contracts/store/hub.json` with each migration, and `contracts/traces/dictionary.json` gaining the
+pass's span with the step span marked deprecated beside it. The step span's entry, `contracts/config/hub.json`'s
+`data/hub_workdirs` durable path, `contracts/cli/hub.json`'s `record-marker`, and the three marker routes in
+`openapi/hub.openapi.json` stay through the deprecation and leave in the retirement release
+([carry-over.md](./carry-over.md#the-deprecation-then-retirement)). `blizzard-mock`'s seeded graph names no `run:`
 today; its `deliver` node gains `action: land` and the choices `land` answers whenever the hub's schema carries the
 column ([carry-over.md](./carry-over.md#the-mocks-seeded-graph)).
 
 ## Landing order
 
 The hosted hub redeploys from every merge to `master`, and the fleet lands this epic through the very landing it
-rewrites, so the epic arrives as four landings, each leaving `master` deployable and the fleet able to land the next.
-Each is one chunk or a short run of them; none is behind a flag, because each is safe on its own.
+rewrites, so the epic arrives as four landings, each leaving `master` deployable and the fleet able to land the next,
+and a retirement release after them. Each landing is one chunk or a short run of them; none is behind a flag, because
+each is safe on its own, and none is breaking.
 
 1. **Actions beside steps.** The catalogue in `graph`, `Visit` and effects, `IHubAction` and the four actions, the
    `ActionLoop`, the pass span, `action_pass_seconds`, `PollPolicy.due_at`, and the first migration. Mint accepts a hub
@@ -72,13 +76,21 @@ Each is one chunk or a short run of them; none is behind a flag, because each is
 3. **`run:` retired.** The second migration, the translation in `graph_sync`, `run:` refused at mint,
    `HUB_ACTION_MISSING` and `UNROUTABLE_OUTCOME` with their sentences and events, the boot pass,
    `hub:hub-node-has-action`, `NodeShape.is_hub_command_node` becoming `executor is HUB` now that every hub node names
-   an action or escalates, and `HUB_PENDING_CHOICE` folded into `RESERVED_WAITS`. The step loop is now unreachable.
-4. **The door closed.** The process runner, the working directories, `HubEnv`, the marker token, its routes and
-   `blizzard hub record-marker`, the step span, the scripts, the test pause, and the documentation that named them. This
-   landing breaks an HTTP route, a durable path, and a trace span, so it is marked breaking and carries the change note
-   and `docs/upgrade.md` section ([carry-over.md](./carry-over.md#what-is-removed)).
+   an action or escalates, and `HUB_PENDING_CHOICE` folded into `RESERVED_WAITS`. The step loop is now unreachable. The
+   landing carries the epic's change notes, so whichever release first stops running `run:` announces it: a `changed`
+   note and its `docs/upgrade.md` section for what an operator now meets, and a `deprecated` note for each surface only
+   the scripts used ([carry-over.md](./carry-over.md#the-deprecation-then-retirement)).
+4. **The door closed.** The process runner, the working directories' writer, `HubEnv`, the marker token, the scripts,
+   the test pause, and the documentation that named them ([carry-over.md](./carry-over.md#what-is-removed)). The three
+   marker routes stay, deprecated and open only to a person holding `CHUNK_CONTROL`; `blizzard hub record-marker` stays
+   and refuses, naming its removal; the `data/hub_workdirs` path and the step span stay declared. No contract surface
+   changes.
 
-| Where                            | Read when                                                                                                                                                                                                                        |
-| -------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| [actions.md](./actions.md)       | Building actions — the node's `action:`, the catalogue and its reserved waits, the domain package, what a pass is handed and answers, the landing record, purity and where a pass runs, routing, crash points, testing hub nodes |
-| [carry-over.md](./carry-over.md) | Translating stored `run:` lists, the two migrations and their downgrades, the mock's seeded graph, escalating what does not translate, removing the process runner and its token, and the tests, docs, and proof that follow     |
+Landings 1 through 4 are what the `forges`, `flows`, and `policies` epics build on. The retirement release is not built
+from this spec now: it is minted later as a chunk of its own, marked breaking, once a release has carried the
+deprecations ([carry-over.md](./carry-over.md#the-deprecation-then-retirement)).
+
+| Where                            | Read when                                                                                                                                                                                                                                                                              |
+| -------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| [actions.md](./actions.md)       | Building actions — the node's `action:`, the catalogue and its reserved waits, the domain package, what a pass is handed and answers, the landing record, purity and where a pass runs, routing, crash points, testing hub nodes                                                       |
+| [carry-over.md](./carry-over.md) | Translating stored `run:` lists, the two migrations and their downgrades, the mock's seeded graph, escalating what does not translate, removing the process runner and its token, deprecating and then retiring what only the scripts used, and the tests, docs, and proof that follow |

@@ -56,8 +56,12 @@ retired.
   waits on checks like every other. A command that names anything else, and none is expected, no longer runs: a chunk
   that reaches it, or already stands at it, goes to a person naming the command, and so does a chunk whose action
   answers an outcome its graph never routed.
-- **The door closed.** The hub stops starting processes for graphs. The environment it handed to a step, the per-visit
-  token, and the routes that token unlocked are removed, so nothing a tenant writes runs with the hub's reach.
+- **The door closed.** The hub stops starting processes for graphs, and the environment and per-visit token it handed a
+  step are removed, so nothing a tenant writes runs with the hub's reach.
+- **Retired the way anything released is.** What only the scripts ever called — the routes the token unlocked,
+  `blizzard hub record-marker`, the scripts' working directories on disk, and the step's trace span — is announced as
+  deprecated in the release that stops running `run:`, and removed in a later release of its own, so no operator meets a
+  removal no release warned them of.
 
 ## Left for later
 

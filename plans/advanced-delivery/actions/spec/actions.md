@@ -397,5 +397,5 @@ that cause, and that nothing routes.
 
 The graphs tests author today with `command: "true"`, an inline script, or `land_default` move onto `test.answer`,
 `test.sequence`, or `land` against the mock forge. The fake `IHubCommandRunner` they armed goes with the runner, and so
-does every test written against the script process, the marker token, or its routes;
-[carry-over.md](./carry-over.md#tests) names them.
+does every test written against the script process or the marker token, and those against its routes follow the routes
+out in the retirement; [carry-over.md](./carry-over.md#tests) names them.

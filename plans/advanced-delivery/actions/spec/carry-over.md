@@ -1,9 +1,9 @@
 # Carry-over
 
 An installation keeps every stored graph, every pinned chunk, and every chunk mid-delivery, carried onto actions across
-the epic's four landings ([Landing order](./index.md#landing-order)), with nothing re-pinned by hand. Chunks pinned to
-versions that named the packaged landing script land as they did; a version that named an older script lands through
-`land` and waits on checks as `land` does.
+the epic's four landings and the retirement release after them ([Landing order](./index.md#landing-order)), with nothing
+re-pinned by hand. Chunks pinned to versions that named the packaged landing script land as they did; a version that
+named an older script lands through `land` and waits on checks as `land` does.
 
 ## Translation
 
@@ -130,14 +130,14 @@ hub node at a version a live chunk is pinned to names an action.
 
 ## What is removed
 
+The fourth landing removes everything a step was handed or ran through that no contract surface carries:
+
 - `IHubCommandRunner` and `CommandResult` (`hub/delivery/command_runner.py`), `SubprocessHubCommandRunner`
   (`hub/delivery/internal/hub_command_runner.py`), and their wiring in `hub/composition.py`.
 - The per-chunk working directory a step ran in: `IHubWorkdir` (`hub/delivery/workdir.py`), `FilesystemHubWorkdir`
   (`hub/delivery/internal/hub_workdir.py`), the `hub_workdir_root` the app passes to composition (`hub/app.py`), and
-  their wiring, with `WORKDIRS_DIRNAME` (`hub/layout.py`), its `DurablePath` in `hub/config_keys.py`, and the
-  `data/hub_workdirs` entry in `contracts/config/hub.json`. The hub removes `data_dir/hub_workdirs/` at its first boot
-  after the upgrade. Removing a durable path under the runtime root is breaking under `docs/versioning.md`, which the
-  landing that removes it marks.
+  their wiring. Nothing writes under `data_dir/hub_workdirs/` from here; the durable path itself is the retirement's
+  ([The deprecation, then retirement](#the-deprecation-then-retirement)).
 - `HubEnv`, every `ENV_*` constant, `PrintedChoice`, `_run_step`, `_NoopStep`, and `FailedStep`
   (`hub/delivery/hub_node.py`). The `bzh:hub-node-env-contract` variables are no longer set anywhere.
   `BounceEnvelope.step`, which carried the `FailedStep`, becomes `action`: the name of the action whose pass the bounce
@@ -146,32 +146,16 @@ hub node at a version a live chunk is pinned to names an action.
   generically, so envelopes recorded before the upgrade show `step` among their extras and later ones `action`; the
   difference is accepted rather than rewritten. The crash points around a step give way to the effect writer's
   ([Crash points](./actions.md#crash-points)).
-- The step's trace span, `RUN_STEP_SPAN` and its `RUN_STEP_*` attributes
-  (`hub/domain/observability/tracing/platform.py`), their entries in `contracts/traces/dictionary.json`
-  (`blizzard.hub.run_step.*`), and their description in `docs/deployment/tracing.md`. A pass is traced under the live
-  `ACTION_PASS_SPAN` the executor opens where the step span opened
-  ([Where a pass runs](./actions.md#where-a-pass-runs)); the span and its `blizzard.hub.action.name` and
-  `blizzard.hub.action.choice` attributes join the dictionary and `docs/deployment/tracing.md` in the first landing,
-  which adds them while the step span still exists, and removing the step span in the last is the trace contract's
-  breaking change.
 - The marker token: `MarkerAuthority`'s minting and verification (`hub/delivery/marker_auth.py`), the process-level
   `marker_authority` and `hub_marker_callback_base_url` composition builds it from (`hub/composition.py`, `hub/app.py`),
-  `MarkerPrincipal` and its place in the `Principal` union, `MARKER_TOKEN_HEADER`, and the marker branch of
-  `_machine_credential` (`hub/api/auth_session.py`), `require_marker_authority` (`hub/api/marker_auth.py`), and the
-  three routes it guarded — `POST /api/chunks/{chunk_id}/hub-markers`, `/garden-delivery`, and
-  `/review-findings-delivery` (`hub/api/chunks.py`) — with their wire models (`GardenDeliveryRequest` and
-  `GardenDeliveryResponse`, and the marker and review-findings request and response models in `wire/chunk.py`), their
-  paths in `openapi/hub.openapi.json`, and the generated web client's types for them, and `blizzard hub record-marker`
-  (`hub/cli/marker.py`, its entry in `hub/cli/__init__.py`, and its place in `cli/operator_trace.py`'s `_NEVER_TRACED`),
-  which existed for a script to call the first. Those routes also admitted a person holding `CHUNK_CONTROL`, and that
-  operator path goes with them. The `garden-delivery-failure` and `review-findings-failure` markers the scripts wrote
-  are written by their actions under the same names, so the prompts that read them are unchanged. The visit's resolved
-  repositories, which `hold_repositories` pinned for the marker route, reach the action on the `Visit`, and
+  `MarkerPrincipal` and its place in the `Principal` union, `MARKER_TOKEN_HEADER`, the marker branch of
+  `_machine_credential` (`hub/api/auth_session.py`), and `require_marker_authority` (`hub/api/marker_auth.py`), so the
+  three routes it guarded admit only a person holding `CHUNK_CONTROL`, through the gate it fell through to. A token was
+  only ever minted into a step's environment, so nothing outside the hub held one to present. The
+  `garden-delivery-failure` and `review-findings-failure` markers the scripts wrote are written by their actions under
+  the same names, so the prompts that read them are unchanged. The visit's resolved repositories, which
+  `hold_repositories` pinned for the marker route, reach the action on the `Visit`, and
   `delivery_repo_landed.repository_id` is stamped from the record id each `LandingRecord` carries.
-  `AmbiguousMarkerRepository` (`hub/delivery/marker_auth.py`) and the 409 `hub/api/chunks.py` answers for it go with the
-  route; the ambiguity is refused when the visit is built instead
-  ([A merge that has happened](./actions.md#a-merge-that-has-happened)). The command's entry in `contracts/cli/hub.json`
-  (`record-marker`) goes with it, as `blizzard:cli-contract` requires.
 - `BZ_HUB_LAND_TEST_PAUSE_SECONDS`: the kill-9 sweep reaches the windows it held open through armed crash points
   instead.
 - `hub/graphs/scripts/` and its tests, whose cases move onto the actions.
@@ -179,10 +163,58 @@ hub node at a version a live chunk is pinned to names an action.
 The `BZ_FORGE_*` keys in `hub/domain/config/legacy_keys.py` stay: they are the legacy configuration the hub refuses to
 start with and imports through `blizzard hub config import-legacy`, not variables handed to a step.
 
-No runner changes: nothing here crosses the runner's wire. Removing three HTTP routes, a durable path, and a trace span
-makes the last landing breaking under `docs/versioning.md`, so its commit carries the `!` mark, and its change note
-under `changes/` (`changes/README.md`) and a section of `docs/upgrade.md` tell an operator that a custom `run:` command
-now escalates its chunk rather than running, and that `blizzard hub record-marker` and its routes are gone.
+## The deprecation, then retirement
+
+What only the scripts used sits on surfaces `docs/versioning.md` holds a release to, so it leaves as anything released
+does: deprecated in one release, removed in a later one. The epic is delivered when the retirement release has shipped,
+but nothing after it waits for that.
+
+**Deprecated in the third landing.** Each surface below gets a `deprecated` note under `changes/unreleased/`
+(`changes/README.md`) whose `removes-in` is the minor after the release that carries it:
+
+- The three routes `POST /api/chunks/{chunk_id}/hub-markers`, `/garden-delivery`, and `/review-findings-delivery`
+  (`hub/api/chunks.py`), marked `deprecated=True` so `openapi/hub.openapi.json` says so (`http-api`). They record what
+  they recorded; from the fourth landing they admit only a person holding `CHUNK_CONTROL`
+  ([What is removed](#what-is-removed)).
+- `blizzard hub record-marker` (`cli`). It only ever worked inside a step's environment, so from the third landing it
+  cannot succeed; from the fourth, its `ENV_*` imports gone, it refuses at once, saying a hub step no longer runs
+  commands and naming the release that removes it.
+- The `data/hub_workdirs` durable path (`config`). Nothing writes it from the fourth landing; its `DurablePath` stays,
+  its `holds` saying so, and an installation's existing directory is left in place.
+- The step's trace span, `RUN_STEP_SPAN` and its `RUN_STEP_*` attributes (`blizzard.hub.run_step.*`), marked deprecated
+  in `contracts/traces/dictionary.json` and `docs/deployment/tracing.md`, naming `ACTION_PASS_SPAN` in its place
+  (`trace`). The pass's span and its `blizzard.hub.action.name` and `blizzard.hub.action.choice` attributes join the
+  dictionary in the first landing ([Where a pass runs](./actions.md#where-a-pass-runs)), so both are emitted while
+  graphs name both; from the third landing the step span is not emitted, since nothing it describes runs, but its name
+  stays declared until the retirement.
+
+The same landing's `changed` note and its `docs/upgrade.md` section tell an operator what they now meet: a graph naming
+`run:` is refused at mint, a custom `run:` command escalates its chunk rather than running, and the default poll timeout
+is three hours.
+
+**The retirement release** removes them:
+
+- The three routes, with their wire models (`GardenDeliveryRequest` and `GardenDeliveryResponse`, and the marker and
+  review-findings request and response models in `wire/chunk.py`), their paths in `openapi/hub.openapi.json`, and the
+  generated web client's types for them. `AmbiguousMarkerRepository` (`hub/delivery/marker_auth.py`) and the 409
+  `hub/api/chunks.py` answers for it go with them; the ambiguity is refused when the visit is built instead
+  ([A merge that has happened](./actions.md#a-merge-that-has-happened)).
+- `blizzard hub record-marker` (`hub/cli/marker.py`, its entry in `hub/cli/__init__.py`, and its place in
+  `cli/operator_trace.py`'s `_NEVER_TRACED`), and its entry in `contracts/cli/hub.json`, as `blizzard:cli-contract`
+  requires.
+- `WORKDIRS_DIRNAME` (`hub/layout.py`), its `DurablePath` in `hub/config_keys.py`, and the `data/hub_workdirs` entry in
+  `contracts/config/hub.json`. The hub removes `data_dir/hub_workdirs/` at its first boot after the upgrade.
+- The step span's constants (`hub/domain/observability/tracing/platform.py`), its dictionary entries, and its
+  description in `docs/deployment/tracing.md`, raising `blizzard.trace.schema_version` as every breaking trace change
+  does.
+
+Its `removed` notes each `retires` their deprecation, and its `docs/upgrade.md` section names what replaced each. It is
+not built with the epic's landings. It is a chunk of its own, minted by a person rather than decomposed from this spec,
+once a release carrying the deprecations has shipped and before the line their `removes-in` names is cut, since the cut
+refuses to open a line with an unretired promise. Because it removes routes, a CLI command, a durable path, and a span,
+its commit is marked breaking, `feat!` (`docs/versioning.md`).
+
+Runners are untouched by both: nothing in this epic crosses the runner's wire.
 
 ## Tests
 
@@ -192,12 +224,13 @@ deleted with what they tested: `test_land_scripts.py`, `test_land_common.py`, `t
 `test_hub_marker_auth.py`, `test_hub_cli_record_marker.py`, `test_pin_hub_delivery.py`, `test_garden_delivery_api.py`,
 and `test_garden_delivery_guard_race.py`, with the route rows in `test_route_classification.py` and
 `test_route_token_authz.py`, and the fixtures in `tests/support.py` and `tests/fleet_world.py` that arm the fake
-`IHubCommandRunner`. The rule beyond the list is the one the list follows: any test that arms the command runner, mints
-or presents a marker token, or calls one of the three removed routes moves onto an action or goes. The two scenarios in
-`tests/crash/test_kill9_sweep.py` that held a window open with `BZ_HUB_LAND_TEST_PAUSE_SECONDS` are rewritten onto the
-armed crash points, and the sweep's family list and CI subsets follow the points
-([Crash points](./actions.md#crash-points)). `scripts/prose-density-baseline.json` drops its entries for the deleted
-scripts and tests.
+`IHubCommandRunner`. The rule beyond the list is the one the list follows: any test that arms the command runner or
+mints or presents a marker token moves onto an action or goes in the fourth landing, and any that calls one of the three
+routes or `record-marker` holds them behind `CHUNK_CONTROL` alone, and the command's refusal, until the retirement takes
+it out with them. The two scenarios in `tests/crash/test_kill9_sweep.py` that held a window open with
+`BZ_HUB_LAND_TEST_PAUSE_SECONDS` are rewritten onto the armed crash points, and the sweep's family list and CI subsets
+follow the points ([Crash points](./actions.md#crash-points)). `scripts/prose-density-baseline.json` drops its entries
+for the deleted scripts and tests.
 
 The rest follows from changes above rather than from a removal. The thirteen test modules that call `Validator.of(doc)`
 directly pass `TEST_CATALOGUE` ([The catalogue](./actions.md#the-catalogue)). Each migration has its colocated test,
@@ -211,8 +244,8 @@ process left and names any the actions leave.
 `docs/` drops every mention of `run:`, and of what a step was handed even where `run:` is not named:
 `docs/deployment/repositories.md` stops describing the `BZ_FORGE_*` variables as the land script's,
 `docs/deployment/projects.md` stops saying a hub step's `run:` commands see the chunk's project as `BZ_HUB_PROJECT_ID`
-and `BZ_HUB_PROJECT`, `docs/backup.md` and `docs/rollback.md` stop listing hub working directories,
-`packaging/docker/README.md` drops its `data/hub_workdirs/` row, `docs/deployment/recovery.md` names the effect writer's
+and `BZ_HUB_PROJECT`, `docs/backup.md`, `docs/rollback.md`, and `packaging/docker/README.md` say nothing writes
+`data/hub_workdirs/` any longer and drop it in the retirement, `docs/deployment/recovery.md` names the effect writer's
 crash points in place of the `hubnode.*` step points, keeping `hubnode.after-poll.before-slot-release` until the `flows`
 epic retires the slot, `docs/deployment/observability.md` says an unroutable outcome escalates, and
 `docs/deployment/install.md` documents `action_pass_seconds`. `packaging/docker/Dockerfile`'s comment that `git` is
@@ -271,8 +304,11 @@ start and nowhere else.
   refuses at mint as unknown actions — `blizzard:e2e`.
 - No hub process starts a child process for a graph: no module under `hub/delivery/` reaches `subprocess`, directly or
   through another blizzard module — `blizzard:structural-gate`.
-- A pass's span carries its action and its choice, and the step span is gone from the dictionary —
+- A pass's span carries its action and its choice, and the step span stands in the dictionary marked deprecated —
   `blizzard:trace-contract`.
+- After the fourth landing the three routes answer a person holding `CHUNK_CONTROL`, are marked deprecated in the
+  OpenAPI document, and refuse a request carrying no session; `blizzard hub record-marker` refuses naming its removal —
+  `blizzard:component-test`.
 - `blizzard-mock`'s seeded graph routes every answer of `land`, and seeds against a schema with and without
   `graph_nodes.action` — `blizzard-mock:unit-test`.
 - The escalation sentences and a hub node's action in the graph view render — `web:unit-test`.
