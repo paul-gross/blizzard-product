@@ -1,7 +1,7 @@
 ---
 epic: advanced-delivery/policies
 refinement: pristine
-status: horizon
+status: in-progress
 ---
 
 # Plan — `epic:advanced-delivery/policies`

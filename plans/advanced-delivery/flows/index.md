@@ -1,7 +1,7 @@
 ---
 epic: advanced-delivery/flows
 refinement: pristine
-status: horizon
+status: in-progress
 ---
 
 # Plan — `epic:advanced-delivery/flows`

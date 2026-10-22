@@ -74,20 +74,20 @@ touched three repositories deploys all three in the order they depend on one ano
 it back, before the next one moves. Delivery and deployment stop being one fleet-wide habit and become each project's
 own declared method, carried out deterministically, with an agent's judgement called in where the project asks for it.
 
-| Epic                              | Status    |
-| --------------------------------- | --------- |
-| `epic:live-config`                | delivered |
-| `epic:multi-tenancy/hub`          | delivered |
-| `epic:projects/hub`               | delivered |
-| `epic:projects/runner`            | delivered |
-| `epic:multi-tenancy/runner`       | delivered |
-| `epic:runner-host`                | delivered |
-| `epic:projects/host`              | retired   |
-| `epic:advanced-delivery/actions`  | horizon   |
-| `epic:advanced-delivery/forges`   | horizon   |
-| `epic:advanced-delivery/flows`    | horizon   |
-| `epic:advanced-delivery/policies` | horizon   |
-| `epic:advanced-deployment`        | horizon   |
+| Epic                              | Status      |
+| --------------------------------- | ----------- |
+| `epic:live-config`                | delivered   |
+| `epic:multi-tenancy/hub`          | delivered   |
+| `epic:projects/hub`               | delivered   |
+| `epic:projects/runner`            | delivered   |
+| `epic:multi-tenancy/runner`       | delivered   |
+| `epic:runner-host`                | delivered   |
+| `epic:projects/host`              | retired     |
+| `epic:advanced-delivery/actions`  | in-progress |
+| `epic:advanced-delivery/forges`   | in-progress |
+| `epic:advanced-delivery/flows`    | in-progress |
+| `epic:advanced-delivery/policies` | in-progress |
+| `epic:advanced-deployment`        | horizon     |
 
 ## `milestone:hardening` — the platform stops guessing on your behalf
 
