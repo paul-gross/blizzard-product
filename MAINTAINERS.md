@@ -22,7 +22,10 @@ epic its status; their shape is owned by [context/structure/plans.md](./context/
    first gets its own file, which turns the initiative into a folder (`plans/<slug>/initiative.md` beside an `index.md`
    and the epic files). This is what a planning agent reads before decomposing work. A plan states what to *build*,
    never what is built: it freezes when the epic ships, and the durable behavioral record lands elsewhere as part of
-   delivery.
+   delivery. An epic is planned backwards compatible: every landing is additive to each supported release
+   (`blizzard-context:/architecture/system-shape/released-surfaces.md`), and what it replaces is deprecated, not
+   removed. The removal is not the epic's. Its plan names it as a follow-up cleanup, so the epic is delivered when its
+   additive landings land.
 3. **Filed issues.** File the GitHub epic issue and its child issues (the `/wg-issue` flow), each citing the epic's id,
    and set the epic `in-progress` in its plan and in every milestone epic chart naming it. The registry row stays put in
    [epics.md](./epics.md) and is never annotated. The issue tracker is the factory's intake queue, not its memory: file
@@ -31,7 +34,9 @@ epic its status; their shape is owned by [context/structure/plans.md](./context/
    filed starts the moment it is promoted, against code that does not exist. A chain of dependencies is startable
    however long it runs, so long as every link in it is filed. Ingest a chain whole and link its dependencies in the
    same pass (`workspace:/context/project/workflows/marshalling.md` owes them the moment a chunk is minted), never
-   ingesting now and linking later.
+   ingesting now and linking later. A follow-up removal is filed beside the epic as a standalone `(BREAK)` issue,
+   belonging to no epic, which waits uningested until an operator decides a release may carry the break
+   (`workspace:/context/project/contributing.md` §Issue titles).
 
 Exceptions and the far end of the lifecycle:
 
