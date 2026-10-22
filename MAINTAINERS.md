@@ -30,7 +30,8 @@ epic its status; their shape is owned by [context/structure/plans.md](./context/
    so each dependency can be named. The hub cannot wait on work it cannot name: a chunk whose prerequisite is not yet
    filed starts the moment it is promoted, against code that does not exist. A chain of dependencies is startable
    however long it runs, so long as every link in it is filed. Ingest a chain whole and link its dependencies in the
-   same pass (`bzh:marshal` owes them the moment a chunk is minted), never ingesting now and linking later.
+   same pass (`workspace:/context/project/workflows/marshalling.md` owes them the moment a chunk is minted), never
+   ingesting now and linking later.
 
 Exceptions and the far end of the lifecycle:
 
