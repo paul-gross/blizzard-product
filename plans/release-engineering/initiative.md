@@ -45,9 +45,10 @@ consuming its output, and compatibility measured against what was actually shipp
   never takes away. A major is the only release allowed to break anything, and it arrives on a date the operator knew
   about months in advance.
 - **Every release operation is one an agent can carry out.** Cutting, promoting, patching, and breaking are each a
-  written procedure in `blizzard-context`, so the operator says *patch 0.7 with this fix* and an agent carries it from
-  `master` to a published release without improvising a step. A release process that lives in one person's memory is the
-  most fragile part of a project that wants to be released by its own fleet.
+  written procedure in the workspace's operator workflows, `workspace:/context/project/workflows/`, so the operator says
+  *patch 0.7 with this fix* and an agent carries it from `master` to a published release without improvising a step. A
+  release process that lives in one person's memory is the most fragile part of a project that wants to be released by
+  its own fleet.
 - **Blizzard's own fleet runs every release candidate first.** The dogfood instance stops following `master` and starts
   following releases, as their first and least forgiving user. Feedback arrives a week later than it does today, and
   that is the trade: a bad landing becomes a bad candidate, caught before anyone else pulls it.
@@ -159,13 +160,17 @@ Each epic's plan owns its requirements; this is the cut, in the order the epics 
   materials and build provenance attested; checksums beside every attached file; and a runner installable at a named
   version from the release itself. Publishing to a package index waits for the project's rebrand.
 
-## The procedures live in the harness
+## The procedures live in the workspace
 
 None of the epics is finished when its mechanics work. Each is finished when an agent told to perform its operation by
-name can find the procedure in `blizzard-context`, follow it, and prove the outcome, in the same way `bzh:release`
-already carries a tag from a green `master` to a confirmed release. The procedures belong under `workflows/` beside it,
-and the rules they lean on — what a patch may carry, what a change note must say — under `standards/` and
-`verification/`, where every other rule a change is held to already lives.
+name can find the procedure, follow it, and prove the outcome, in the same way
+`workspace:/context/project/workflows/release.md` already carries a tag from a green `master` to a confirmed release. A
+release operation is an operator's pass, never a fleet worker's, so its procedure belongs beside that one in the
+workspace's operator workflows, written there by the operator by hand, since no fleet worker's environment holds the
+workspace. The procedures a fleet worker follows inside a change — judging a break, writing a change note, landing work
+behind a flag — stay under `blizzard-context`'s `workflows/`, and the rules every procedure leans on — what a patch may
+carry, what a change note must say — under its `standards/` and `verification/`, where every other rule a change is held
+to already lives.
 
 The patch is the procedure that most needs writing down, because it is the one run under pressure and rarely enough that
 nobody remembers the last time. It starts from the fix on `master`, decides whether the fix can wait for the train,

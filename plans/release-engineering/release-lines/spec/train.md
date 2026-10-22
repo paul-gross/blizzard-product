@@ -10,11 +10,11 @@
 | Patch             | `vX.Y.P`, `P ≥ 1` | `release/X.Y` ([patches.md](./patches.md))                                       |
 | Major's candidate | `vX.0.0-rc.K`     | `master` while it is open for `X`, then `release/X.0` ([majors.md](./majors.md)) |
 
-Before 1.0, `X` is `0`. A tag, once pushed, is never moved, deleted, or reused (`bzh:release`); a branch is never
-deleted. Both repositories carry every name in this table ([mock.md](./mock.md)). `release/*` branches and `v*` tags are
-protected on both by repository rulesets: a branch changes only through a pull request and is never force-pushed or
-deleted, and a tag is never updated or deleted. Creating a branch or pushing a tag is an attended step of a procedure;
-no fleet worker does either.
+Before 1.0, `X` is `0`. A tag, once pushed, is never moved, deleted, or reused
+(`workspace:/context/project/workflows/release.md`); a branch is never deleted. Both repositories carry every name in
+this table ([mock.md](./mock.md)). `release/*` branches and `v*` tags are protected on both by repository rulesets: a
+branch changes only through a pull request and is never force-pushed or deleted, and a tag is never updated or deleted.
+Creating a branch or pushing a tag is an attended step of a procedure; no fleet worker does either.
 
 ## Versions on `master` and on a branch
 
@@ -41,8 +41,8 @@ and `blizzard:flag-lifecycle` runs in its cut mode, as `epic:release-engineering
 ([lifecycle](../../dark-launch/spec/lifecycle.md)). Both must pass before the commit merges, so nothing is tagged that
 either refuses. This epic provides the cut commit as the hook and runs neither step itself:
 `epic:release-engineering/notes` adds its `cut` and `epic:release-engineering/dark-launch` adds its
-`blizzard:flag-lifecycle` call, each in whichever of this epic's procedures and its own landing comes second, and a cut
-made before both have landed runs the steps that exist.
+`blizzard:flag-lifecycle` call, each written into this epic's procedures by the operator once both the procedure and
+that landing exist, and a cut made before both have landed runs the steps that exist.
 
 Opening a cut commit is an attended step of a procedure — the operator's, or an agent's told by name to run it — and
 never a fleet chunk's work. The first is `epic:release-engineering/first-release`'s attended cut of its first release. A
@@ -74,8 +74,8 @@ but never runs two in one week; a held week is noted in the next candidate's not
 3. Read the `blizzard-mock` commit that run proved it against ([mock.md](./mock.md) §Which mock proved it).
 4. Create `release/X.Y` at the cut commit and at the mock commit, in both repositories.
 5. Tag `vX.Y.0-rc.1` on both branches' tips ([mock.md](./mock.md) §Branches and tags) and push blizzard's tag last; its
-   `release` run is the cut (`bzh:release` §Tag and watch, §Confirm the cut). `epic:release-engineering/first-release`
-   opens the pin bump that moves blizzard's own fleet onto it.
+   `release` run is the cut (`workspace:/context/project/workflows/release.md` §Tag and watch, §Confirm the cut).
+   `epic:release-engineering/first-release` opens the pin bump that moves blizzard's own fleet onto it.
 
 A candidate whose `release` run fails is never promoted; the line is repaired forward as `rc.K+1`.
 

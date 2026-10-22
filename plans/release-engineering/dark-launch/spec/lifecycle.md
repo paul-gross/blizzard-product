@@ -70,8 +70,9 @@ that carries both. A fleet flag's tests prove the hub and a runner agreeing thro
 
 ## The procedure
 
-`blizzard-context` gains one procedure under `workflows/`, beside `workflows/release.md`, in three parts an agent can be
-told to run by name: landing a piece of work behind a new or existing flag — choosing its scope, declaring it, guarding
-the behavior and only the behavior, proving the on path; turning a flag on — the one change, its note, the proof that
-the on path is now the gate's; and retiring a flag once it is due. The rule it leans on, `bzh:flag-hides-behavior`,
-lives under `standards/` with the table of what each surface does while off ([contract.md](./contract.md)).
+`blizzard-context` gains one procedure under `workflows/`, routed from its `workflows/index.md`, in three parts an agent
+can be told to run by name: landing a piece of work behind a new or existing flag — choosing its scope, declaring it,
+guarding the behavior and only the behavior, proving the on path; turning a flag on — the one change, its note, the
+proof that the on path is now the gate's; and retiring a flag once it is due. The rule it leans on,
+`bzh:flag-hides-behavior`, lives under `standards/` with the table of what each surface does while off
+([contract.md](./contract.md)).

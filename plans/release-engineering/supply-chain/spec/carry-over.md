@@ -22,17 +22,20 @@ workspace repository.
    in the same change and the settings recorded in `docs/ci.md`.
 4. **The bills of materials** ([attestation.md](./attestation.md#bills-of-materials)), added to the `build` job and the
    inventory.
-5. **The verify script and job**, and `bzh:release`'s confirmation in `blizzard-context`
-   ([verification.md](./verification.md)).
+5. **The verify script and job** ([verification.md](./verification.md)). With them, by hand, the operator writes the
+   confirmation into `workspace:/context/project/workflows/release.md` ([verification.md](./verification.md) §The
+   procedure), when the instance moves onto a build carrying them and in any case before step 7 confirms through it: no
+   fleet chunk's environment holds the workspace.
 6. **The `edge` channel's signatures**, in `push.yml`, and **the operator documents**, including `docs/verifying.md`
    ([install.md](./install.md#the-operator-documents)). Neither depends on the other; the signatures depend on nothing
    above, and the documents on steps 3 to 5.
-7. **The first verifiable release, by hand.** The next release cut by `bzh:release` after step 5, by whichever of
-   `epic:release-engineering/first-release`'s and `epic:release-engineering/release-lines`' procedures is in force, and
-   confirmed through the verify job and one run of `scripts/verify-release.sh` from the workspace.
-8. **The instance onto it, by hand.** The hub's pin and the runner host moved onto that release by `bzh:release-deploy`,
-   after `epic:release-engineering/first-release`'s cutovers, so that no pin the hub is moved to afterwards predates
-   signing.
+7. **The first verifiable release, by hand.** The next release cut by `workspace:/context/project/workflows/release.md`
+   after step 5, by whichever of `epic:release-engineering/first-release`'s and
+   `epic:release-engineering/release-lines`' procedures is in force, and confirmed through the verify job and one run of
+   `scripts/verify-release.sh` from the workspace.
+8. **The instance onto it, by hand.** The hub's pin and the runner host moved onto that release by
+   `workspace:/context/project/workflows/release-deploy.md`, after `epic:release-engineering/first-release`'s cutovers,
+   so that no pin the hub is moved to afterwards predates signing.
 9. **The updater's verification**, in `blizzard-infra`, on the updater `epic:release-engineering/first-release` rewrites
    ([verification.md](./verification.md#the-instance)). It lands after step 8.
 10. **Its deploy, by hand.** `blizzard-infra`'s `scripts/deploy.sh`, confirmed by the next pin move's log showing the

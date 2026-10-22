@@ -2,7 +2,7 @@
 
 A note is only written if the worker making the change knows it owes one, so the epic is finished when an agent told to
 make any change in `blizzard` meets the rule, the procedure, and the check through the routes it already reads. All
-paths in this file are in `blizzard-context`.
+paths in this file are in `blizzard-context`, but for the release procedure, which is the workspace's.
 
 ## Rules
 
@@ -35,8 +35,10 @@ from the start, and gains the merge-base run of `blizzard-change-notes owed` whe
 
 ## Cutting a release
 
-`workflows/release.md` (`bzh:release`) loses the step that replaces the placeholder **Upgrade notes** by hand after the
-tag. Its preparation step runs `blizzard-change-notes cut <version>` in release-lines' cut commit
+`workspace:/context/project/workflows/release.md` loses the step that replaces the placeholder **Upgrade notes** by hand
+after the tag. Its preparation step runs `blizzard-change-notes cut <version>` in release-lines' cut commit
 ([train.md](../../release-lines/spec/train.md) §The cut commit), and its confirmation step reads the published notes
-against `blizzard-change-notes render <tag>`. Where the procedures for the candidate, the patch, and the major live is
-`epic:release-engineering/release-lines`'; each calls the cut, and none restates it.
+against `blizzard-change-notes render <tag>`. No fleet chunk's environment holds the workspace, so the operator makes
+this change by hand: when the instance moves onto a build carrying the switch ([carry-over.md](./carry-over.md) §The
+order of landings, step 5), and in any case before the next release is cut. Where the procedures for the candidate, the
+patch, and the major live is `epic:release-engineering/release-lines`'; each calls the cut, and none restates it.

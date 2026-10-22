@@ -65,9 +65,9 @@ single baseline on the same rhythm, so a fresh install stops replaying every sch
   through first. A store built from the baseline is proven to match one built by replaying the history it replaced, on
   every database blizzard supports.
 - **Every operation a written procedure.** Cutting the weekly candidate and promoting it, patching a released line,
-  opening `master` for a major and cutting it, and folding the store's history are each a procedure in
-  `blizzard-context`, so an operator says *patch 0.7 with this fix* and an agent carries it to a confirmed release
-  without improvising a step.
+  opening `master` for a major and cutting it, and folding the store's history are each a procedure in the workspace's
+  operator workflows, `workspace:/context/project/workflows/`, so an operator says *patch 0.7 with this fix* and an
+  agent carries it to a confirmed release without improvising a step.
 
 ## Left for later
 

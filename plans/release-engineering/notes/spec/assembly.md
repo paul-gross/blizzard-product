@@ -60,10 +60,10 @@ renders the commit appendix alone.
 The rendered notes become the release's body at publish time, in the `gh release create --notes-file` that publishes it;
 they are never an attached file. Releases are immutable once published (`epic:release-engineering/supply-chain`'s
 [artifacts.md](../../supply-chain/spec/artifacts.md)): nothing edits, adds, or replaces an attached file afterwards, and
-`bzh:release` no longer asks anyone to finish a published release by hand ([harness.md](./harness.md)). The body is the
-one thing that may change after publishing: a released note's body corrected afterwards ([fragments.md](./fragments.md)
-§Once released) reaches the published release by re-rendering that tag and `gh release edit --notes-file`, which touches
-the body alone.
+`workspace:/context/project/workflows/release.md` no longer asks anyone to finish a published release by hand
+([harness.md](./harness.md)). The body is the one thing that may change after publishing: a released note's body
+corrected afterwards ([fragments.md](./fragments.md) §Once released) reaches the published release by re-rendering that
+tag and `gh release edit --notes-file`, which touches the body alone.
 
 ## Lines
 

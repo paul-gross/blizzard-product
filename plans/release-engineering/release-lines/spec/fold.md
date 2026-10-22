@@ -74,8 +74,10 @@ proves the revisions kept above the floor still downgrade onto a store the floor
 
 ## The procedure
 
-`blizzard-context`'s `workflows/store-fold.md` carries a fold from the floor to a merged pull request: read the floor
-from `blizzard-compat releases --json`, run `scripts/fold_store.py <floor-tag>`, open the pull request with
+`workspace:/context/project/workflows/store-fold.md` carries a fold from the floor to a merged pull request: read the
+floor from `blizzard-compat releases --json`, run `scripts/fold_store.py <floor-tag>`, open the pull request with
 `store-baseline` green and the rehearsal walking down only as far as the baseline, merge it before the train cuts its
-candidate, and name the floor beside that release in `docs/upgrade.md`. It lands with the tool and the proof. Running it
-is an operation, carried out on its day by an operator or an agent they ask, until `epic:cadence` schedules it.
+candidate, and name the floor beside that release in `docs/upgrade.md`. No fleet chunk's environment holds the
+workspace, so the operator writes it by hand beside the tool and the proof, when the instance moves onto a build
+carrying them. Running it is an operation, carried out on its day by an operator or an agent they ask, until
+`epic:cadence` schedules it.

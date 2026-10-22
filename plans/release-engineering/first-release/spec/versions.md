@@ -111,4 +111,5 @@ notes each release gathers (`epic:release-engineering/notes`).
 image before Release, its jobs, and `push.yml`'s `edge` and `sha-<full-git-sha>` publish all stay as they are. The
 release notes keep `scripts/release-notes.sh` until `epic:release-engineering/notes` replaces its source; for `v0.2.0`
 the notes range is `v0.1.0-rc.1..v0.2.0` (`git describe` on the tag's parent), and its **Upgrade notes** placeholder is
-replaced by hand with a pointer to `docs/upgrade.md` §Upgrading to 0.2.0, as `bzh:release` already prescribes.
+replaced by hand with a pointer to `docs/upgrade.md` §Upgrading to 0.2.0, as
+`workspace:/context/project/workflows/release.md` already prescribes.

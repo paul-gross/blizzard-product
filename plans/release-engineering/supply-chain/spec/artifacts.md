@@ -68,7 +68,8 @@ The single `release` job becomes three, after the test jobs it already waits for
 The order is the rule the workflow already keeps — nothing is advertised before it exists — extended to everything the
 release now publishes. The release page comes last because it is what a person reads and what an install fetches from. A
 run that fails after the image push leaves a version tag on GHCR with no release behind it, as a failed
-`gh release create` does today, and is repaired forward with the next tag (`bzh:release` §A red run).
+`gh release create` does today, and is repaired forward with the next tag
+(`workspace:/context/project/workflows/release.md` §A red run).
 
 `compat-breaks.json` is written in `build`, not `publish`, so that it is covered by `SHA256SUMS` and the files'
 provenance attestation like every other attached file, and travels in the same workflow artifact; `publish` attaches it

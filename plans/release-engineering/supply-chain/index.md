@@ -53,10 +53,10 @@ know about it before they let it run.
   against blizzard's release identity and refuses one that fails, as it already refuses an image that fails readiness.
   The runner host is installed only from a wheel whose attestation checks out. The dogfood fleet is the first verifier
   of every release, as it is the first user of every candidate.
-- **Confirming a release is a procedure.** `bzh:release` already confirms that a cut published its release and its
-  image. It gains the steps that confirm what this epic adds — the signature, the attestations, the bills of materials,
-  and the checksums — most of them run by the release workflow itself, so an agent confirming a cut reads one verdict
-  rather than improvising checks.
+- **Confirming a release is a procedure.** `workspace:/context/project/workflows/release.md` already confirms that a cut
+  published its release and its image. It gains the steps that confirm what this epic adds — the signature, the
+  attestations, the bills of materials, and the checksums — most of them run by the release workflow itself, so an agent
+  confirming a cut reads one verdict rather than improvising checks.
 
 ## Left for later
 

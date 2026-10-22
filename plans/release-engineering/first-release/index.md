@@ -66,10 +66,10 @@ that runs releases.
   GitHub Release, rather than built from `master`. Its pin is recorded beside the rest of the instance's deployed
   surface, and the version the host reports — the exact release, with no commit stamp — is the proof of the redeploy.
   The redeploy is owed after the hub's pin moves, never after a landing, and the runner never moves ahead of the hub.
-- **One procedure for moving onto a release, and back.** `blizzard-context` learns how to cut a candidate and promote
-  it, and how to move a deployment onto a release or back off one: hub first and runners after on the way forward,
-  runners first on the way back, each confirmed by the version it reports. The workspace's runbook for the instance
-  keeps only what is particular to this instance and defers to that procedure for the rest.
+- **One procedure for moving onto a release, and back.** The workspace's operator workflows learn how to cut a candidate
+  and promote it, and how to move a deployment onto a release or back off one: hub first and runners after on the way
+  forward, runners first on the way back, each confirmed by the version it reports. The workspace's runbook for the
+  instance keeps only what is particular to this instance and defers to that procedure for the rest.
 - **`edge` keeps publishing.** Every green push to `master` still publishes `edge` and its immutable `sha-` tag for
   anyone who wants the newest proven build. Nothing of ours follows it.
 

@@ -21,14 +21,15 @@ Paths are relative to the `blizzard` repo root unless a leaf says otherwise.
 
 The epic reaches beyond `blizzard`. In `blizzard-infra`, the updater (`deploy/bin/blizzard-update`) and the installer
 (`deploy/bin/blizzard-install`) learn to verify an image before running it, and `docs/deployment.md` and
-`docs/rollback.md` say so. In `blizzard-context`, `workflows/release.md` (`bzh:release`) gains the confirmation this
-epic adds. In the workspace, the runner half's redeploy runbook (`context/project/local-instance.md`) installs the host
-from a verified wheel. `blizzard-mock` publishes nothing and is unchanged.
+`docs/rollback.md` say so. In the workspace, the release procedure, `workspace:/context/project/workflows/release.md`,
+gains the confirmation this epic adds, written by hand, and the runner half's redeploy runbook
+(`context/project/local-instance.md`) installs the host from a verified wheel. `blizzard-mock` publishes nothing and is
+unchanged.
 
-| Where                                | Read when                                                                                                                                |
-| ------------------------------------ | ---------------------------------------------------------------------------------------------------------------------------------------- |
-| [artifacts.md](./artifacts.md)       | Shaping what a release publishes — every attached file and its name, the checksums, the hashed requirements, the job's order             |
-| [attestation.md](./attestation.md)   | Signing the image and attesting provenance and bills of materials — the identity, the tools, the formats, the scopes, the `edge`         |
-| [install.md](./install.md)           | Installing a runner at a named version — the command, the unit, upgrading, and the operator docs that describe it                        |
-| [verification.md](./verification.md) | Proving a release from outside — the workflow's own verify job, the `bzh:release` confirmation, a bad release, and the instance's checks |
-| [carry-over.md](./carry-over.md)     | Landing the epic — the order of changes, the one-time settings no workflow can assert, and the releases cut before it                    |
+| Where                                | Read when                                                                                                                                                                       |
+| ------------------------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| [artifacts.md](./artifacts.md)       | Shaping what a release publishes — every attached file and its name, the checksums, the hashed requirements, the job's order                                                    |
+| [attestation.md](./attestation.md)   | Signing the image and attesting provenance and bills of materials — the identity, the tools, the formats, the scopes, the `edge`                                                |
+| [install.md](./install.md)           | Installing a runner at a named version — the command, the unit, upgrading, and the operator docs that describe it                                                               |
+| [verification.md](./verification.md) | Proving a release from outside — the workflow's own verify job, the confirmation in `workspace:/context/project/workflows/release.md`, a bad release, and the instance's checks |
+| [carry-over.md](./carry-over.md)     | Landing the epic — the order of changes, the one-time settings no workflow can assert, and the releases cut before it                                                           |

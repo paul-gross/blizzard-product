@@ -39,8 +39,9 @@ is a red run (§The procedure).
 
 ## The procedure
 
-`bzh:release` (`blizzard-context/workflows/release.md`) keeps its tag-and-watch shape; its **Confirm the cut** section
-gains what this epic adds rather than restating each check:
+`workspace:/context/project/workflows/release.md` keeps its tag-and-watch shape; its **Confirm the cut** section gains
+what this epic adds rather than restating each check, written by the operator by hand ([carry-over.md](./carry-over.md),
+step 5):
 
 - Watch the run through `verify`, not only through `publish`; the verify job is the confirmation of the signatures,
   attestations, bills of materials, checksums, and the install from the release page.

@@ -8,8 +8,8 @@ format, and the release's assembled notes by `epic:release-engineering/notes`; t
 
 Paths are relative to `blizzard/src/blizzard/` unless they name another root.
 
-The epic reaches beyond `blizzard`'s source. `blizzard-context` gains the procedure under `workflows/` beside
-`workflows/release.md`, the rule that a flag hides behavior and never contract under `standards/` beside
+The epic reaches beyond `blizzard`'s source. `blizzard-context` gains the procedure under `workflows/`, routed from its
+`workflows/index.md`, the rule that a flag hides behavior and never contract under `standards/` beside
 `standards/wire.md`, and the lifecycle check's row in `verification/blizzard.md`. `blizzard-mock` serves every route a
 flag guards as it serves any other, with no flag of its own (`bzh:wire-change-extends-mock`). Blizzard's operator
 documents gain `docs/flags.md`, beside `docs/versioning.md`, describing what an override is and is not.

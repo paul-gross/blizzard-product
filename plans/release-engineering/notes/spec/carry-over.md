@@ -1,7 +1,8 @@
 # Carry-over
 
 The epic lands into a repository whose releases have been described by their commit logs, whose upgrade guide is a
-document of boundaries, and whose `bzh:release` ends with a hand-written edit. None of it is thrown away.
+document of boundaries, and whose release procedure, `workspace:/context/project/workflows/release.md`, ends with a
+hand-written edit. None of it is thrown away.
 
 ## The order of landings
 
@@ -28,10 +29,12 @@ note and nothing publishes from one, so each lands as soon as what it reads exis
 **The switch, once `v0.2.0` is published.**
 
 5. **Publishing from notes, and requiring them.** `release.yml` publishes `render`'s body, `scripts/release-notes.sh`
-   shrinks to the commit appendix, `docs/upgrade.md` gains its `## Upgrading to the next release` heading, `bzh:release`
-   runs `cut` in `epic:release-engineering/release-lines`' cut commit, and the harness's rules, procedure, and
-   `blizzard:change-notes` row land ([harness.md](./harness.md)), with the notes since `v0.2.0` written beside them
-   (§The first assembled release). From this landing on, every worker writes notes.
+   shrinks to the commit appendix, `docs/upgrade.md` gains its `## Upgrading to the next release` heading, and the
+   harness's rules, procedure, and `blizzard:change-notes` row land ([harness.md](./harness.md)), with the notes since
+   `v0.2.0` written beside them (§The first assembled release). From this landing on, every worker writes notes. With
+   it, by hand, the operator changes `workspace:/context/project/workflows/release.md` to run `cut` in
+   `epic:release-engineering/release-lines`' cut commit, when the instance moves onto a build carrying the landing and
+   in any case before the next release is cut ([harness.md](./harness.md) §Cutting a release).
 6. **The gate's trigger.** `blizzard-change-notes owed` on pull requests ([owed.md](./owed.md)). It reads the contract
    documents from `epic:release-engineering/compat-floor`'s surface registry and the `!` marker as `blizzard-compat`
    reads it, so it lands once `blizzard-compat` has, which itself waits for a release to compare against; and after step
@@ -69,6 +72,6 @@ only what is not the operator's — a step for the landing itself — and says n
 - **`docs/upgrade.md`'s existing boundaries** stay exactly where they are. No note is written for a boundary a release
   already carried.
 - **Releases already published** keep the notes they were published with. No tag is re-rendered.
-- **`bzh:release`'s `gh release edit`** after the tag goes, with the placeholder it filled. Releases are immutable once
-  published (`epic:release-engineering/supply-chain`), and only a corrected body is ever re-rendered onto one
-  ([assembly.md](./assembly.md) §The release workflow).
+- **`workspace:/context/project/workflows/release.md`'s `gh release edit`** after the tag goes, with the placeholder it
+  filled. Releases are immutable once published (`epic:release-engineering/supply-chain`), and only a corrected body is
+  ever re-rendered onto one ([assembly.md](./assembly.md) §The release workflow).

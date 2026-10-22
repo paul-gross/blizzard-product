@@ -60,9 +60,9 @@ settles.
   capability, held to the note rules of `epic:release-engineering/notes`, and the release's notes list every flag the
   release turned on from the registry's difference against the release before.
 - **A procedure an agent can follow.** Landing work behind a flag, turning it on in a release, and retiring it are
-  written down in `blizzard-context` beside the release procedures, with the rule that a flag hides behavior and never
-  contract under its standards, so an agent told to land the next piece of an epic dark carries it there without
-  improvising the shape.
+  written down in `blizzard-context` beside the other procedures a fleet worker follows, with the rule that a flag hides
+  behavior and never contract under its standards, so an agent told to land the next piece of an epic dark carries it
+  there without improvising the shape.
 
 ## Left for later and out of scope
 

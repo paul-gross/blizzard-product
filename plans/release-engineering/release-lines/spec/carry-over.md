@@ -7,7 +7,7 @@ release branches, and its `pr.yml` and `push.yml` run on `master` alone. `epic:r
 before this epic's first train: it cuts the first real release, moves the dogfood instance onto pinned releases, and
 opens a pin bump whenever a release publishes, which is what carries blizzard's own fleet from one candidate to the
 next. This epic adds the rhythm on top of that cut; it changes nothing about how a single tag is cut and confirmed
-(`bzh:release`), which stays the step every procedure here ends in.
+(`workspace:/context/project/workflows/release.md`), which stays the step every procedure here ends in.
 
 ## The order of landings
 
@@ -38,19 +38,22 @@ it need it.
    which read `epic:release-engineering/compat-floor`'s window file and need it landed; the stable tag's borrowed proof
    ([train.md](./train.md) §Promotion); and `image-tags.sh`'s `latest` rule ([patches.md](./patches.md) §Publishing).
 6. **The written promise and the procedures**, once steps 3 and 5 exist to be written against, and after
-   `epic:release-engineering/first-release` has rewritten `docs/versioning.md` and `bzh:release`: `docs/versioning.md`
-   gains §The train, §Support, and §Schedule; `blizzard-context`'s `workflows/` gains `release-train.md`,
-   `release-patch.md`, and `release-major.md`, each ending in `bzh:release`; `standards/` gains `bzh:patch-scope`. From
-   the next train day on, an operator or an agent they ask runs the train by `release-train.md` — an attended step every
-   week until `epic:cadence` schedules it.
+   `epic:release-engineering/first-release` has rewritten `docs/versioning.md` and
+   `workspace:/context/project/workflows/release.md`: `docs/versioning.md` gains §The train, §Support, and §Schedule,
+   and `blizzard-context`'s `standards/` gains `bzh:patch-scope`. With it, by hand, the operator writes
+   `workspace:/context/project/workflows/release-train.md`, `release-patch.md`, and `release-major.md`, each ending in
+   `release.md`, when the instance moves onto a build carrying the landing: no fleet chunk's environment holds the
+   workspace. From the next train day on, an operator or an agent they ask runs the train by `release-train.md` — an
+   attended step every week until `epic:cadence` schedules it.
 7. **The fold's tool and proof**, once `epic:release-engineering/compat-floor` publishes its store documents and the
    supported releases (`blizzard-compat releases --json`) and a release with a published wheel exists:
-   `scripts/fold_store.py`, `tests/test_store_baseline.py` and its `store-baseline` job, and `store-fold.md`
-   ([fold.md](./fold.md)). It folds nothing.
-8. **Attended: the first fold**, by `store-fold.md`, once compat-floor's rehearsal has landed to walk it, merged before
-   the first train of the next calendar month cuts its candidate. It is the largest fold there will be — every revision
-   both trees hold today, up to the floor — and a store at or past the floor sees nothing change, so the hosted hub and
-   the runner host take it with the release that carries it.
+   `scripts/fold_store.py`, `tests/test_store_baseline.py`, and its `store-baseline` job, with
+   `workspace:/context/project/workflows/store-fold.md` written beside them by hand ([fold.md](./fold.md) §The
+   procedure). It folds nothing.
+8. **Attended: the first fold**, by `workspace:/context/project/workflows/store-fold.md`, once compat-floor's rehearsal
+   has landed to walk it, merged before the first train of the next calendar month cuts its candidate. It is the largest
+   fold there will be — every revision both trees hold today, up to the floor — and a store at or past the floor sees
+   nothing change, so the hosted hub and the runner host take it with the release that carries it.
 
 The compatibility check that holds a release branch to every release already cut on its line is
 `epic:release-engineering/compat-floor`'s and joins the release-branch pull request when that epic lands; until then a
