@@ -83,7 +83,8 @@ The store is `hub/store/internal/forge_record_store.py`, which claims and releas
 stores `api_base` and `web_base` through `canonical_origin`, and two forges never share an API origin, so one server is
 one record: a create or edit whose origin another forge of the tenant holds is refused `ForgeOriginTaken`, naming that
 forge, as `RepositoryCoordinateTaken` refuses a taken coordinate. `web_base`, when null, derives through
-`derived_web_origin`; the derivation moves off `GithubEntry` and onto the forge.
+`derived_web_origin`; the derivation moves off the work-source factory's `GithubEntry`
+(`hub/work_sources/internal/factory.py`) and onto the forge.
 
 A forge's row is locked as a secret's is. `lock_forge_row(conn, forge_id)` in the forge store, patterned on
 `lock_secret_row` (`hub/store/internal/secret_store.py`), is the first statement after the scoped write's tenant-row
@@ -107,39 +108,50 @@ A forge holds no credential. Its kind decides which adapter speaks to it and whi
 
 ## References
 
-`repositories.forge_api_url` is replaced by `repositories.forge_id`, `NOT NULL`, a single-column foreign key onto
-`forges.forge_id`, as every id reference is (`fk_project_repository_links_repositories`); that the forge is of the
-repository's own tenant is an invariant's to check ([Invariants](#invariants)). The coordinate constraint
-`uq_repositories_tenant_coordinate` becomes `(tenant_id, forge_id, owner, repo)`, and so does the store's own check
-before it (`_coordinate_holder`, `RepositoryCoordinateTaken`, in `repository_record_store.py`). `RepositoryFields` swaps
-`forge_api_url` for `forge_id`.
+A repository names its forge in `repositories.forge_id`, and a work source in `work_sources.forge_id`. Through the
+transition both columns are nullable and carry no foreign key, since a column added `NOT NULL` without a default and a
+foreign key added to a table that already exists are contractions a hub walked back to `0.2` would meet
+(`bzh:store-expand-contract`). Every write sets them, so no row lacks one once the migration has run, and two invariants
+hold what the constraints would: that each names a forge, of its own tenant ([Invariants](#invariants)). The retirement
+tightens both to `NOT NULL` single-column foreign keys onto `forges.forge_id`, as every id reference is
+(`fk_project_repository_links_repositories`) ([carry-over.md](./carry-over.md#the-transition-then-retirement)).
+`RepositoryFields` swaps `forge_api_url` for `forge_id`, and `WorkSourceFields` swaps `api_base` and `web_base` for it.
 
-`work_sources.api_base` and `work_sources.web_base` are replaced by `work_sources.forge_id`, `NOT NULL`, with the same
-kind of foreign key. Every provider a work source can name today is a forge — `KNOWN_WORK_SOURCE_PROVIDERS` is
-`{"github"}`, and the built-in hub source is no row at all — so every row names one; a provider that is not a forge,
-should one arrive, relaxes the column in the change that adds it. A work source must name a forge whose kind is its
-`provider`. Whether it does needs the forge, so the work-source store's write checks it, as the repository store checks
-that a secret is available (`RepositorySecretUnavailable`).
+The columns that held the addresses — `repositories.forge_api_url`, `work_sources.api_base`, and `work_sources.web_base`
+— stay through the transition, marked deprecated, and the store keeps them equal to the forge: every repository write
+stores its forge's canonical `api_base` in `forge_api_url`, every work-source write stores it in `api_base` and the
+forge's own `web_base` in `web_base`, and every forge edit rewrites them on each record that names the forge, in the
+same transaction, after `lock_forge_row`. No domain type carries them and nothing reads them but a hub walked back past
+the migration. The coordinate constraint `uq_repositories_tenant_coordinate` keeps its columns,
+`(tenant_id, forge_api_url, owner, repo)`: `forge_api_url` holds its forge's canonical origin, which no other forge of
+the tenant holds, so the constraint keys on the forge as surely as `forge_id` would. The store's own check before it
+(`_coordinate_holder`, `RepositoryCoordinateTaken`, in `repository_record_store.py`) keys on `forge_id`. The retirement
+rebuilds the constraint as `(tenant_id, forge_id, owner, repo)` and drops the three columns.
 
-`uq_work_sources_tenant_provider_locator` stays `(tenant_id, provider, locator)` through the transition release. A
-GitHub locator is `owner/name`, and `acme/app` on github.com and `acme/app` on an Enterprise server are in truth two
-trackers, but letting an installation configure both side by side would leave a store the transition's downgrade could
-not walk back, since the column that told them apart is the one being dropped
-([carry-over.md](./carry-over.md#the-migration)). The constraint widens to `(tenant_id, provider, forge_id, locator)` in
-the retirement release, which breaks the old fields anyway, and the store's own check before it (`_locator_holder`,
-`WorkSourceLocatorTaken`, in `work_source_record_store.py`) and the legacy import's locator set
-(`hub/domain/config/carry_over.py`) key on the forge with it.
+Every provider a work source can name today is a forge — `KNOWN_WORK_SOURCE_PROVIDERS` is `{"github"}`, and the built-in
+hub source is no row at all — so every row names one; a provider that is not a forge, should one arrive, relaxes the
+requirement in the change that adds it. A work source must name a forge whose kind is its `provider`. Whether it does
+needs the forge, so the work-source store's write checks it, as the repository store checks that a secret is available
+(`RepositorySecretUnavailable`).
+
+`uq_work_sources_tenant_provider_locator` stays `(tenant_id, provider, locator)` through the transition. A GitHub
+locator is `owner/name`, and `acme/app` on github.com and `acme/app` on an Enterprise server are in truth two trackers,
+but widening the constraint to let an installation configure both side by side is a contraction, and a store holding
+both is one a hub walked back to `0.2` could not hold ([carry-over.md](./carry-over.md#the-migration)). The constraint
+widens to `(tenant_id, provider, forge_id, locator)` in the retirement, which breaks the old fields anyway, and the
+store's own check before it (`_locator_holder`, `WorkSourceLocatorTaken`, in `work_source_record_store.py`) and the
+legacy import's locator set (`hub/domain/config/carry_over.py`) key on the forge with it.
 
 Each referring record keeps its own `secret_name`. The credential belongs to the use, never to the forge.
 
 ## Retirement
 
 A forge that an enabled repository or enabled work source names is refused retirement, `409` with the coded detail
-`{"code": "forge_in_use", "message": …}` and the referrers listed as `RecordRef`s, as `SecretView.references` lists a
-secret's — a secret in use is refused today with a plain-string detail, which a client cannot tell from any other
-conflict. The referrer lookup joins `store/internal/secret_referrers.py`'s `_REFERRING` pattern in a
-`forge_referrers.py` beside it. A retired forge can still be read, and records retired while naming it keep naming it.
-Enabling such a record is refused while its forge is retired: `ConfigAuthoring`'s `enable_repository` and
+`{"code": "forge_in_use", "message": …}` and the referrers listed as `RecordRefView`s (`wire/secret.py`), as
+`SecretView.references` lists a secret's — a secret in use is refused today with a plain-string detail, which a client
+cannot tell from any other conflict. The referrer lookup joins `store/internal/secret_referrers.py`'s `_REFERRING`
+pattern in a `forge_referrers.py` beside it. A retired forge can still be read, and records retired while naming it keep
+naming it. Enabling such a record is refused while its forge is retired: `ConfigAuthoring`'s `enable_repository` and
 `enable_work_source` read the named forge and refuse `422` with the coded detail `forge_retired`, naming it, as enabling
 a repository whose secret has since been retired is refused `422` today (`hub/api/repositories.py`), and the
 configuration document's apply, which re-enables a retired record it declares, refuses the entry the same way. A retired
@@ -188,11 +200,13 @@ from it — the landing seam's ([seam.md](./seam.md#the-registry)) and `StoreWor
 
 `tools/invariants.py` gains two checks and widens one:
 
-- `hub:forge-reference-standing` — no enabled repository or work source names a retired forge, and every work source
-  names a forge whose kind is its provider.
+- `hub:forge-reference-standing` — every repository and work source names a forge, no enabled one names a retired forge,
+  every work source names a forge whose kind is its provider, and each record's deprecated address columns equal its
+  forge's, as the store keeps them ([References](#references)).
 - `hub:forge-references-in-tenant` — `repositories.forge_id`, `work_sources.forge_id`, `forge_former_slugs`,
-  `forge_lifecycle_facts`, and the forge's change rows each name a forge of their own tenant, as
-  `hub:repository-references-in-tenant` and `hub:work-source-references-in-tenant` check their kinds.
+  `forge_lifecycle_facts`, and the forge's change rows each name a forge that exists, of their own tenant, as
+  `hub:repository-references-in-tenant` and `hub:work-source-references-in-tenant` check their kinds; through the
+  transition it is what stands in for the foreign keys.
 - `hub:slug-not-current-and-former` gains forges in `SlugNotCurrentAndFormer.KINDS`.
 
 `hub:landed-repository-linked` is unchanged.

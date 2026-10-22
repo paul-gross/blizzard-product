@@ -21,23 +21,32 @@ POST  /forges/{forge}/enable
 Reads need `Permission.FLEET_VIEW`, as repositories' and work sources' do. Writes need `Permission.CONFIG_EDIT` and an
 `If-Match` revision, and go through `ConfigAuthoring` (`hub/domain/config/authoring.py`), which gains `create_forge`,
 `edit_forge`, `retire_forge`, and `enable_forge`. A forge's document lists the repositories and work sources that name
-it. `GET /api/config/schema/{kind}` gains `forges`. `{forge}` is an id or a slug, resolved by a `PathForge` dependency
-in `hub/api/forge_params.py`, patterned on `repository_params.py` and `work_source_params.py`. Create takes `slug`,
-`name` (defaulting to the slug), `kind`, `api_base`, and `web_base`; `PATCH` may change any of them but `kind`, and a
-slug it moves away from becomes a former slug. A `PATCH` carrying a different `kind` is refused
+it. `GET /api/config/schema/{kind}` serves `forges` for version 2 of the configuration document
+([The configuration document](#the-configuration-document)). `{forge}` is an id or a slug, resolved by a `PathForge`
+dependency in `hub/api/forge_params.py`, patterned on `repository_params.py` and `work_source_params.py`. Create takes
+`slug`, `name` (defaulting to the slug), `kind`, `api_base`, and `web_base`; `PATCH` may change any of them but `kind`,
+and a slug it moves away from becomes a former slug. A `PATCH` carrying a different `kind` is refused
 `422 forge_kind_immutable`. Both addresses are stored canonical ([record.md](./record.md#the-table)), and an `api_base`
 another forge of the tenant holds is refused `409 forge_origin_taken`, naming that forge.
 
-`wire/repository.py` and `wire/work_source.py` gain one field on each side. A write carries `forge`, a forge's id or
-slug, and stores its id; a read carries `forge_id`, `forge_slug`, and `forge_name`, as a chunk carries its project's.
-Nothing reads a field called `forge`, and nothing writes the three it reads back. Through the transition
-`RepositoryDocument.forge_api_url`, required today, becomes optional beside an optional `forge`, and a repository create
-must carry exactly one of the two — neither is refused `422 forge_required`, and both are taken as the old-field rules
-below say. A work source's create may carry neither, as it may leave `api_base` out today. A write naming an unknown or
-retired forge is refused `422 forge_unavailable`; one naming a forge of the wrong kind for a work source's provider,
-`422 forge_kind_mismatch`. A work source always names a forge ([record.md](./record.md#references)), so a create without
-one is refused `422 forge_required` once the old fields retire, and `forge` cannot be cleared. Through the transition
-the old fields still work ([Old fields](#old-fields)).
+A repository and a work source gain one field on each side. A write carries `forge`, a forge's id or slug, and stores
+its id; a read carries `forge_id`, `forge_slug`, and `forge_name`, as a chunk carries its project's. Nothing reads a
+field called `forge`, and nothing writes the three it reads back. The reads, `RepositorySummary` and
+`WorkSourceSummary`, gain their three fields, and the edits, `RepositoryPatchRequest` and `WorkSourcePatchRequest`, gain
+`forge`; none of them refuses a property it does not declare in a response, so each gains additively
+(`bzh:released-surface-additive`). The create bodies cannot gain it in place: `POST /api/repositories` and
+`POST /api/work-sources` take `RepositoryDocument` and `WorkSourceDocument` today, which forbid a property they do not
+declare and are also the entries of the configuration document `GET /api/config/export` answers, so a field either
+gained would reach a client before the epic as a property it refuses. Each create route takes a request model of its own
+instead, `RepositoryCreateRequest` (`wire/repository.py`) and `WorkSourceCreateRequest` (`wire/work_source.py`): every
+field its document has, with `forge` beside them and, on the repository's, `forge_api_url` optional, so every body a
+client sent before still validates. `RepositoryDocument` and `WorkSourceDocument` stay as they are, the version-1
+document's entries. A repository create must carry exactly one of `forge` and `forge_api_url` — neither is refused
+`422 forge_required`, and both are taken as the old-field rules below say. A work source's create may carry neither, as
+it may leave `api_base` out today. A write naming an unknown or retired forge is refused `422 forge_unavailable`; one
+naming a forge of the wrong kind for a work source's provider, `422 forge_kind_mismatch`. A work source always names a
+forge ([record.md](./record.md#references)), so a create without one is refused `422 forge_required` once the old fields
+retire, and `forge` cannot be cleared. Through the transition the old fields still work ([Old fields](#old-fields)).
 
 ## Old fields
 
@@ -86,14 +95,15 @@ through a transition and then retired ([carry-over.md](./carry-over.md)).
 - A write that leaned on an old field answers with a `Deprecation` header and a `warnings` entry naming the field and
   the forge it resolved to — the responses `RepositorySummary` and `WorkSourceSummary` (`wire/repository.py`,
   `wire/work_source.py`) and the configuration apply's result each gain a `warnings` list for it, empty on every other
-  answer, while `RepositoryDocument` and `WorkSourceDocument` stay request bodies and the configuration document's
-  schema and gain nothing — and records a `config-old-field-used` event in `event_log`, so an operator can see when
-  nothing still sends one. The event is documented in `docs/deployment/observability.md` beside
-  `forge-capability-missing`.
+  answer; `ConfigApplyResponse`, like the summaries, refuses no property it does not declare — and records a
+  `config-old-field-used` event in `event_log`, so an operator can see when nothing still sends one. The event is
+  documented in `docs/deployment/observability.md` beside `forge-capability-missing`.
 
-**Once retired**, the old fields leave the wire models, reads carry only `forge_id`, `forge_slug`, and `forge_name`, and
-a write still sending one is refused `422 field_moved_to_forge`, naming the field and the forge that now carries it,
-rather than silently dropped.
+**Once retired**, by the cleanup that follows the epic
+([carry-over.md](./carry-over.md#the-transition-then-retirement)), the old fields leave the wire models, reads carry
+only `forge_id`, `forge_slug`, and `forge_name`, a write still sending one is refused `422 field_moved_to_forge`, naming
+the field and the forge that now carries it, rather than silently dropped, and a version-1 configuration document is
+refused naming version 2.
 
 ## CLI
 
@@ -106,28 +116,41 @@ rather than silently dropped.
 `--forge` beside `--api-base` and `--web-base`, each taking an id or a slug; `source edit`'s `--clear` keeps `api-base`
 and `web-base` through the transition and only `secret` once they retire, since every provider a work source can have
 today is a forge, and a forge-backed source always names one. Through the transition an old flag is resolved as the API
-resolves its field and prints the API's warning; once retired, the old flags are removed. `contracts/cli/hub.json` is
-regenerated with each release.
+resolves its field and prints the API's warning; once retired, the old flags are removed. `blizzard hub config export`
+asks for version 2 of the document, and `--version 1` asks for the one written before the epic. `contracts/cli/hub.json`
+is regenerated with each release.
 
 ## The configuration document
 
-`ConfigDocument` (`wire/config.py`) and `hub/domain/config/apply.py` gain a `forges` section, each entry declared by its
-slug as repository and work-source entries now are, reconciled after the `secrets` check and before work sources and
-repositories, so a document may declare a forge and the records that name it together. It follows their shape: a
-`ForgeDeclaration` whose `forge_id` is minted at the edge for a forge the document creates (`_Forges.of` beside
-`_Repositories.of` and `_WorkSources.of` in `hub/api/config.py`), a `PlannedForges` lookup in
+`ConfigDocument`, `RepositoryDocument`, and `WorkSourceDocument` (`wire/config.py`, `wire/repository.py`,
+`wire/work_source.py`) stay exactly as they are, as version 1 of the document, `version: Literal[1]`. Each refuses a
+property it does not declare, and `GET /api/config/export` answers them, so a `forges` section or a `forge` reference
+added to any of them would reach a client written before the epic as a property it refuses
+(`bzh:released-surface-additive`). The forge arrives in version 2 beside it: `ConfigDocumentV2` (`wire/config.py`,
+`version: Literal[2]`), whose entries are models of their own — `ForgeEntry`, and `RepositoryEntry` and
+`WorkSourceEntry`, each carrying `forge`, an id or a slug, in place of the addresses. `POST /api/config/apply` takes
+either version, told apart by `version`, so every document a client sent before still applies. `GET /api/config/export`
+and `GET /api/config/schema/{kind}` gain an optional `version` query parameter, `1` when it is left out, so a client
+that asks for nothing reads the document it always read.
+
+A version-2 document's `forges` section is reconciled in `hub/domain/config/apply.py` after the `secrets` check and
+before work sources and repositories, each entry declared by its slug as repository and work-source entries are, so a
+document may declare a forge and the records that name it together. It follows their shape: a `ForgeDeclaration` whose
+`forge_id` is minted by `ConfigApplication` (`hub/domain/config_apply/service.py`) for a forge the document creates,
+through a `_Forges` beside its `_Repositories` and `_WorkSources`; a `PlannedForges` lookup in
 `hub/domain/config/forges.py` through which repository and work-source entries resolve a forge declared in the same
 document — patterned on `PlannedRepositories` and `PlannedWorkSources` (`hub/domain/projects/declarations.py`), but
-beside the forge record, since the config apply rather than the project plan reads it — and
-`StoredConfig.former_forges`, so a declared slug another forge has left is refused by `_require_unclaimed` as a
-repository's is. Apply never retires a forge, as it never retires anything, and refuses an entry whose `kind` differs
-from the stored forge's, `forge_kind_immutable`, as the API does. A repository entry carries `forge`, an id or a slug,
-in place of `forge_api_url`, and a work-source entry carries `forge` in place of `api_base` and `web_base`. Through the
-transition an entry carrying an old field is resolved as the API resolves it, a forge it creates is reconciled before
-the entry, and the apply result lists the warning for each such entry; once retired, the entry is refused
-`field_moved_to_forge`. Export writes the `forges` section right after `projects`, which stays first, and only ever the
-new fields, each entry's `forge` written as the forge's slug as every reference in the document is, so a document
-exported during the transition is already one that survives its end.
+beside the forge record, since the config apply rather than the project plan reads it; and `StoredConfig.former_forges`,
+so a declared slug another forge has left is refused by `_require_unclaimed` as a repository's is. Apply never retires a
+forge, as it never retires anything, and refuses an entry whose `kind` differs from the stored forge's,
+`forge_kind_immutable`, as the API does.
+
+A version-1 document applies as it always did, its entries' addresses resolved as the API resolves an old field
+([Old fields](#old-fields)): a forge an entry's address creates is reconciled before the entry, and the apply result
+lists the warning for each such entry. Its export writes each record's addresses as its forge holds them. A version-2
+export writes the `forges` section right after `projects`, which stays first, and each entry's `forge` as the forge's
+slug, as every reference in the document is, so a document exported in version 2 during the transition is already one
+that survives its end. The retirement refuses version 1 and answers version 2 when no version is asked for.
 
 ## Admin screens
 

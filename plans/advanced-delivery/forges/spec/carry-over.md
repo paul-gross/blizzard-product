@@ -28,12 +28,12 @@ finished by running it again. Within every tenant it:
    - **An address it would have to clean.** An origin carrying a user or password, a query, or a fragment, which
      `canonical_origin` refuses rather than strips. The operator edits the record's address to the bare origin.
    - **Two repositories that would become one coordinate.** Two repositories that differ today only in how their origin
-     was spelled, such as a trailing slash, would collide under the rebuilt `(tenant_id, forge_id, owner, repo)`
-     constraint. Retiring one of the pair does not settle it, since a retired record keeps its claim and is never
-     deleted. Editing a retired record is legal, so the operator edits one of the pair — usually the retired one — so
-     the two no longer name one coordinate: its `repo` to a name that is no longer in use, or its address to the server
-     it truly meant. Work sources cannot collide this way, since their locator constraint is unchanged through the
-     transition ([record.md](./record.md#references)).
+     was spelled, such as a trailing slash, would collide under `uq_repositories_tenant_coordinate` once step 3 stores
+     each address canonical, and would name one coordinate on one forge besides. Retiring one of the pair does not
+     settle it, since a retired record keeps its claim and is never deleted. Editing a retired record is legal, so the
+     operator edits one of the pair — usually the retired one — so the two no longer name one coordinate: its `repo` to
+     a name that is no longer in use, or its address to the server it truly meant. Work sources cannot collide this way,
+     since their locator constraint is unchanged through the transition ([record.md](./record.md#references)).
    - **Two web addresses for one server.** Two GitHub work sources that declare different explicit `web_base`s for one
      canonical origin, compared canonical, would leave its forge with no single web address. A work source whose
      `web_base` is null takes no part, since its effective web origin is derived and the forge derives the same one; but
@@ -41,10 +41,12 @@ finished by running it again. Within every tenant it:
      explicit one, and the migration's log names the null source whose web links move with it. The operator makes the
      explicit ones agree.
 
-   On the hosted hub, which migrates as it starts, a refused upgrade is a failed deploy, and the old hub is the only one
-   left to make the edit on. So none of these four is first met by the migration: a pre-flight check lands one change
-   ahead of it ([Landing order](./index.md#landing-order)), and the migration's refusal is the backstop for an
-   installation that skipped it.
+   On a hub that migrates as it starts, as the hosted hub does, a refused upgrade is a failed deploy, and the old hub is
+   the only one left to make the edit on. So none of these four need first be met by the migration: the pre-flight check
+   ([Landing order](./index.md#landing-order)) reads the store the current hub serves, from the build about to replace
+   it, and names the same records, so the operator settles them on the current hub before moving — even when the build
+   they move from predates the check. The migration's refusal is the backstop for an installation that skipped it, and
+   since it refuses before any step runs, going back from it is the previous build alone, the store untouched.
 2. **Creates the forges.** It creates one forge per distinct canonical origin, visiting origins in sorted order so a
    re-run slugs them identically: kind `github`, that `api_base`, and the explicit `web_base` a work source declared for
    that origin, else null. Its `frg_<ulid>` id is minted deterministically, as the identity revisions mint theirs — the
@@ -58,21 +60,24 @@ finished by running it again. Within every tenant it:
    changes what a frozen revision did. The operator changes either afterwards like any other forge's. Each forge gets
    revision 1 and a `config_changes` row attributed to `migration`; a forge created retired, below, also gets the
    `forge_lifecycle_facts` row that retires it, since creating a record writes no lifecycle fact.
-3. **Points every record at its forge.** Each repository's `forge_id` and each work source's `forge_id` is set to the
-   forge created for its origin, before both columns are tightened to `NOT NULL` and the old columns dropped. A retired
-   record is pointed at its forge like any other, and a forge named only by retired records is created retired.
-4. **Rebuilds the repository coordinate** as `(tenant_id, forge_id, owner, repo)`. The work-source locator constraint is
-   left as it is.
+3. **Points every record at its forge.** It adds `repositories.forge_id` and `work_sources.forge_id`, nullable and with
+   no foreign key, sets each to the forge created for the record's origin, and rewrites the record's old address columns
+   to its forge's, as the store keeps them from then on ([record.md](./record.md#references)): `forge_api_url` and
+   `api_base` to the forge's canonical `api_base`, a null `api_base` included, and `web_base` to the forge's own. It
+   marks the three old columns deprecated in `schema.py` (`info={"deprecated": …}`, naming the line of the release that
+   carries the revision). A retired record is pointed at its forge like any other, and a forge named only by retired
+   records is created retired.
+
+   It changes no constraint the store already has. The repository coordinate keeps keying on `forge_api_url`, which now
+   holds its forge's canonical origin, one per forge, so it keys on the forge as surely as `forge_id` would; the
+   work-source locator is left as it is.
 
 The downgrade walks the store back whole, as every revision's must (`docs/versioning.md`; `test_migrate_up_and_down`):
-it restores `repositories.forge_api_url` from each repository's forge's `api_base` and the coordinate constraint on it,
-restores each work source's `api_base` from its forge's `api_base` and its `web_base` from the forge's own `web_base`,
-drops the `forge_id` columns, the forge tables, and the forges' change rows, which an older hub cannot read, and accepts
-that an address comes back canonical rather than as it was first typed, and a work source's null `api_base` as the
-address it resolved to. It never refuses: two forges never share an API origin, so no two repositories land on one
-restored coordinate, and the work-source locator never stopped being unique without its forge. That is why the locator
-does not widen until the retirement release, which is breaking already and says that its own downgrade refuses a store
-holding one locator on two forges, naming the pairs.
+it drops the `forge_id` columns, the forge tables, and the forges' change rows, which an older hub cannot read, and
+clears the deprecation marks. The old columns already hold every address a hub before the epic reads, so it restores
+nothing and never refuses; an address reads canonical rather than as it was first typed, and a work source's null
+`api_base` as the address it always resolved to. A repository's or work source's change row written with a `forge` field
+stays, read back as any field is.
 
 A repository whose branch links derived their web origin from its own `forge_api_url` may find them moved, where a work
 source on the same server declared an explicit `web_base` the forge now carries ([record.md](./record.md#the-table)).
@@ -86,37 +91,74 @@ spelling resolves to that forge, where its `held` map keys on the raw string tod
 under the import's own `MIGRATION_CONTEXT`, as it records every other row it writes, so an installation imported after
 this epic lands in the same shape as one migrated.
 
+## Expand now, contract at retirement
+
+The transition changes nothing a supported release ships except by adding beside it (`bzh:released-surface-additive`),
+so every step from 1 to 5 is additive to `0.2` and none is breaking. A hub walked back past the migration meets a store
+it already knows how to read, and a client written before the epic meets the responses it always met.
+
+- **The store only expands** (`bzh:store-expand-contract`). Step 3 adds the forge tables and two nullable `forge_id`
+  columns, rewrites values the old columns already held, and marks those columns deprecated; it drops nothing, tightens
+  nothing, and adds no constraint or foreign key to a table that already existed. What the constraints would hold, the
+  store's writes and two invariants hold through the transition ([record.md](./record.md#invariants)).
+- **The configuration document keeps its version.** `ConfigDocument`, `RepositoryDocument`, and `WorkSourceDocument`
+  forbid a property they do not declare, and `GET /api/config/export` answers them, so a field any of them gained would
+  reach a client that refuses it. They stay as they are, as the version-1 document and its entries; the forge's section
+  and the `forge` reference arrive in a version-2 document beside them, and the create routes take request models of
+  their own ([surfaces.md](./surfaces.md#the-configuration-document)).
+
+The retirement, a cleanup that follows the epic, contracts what the transition left beside its replacement
+([below](#the-transition-then-retirement)).
+
 ## The transition, then retirement
 
-The epic lands in two releases. The transition release is what the `flows` and `policies` epics build on; the epic is
-delivered when the retirement release has shipped, but nothing after it waits for that.
+The epic is the transition — steps 1 through 5 on `master` — and it is delivered when they land; the `flows` and
+`policies` epics build on it. The retirement that removes what the transition deprecated is a cleanup of its own that
+follows the epic, belonging to none, and nothing waits for it.
 
-**The transition release** carries the migration, the forge record and its surfaces, the seam, and the `land` action
-ported onto it, in the order [index.md](./index.md#landing-order) sets. The old fields keep working at every door,
-resolved to forges ([surfaces.md](./surfaces.md#old-fields)), and only ever to a GitHub forge, the one kind they could
-name: should the transition outlast the arrival of a second kind, an old field whose origin carries that kind's API
-path, GitLab's `/api/v4`, is refused naming the `forge` field to use instead, never turned silently into a GitHub forge.
-Nothing an operator wrote before the epic stops working, save one write with nowhere left to go: a configuration
-document kept in their repository applies unchanged, and a CLI invocation in a runbook still runs, except one that gives
-a work source a `web_base` disagreeing with its forge's, which is refused naming the forge to set it on
-([surfaces.md](./surfaces.md#old-fields)). The `land` action ships with the hub, so a chunk mid-delivery when the hub
-restarts resumes on the ported action.
+**The transition** carries the migration, the forge record and its surfaces, the seam, and the `land` action ported onto
+it, in the order [index.md](./index.md#landing-order) sets; a release cut partway through carries the steps before its
+cut, each whole. Every old field is marked deprecated in `openapi/hub.openapi.json`, on the requests that accept it as
+on the reads that return it, and the three old columns in `schema.py`, so the retirement removes what the releases it is
+judged against already deprecate. Each deprecation is also announced as `actions` announces its own: a `deprecated` note
+under `changes/unreleased/` (`changes/README.md`) whose `removes-in` is the minor after the release that carries it —
+step 3's for the old request and response fields, the old CLI flags, and the three columns, and step 4's for the
+version-1 configuration document. Should the field not be ready by that line, a `changed` note that `postpones` the
+deprecation moves its `removes-in` on, before that line is cut, since the cut refuses to open a line with an unretired
+promise. The old fields keep working at every door, resolved to forges ([surfaces.md](./surfaces.md#old-fields)), and
+only ever to a GitHub forge, the one kind they could name: should the transition outlast the arrival of a second kind,
+an old field whose origin carries that kind's API path, GitLab's `/api/v4`, is refused naming the `forge` field to use
+instead, never turned silently into a GitHub forge. Nothing an operator wrote before the epic stops working, save one
+write with nowhere left to go: a configuration document kept in their repository applies unchanged as version 1, and a
+CLI invocation in a runbook still runs, except one that gives a work source a `web_base` disagreeing with its forge's,
+which is refused naming the forge to set it on ([surfaces.md](./surfaces.md#old-fields)). The `land` action ships with
+the hub, so a chunk mid-delivery when the hub restarts resumes on the ported action.
 
 The workspace's feature-environment seeding (`.winter/config/winter-service-tmux/hub-host.sh`) writes a configuration
-document naming `api_base` and `forge_api_url` today, and keeps doing so until the retirement release. One script seeds
-every feature environment, and the environments run blizzard at different revisions — some before the epic, which refuse
-an entry they do not know — so the old fields are the only document all of them accept. A feature environment's
+document naming `api_base` and `forge_api_url` today, and keeps doing so until the retirement. One script seeds every
+feature environment, and the environments run blizzard at different revisions — some before the epic, which refuse an
+entry they do not know — so the old fields are the only document all of them accept. A feature environment's
 `config-old-field-used` events are expected and say nothing about the instances blizzard runs. The script moves to a
-`forges` section and `forge` references in the retirement release's own change.
+version-2 document, with a `forges` section and `forge` references, in the retirement's own change.
 
-**The retirement release** removes the old fields from every door, refusing them `422 field_moved_to_forge`, removes the
-old CLI flags, and widens the work-source locator to its forge ([record.md](./record.md#references)). It is not built
-with the transition. It is a chunk of its own, minted by a person rather than decomposed from this spec, no sooner than
-one release after the transition release ships and only once the hosted hub has recorded no `config-old-field-used`
-event through a whole release. Because it removes request fields and the old CLI flags, its commit is marked breaking,
-`feat!` (`docs/versioning.md`), and its release notes name each removed field with what replaces it. The event joins the
-closed `EventLogKind` and its severity map (`foundation/event_log.py`) as a warning, and is removed with the fields it
-reports.
+**The retirement** removes the old fields from every door, refusing them `422 field_moved_to_forge`, refuses a version-1
+configuration document naming version 2, answers version 2 from the export and schema routes when no version is asked
+for, and removes the old CLI flags. Its revision contracts the store: it tightens both `forge_id` columns to `NOT NULL`
+foreign keys onto `forges`, rebuilds the repository coordinate as `(tenant_id, forge_id, owner, repo)`, widens the
+work-source locator to its forge ([record.md](./record.md#references)), and drops `repositories.forge_api_url`,
+`work_sources.api_base`, and `work_sources.web_base`. Its downgrade restores the three columns from each record's forge
+and the constraints on them, and refuses a store holding one locator on two forges, naming the pairs. It is not part of
+the epic. It is a standalone cleanup chunk, filed beside the epic but taken up only when a person decides the time has
+come rather than decomposed from this spec, no sooner than one release after a release carrying all five transition
+steps ships, and only once the hosted hub has recorded no `config-old-field-used` event through a whole release. Because
+it removes request and response fields, a document version, and the old CLI flags, and contracts the store, its commit
+is marked breaking, `feat!` (`docs/versioning.md`), its `removed` notes each `retire` their deprecation, and its release
+notes name each removed field with what replaces it. The constraints it adds to `repositories` and `work_sources` sit on
+tables no release marks deprecated, so they pass as a break the window admits: the cleanup raises `floor`
+(`wire/window.toml`) to the line that first shipped the deprecations, which refuses a runner below that line from then
+on. It is taken up together with the other advanced-delivery cleanups, the `actions` and `flows` epics', so `floor`
+rises once for all of them. The event joins the closed `EventLogKind` and its severity map (`foundation/event_log.py`)
+as a warning, and is removed with the fields it reports.
 
 Runners are untouched by both: nothing in this epic crosses the runner's wire.
 
@@ -146,15 +188,15 @@ The invariant checker's `hub:forge-reference-standing` passes on a carried-over 
 the migration, carried over, serves the same repository and work-source documents with `forge_id`, `forge_slug`, and
 `forge_name` beside the addresses they held, resolves every chunk's commits to the same repositories, and lands a chunk
 against the mock forge through the seam with the same outcomes and markers the `land` action produced before it. A
-configuration document written before the epic applies to it unchanged, with a warning per old field, and its export
-applies cleanly after retirement. A store holding a feature environment's `http://127.0.0.1:<port>` origin carries over
-with its port; one holding two spellings of one coordinate, retired or not, is refused naming both, and carries over
-once one of them is edited; one holding an address with a user in it, or a work-source address with no scheme, is
-refused naming the record; and one whose work source stores an empty `api_base` carries over onto the `github` forge.
-The downgrade walks a carried-over store back to the shape it came from, its addresses canonical. Every case in
-`tests/fixtures/canonical_origin_cases.json` answers alike from `canonical_origin` and from the revision's frozen copy.
-The pre-flight check names, on a store the migration would refuse, the same records the migration names. Beyond the
-carry-over:
+configuration document written before the epic applies to it unchanged, with a warning per old field, and its version-2
+export applies cleanly after retirement. A store holding a feature environment's `http://127.0.0.1:<port>` origin
+carries over with its port; one holding two spellings of one coordinate, retired or not, is refused naming both, and
+carries over once one of them is edited; one holding an address with a user in it, or a work-source address with no
+scheme, is refused naming the record; and one whose work source stores an empty `api_base` carries over onto the
+`github` forge. The downgrade walks a carried-over store back to the shape it came from, its addresses canonical, and a
+hub from before the epic starts on it. Every case in `tests/fixtures/canonical_origin_cases.json` answers alike from
+`canonical_origin` and from the revision's frozen copy. The pre-flight check names, on a store the migration would
+refuse, the same records the migration names. Beyond the carry-over:
 
 - A registry handed a capabilities map that offers less than `land` requires refuses the visit before the pass, the
   chunk escalated once with cause `forge-capability-missing` and a second `hub-advance` against the same visit finding

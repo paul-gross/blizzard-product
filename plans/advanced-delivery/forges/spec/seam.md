@@ -255,12 +255,13 @@ which the ending process releases anyway, rather than raising out of the cache.
 
 The garden's commit check stops being a separate forge path, and `garden-deliver` stays the action the actions epic made
 it: it holds no branch (`ActionSpec.lands` is false), is handed no forge, and reveals no secret. The check stays where
-the actions epic left it, in the effect writer that runs `GardenDeliveryService` when the action hands back its
-`RecordGardenDelivery`, and only its resolver changes. `SeamCommitResolver` (`hub/forge/commit_check.py`) replaces
-`RepositoryCommitResolver` (`hub/forge/repository_commits.py`) with the same shape — `for_project(project_id)` answers
-the `CommitResolver` callable the garden validation already takes, never raising. For each cited `(repo, commit)` pair
-it resolves the repository through `resolve_repository` over the repositories the project links, as today, asks
-`ForgeRegistry.refs` for that repository, and runs `commit_exists` on the action loop from the writer's thread through
+the actions epic left it, in the effect writer that runs `GardenDeliveryRecorder`
+(`hub/domain/garden/delivery/service.py`) when the action hands back its `RecordGardenDelivery`, and only its resolver
+changes. `SeamCommitResolver` (`hub/forge/commit_check.py`) replaces `RepositoryCommitResolver`
+(`hub/forge/repository_commits.py`) with the same shape — `for_project(project_id)` answers the `CommitResolver`
+callable the garden validation already takes, never raising. For each cited `(repo, commit)` pair it resolves the
+repository through `resolve_repository` over the repositories the project links, as today, asks `ForgeRegistry.refs` for
+that repository, and runs `commit_exists` on the action loop from the writer's thread through
 `asyncio.run_coroutine_threadsafe`, waiting at most ten seconds and cancelling the future when the wait runs out, so an
 abandoned check never keeps a forge call running on the action loop. A repository no link resolves, a secret that cannot
 be revealed, a `ForgeUnavailable`, a `ForgeNotFound("repository")`, a timeout, or any other error answers `None`, which
@@ -268,7 +269,7 @@ degrades the commit to a well-formedness check as it does today; a `CommitPresen
 changes on purpose: today a 404 on a repository the credential cannot see answers the commit absent
 (`commit_resolver.py`), which refuses a delivery for a commit nobody could look for; through the seam's probe it is a
 `ForgeNotFound("repository")` and degrades to `None`, as every other unreachable repository already does.
-`GardenDeliveryService` and the validation callable are unchanged. `GitHubCommitResolver`
+`GardenDeliveryRecorder` and the validation callable are unchanged. `GitHubCommitResolver`
 (`hub/forge/internal/commit_resolver.py`), `ICommitForge`, and `RepositoryCommitResolver` are deleted.
 `hub/forge/web.py::branch_url` reads the repository's forge for its effective web origin, which the domain derives
 ([record.md](./record.md#the-table)).

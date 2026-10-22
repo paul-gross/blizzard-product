@@ -57,12 +57,12 @@ runs when the repository's forge lacks one, rather than letting it discover the 
   repository and work source pointed at its own, with nothing reconfigured by hand. Two spellings of one server's
   address are one server, a port is part of the address, and the rare installation whose records could not be carried
   without one of them silently changing is refused before anything moves, naming what to settle.
-- **Old fields through a transition, then retired.** For a release, every door still accepts the addresses a repository
-  and a work source carried before, resolving each to its forge, so a configuration document or a runbook written before
-  the epic keeps working while it is moved over — save a work source's own web address where it disagrees with its
-  forge's, which now belongs to the forge and is refused naming where to set it. The hub notes every use and warns
-  whoever made it. Once the uses stop, the old fields are retired, and anything still sending them is refused with a
-  message naming what replaced it.
+- **Old fields through a transition.** Every door still accepts the addresses a repository and a work source carried
+  before, resolving each to its forge, so a configuration document or a runbook written before the epic keeps working
+  while it is moved over — save a work source's own web address where it disagrees with its forge's, which now belongs
+  to the forge and is refused naming where to set it. The hub notes every use and warns whoever made it, so an operator
+  can see when nothing still sends one. Retiring the old fields once the uses stop is not this epic's: it is a cleanup
+  that follows it, after which anything still sending them is refused with a message naming what replaced it.
 
 ## Left for later
 
