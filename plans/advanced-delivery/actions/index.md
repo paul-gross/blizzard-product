@@ -59,9 +59,11 @@ retired.
 - **The door closed.** The hub stops starting processes for graphs, and the environment and per-visit token it handed a
   step are removed, so nothing a tenant writes runs with the hub's reach.
 - **Retired the way anything released is.** What only the scripts ever called — the routes the token unlocked,
-  `blizzard hub record-marker`, the scripts' working directories on disk, and the step's trace span — is announced as
-  deprecated in the release that stops running `run:`, and removed in a later release of its own, so no operator meets a
-  removal no release warned them of.
+  `blizzard hub record-marker`, the scripts' working directories on disk, the step's trace span, and the column the
+  steps were stored in — is announced as deprecated in the release that stops running `run:` and kept working beside its
+  replacement, so every landing of this epic is one a supported release can meet. Taking it out is not this epic's work:
+  a cleanup of its own removes it in a later release, once an operator decides a release may carry the break, so no
+  operator meets a removal no release warned them of.
 
 ## Left for later
 

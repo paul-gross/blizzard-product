@@ -24,20 +24,23 @@ deliver:
 value or a list of them, as `garden_deliver.py`'s repeatable `--delta` and `--proposals` do; an argument a node leaves
 out reads as the empty tuple. `Node` carries the same, carried from `NodeDoc` at mint by `authoring.py`. `graph_nodes`
 (`hub/store/schema.py`) gains `action` (String, null) and `action_args` (Text, JSON, null) in the epic's first
-migration, and in its second loses `run` and gains `legacy_run` (Text, null), which keeps verbatim the step list of a
-row the translation could not match ([carry-over.md](./carry-over.md#the-migrations)); all three are written and read by
+migration, and in its second gains `legacy_run` (Text, null), which keeps verbatim the step list of a row the
+translation could not match, while `run` stays, deprecated and no longer read or written, until the retirement that
+follows drops it ([carry-over.md](./carry-over.md#the-migrations)); all of them are written and read by
 `hub/store/internal/graph_store.py`. The graph wire model, `GraphNodeView` (`wire/graph.py`), carries no command today;
 it gains `action` and `action_args`, the OpenAPI document with it, and the web graph view shows a hub node's action.
 Until the second migration a hub node names exactly one of `action:` and `run:`, and the executor drives a node that
 names `run:` through today's step loop ([Landing order](./index.md#landing-order)).
 
-`NodeShape.is_hub_command_node` becomes `executor is HUB`, where today it also asks for a non-empty `run:`. Every hub
-node is driven, since every hub node minted from here on names an action, and one carried over without one is driven to
-its escalation ([carry-over.md](./carry-over.md#what-does-not-translate)). Its callers follow: `hub_advance_node`
-(`hub/domain/chunk/model.py`) answers for a chunk standing at any hub node, so a stored node whose `run:` was empty,
-which `hub-advance` never re-drove, is driven from here on and takes `pass`.
+`NodeShape.is_hub_command_node` becomes `executor is HUB` in the first landing, where today it also asks for a non-empty
+`run:`; nothing less lets `hub-advance` re-drive a `land` pass that answered `pending`. Every hub node is driven: one
+naming an action through a pass, one naming `run:` through the step loop, and, after the second migration, one carried
+over without an action to its escalation ([carry-over.md](./carry-over.md#what-does-not-translate)). Its callers follow:
+`ChunkFacts.hub_advance_node` (`hub/domain/chunk/model.py`) answers for a chunk standing at any hub node, so a stored
+node whose `run:` was empty, which `hub-advance` never re-drove, is driven from the first landing — by the step loop's
+empty run until the second migration gives it `pass`.
 
-`validation.py`'s `_check_run` becomes `_check_action`, which reads the action catalogue
+`NodeCheck._check_run` (`validation.py`) becomes `_check_action`, which reads the action catalogue
 ([The catalogue](#the-catalogue)), a module of the `graph` package itself, and never the actions themselves:
 
 - `action` is legal only on `executor: hub` and required there, and it names an action in the catalogue.
@@ -49,7 +52,8 @@ which `hub-advance` never re-drove, is driven from here on and takes `pass`.
   here it is refused at mint, by the same membership test every reserved wait a later epic adds passes through.
 - `poll_interval` and `poll_timeout` are legal only on a node whose action can answer a reserved wait, so `land` takes
   them and `record-findings`, `garden-deliver`, and `pass` refuse them, as a node without `run:` refuses them today
-  (`_check_poll`).
+  (`_check_poll`). Until `run:` is refused, a node naming `run:` keeps today's rule, asking for a non-empty list, since
+  `is_hub_command_node` no longer does.
 
 `bounce_cap`, the authored `failure` choice, and every other rule a hub node is held to are unchanged. `run:` is refused
 at mint, naming `action:` as its replacement; a stored `definition_yaml` is translated as
@@ -175,10 +179,10 @@ pass and a `hub-advance`, say — finds it recorded and writes nothing.
 ## A merge that has happened
 
 A merge on a forge is a fact whether or not the chunk is still where the pass found it. Today `record_marker` writes the
-`merged/<repo>` marker through `record_hub_artifact`, whose fence (`fence()`, `hub/store/internal/chunk_rows.py`)
-refuses a terminal chunk before it reads the epoch, so a chunk stopped, completed, restarted, or migrated while its land
-step merged loses the marker and its `delivery_repo_landed` row though the base already carries the work; the row is
-written in a second transaction besides.
+`merged/<repo>` marker through `record_hub_artifact` (`hub/store/internal/chunk_artifacts_store.py`), whose fence
+(`fence()`, `hub/store/internal/chunk_rows.py`) refuses a terminal chunk before it reads the epoch, so a chunk stopped,
+completed, restarted, or migrated while its land step merged loses the marker and its `delivery_repo_landed` row though
+the base already carries the work; the row is written in a second transaction besides.
 
 `LandingRecord` closes that. The executor writes it in one transaction that holds the `merged/<repo>` marker, its
 `delivery_repo_landed` row stamped with the record id the effect carries, and the close intents `enqueue_close_intents`
@@ -269,7 +273,10 @@ The executor opens a live span around each pass on its own thread, `ACTION_PASS_
 `hub/domain/observability/tracing/platform.py`), a child of the visit's linked `HUB_EXEC` context exactly where
 `RUN_STEP_SPAN` opens today, carrying `blizzard.hub.action.name` and `blizzard.hub.action.choice`. `HUB_EXEC` itself is
 not a live span — it is assembled after the fact from the slot's rows (`tracing/summary.py`, `tracing/assembly.py`) — so
-the pass's attributes ride the child that is.
+the pass's attributes ride the child that is. Like the step span's, the pass span's name stays out of
+`contracts/traces/dictionary.json`, which declares a hub span's attributes and not its name (`platform.py`); the two
+attributes join the dictionary's platform attributes beside `blizzard.hub.run_step.name` and
+`blizzard.hub.run_step.exit_code`.
 
 The callers are today's: `HubNodeExecutor.run` through `IHubNodeExecutor.run` (`hub/domain/execution/apply.py`), which
 `ApplyService._respond` and `_land_migration` reach inside a worker's completion or a migration, and the `hub-advance`
@@ -358,7 +365,8 @@ other scripts and `hub/graphs/scripts/`; stored versions that still name it are 
 ## Crash points
 
 The windows a pass opens are the effect writer's, and each is a named point in `bzh:crash-point-registry`
-(`foundation/crash.py`), reached by the executor as it writes:
+(`foundation/crash.py`), declared beside the executor that reaches it as it writes, as the step loop's points are
+declared in `hub/delivery/hub_node.py` today:
 
 | Point                                    | Window                                                                                                                          | Takes the place of                               |
 | ---------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------ |

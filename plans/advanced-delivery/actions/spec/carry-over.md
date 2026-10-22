@@ -1,9 +1,9 @@
 # Carry-over
 
 An installation keeps every stored graph, every pinned chunk, and every chunk mid-delivery, carried onto actions across
-the epic's four landings and the retirement release after them ([Landing order](./index.md#landing-order)), with nothing
-re-pinned by hand. Chunks pinned to versions that named the packaged landing script land as they did; a version that
-named an older script lands through `land` and waits on checks as `land` does.
+the epic's four landings ([Landing order](./index.md#landing-order)), with nothing re-pinned by hand. Chunks pinned to
+versions that named the packaged landing script land as they did; a version that named an older script lands through
+`land` and waits on checks as `land` does.
 
 ## Translation
 
@@ -40,37 +40,51 @@ may author no `inherited-failure`; when `land` answers a choice such a version d
 person ([Routing an answer](./actions.md#routing-an-answer)).
 
 The map lives in `LEGACY_RUN_COMMANDS` (`hub/domain/graph/legacy_run.py`) and is used where a stored document is parsed:
-`graph_sync`'s `_parsed`, which reads `newest_definition_yaml`, translates a `run:` it matches into its action, so a
-`definition_yaml` written before the epic still parses and `graph_sync` compares the packaged graph against it rather
-than minting a needless version. Nothing else re-parses a stored document: the graph wire serves `definition_yaml` as it
-was stored, the record of what was minted, and a person who authors a new graph from one meets the mint refusal that
-names `action:`. A graph authored from here on is never translated; `run:` in it is refused. The second migration
-restates the map in its own frozen revision rather than importing `legacy_run.py`.
+`GraphReconciliation._parsed` (`hub/graph_sync.py`), which reads `newest_definition_yaml`, translates a `run:` it
+matches into its action, so a `definition_yaml` written before the epic still parses and `graph_sync` compares the
+packaged graph against it rather than minting a needless version. Nothing else re-parses a stored document: the graph
+wire serves `definition_yaml` as it was stored, the record of what was minted, and a person who authors a new graph from
+one meets the mint refusal that names `action:`. A graph authored from here on is never translated; `run:` in it is
+refused. The second migration restates the map in its own frozen revision rather than importing `legacy_run.py`.
 
 ## The migrations
 
 Two manual migrations (`bzh:manual-migrations`) under `hub/store/migrations/versions/`, each frozen once it reaches
 `master` (`bzh:frozen-revisions`), inside the portable surface (`bzh:sql-portable`), with its colocated migration test
 (`bzh:colocated-migration-tests`) and a working `downgrade()` that
-`tests/test_store_migrations.py::test_migrate_up_and_down` walks. Neither is one-way, so neither is a breaking change
-under `docs/versioning.md`. Each lands with its columns in `contracts/store/hub.json`, which `blizzard:store-contract`
-holds to the schema.
+`tests/test_store_migrations.py::test_migrate_up_and_down` walks. Both only expand (`bzh:store-expand-contract`): each
+adds nullable columns and writes rows, and neither drops, renames, or tightens anything a supported release reads, so
+`blizzard:compat` finds nothing in either. Each lands with its columns in `contracts/store/hub.json`, which
+`blizzard:store-contract` holds to the schema.
 
 The first, in the epic's first landing, adds `graph_nodes.action` (String, null), `graph_nodes.action_args` (Text, JSON,
 null), and `hub_node_poll.next_poll_at` (UtcDateTime, null), where a waiting pass's next-poll hint is kept; existing
 rows carry none. It writes no row. Its `downgrade()` first gives every hub row whose `run` is null and whose `action` is
-set the step list the inverse map below restores, so a version minted onto an action between the two landings still runs
+set the step list the inverse map below restores, so a version minted onto an action between the landings still runs
 under the older hub, then drops the three columns.
 
 The second, in the epic's third landing, sets `action` and `action_args` for every hub `graph_nodes` row in every tenant
-from its `run` through the map, adds `legacy_run`, moves into it verbatim the `run` of each row the map does not match,
-and drops `run`. A row left without an action is reported in the migration's log by its graph's id and name, the graph's
-`created_at`, the node's name, and the tenant — graphs carry no version column, so a version is named by the row that
-minted it — and the executor's escalation names the command from `legacy_run`
-([What does not translate](#what-does-not-translate)). Its `downgrade()` re-adds `run`, fills it from `legacy_run` where
-that is set and from the inverse map otherwise, and drops `legacy_run`.
+that names no action yet — a version minted onto an action since the first landing keeps its own — from its `run`
+through the map, adds `legacy_run` (Text, null), and copies into it verbatim the `run` of each row the map does not
+match. It leaves `run` where it is. A row left without an action is reported in the migration's log by its graph's id
+and name, the graph's `created_at`, the node's name, and the tenant — graphs carry no version column, so a version is
+named by the row that minted it — and the executor's escalation names the command from `legacy_run`
+([What does not translate](#what-does-not-translate)). Its `downgrade()` clears `action` and `action_args` on every row
+whose `run` is set — the rows it translated — and drops `legacy_run`; a row minted onto an action since keeps it, which
+a hub carrying the first landing runs, and the first migration's downgrade gives it the inverse map's `run` on the way
+further back. Every row the migration found therefore walks back exactly as it was minted.
 
-The inverse map restores the step each action was in the packaged graphs:
+From the third landing, `graph_nodes.run` is deprecated rather than dropped, since every supported release reads it and
+none yet marks it deprecated. Its `Column` in `hub/store/schema.py` carries `info={"deprecated": "<line>"}`, naming the
+line of the release that first carries the landing, `contracts/store/hub.json` says so, and a `deprecated` note joins
+the landing's others ([The deprecation, then retirement](#the-deprecation-then-retirement)). Outside the migrations, the
+hub stops reading and writing it: `graph_store.py` stores a null `run` for every node minted from here and reads a
+node's steps from nowhere, since a translated node is taken by its action and an untranslated one is escalated from
+`legacy_run`. The column leaves in the retirement that follows the epic. `legacy_run` stays for good: it is the record
+of every command the translation could not carry, and nothing retires it.
+
+The inverse map restores the step each action was in the packaged graphs, for a row minted onto an action, which carries
+no `run` of its own:
 
 | `action`          | `run` restored                                                                                           |
 | ----------------- | -------------------------------------------------------------------------------------------------------- |
@@ -79,17 +93,21 @@ The inverse map restores the step each action was in the packaged graphs:
 | `garden-deliver`  | one step `materialize-garden-artifacts`, `garden_deliver` with a `--delta` and a `--proposals` per value |
 | `pass`            | null                                                                                                     |
 
-`land_default` and `land_ff` both restore as `land_pr_ci`, the one landing script the older hub still ships. A test
-action has no inverse and is never minted outside the test fences, so a downgrade that meets one raises, naming the row.
-A downgraded hub's `graph_sync` finds the newest stored `definition_yaml` naming `action:` unparseable, which it already
-treats as changed (`graph_sync._parsed`), and mints the packaged graph afresh; nothing stalls on it.
+A test action has no inverse and is never minted outside the test fences, so a downgrade that meets one raises, naming
+the row. An older hub does not refuse a node key it does not know, so it reads a stored `definition_yaml` naming
+`action:` as a hub node with an empty `run:`; that differs from the packaged graph, so the next sync of the packaged set
+mints it afresh, and nothing stalls on it.
 
-The epic's second landing moves the packaged graphs onto actions, and `graph_sync` mints one new version of each that
-has a hub node — `basic-development-workflow`, `advanced-development-workflow`, `basic-harness-workflow`,
-`garden-routine`, and `ideation`; `default` has none — since their nodes now name actions and the land nodes change
-their `poll_timeout`, as do the `advanced-development-workflow` prompts that name the landing log. Chunks already pinned
-stay on the version they hold; only chunks minted after that landing take the new one. The third landing mints nothing:
-the translation makes each older stored document parse to what it already was.
+The epic's second landing moves the packaged graphs onto actions, which earns one new version of each that has a hub
+node — `basic-development-workflow`, `advanced-development-workflow`, `basic-harness-workflow`, `garden-routine`, and
+`ideation`; `default` has none — since their nodes now name actions and the land nodes change their `poll_timeout`, as
+do the `advanced-development-workflow` prompts that name the landing log. Nothing syncs the packaged set at boot:
+`graph_sync` runs from `blizzard hub graph sync` (`POST /api/admin/graphs/sync`) and mints the set into a tenant when it
+is created. So minting those versions is a step of the operator's move onto a release carrying the landing, taken after
+the hub has moved and with the release's own graphs — an older hub, reading `action:` as a key it does not know, would
+mint a delivery node that does nothing. Chunks already pinned stay on the version they hold; only chunks minted after
+the new versions take them. The third landing mints nothing: the translation makes each older stored document parse to
+what it already was.
 
 ## The mock's seeded graph
 
@@ -139,21 +157,27 @@ The fourth landing removes everything a step was handed or ran through that no c
   their wiring. Nothing writes under `data_dir/hub_workdirs/` from here; the durable path itself is the retirement's
   ([The deprecation, then retirement](#the-deprecation-then-retirement)).
 - `HubEnv`, every `ENV_*` constant, `PrintedChoice`, `_run_step`, `_NoopStep`, and `FailedStep`
-  (`hub/delivery/hub_node.py`). The `bzh:hub-node-env-contract` variables are no longer set anywhere.
-  `BounceEnvelope.step`, which carried the `FailedStep`, becomes `action`: the name of the action whose pass the bounce
-  came from, the choice it answered, and its log artifact's name, and the bounce detail reads
-  ``"`{action}` answered {choice}"`` where it read the step's exit code. The board renders an envelope's unknown keys
-  generically, so envelopes recorded before the upgrade show `step` among their extras and later ones `action`; the
-  difference is accepted rather than rewritten. The crash points around a step give way to the effect writer's
-  ([Crash points](./actions.md#crash-points)).
+  (`hub/delivery/hub_node.py`). The `bzh:hub-node-env-contract` variables are no longer set anywhere. The bounce
+  envelope, which carried the `FailedStep` in `step`, carries `action` beside it: the name of the action whose pass the
+  bounce came from, the choice it answered, and its log artifact's name, and the bounce detail reads
+  ``"`{action}` answered {choice}"`` where it read the step's exit code. The envelope's schema, `BounceEnvelope`
+  (`wire/bounce.py`), gains `action` as an optional field, and `step` stays as it is declared, required and nullable,
+  written `null` from here, so the change to `openapi/hub.openapi.json` only adds. `step` is marked deprecated in the
+  same landing ([The deprecation, then retirement](#the-deprecation-then-retirement)), and stays until the retirement
+  removes it. The board's `parseBounceEnvelope`
+  (`web/projects/fleet/src/lib/chunk/chunk-detail/parse-bounce-envelope.ts`) reads `action` as it reads `step`, and the
+  bounce card renders the action and its choice where it renders the step and its exit, so an envelope recorded before
+  the upgrade shows its step and a later one its action; neither is rewritten. A 0.2 board, met only after its hub walks
+  the store back, shows every key of an envelope generically, `action` among them. The crash points around a step give
+  way to the effect writer's ([Crash points](./actions.md#crash-points)).
 - The marker token: `MarkerAuthority`'s minting and verification (`hub/delivery/marker_auth.py`), the process-level
   `marker_authority` and `hub_marker_callback_base_url` composition builds it from (`hub/composition.py`, `hub/app.py`),
-  `MarkerPrincipal` and its place in the `Principal` union, `MARKER_TOKEN_HEADER`, the marker branch of
-  `_machine_credential` (`hub/api/auth_session.py`), and `require_marker_authority` (`hub/api/marker_auth.py`), so the
-  three routes it guarded admit only a person holding `CHUNK_CONTROL`, through the gate it fell through to. A token was
-  only ever minted into a step's environment, so nothing outside the hub held one to present. The
-  `garden-delivery-failure` and `review-findings-failure` markers the scripts wrote are written by their actions under
-  the same names, so the prompts that read them are unchanged. The visit's resolved repositories, which
+  `MarkerPrincipal` (`hub/delivery/marker_auth.py`) and its place in the `Principal` union, `MARKER_TOKEN_HEADER`, the
+  marker branch of `_machine_credential` (`hub/api/auth_session.py`), and `require_marker_authority`
+  (`hub/api/marker_auth.py`), so the three routes it guarded admit only a person holding `CHUNK_CONTROL`, through the
+  gate it fell through to. A token was only ever minted into a step's environment, so nothing outside the hub held one
+  to present. The `garden-delivery-failure` and `review-findings-failure` markers the scripts wrote are written by their
+  actions under the same names, so the prompts that read them are unchanged. The visit's resolved repositories, which
   `hold_repositories` pinned for the marker route, reach the action on the `Visit`, and
   `delivery_repo_landed.repository_id` is stamped from the record id each `LandingRecord` carries.
 - `BZ_HUB_LAND_TEST_PAUSE_SECONDS`: the kill-9 sweep reaches the windows it held open through armed crash points
@@ -166,8 +190,8 @@ start with and imports through `blizzard hub config import-legacy`, not variable
 ## The deprecation, then retirement
 
 What only the scripts used sits on surfaces `docs/versioning.md` holds a release to, so it leaves as anything released
-does: deprecated in one release, removed in a later one. The epic is delivered when the retirement release has shipped,
-but nothing after it waits for that.
+does: deprecated in one release, removed in a later one. The epic does the first half and is delivered when its four
+landings land; the removal is a cleanup that follows it, outside the epic, and nothing after the epic waits for it.
 
 **Deprecated in the third landing.** Each surface below gets a `deprecated` note under `changes/unreleased/`
 (`changes/README.md`) whose `removes-in` is the minor after the release that carries it:
@@ -179,20 +203,28 @@ but nothing after it waits for that.
 - `blizzard hub record-marker` (`cli`). It only ever worked inside a step's environment, so from the third landing it
   cannot succeed; from the fourth, its `ENV_*` imports gone, it refuses at once, saying a hub step no longer runs
   commands and naming the release that removes it.
+- `graph_nodes.run` (`store`), marked deprecated on its `Column` and in `contracts/store/hub.json`, and no longer read
+  or written by the hub ([The migrations](#the-migrations)).
 - The `data/hub_workdirs` durable path (`config`). Nothing writes it from the fourth landing; its `DurablePath` stays,
   its `holds` saying so, and an installation's existing directory is left in place.
-- The step's trace span, `RUN_STEP_SPAN` and its `RUN_STEP_*` attributes (`blizzard.hub.run_step.*`), marked deprecated
-  in `contracts/traces/dictionary.json` and `docs/deployment/tracing.md`, naming `ACTION_PASS_SPAN` in its place
-  (`trace`). The pass's span and its `blizzard.hub.action.name` and `blizzard.hub.action.choice` attributes join the
-  dictionary in the first landing ([Where a pass runs](./actions.md#where-a-pass-runs)), so both are emitted while
-  graphs name both; from the third landing the step span is not emitted, since nothing it describes runs, but its name
-  stays declared until the retirement.
+- The step's trace span (`trace`). `contracts/traces/dictionary.json` declares a hub span's attributes, never its name,
+  so what it marks deprecated are the step span's two, `blizzard.hub.run_step.name` and
+  `blizzard.hub.run_step.exit_code`, each naming the `blizzard.hub.action.*` attributes in their place;
+  `docs/deployment/tracing.md` marks the `hub run step` span itself deprecated, naming `hub action pass`. The pass's
+  span and its `blizzard.hub.action.name` and `blizzard.hub.action.choice` attributes arrive in the first landing
+  ([Where a pass runs](./actions.md#where-a-pass-runs)), so both spans are emitted while graphs name both; from the
+  third landing the step span is not emitted, since nothing it describes runs, but its attributes stay declared until
+  the retirement.
 
-The same landing's `changed` note and its `docs/upgrade.md` section tell an operator what they now meet: a graph naming
+**Deprecated in the fourth landing.** `BounceEnvelope.step` (`http-api`), with `BounceFailedStep` behind it, marked
+deprecated on its field so `openapi/hub.openapi.json` says so, under a `deprecated` note of the same form. It stays
+required and nullable, and the hub writes it `null`.
+
+The third landing's `changed` note and its `docs/upgrade.md` section tell an operator what they now meet: a graph naming
 `run:` is refused at mint, a custom `run:` command escalates its chunk rather than running, and the default poll timeout
 is three hours.
 
-**The retirement release** removes them:
+**The retirement**, the cleanup that follows the epic, removes them:
 
 - The three routes, with their wire models (`GardenDeliveryRequest` and `GardenDeliveryResponse`, and the marker and
   review-findings request and response models in `wire/chunk.py`), their paths in `openapi/hub.openapi.json`, and the
@@ -204,17 +236,30 @@ is three hours.
   requires.
 - `WORKDIRS_DIRNAME` (`hub/layout.py`), its `DurablePath` in `hub/config_keys.py`, and the `data/hub_workdirs` entry in
   `contracts/config/hub.json`. The hub removes `data_dir/hub_workdirs/` at its first boot after the upgrade.
-- The step span's constants (`hub/domain/observability/tracing/platform.py`), its dictionary entries, and its
-  description in `docs/deployment/tracing.md`, raising `blizzard.trace.schema_version` as every breaking trace change
-  does.
+- The step span's constants (`hub/domain/observability/tracing/platform.py`), its two attributes' dictionary entries,
+  and its description in `docs/deployment/tracing.md`, raising `blizzard.trace.schema_version` as every breaking trace
+  change does.
+- `graph_nodes.run` (`store`), in a migration of its own that drops the column and whose `downgrade()` re-adds it,
+  filled from `legacy_run` where that is set and from the inverse map otherwise, so a hub of the deprecating line, which
+  never reads it, and one before it, which does, both find a `run` to walk back onto. `contracts/store/hub.json` and the
+  `Column` in `hub/store/schema.py` go with it.
+- `BounceEnvelope.step` and `BounceFailedStep` (`wire/bounce.py`), their schemas in `openapi/hub.openapi.json`, and the
+  board's reading of `step`; an envelope recorded before the fourth landing keeps its `detail`, the line every reader of
+  a bounce already shows.
 
 Its `removed` notes each `retires` their deprecation, and its `docs/upgrade.md` section names what replaced each. It is
-not built with the epic's landings. It is a chunk of its own, minted by a person rather than decomposed from this spec,
-once a release carrying the deprecations has shipped and before the line their `removes-in` names is cut, since the cut
-refuses to open a line with an unretired promise. Because it removes routes, a CLI command, a durable path, and a span,
-its commit is marked breaking, `feat!` (`docs/versioning.md`).
+no landing of the epic. It is a chunk of its own, filed beside the epic but belonging to none, and taken up only once an
+operator decides a release may carry the break: after a release carrying the deprecations has shipped, and before the
+line their `removes-in` names is cut, since the cut refuses to open a line with an unretired promise. Because it removes
+routes, a CLI command, a durable path, a span's attributes, and a column, its commit is marked breaking, `feat!`
+(`docs/versioning.md`). Its findings pass only as breaks the window admits, on surfaces every supported release marks
+deprecated, so it raises `floor` in `wire/window.toml` to the line whose release first carried the deprecations, as
+`docs/versioning.md` asks of the change that removes what a released minor deprecated; from it, a runner of an earlier
+line is refused registration. So that `floor` rises once, the retirement is taken up together with the cleanups the
+`forges` and `flows` epics leave behind, in the same release.
 
-Runners are untouched by both: nothing in this epic crosses the runner's wire.
+Nothing in this epic crosses the runner's wire, so its landings leave runners untouched; the retirement reaches them
+only through the `floor` it raises.
 
 ## Tests
 
@@ -269,8 +314,16 @@ start and nowhere else.
 - Every shipped graph's hub node, minted from its packaged file and from each stored version's `definition_yaml`, names
   the action its script was, and a node with an empty `run:` names `pass` — `blizzard:unit-test`.
 - Each migration carries a store of every translated shape, an untranslatable row, and a version minted onto an action
-  between the two, up and back down, with `run` restored by the inverse map — its colocated migration test and
+  between the two, up and back down, with every row the second migration found walking back as it was minted and the
+  version minted onto an action given the inverse map's `run` — its colocated migration test and
   `blizzard:store-contract`.
+- Every landing is additive to every supported release: `blizzard:compat` reports no finding on any of the four, with
+  `graph_nodes.run` declared deprecated, not dropped, from the third — `blizzard:compat`.
+- After the third landing no hub code reads or writes `graph_nodes.run` outside the migrations: a node minted from then
+  on stores a null `run`, a translated node is taken by its action whatever its `run` holds, and an untranslated one is
+  escalated from `legacy_run` — `blizzard:component-test`.
+- A 0.2 hub walked back from the third landing's store runs a chunk pinned to a translated version and one minted onto
+  `land` between the landings — `blizzard:rehearsal`.
 - A fixture store captured before the migrations, with chunks pinned to old graph versions and one mid-`pending` on
   `land`, carries over and lands every chunk against the mock forge with the outcomes and markers the scripts produced —
   `blizzard:e2e`.
@@ -291,6 +344,8 @@ start and nowhere else.
   `action_pass_seconds`.
 - A waiting visit is next due at the later of its interval and its `next_poll_at`, in both the executor's due check and
   `hub-advance`'s detail — `blizzard:unit-test`.
+- From the first landing, `hub-advance` re-drives a chunk waiting at a node naming an action, and a node naming `run:`
+  still takes poll keys only with a non-empty list — `blizzard:component-test`, `blizzard:unit-test`.
 - A chunk stopped while its `land` pass merges its first of two repositories keeps that repository's `merged/<repo>`
   marker and `delivery_repo_landed` row, and its pass answers without touching the second — `blizzard:component-test`.
 - The three purity gates fail on a planted action importing the store, `os`, or an HTTP client, on a planted call to
@@ -304,11 +359,12 @@ start and nowhere else.
   refuses at mint as unknown actions — `blizzard:e2e`.
 - No hub process starts a child process for a graph: no module under `hub/delivery/` reaches `subprocess`, directly or
   through another blizzard module — `blizzard:structural-gate`.
-- A pass's span carries its action and its choice, and the step span stands in the dictionary marked deprecated —
-  `blizzard:trace-contract`.
+- A pass's span carries its action and its choice, and the step span's two attributes stand in the dictionary marked
+  deprecated — `blizzard:trace-contract`.
 - After the fourth landing the three routes answer a person holding `CHUNK_CONTROL`, are marked deprecated in the
   OpenAPI document, and refuse a request carrying no session; `blizzard hub record-marker` refuses naming its removal —
   `blizzard:component-test`.
 - `blizzard-mock`'s seeded graph routes every answer of `land`, and seeds against a schema with and without
   `graph_nodes.action` — `blizzard-mock:unit-test`.
-- The escalation sentences and a hub node's action in the graph view render — `web:unit-test`.
+- The escalation sentences, a hub node's action in the graph view, and a bounce envelope carrying `action` and a null
+  `step` beside one carrying `step` render — `web:unit-test`.
