@@ -35,14 +35,18 @@ proofs need ([seam.md](./seam.md#the-mock)).
 
 ## Landing order
 
-The hosted hub redeploys from every merge to `master`, and the fleet lands its own work through the very `land` this
-epic rewrites, so the epic arrives as six steps, each a chunk or a few, in this order. Each leaves `master` landing as
-it did before it, and no step depends on one after it.
+The instance runs a pinned build, never `master` itself, but a release can be cut from `master` between any two steps,
+and the fleet that lands this epic lands its own work through the very `land` it rewrites. So the epic arrives as six
+steps, each a chunk or a few, in this order, and each leaves `master` releasable: landing as it did before the step, and
+able to walk its store back to the step before it ([carry-over.md](./carry-over.md#walking-back)). No step depends on
+one after it, and no two are meant to ship together.
 
 1. **The mock's forge** ([seam.md](./seam.md#the-mock)), in `blizzard-mock` alone. Every addition is new — routes,
    parameters, headers, levers — or answers as GitHub does where the mock had answered loosely, so the hub's existing
-   proofs pass against it unchanged, and every later step has the forge its proofs need. It merges first because the
-   hub's steps cannot be proven without it.
+   proofs pass against it unchanged — `blizzard`'s own and every supported release's — and every later step has the
+   forge its proofs need ([seam.md](./seam.md#what-the-mock-must-keep)). It merges first because the hub's steps cannot
+   be proven without it. Nothing in it needs the earlier epics' code, so it may land ahead of them, but not while the
+   forges epic's own additions to the mock are being built, which change the same files.
 2. **The seam and the cheaper pass** ([seam.md](./seam.md#the-seam-grows), [budget.md](./budget.md#the-cost-of-a-pass)).
    The new seam operations, their capabilities, and their GitHub implementations; conditional reads and the compare
    store; the already-merged lookup as one filtered read; and the shipped graphs polling every minute. `land` still
@@ -60,19 +64,21 @@ it did before it, and no step depends on one after it.
    ([carry-over.md](./carry-over.md#the-migrations)).
 5. **`fast-forward` and `park`** ([landing.md](./landing.md#the-three-policies)). `LandingPolicy` gains its two members
    and `POLICY_CAPABILITIES` their rows; the reserved `awaiting-merge`, the escalation causes, and their board sentences
-   arrive with them. No migration: the columns step 4 added already hold any policy. Nothing changes for a repository
-   until an operator sets one of them.
+   arrive with them. The columns step 4 added already hold any policy, so its migration changes no schema; it is the
+   revision whose downgrade keeps an older hub from meeting a policy or a wait it cannot read
+   ([carry-over.md](./carry-over.md#the-migrations)). Nothing changes for a repository until an operator sets one of
+   them.
 6. **The board** ([surfaces.md](./surfaces.md#admin-screens)): the repository form's policy picker, the project's
    drag-to-order list, the forge detail's capabilities and budgets, and the flow lane's `awaiting-merge`, each reading
    doors earlier steps opened.
 
 The `blizzard-context` and `docs/` changes listed above land with the step whose behaviour they describe.
 
-| Where                            | Read when                                                                                                                |
-| -------------------------------- | ------------------------------------------------------------------------------------------------------------------------ |
-| [record.md](./record.md)         | Shaping the repository's policy fields, a project's landing order, the terms a visit takes, and the capability check     |
-| [landing.md](./landing.md)       | Building `land` as a runner of policies — the three policies, combining, escalations, awaiting a merge, crash points     |
-| [seam.md](./seam.md)             | Building the seam operations this epic adds, their GitHub implementations, and the mock forge's additions                |
-| [budget.md](./budget.md)         | Making a landing pass cheap, sharing one rate budget per key, and slowing down before the forge refuses                  |
-| [surfaces.md](./surfaces.md)     | Building the API, CLI, configuration document, admin screens, escalation sentences, and the flow lane's awaiting state   |
-| [carry-over.md](./carry-over.md) | Writing the migration — every repository given the policy it lands by today, the positions, the poll kind, and the proof |
+| Where                            | Read when                                                                                                              |
+| -------------------------------- | ---------------------------------------------------------------------------------------------------------------------- |
+| [record.md](./record.md)         | Shaping the repository's policy fields, a project's landing order, the terms a visit takes, and the capability check   |
+| [landing.md](./landing.md)       | Building `land` as a runner of policies — the three policies, combining, escalations, awaiting a merge, crash points   |
+| [seam.md](./seam.md)             | Building the seam operations this epic adds, their GitHub implementations, and the mock forge's additions              |
+| [budget.md](./budget.md)         | Making a landing pass cheap, sharing one rate budget per key, and slowing down before the forge refuses                |
+| [surfaces.md](./surfaces.md)     | Building the API, CLI, configuration document, admin screens, escalation sentences, and the flow lane's awaiting state |
+| [carry-over.md](./carry-over.md) | Writing the migrations, walking a store back between steps, judging each step's compatibility, and the proof           |

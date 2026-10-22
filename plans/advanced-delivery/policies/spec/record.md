@@ -7,7 +7,7 @@ configured fields under the record's own verbs and revisions. `repositories` (`h
 
 ```text
 repositories
-  landing_policy      String   NOT NULL   fast-forward | merge-on-checks | park
+  landing_policy      String   NOT NULL   fast-forward | merge-on-checks | park; server default merge-on-checks
   park_timeout_hours  Integer  NULL       how long a parked change may wait; null is the default, 168
 ```
 
@@ -26,6 +26,13 @@ crossing; the actions epic's purity allowlist names it for the last of those
 repository, so an edit that moves a repository off `park` clears its `park_timeout_hours` in the same revision — `merge`
 (`hub/domain/config/repositories.py`) drops it, and the configuration document's apply does the same — rather than
 refusing the edit; a write that sets a timeout on a repository whose resulting policy is not `park` is refused.
+
+The timeout is the first field of a repository an edit may clear. Today `RepositoryEdit` and `merge` refuse `None` on
+every field, and `RepositoryPatchRequest` (`wire/repository.py`) refuses an explicit `null`, since every field a
+repository has carries a value. `park_timeout_hours` is the exception: `None` in an edit, and `null` in a patch, set it
+back to unset, which reads as `DEFAULT_PARK_TIMEOUT_HOURS`, while every other field still refuses either.
+`landing_policy` is not one of them: a repository always lands by some policy, so an edit may change it but never clear
+it.
 
 A policy belongs to the repository, never to a project or a graph. Every project that links the repository shares it, as
 they share its branch. A default on `project_repository_links` waits until one earns its place.

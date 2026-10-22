@@ -7,10 +7,13 @@ belongs to a project's repository links, and gains doors of its own beside the l
 ## API
 
 `wire/repository.py`'s write and read models gain `landing_policy` and `park_timeout_hours`. A repository created
-without a policy takes `merge-on-checks`. The refusal is the record's own ([record.md](./record.md)):
-`422 forge_capability_missing`. `GET /api/config/schema/repositories` lists the policies, and for each the capabilities
-it requires, so a client can say why a choice is unavailable before the write refuses it. The forge's document gains
-`offered`, its capabilities, beside its budgets ([budget.md](./budget.md#what-an-operator-sees)).
+without a policy takes `merge-on-checks`. `RepositoryPatchRequest` refuses an explicit `null` on every field today; it
+admits one on `park_timeout_hours` alone, which clears the timeout back to its default
+([record.md](./record.md#the-fields)), and still refuses it on `landing_policy` and every other field. The refusal is
+the record's own ([record.md](./record.md)): `422 forge_capability_missing`. `GET /api/config/schema/repositories` lists
+the policies, and for each the capabilities it requires, so a client can say why a choice is unavailable before the
+write refuses it. The forge's document gains `offered`, its capabilities, beside its budgets
+([budget.md](./budget.md#what-an-operator-sees)).
 
 A project's landing order is read and written beside its repository links (`hub/api/projects.py`), as the ready queue's
 order is (`hub/api/queue.py`):
@@ -32,9 +35,11 @@ Both writes require `Permission.CONFIG_EDIT`, as the links do, and refuse a repo
 ## CLI
 
 `blizzard hub repo create` and `edit` gain `--policy fast-forward|merge-on-checks|park` and `--park-timeout <hours>`;
-`edit`'s `--clear` accepts `park-timeout`, and an `edit --policy` that moves a repository off `park` clears its timeout
-with it ([record.md](./record.md#the-fields)). `blizzard hub repo show` prints the policy. `blizzard hub project show`
-prints the project's repositories in landing order, each with its position or "unranked", and
+`edit` gains `--clear park-timeout`, the first field `repo edit` can clear: it has no `--clear` today
+(`hub/cli/repo.py`), so the flag arrives here, shaped as `source edit`'s, refusing a field given both a value and a
+clear. An `edit --policy` that moves a repository off `park` clears its timeout with it
+([record.md](./record.md#the-fields)). `blizzard hub repo show` prints the policy. `blizzard hub project show` prints
+the project's repositories in landing order, each with its position or "unranked", and
 `blizzard hub project order <project> <repository>…` sets the whole order, while
 `blizzard hub project position <project> <repository> (--after <repository> | --first | --unranked)` moves one.
 `blizzard hub forge show` prints the forge's capabilities and its budgets' last readings. `contracts/cli/hub.json` is
@@ -84,3 +89,9 @@ detail's delivery rows show the same. The flows epic's place `state` (`FlowPlace
 `awaiting-merge`, so a parked chunk on a flow's lane reads "awaiting merge" with the change linked, and the lane's line
 shows it as passed over rather than next. The card's one line under its node reads "awaiting merge on
 `blizzard/master`". `blizzard hub flow show` prints the same state.
+
+The chunk detail's pending view says which wait a chunk is in. `PendingView` (`wire/chunk.py`) carries only the node's
+name and the next poll's time today, so every hub-node wait reads alike; it gains the wait's kind, `pending` or
+`awaiting-merge`, an open response vocabulary (`bzh:open-response-vocabulary`) so a later wait kind is additive, and the
+moment the wait's run began, read from `hub_node_pending()` ([landing.md](./landing.md#awaiting-a-merge)). The detail
+then reads "awaiting merge since …" for a parked chunk rather than the same line as a chunk whose checks are running.

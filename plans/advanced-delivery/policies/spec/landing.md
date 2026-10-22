@@ -266,14 +266,15 @@ ineligible until its next poll is due, exactly as after `pending` ([flows' turns
 
 It differs from `pending` in its clock. `hub_node_poll` (`hub/store/schema.py`) gains `kind`, a string column naming the
 wait the row records — `pending` or, from this epic, `awaiting-merge`, with further wait kinds joining it as later epics
-need them — and `last_polled_at`, a nullable time. Both are written by the flows epic's
-`HubNodeRouter.record_wait(kind)` (`hub/delivery/hub_node.py`) as it records the pass's answer. A `pending` pass adds a
-row, as today; it is bounded by the poll timeout, so a visit adds at most a few hundred. An `awaiting-merge` pass is not
-bounded so tightly — a week's review polled every two minutes would add some five thousand rows, every one of them
-loaded with the chunk (`Chunk.hub_node_polls`) — so a run of them is coalesced into one row: when the visit's newest row
-is already `awaiting-merge`, the pass moves that row's `last_polled_at` forward, and replaces the row's `next_poll_at`
-with the hint this pass answered, or none, rather than adding a row; the row's `polled_at` stays the moment the run
-began. The two writes are one statement each, and a pass that dies between its answer and its write simply polls again.
+need them — `NOT NULL` with a server default of `pending` ([carry-over.md](./carry-over.md#the-migrations)), and
+`last_polled_at`, a nullable time. Both are written by the flows epic's `HubNodeRouter.record_wait(kind)`
+(`hub/delivery/hub_node.py`) as it records the pass's answer. A `pending` pass adds a row, as today; it is bounded by
+the poll timeout, so a visit adds at most a few hundred. An `awaiting-merge` pass is not bounded so tightly — a week's
+review polled every two minutes would add some five thousand rows, every one of them loaded with the chunk
+(`ChunkFacts.hub_node_polls`) — so a run of them is coalesced into one row: when the visit's newest row is already
+`awaiting-merge`, the pass moves that row's `last_polled_at` forward, and replaces the row's `next_poll_at` with the
+hint this pass answered, or none, rather than adding a row; the row's `polled_at` stays the moment the run began. The
+two writes are one statement each, and a pass that dies between its answer and its write simply polls again.
 `HubNodePollFact` carries the kind and `last_polled_at`, and the readers follow them:
 
 - **Its poll is slower.** The flows epic's eligibility asks `PollPolicy.due_at(row)` (`hub/domain/delivery/flows.py`) of
@@ -284,12 +285,15 @@ began. The two writes are one statement each, and a pass that dies between its a
   `PARK_POLL_FLOOR`, two minutes, whichever is longer, so a parked change is read at most every two minutes however
   eager its graph. `PARK_POLL_FLOOR` lives in `hub/domain/config/landing_policies.py`.
 - **Its wait is not a poll running long.** The node's `poll_timeout` measures only the newest unbroken run of `pending`
-  rows: `hub_node_poll_history` (`hub/domain/chunk/model.py`) still answers every row, oldest first, and the timeout's
-  start becomes the first row of that run rather than the first row of the visit, so an `awaiting-merge` row ends a run
-  and a parked chunk is never bounced for waiting on a person. `standards/hub-nodes/outcome-protocol.md`'s "from the
-  first recorded pending attempt" becomes "from the first pending attempt since the last wait of another kind".
-- **The board says which wait it is.** `hub_node_pending()` answers the newest row with its kind and when its run began,
-  so the chunk detail reads "awaiting merge since …" rather than "polling" for a parked chunk.
+  rows: `ChunkFacts.hub_node_poll_history` (`hub/domain/chunk/model.py`) still answers every row, oldest first, and the
+  timeout's start becomes the first row of that run rather than the first row of the visit, so an `awaiting-merge` row
+  ends a run and a parked chunk is never bounced for waiting on a person. `standards/hub-nodes/outcome-protocol.md`'s
+  "from the first recorded pending attempt" becomes "from the first pending attempt since the last wait of another
+  kind".
+- **The board says which wait it is.** `hub_node_pending()` (`ChunkFacts`, `hub/domain/chunk/model.py`) answers the
+  newest row with its kind and when its run began, and `PendingView` carries both
+  ([surfaces.md](./surfaces.md#the-board-and-the-flow-lanes)), so the chunk detail reads "awaiting merge since …" for a
+  parked chunk rather than the line a chunk waiting on its checks shows.
 - **Its wait is bounded by its repository.** Each parked change is measured on its own clock, against its own
   repository's terms: from the `produced_at` of its `delivery-pr/<repo>/<n>` marker in the visit's own epoch — written
   when the change opened, or again when the visit adopted it from an earlier epoch — to `Visit.now`, against that

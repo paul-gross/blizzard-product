@@ -57,8 +57,9 @@ twice; the budget reads the forge's own headers rather than counting, so each re
 limit, and the hub only learns of a shared spend one answer late.
 
 Every caller that holds a key on a forge shares that key's budget: the landing seam's adapters, the parked-change
-listing, the garden's commit check, and the work-source family (`IWorkSource`, `IWorkAnnotator`, `IWorkCloser`,
-`IWorkEditor`), whose adapters `StoreWorkSourceRegistry` now builds with their forge's budget.
+listing, the garden's commit check, and the work-source family (`IWorkSource`, `IWorkAnnotator`, `IWorkCloser`), whose
+adapters `StoreWorkSourceRegistry` now builds with their forge's budget. `IWorkEditor` is not among them: only the
+built-in `hub` work source seats one (`hub/work_sources/editor.py`), so it never calls a forge.
 
 A budget learns from the forge, never from a count of its own. Every response's rate headers update it — GitHub's
 `X-RateLimit-Limit`, `-Remaining`, `-Reset`, and `-Resource` — through an `httpx` event hook every adapter's client
@@ -92,12 +93,11 @@ it. The driver asks for `landing` handles for the repositories the hub lands its
 one, so a policy never names a priority; the garden's commit check asks `ForgeRegistry.refs` for a `sweeping` handle
 directly, with no driver in between. The work-source family has no handle to carry one, and one client serves callers of
 every kind, so each of its operations has a fixed priority of its own, which its adapter hands the budget with the call:
-`IWorkEditor`'s operations are `landing`, being a person's own edit, and every operation of `IWorkSource`,
-`IWorkAnnotator`, and `IWorkCloser` is `sweeping`.
+every operation of `IWorkSource`, `IWorkAnnotator`, and `IWorkCloser` is `sweeping`.
 
 | Priority   | Callers                                                                                                          | Admitted while the remaining budget is |
 | ---------- | ---------------------------------------------------------------------------------------------------------------- | -------------------------------------- |
-| `landing`  | A `land` pass for a repository the hub lands itself; a person's own edit of a work item through `IWorkEditor`    | above nothing — until spent            |
+| `landing`  | A `land` pass for a repository the hub lands itself                                                              | above nothing — until spent            |
 | `watching` | A parked change's reads, the recently-closed listing                                                             | above a fifth of the limit             |
 | `sweeping` | The forge-status annotation sweep, the close drain, work-source ingest and resolution, the garden's commit check | above two fifths of the limit          |
 
@@ -108,12 +108,18 @@ caller slows rather than fails:
 - A `land` pass answers `pending`, or `awaiting-merge` while a parked change is open, with `Pass.next_poll_at` set to
   `resume_at`, so its next poll is no earlier.
 - The work-source family does not import `hub/forge`, so its adapters raise their own family's error for it —
-  `WorkSourceError`, `WorkAnnotateError`, or `WorkCloseError` — carrying `resume_at` as `retry_after`. The annotation
-  sweep and ingest skip their pass; a person's edit answers `503` with `Retry-After`.
+  `WorkSourceError`, `WorkAnnotateError`, or `WorkCloseError`. Each is a bare exception today
+  (`hub/work_sources/source.py`, `annotator.py`, `closer.py`) and carries no time to come back, so each gains an
+  optional `retry_after`, unset for every failure but a budget's or a rate limit's, and the adapter sets it to
+  `resume_at`. A caller that does not read it behaves as today. The annotation sweep and ingest skip their pass.
 - The close drain defers the intent to `resume_at` without spending its failure backoff. `close_intent_attempts`
   (`hub/store/schema.py`) gains the outcome `deferred` beside `skipped` and `failed`, with a nullable `resume_at`
-  column; `close_intent_is_due` (`hub/domain/work_items/closure.py`) leaves deferred rows out of the attempt count and
-  the backoff it derives, and holds an intent not due until its newest deferred row's `resume_at` has passed.
+  column. `close_intent_is_due(now, *, attempt_count, last_attempt_at)` (`hub/domain/work_items/closure.py`) reads no
+  rows: it is handed each intent's history already counted, on `PendingCloseIntent` (`hub/domain/chunk/model.py`), by
+  the two reads that aggregate it (`pending_close_intents` in `hub/store/internal/hub_scoped_corpus.py` and
+  `chunk_delivery_store.py`). Those reads count and date only the attempts that are not `deferred`, so a deferral spends
+  no backoff, and carry the newest deferred row's `resume_at` beside them on `PendingCloseIntent`; the rule gains that
+  moment as a third input and holds the intent not due until it has passed.
 - The garden's commit check answers that the forge could not say, as it does for an unavailable one.
 
 A `land` pass that waits on the budget waits inside its node's poll timeout like any `pending`, and the three-hour

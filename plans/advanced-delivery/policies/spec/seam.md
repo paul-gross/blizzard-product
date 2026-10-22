@@ -87,10 +87,11 @@ already has. Its forge today answers `PATCH git/refs` with a real fast-forward-o
   `DELETE git/refs/heads/{b}`. `update_ref`'s docstring stops calling its fast-forward check a compare-and-swap.
 - **Pull listings that honour their parameters** — `list_pulls` (`api/pulls.py`, `internal/state_store.py`) today takes
   only `state` and answers every pull oldest first by number. It learns `base`, `head` (as `<owner>:<branch>`), `sort`
-  (`created` or `updated`), `direction`, `page`, and `per_page`, answers GitHub's `Link` header with `next` and `last`
-  when a page is not the last, and keeps an `updated_at` per pull that every state change moves, so the recently-closed
-  listing and its paging are exercised as GitHub answers them. With no `sort` it answers as GitHub does, newest first;
-  the hub's adapter always names `sort` and `direction`, so nothing in `blizzard` leans on the default, and any test in
+  (`created` or `updated`), `direction`, `page`, and `per_page`, and answers GitHub's `Link` header with `next` and
+  `last` when a page is not the last. Each pull already carries an `updated_at` that closing and merging move
+  (`set_pull_state` and `_record_merge` in `domain/service.py`); ordering and paging by it is what is new, so the
+  recently-closed listing is exercised as GitHub answers it. With no `sort` it answers as GitHub does, newest first; the
+  hub's adapter always names `sort` and `direction`, so nothing in `blizzard` leans on the default, and any test in
   `blizzard-mock` that relied on oldest first names its order instead.
 - **Checks per ref, several and named** — today a check run is derived from the levers of the open pull request whose
   head matches the ref (`list_check_runs`, `domain/service.py`), it is always one run named `ci`, and a revision with no
@@ -113,7 +114,34 @@ already has. Its forge today answers `PATCH git/refs` with a real fast-forward-o
   cheaper pass is provable.
 - **Rate headers on every answer that counts** — GitHub's `X-RateLimit-Limit`, `-Remaining`, `-Reset`, and `-Resource` —
   with the remaining counting down by one on every answer that is not a `304`, per token the request carries, and
-  restored to the limit when the window resets, an hour by default, so a long end-to-end run never spends itself out by
-  accident. A lever sets the remaining and the reset, and a second answers a secondary limit, a 403 whose remaining is
-  not spent and whose body names it, so the budget's thresholds and the forges epic's retry rules are provable. The
-  `rate_limited` lever (`api/middleware.py`) answers a real reset where it answers `X-RateLimit-Reset: 0` today.
+  restored to the limit when the window resets, an hour by default. A lever sets the remaining and the reset, and a
+  second answers a secondary limit, a 403 whose remaining is not spent and whose body names it, so the budget's
+  thresholds and the forges epic's retry rules are provable. The `rate_limited` lever (`api/middleware.py`) answers a
+  real reset where it answers `X-RateLimit-Reset: 0` today.
+
+### What the mock must keep
+
+`blizzard`'s upper tiers run against `blizzard-mock`'s `master` as it moves, and `blizzard:rehearsal` runs every
+supported release's own hub against it, v0.2.0's among them, which still lands through the `run:` scripts. So from the
+moment this lands, the mock serves three clients at once — today's `land`, v0.2.0's `land_common.py`, and the seam this
+epic grows — and the first two must go on landing exactly as they do. Three of the additions above touch what they read,
+and each is held to that:
+
+- **The page a listing answers.** Today's and v0.2.0's `land_common.py` read the open pull requests into a repository
+  with neither `per_page` nor `sort`, and trust the one page they get. A listing that names no `per_page` therefore
+  answers every match on one page, as the mock does today, rather than GitHub's thirty; only a request that names
+  `per_page` is paged. The hub's adapter always names it, so the seam is still exercised as GitHub pages.
+- **What the base's red check matches.** Matching `base_checks_failed` by the default branch's resolved revision, rather
+  than its spelling, widens what reads red to any ref at the base's tip. Every scenario that arms the lever in today's
+  suites, and in each supported release's, must read as it reads now, and the change is proven against them before it
+  merges.
+- **The default rate limit.** Counting down never refuses on its own: only `rate_limited` and the secondary-limit lever
+  refuse, so a release that reads no rate headers is never stopped by one. A hub that does read them — this epic's
+  budget — turns its sweeps away as the remaining falls, so the default limit is set above what the busiest of today's
+  suites, `blizzard:journey` and `blizzard:crash-sweep` among them, spends on one token in an hour, measured when the
+  mock grows it, and a run that needs a low remaining asks for it with the lever.
+
+The forges epic grows the same mock — mergeable states it cannot yet show, a conflicting `update-branch` answered as
+GitHub answers it, a check run that failed to start — in the same `domain/service.py` and `domain/levers.py`. The two
+are built one after the other, never side by side, whichever lands first; this epic's mock work may land ahead of the
+actions, forges, and flows epics, since nothing in it reads the hub's code.
