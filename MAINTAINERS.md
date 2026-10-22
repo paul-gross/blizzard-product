@@ -26,7 +26,11 @@ epic its status; their shape is owned by [context/structure/plans.md](./context/
 3. **Filed issues.** File the GitHub epic issue and its child issues (the `/wg-issue` flow), each citing the epic's id,
    and set the epic `in-progress` in its plan and in every milestone epic chart naming it. The registry row stays put in
    [epics.md](./epics.md) and is never annotated. The issue tracker is the factory's intake queue, not its memory: file
-   only work that is startable, and keep the open count small.
+   only work that is startable. Work is startable when every prerequisite it builds on has landed or is filed beside it,
+   so each dependency can be named. The hub cannot wait on work it cannot name: a chunk whose prerequisite is not yet
+   filed starts the moment it is promoted, against code that does not exist. A chain of dependencies is startable
+   however long it runs, so long as every link in it is filed. Ingest a chain whole and link its dependencies in the
+   same pass (`bzh:marshal` owes them the moment a chunk is minted), never ingesting now and linking later.
 
 Exceptions and the far end of the lifecycle:
 
