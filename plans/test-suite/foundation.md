@@ -48,10 +48,27 @@ imported code. The spike settled its toolchain:
 - **A pid-file sweep** of the daemons a run starts, so a test runner killed outright leaves nothing behind.
 - **One request context per hub**, because cookies ignore the port and two hubs on one host would share a session.
 
-`mise run service-test` runs the Playwright project and the pytest cases that stay in the tier, and both report under
-the required check `blizzard:service-test` already has, in `upper-tiers.yml` and in `release.yml`. Both jobs keep the
-two-repo checkout of `blizzard` and `blizzard-mock` and gain Node. `test_winter_free_ci.py` learns to recognise the
-Playwright job as one that runs tests, and to scan its TypeScript.
+## In CI
+
+Two `mise` tasks run the tier. `mise run playwright` runs the Playwright package from `tests/` and passes anything after
+`--` to `playwright test`, so one task serves a developer running one folder (`--project=service-hub`), one test
+(`--grep`), or one shard (`--shard=2/2`), and later the UI project as well. `mise run service-test` runs only the pytest
+half. `blizzard:service-test` is the two together, and both report under the required check it already has, in
+`upper-tiers.yml` and in `release.yml`.
+
+- **Two shards.** The Playwright service projects run as two matrix jobs, `--shard=1/2` and `--shard=2/2`, beside the
+  pytest half's job, and the existing summary job passes only when every one of them did. Each shard is its own machine
+  and starts its own shared hubs and common tenant, so the hubs-per-worker measurement is taken against two shards, and
+  a later change to the count is weighed against it.
+- **The daemons as operators install them.** The jobs run the hub and runner from the wheel the workflow builds,
+  installed into a clean environment, rather than from the checkout, so the tier tests what ships.
+- **A pinned toolchain.** Node is pinned through `mise`, the package installs with `npm ci` from its committed lockfile,
+  and `node_modules` is cached between runs.
+- **Failures leave evidence.** A failing job uploads Playwright's report and traces and every daemon's log, so a red run
+  can be read without reproducing it.
+
+Both jobs keep the two-repo checkout of `blizzard` and `blizzard-mock`. `test_winter_free_ci.py` learns to recognise the
+Playwright jobs as ones that run tests, and to scan their TypeScript.
 
 ## The daemons' environment
 
@@ -277,8 +294,9 @@ The epic lands as five children. The first two are independent of one another an
 3. **The daemons' environment contract**, lifted into the one place both suites read, with the pytest suite reading it
    first so the move changes nothing it runs.
 4. **The Playwright project and the shared-hub harness**: profiles, the common tenant, the isolation option and the
-   `world` fixture at all four levels, the gated client and its exhaustive operation table, the pid-file sweep, Node in
-   both workflows' service jobs under the existing required check, and `test_winter_free_ci.py` taught to see it. The
+   `world` fixture at all four levels, the gated client and its exhaustive operation table, the pid-file sweep, and the
+   CI wiring: the `playwright` task, its two shards beside the pytest job under the existing required check, the daemons
+   from the built wheel, the pinned toolchain, failure artifacts, and `test_winter_free_ci.py` taught to see it. The
    rulebook companion lands with it. It waits on 1 and 3.
 5. **The three analytics ports and the measurements**, the Python originals and their citations deleted in the same
    change, and the measured ratio, store, and teardown decisions recorded here, cheaper tenant creation among them if
@@ -286,8 +304,8 @@ The epic lands as five children. The first two are independent of one another an
 
 ## Done
 
-The three analytics files run in the Playwright project under `blizzard:service-test`'s required check, in both
-workflows, and their Python originals and blizzard-context citations are gone. Every daemon the project starts runs
+The three analytics files run in the Playwright package under `blizzard:service-test`'s required check, in two shards in
+both workflows, and their Python originals and blizzard-context citations are gone. Every daemon the project starts runs
 under the shared environment contract. The mock forge creates repositories on demand, and the cross-check runs weekly
-and in the release workflow. The three measurements are recorded with the decisions they drove, and the rulebook
-companion has landed.
+and in the release workflow. The three measurements are recorded with the decisions they drove, the tier's CI time
+before and after is recorded beside them, and the rulebook companion has landed.
