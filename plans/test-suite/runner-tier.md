@@ -14,10 +14,10 @@ This epic gives the runner the outside its tests need, then moves them.
 
 ## The tests it moves
 
-| Group                           | Size     | Coupling today                                                                                                                                                                                                                                                                                                                         |
-| ------------------------------- | -------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Runner run in-process           | about 60 | `tick_once`, `build_hosted_app` on a thread, configuration through `dataclasses.replace`, store reads through the ORM.                                                                                                                                                                                                                 |
-| Runner host started as a daemon | about 30 | The daemon is real, but its host layout and token files are written through internal classes, `platform_tracing` seeds a live runner's store, and graduation and ingest seed and read the runner's SQLite file because migrating it is their subject. `runner_init` and `idp_federation` arrive from the hub side for the same reason. |
+| Group                           | Size     | Coupling today                                                                                                                                                                                                                                                                                                                                                             |
+| ------------------------------- | -------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Runner run in-process           | about 60 | `tick_once`, `build_hosted_app` on a thread, configuration through `dataclasses.replace`, store reads through the ORM.                                                                                                                                                                                                                                                     |
+| Runner host started as a daemon | about 30 | The daemon is real, but its host layout and token files are written through internal classes, `platform_tracing` seeds a live runner's store, and graduation and ingest seed and read the runner's SQLite file because migrating it is their subject. `runner_init` and `idp_federation` arrive from the hub side for the same reason, and land in `tests/service/fleet/`. |
 
 ## First, the runner side of the spike
 
@@ -47,9 +47,11 @@ surfaces below fall short.
 ## Sharing and stepping
 
 A test that steps a host owns that host, so two such tests never share one; each test gets a host of its own, as each
-test has its own runner today, and the parallelism lives across hosts. A runner-side test against the real hub runs in
-its own tenant on a shared hub. Tests against the mock hub keep a mock hub of their own, since the mock is cheap to
-start and holds no migrations, and its levers and tenants' work are not isolated from one another.
+test has its own runner today, and the parallelism lives across hosts. A test in `tests/service/runner/` keeps a mock
+hub of its own, since the mock is cheap to start and holds no migrations, and its levers and tenants' work are not
+isolated from one another. A test in `tests/service/fleet/`, where the hub is real too, runs on a shared hub at
+`fresh-tenant`, since its runner claims tenant-wide work, unless its subject is hub-wide: `runner_init`'s reset of the
+hub's data and `idp_federation`'s provider changes and key rotation each take a dedicated hub.
 
 This half of the tier is not expected to get faster. Sharing buys a test against the mock hub nothing, and a host
 started as a process costs more than a loop called in place. The initiative's guard holds it: the tier never becomes the
@@ -69,6 +71,7 @@ rewrites them.
 
 ## Done
 
-Every runner-side test that exercises the runner from outside runs in the Playwright project against a stepped or timed
-host. Tests about the loop's internals run in the component tier. `tests/service/` holds only the pytest half's files,
-and the helpers e2e and the crash sweep still borrow from it live in a support module of their own.
+Every runner-side test that exercises the runner from outside runs in `tests/service/runner/` or `tests/service/fleet/`
+against a stepped or timed host. Tests about the loop's internals run in the component tier. The Python files left in
+`tests/service/` are only the pytest half's, and the helpers e2e and the crash sweep still borrow from it live in a
+support module of their own.

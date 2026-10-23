@@ -20,9 +20,10 @@ through every migration, only to make a handful of requests and throw the whole 
 This initiative moves the service tier to Playwright Test, written in TypeScript, reaching blizzard only through what it
 exposes: its configuration files, its HTTP API and event stream, its CLI, and the mock fleet's levers. Tests that can
 share run on a few long-lived hubs per configuration, each with a mock forge and IdP of its own and shared by a handful
-of test workers, since one hub is one process and serves one core's worth of tests. Each test claims a tenant of its
-own, creates only what it needs inside it, and asserts only what it can see from there. `initiative:multi-tenancy` built
-the boundary that makes the sharing possible, and the test suite is the first tenant it was built for.
+of test workers, since one hub is one process and serves one core's worth of tests. Each test declares the isolation it
+needs, from a project in a tenant every test shares up to a tenant or a hub of its own, creates only what it needs
+inside that, and asserts only what it can see from there. `initiative:multi-tenancy` built the boundary that makes the
+sharing possible, and the test suite is the first tenant it was built for.
 
 Independence is the purpose; speed is a guard. The tier never becomes the gate's slowest job, and each epic records the
 tier's CI time when it lands. What a pull request waits on today is the unit and component shards, which the
@@ -52,11 +53,19 @@ check. It runs the Playwright project, and beside it the pytest cases whose subj
 against a mock fleet binary, which `bzh:external-cli-fake-is-service-tier` keeps in this tier because only its job
 checks out the mock fleet. From the day the foundation lands, a new daemon test is written in Playwright.
 
-**Each test moves once.** Porting a test and moving it onto the shared hub are one step: it lands in Playwright, in its
-own tenant, and its Python original is deleted in the same change. Any helper another tier imports from the deleted file
-moves to a support module first. The port keeps the original's function name as its title, so the harness citations that
-name it move mechanically. A test whose subject is the whole hub moves to a dedicated hub rather than being weakened to
-fit a shared one.
+**One package, its folders named for the kind of test.** The Playwright package is rooted at `tests/`, and each folder
+beneath it names what a test holds real. A service test brings up one real thing with mocks around it, in three shapes:
+the hub alone in `tests/service/hub/`, a runner host alone in `tests/service/runner/`, and both together in
+`tests/service/fleet/`. A UI test, in `tests/ui/`, drives the built board in a browser against a real hub, with the same
+mocks behind it. Nothing in the package is an end-to-end test, because blizzard cannot yet stand up a real work source
+or a real GitHub repository under test, and until it can, the word is not earned. The package shares `tests/` with the
+Python suites only until they have moved.
+
+**Each test moves once.** Porting a test and moving it onto the shared hub are one step: it lands in Playwright, at the
+loosest isolation level its reads allow, and its Python original is deleted in the same change. Any helper another tier
+imports from the deleted file moves to a support module first. The port keeps the original's function name as its title,
+so the harness citations that name it move mechanically. A test whose subject is the whole hub moves to a dedicated hub
+rather than being weakened to fit a shared one.
 
 **Public surfaces only.** A test on a shared hub seeds and asserts only through HTTP, the CLI, and the mock fleet's
 endpoints. It never writes or reads the hub's store, because a row the daemon did not write skips every cache, event,
@@ -84,16 +93,19 @@ shared hub needs, the blizzard-context changes that redefine the tier, and the t
 prove it. The [hub tier](./hub-tier.md) follows, porting the tests that already speak HTTP and building the few surfaces
 they still lack. The [runner tier](./runner-tier.md) comes last because it needs real product work: a host whose loop
 can be stepped from outside, and reads of the state its tests check today through the ORM. Tests that start a real
-runner host move with the runner tier even where their subject is the hub. Each epic builds the public surfaces its own
-tests need, so the architecture work arrives just in time rather than in advance.
+runner host move with the runner tier even where their subject is the hub, into `tests/service/fleet/` when the hub is
+real too. Each epic builds the public surfaces its own tests need, so the architecture work arrives just in time rather
+than in advance.
 
 [Optimization](./optimization.md) is listed last but runs alongside the others. Its work speeds the tiers that stay in
 Python and the pipeline around them, and none of it waits on the service tier's move.
 
 ## Boundaries
 
-The initiative covers the service tier and the gate's speed. Decoupling e2e, the crash sweep, and the journey rehearsal
-from the Python is `epic:test-architecture`'s, which builds on the surfaces the hub and runner tiers publish; whether
-`blizzard-mock-data` seeds those tiers is decided there. Unit and component tests stay in Python and stay coupled to it
-on purpose, and a service test whose subject turns out to be internal machinery moves down to the component tier rather
-than being ported.
+The initiative covers the service tier and the gate's speed. Today's e2e tier is `epic:test-architecture`'s: its
+scenarios run against the mock forge and are fleet service tests by this initiative's definition, so that epic moves
+them into `tests/service/fleet/` and its browser scenarios into `tests/ui/`, and the e2e tier is retired until a real
+work source can be stood up. Decoupling the crash sweep and the journey rehearsal from the Python is that epic's too,
+building on the surfaces the hub and runner tiers publish; whether `blizzard-mock-data` seeds those tiers is decided
+there. Unit and component tests stay in Python and stay coupled to it on purpose, and a service test whose subject turns
+out to be internal machinery moves down to the component tier rather than being ported.

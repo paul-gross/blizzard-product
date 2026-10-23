@@ -12,6 +12,12 @@ contracts. Then a rewrite of any daemon, in any language, could run them unchang
 under `initiative:test-suite`, and unit and component tests stay coupled to the Python on purpose; both are out of
 scope.
 
+The e2e tier is misnamed. Every scenario in it runs against the mock forge and mock harnesses, never a real work source
+or a real GitHub repository, so it is the hub and a runner host held real with mocks around them, which is what
+`initiative:test-suite` calls a fleet service test. Its browser scenarios are UI tests: the built board in a browser,
+driving a real hub. This epic moves each to where its kind lives, in the Playwright package `initiative:test-suite`
+roots at `tests/`, and retires the e2e tier until blizzard can stand up a real work source under test.
+
 ## Current coupling
 
 | Tier            | State            | Coupling                                                                                                                                                                                                                                                                                  |
@@ -50,23 +56,28 @@ Area 1 blocks the others, and builds on `epic:test-suite/hub-tier` and `epic:tes
 ### 1. External test surface
 
 `initiative:test-suite` publishes most of the surface these tiers need: hub and runner configuration as documented
-files, the fact-kind vocabulary under `contracts/`, the runner's host layout as a contract, a host that steps on
-request, and a read for each runner store value its service tests needed. This epic consumes those and adds only what
-its own tiers still lack, under the same rule: for each store value read or seeded today, an API or CLI surface, or the
-SQL schema declared a contract that tests may query with plain SQL. The ORM is never the contract. `blizzard-mock-data`
-already seeds both stores from outside, so a fixture the API cannot create belongs there.
+files, the runner's host layout as a contract, a host that steps on request, and a read for each runner store value its
+service tests needed. This epic consumes those and adds only what its own tiers still lack, under the same rule: for
+each store value read or seeded today, an API or CLI surface, or the SQL schema declared a contract that tests may query
+with plain SQL. The ORM is never the contract. `blizzard-mock-data` already seeds both stores from outside, so a fixture
+the API cannot create belongs there.
 
-Whether these tiers follow the service tier onto Playwright Test, or stay in pytest behind the guard below, is decided
-when this epic comes within striking distance.
+Whether the crash sweep and the journey follow onto Playwright Test, or stay in pytest behind the guard below, is
+decided when this epic comes within striking distance. The e2e tier's move is already decided.
 
-### 2. E2E
+### 2. E2E into the service and UI tiers
 
-- `drive_until_done` and `runner_api` in `tests/fleet_launchers.py` give way to a `blizzard-runner host` started in its
-  stepping configuration, stepped through its local API instead of `tick_once()` and serving that API itself instead of
-  `build_hosted_app` on a thread. The harness environment goes to the host process instead of `os.environ`.
-- Replace the store reads in `test_resume_preamble_e2e.py` and `test_session_modes_e2e.py`, and the imports of
-  `harness.preamble`, `events.broker`, and `foundation.chunk_status`, with area 1's surfaces.
-- The browser scenarios stay as they are. They already drive the built board through a real hub.
+- **Scenarios** move to `tests/service/fleet/`, each in a tenant of its own on a shared hub unless its subject is
+  hub-wide, and each Python original is deleted in the same change. `drive_until_done` and `runner_api` in
+  `tests/fleet_launchers.py` give way to a `blizzard-runner host` started in its stepping configuration, stepped through
+  its local API instead of `tick_once()` and serving that API itself instead of `build_hosted_app` on a thread. The
+  harness environment goes to the host process instead of `os.environ`. The store reads in `test_resume_preamble_e2e.py`
+  and `test_session_modes_e2e.py`, and the imports of `harness.preamble`, `events.broker`, and
+  `foundation.chunk_status`, give way to area 1's surfaces.
+- **Browser scenarios**, the `*_browser_e2e.py` files and the shell sweep, move to `tests/ui/` as the package's one
+  project with a browser installed, against the frontend job's build.
+- **The tier retires.** `blizzard:e2e` leaves blizzard-context's verifiability matrix when its last file moves, and its
+  citations name the service or UI method that took each test.
 
 ### 3. Crash sweep (investigation)
 
@@ -88,8 +99,9 @@ The output is a decided design and an issue sequence, not the migration itself.
   crash tier into a shared black-box support module.
 - **`blizzard-mock`.** Keep or retire the schema reflection in `blizzard-mock-data` according to area 1's schema
   decision. Its CI already runs lint, types, and tests; add the parity guard against `blizzard` `master`.
-- **Guard.** Add an ast-grep or ruff banned-import rule that fails when anything under `tests/e2e/`, `tests/crash/`, or
-  `tests/journey/` imports `blizzard.*`. The allowlist shrinks to empty as the areas land.
+- **Guard.** Add an ast-grep or ruff banned-import rule that fails when anything under `tests/crash/` or
+  `tests/journey/` imports `blizzard.*`, if those tiers stay in pytest. The allowlist shrinks to empty as the areas
+  land. What moves to the Playwright package needs no guard, since TypeScript cannot import the Python.
 
 ## Out of scope
 

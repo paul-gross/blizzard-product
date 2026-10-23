@@ -38,35 +38,24 @@ crash sweep is next behind it. Queue time is negligible, about 2 s.
 ### 2. PR gate coverage
 
 - **Angular AOT build on every PR.** Run `npm run build` in the frontend job, which today first runs on push or tag.
-  Hand the output to the e2e job.
-- **E2E on every PR.** Add a job in `upper-tiers.yml` with the two-repo checkout and Chromium, running against the
-  frontend job's build. Measure its runtime before enabling it. Area 3 keeps it affordable.
+  Hand the output to the UI job.
+- **UI tests on every PR.** Once `tests/ui/` exists, add a job in `upper-tiers.yml` with the two-repo checkout and
+  Chromium, running the UI project against the frontend job's build. Measure its runtime before making it required.
+  Today's e2e never joins the PR gate: it is moving into the service and UI tiers under `epic:test-architecture`, and
+  the gate picks up its tests where they land.
 - **Journey stays local.** It mints a real winter workspace, and the CI workflows carry no winter source on purpose. It
   is also currently red: a local run on `master` times out at its first wait, with the first chunk still `ready` after
   300 s, 5 min into the run. Determine whether that is rot or the local environment, then make it green where it runs.
 
-### 3. E2E under xdist
-
-E2E is the one upper tier still run serially. Its ports come from `tests.support.free_port()`, which hands each xdist
-worker a disjoint band, and its directories come from `tmp_path`, so most of its state is already per worker.
-
-- Measure the serial e2e job first; its only CI run today is inside the tag `release` workflow.
-- Run it under `pytest-xdist`. Its session fixtures (`tests/e2e/conftest.py`) become one copy per worker; decide per
-  fixture whether that cost is acceptable or the fixture should be shared.
-- The Playwright browser scenario serves one built frontend. Confirm concurrent browser tests don't contend for it, or
-  group them onto one worker with `--dist loadgroup`.
-- Choose the worker count by measurement, since 4 may not beat 2 with Chromium on a 4-vCPU runner.
-
-Target: e2e job ≤ 33% of its serial time.
-
-### 4. Event-driven waits
+### 3. Event-driven waits
 
 The fixed waits outside the service tier get the treatment the hub-tier epic gives `sse_tap` as it ports those tests:
 waits that return when the expected thing has happened, and a barrier event where an assertion is negative. That covers
-e2e's `sleep(0.5)` tick spacing, `poll_until` intervals, the 10 s termination allowance, and the unit-tier sleeps in
-`test_cli.py` and `test_runner_harness_opencode_diagnostic.py`.
+the unit-tier sleeps in `test_cli.py` and `test_runner_harness_opencode_diagnostic.py`. E2E's `sleep(0.5)` tick spacing,
+`poll_until` intervals, and 10 s termination allowance are not this epic's: they are rewritten as their scenarios move,
+as the service tier's are.
 
-### 5. Slow unit outliers
+### 4. Slow unit outliers
 
 `test_runner_harness_opencode_diagnostic.py` takes ~164 s of CPU: one 35 s test and ~30 tests at 4–5 s, all spawning
 subprocesses. Decide per test whether the subprocess is what's under test. Share one fake binary per module where
