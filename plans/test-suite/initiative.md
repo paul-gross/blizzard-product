@@ -49,9 +49,9 @@ plan carries what it proved and what it asks of the product. The spike never rea
 opens with one of its own.
 
 **The service tier stays one method with two runners.** `blizzard:service-test` keeps its name and its required CI
-check. It runs the Playwright project, and beside it the pytest cases whose subject is Python itself: an adapter driven
-against a mock fleet binary, which `bzh:external-cli-fake-is-service-tier` keeps in this tier because only its job
-checks out the mock fleet. From the day the foundation lands, a new daemon test is written in Playwright.
+check. It runs the Playwright package's service projects, and beside it the pytest cases whose subject is Python itself:
+an adapter driven against a mock fleet binary, which `bzh:external-cli-fake-is-service-tier` keeps in this tier because
+only its job checks out the mock fleet. From the day the foundation lands, a new daemon test is written in Playwright.
 
 **One package, its folders named for the kind of test.** The Playwright package is rooted at `tests/`, and each folder
 beneath it names what a test holds real. A service test brings up one real thing with mocks around it, in three shapes:
@@ -64,8 +64,8 @@ Python suites only until they have moved.
 **Each test moves once.** Porting a test and moving it onto the shared hub are one step: it lands in Playwright, at the
 loosest isolation level its reads allow, and its Python original is deleted in the same change. Any helper another tier
 imports from the deleted file moves to a support module first. The port keeps the original's function name as its title,
-so the harness citations that name it move mechanically. A test whose subject is the whole hub moves to a dedicated hub
-rather than being weakened to fit a shared one.
+so the harness citations that name it move mechanically. A test whose subject is the whole hub moves to a hub of its
+own, `fresh-hub`, rather than being weakened to fit a shared one.
 
 **Public surfaces only.** A test on a shared hub seeds and asserts only through HTTP, the CLI, and the mock fleet's
 endpoints. It never writes or reads the hub's store, because a row the daemon did not write skips every cache, event,
@@ -73,7 +73,7 @@ and derivation the real path runs, and the test then proves a state the hub can 
 built by the test's own fixtures through those surfaces, never by `blizzard-mock-data`, which serves agents and people
 testing by hand. Where a test needs state no public surface can produce, the order of preference is the real flow, then
 a surface an operator would want too, then a test-only route behind a configuration flag. Store access is allowed only
-on a dedicated hub whose subject is the store itself, against files before the daemon starts or after it stops.
+in a `fresh-hub` test whose subject is the store itself, against files before the daemon starts or after it stops.
 
 **The harness travels with the tests.** blizzard-context is what a fleet worker reads before writing a test, so it moves
 in step: the foundation redefines the tier there, and every port re-points the citations of the tests it moves in the
@@ -88,7 +88,7 @@ for one, are replaced as the tests that hold them are ported, not before.
 
 ## The order
 
-The [foundation](./foundation.md) lands first: the Playwright project, the shared-hub harness, the mock fleet changes a
+The [foundation](./foundation.md) lands first: the Playwright package, the shared-hub harness, the mock fleet changes a
 shared hub needs, the blizzard-context changes that redefine the tier, and the three analytics test files ported to
 prove it. The [hub tier](./hub-tier.md) follows, porting the tests that already speak HTTP and building the few surfaces
 they still lack. The [runner tier](./runner-tier.md) comes last because it needs real product work: a host whose loop

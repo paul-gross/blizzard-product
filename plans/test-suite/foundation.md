@@ -6,16 +6,15 @@ status: horizon
 
 # Plan — `epic:test-suite/foundation`
 
-Before a single test can move, the tier needs somewhere to land: a Playwright project that brings up hubs and their mock
-fleet once, hands each test a tenant of its own, and tears nothing down that another test still stands on. It also needs
-the fleet's own rulebook to say where a service test now lives, or every worker who writes one in the meantime will
-write it in pytest. This epic builds that ground and proves it with the first tests to cross over.
+Before a single test can move, the tier needs somewhere to land: a Playwright package that brings up hubs and their mock
+fleet once, gives each test as much of a hub as it needs and no more, and tears nothing down that another test still
+stands on. It also needs the fleet's own rulebook to say where a service test now lives, or every worker who writes one
+in the meantime will write it in pytest. This epic builds that ground and proves it with the first tests to cross over.
 
-## The Playwright project
+## The Playwright package
 
 A TypeScript Playwright Test package in the `blizzard` repo, rooted at `tests/` with its own `package.json` and one
-Playwright config. Its folders are named for the kind of test they hold, never for the tool that runs them, and each is
-a Playwright project:
+Playwright config. Its folders are named for the kind of test they hold, never for the tool that runs them:
 
 | Folder                  | What is real                 | What stands around it               |
 | ----------------------- | ---------------------------- | ----------------------------------- |
@@ -25,12 +24,15 @@ a Playwright project:
 | `tests/ui/`             | the built board in a browser | a real hub, and the mocks behind it |
 
 This epic builds the package and `service/hub/`; the hub and runner tiers fill the service folders, and
-`epic:test-architecture` the UI folder. The fixtures that start daemons, mint tenants, and run the mock fleet live once
-in the package and serve every project. The package shares `tests/` with the Python suites until they have moved, and
-pytest is told not to descend into `node_modules`; the service tier's pytest half keeps its files in `tests/service/`
-beside the Playwright specs. The package sits outside `web/`, so the Angular workspace's structure rules do not bind it,
-and only the UI project installs a browser. It runs the daemons as the installed binaries an operator runs, never as
-imported code. The spike settled its toolchain:
+`epic:test-architecture` the UI folder. A Playwright project is a folder crossed with a hub profile: the profile's tests
+live in a subfolder named for it, `tests/service/hub/auth/` running as `service-hub-auth`, and a folder's default
+profile sits at its root, `tests/service/hub/` running as `service-hub`. A test declares its profile by where it lives,
+and a selection such as `--project='service-*'` takes every profile at once. The fixtures that start daemons, mint
+tenants, and run the mock fleet live once in the package and serve every project. The package shares `tests/` with the
+Python suites until they have moved, and pytest is told not to descend into `node_modules`; the service tier's pytest
+half keeps its files in `tests/service/` beside the Playwright specs. The package sits outside `web/`, so the Angular
+workspace's structure rules do not bind it, and only the UI project installs a browser. It runs the daemons as the
+installed binaries an operator runs, never as imported code. The spike settled its toolchain:
 
 - **Playwright Test** with no browser in the service projects, its fixtures carrying the hubs, the mock fleet, and the
   tenants, and its workers in place of xdist.
@@ -43,8 +45,8 @@ imported code. The spike settled its toolchain:
   on it believing in a configuration the hub never ran. The check is the harness's own and permanent; it asks nothing of
   the hub.
 - **`tsc --noEmit` and a linter in the gate**, because Playwright runs TypeScript without checking its types.
-- **A setup project with dependencies** rather than a global setup, so a run that selects only dedicated-hub tests
-  starts no shared hub.
+- **A setup project with dependencies** rather than a global setup, so a run that selects only `fresh-hub` tests starts
+  no shared hub.
 - **A pid-file sweep** of the daemons a run starts, so a test runner killed outright leaves nothing behind.
 - **One request context per hub**, because cookies ignore the port and two hubs on one host would share a session.
 
@@ -60,8 +62,6 @@ half. `blizzard:service-test` is the two together, and both report under the req
   pytest half's job, and the existing summary job passes only when every one of them did. Each shard is its own machine
   and starts its own shared hubs and common tenant, so the hubs-per-worker measurement is taken against two shards, and
   a later change to the count is weighed against it.
-- **The daemons as operators install them.** The jobs run the hub and runner from the wheel the workflow builds,
-  installed into a clean environment, rather than from the checkout, so the tier tests what ships.
 - **A pinned toolchain.** Node is pinned through `mise`, the package installs with `npm ci` from its committed lockfile,
   and `node_modules` is cached between runs.
 - **Failures leave evidence.** A failing job uploads Playwright's report and traces and every daemon's log, so a red run
@@ -72,7 +72,7 @@ Playwright jobs as ones that run tests, and to scan their TypeScript.
 
 ## The daemons' environment
 
-Every hub and runner the project starts, shared or dedicated, runs under the same environment the pytest suite gives the
+Every hub and runner the package starts, shared or fresh, runs under the same environment the pytest suite gives the
 daemons it spawns today: both statement guards on, strict configuration reads, commit signing off, the legacy forge
 variables removed, and inherited tracing variables stripped. The CLI never reads the developer's own session file. That
 contract lives in one place both suites read, so the two cannot drift, and a guard refusal in any daemon's log fails the
@@ -86,10 +86,10 @@ statement inside the daemon before any test could see its effect.
 - **A mock fleet per hub.** Each shared hub gets a mock forge and a stub IdP of its own, started beside it. Neither runs
   migrations, so the cost is small, and it keeps one hub's tests from racing another's on mock state.
 - **Profiles.** A profile is a hub configuration written as TOML, never built from Python objects, which makes the hub's
-  configuration format a documented contract. Each profile is a Playwright project, so a test declares the profile it
-  needs by where it lives. A profile may be small: a hub-wide setting only a few tests need gets a profile whose single
-  hub starts the first time one of them runs and serves one worker. Where a test lives decides how its hub is
-  configured; its isolation level decides how much of that hub it has to itself.
+  configuration format a documented contract. Each profile is a subfolder, and with its folder a Playwright project, as
+  [the package](#the-playwright-package) lays out. A profile may be small: a hub-wide setting only a few tests need gets
+  a profile whose single hub starts the first time one of them runs and serves one worker. Where a test lives decides
+  how its hub is configured; its isolation level decides how much of that hub it has to itself.
 - **A world per test, at its isolation level.** Every test receives its tenant and project from one fixture, at the
   [isolation level](#isolation-levels) it declares, and a client that names that tenant in `X-Blizzard-Tenant` on every
   request. Once more than one tenant is open, the hub answers a request that names none with `409 tenant_required`, so a
@@ -102,9 +102,13 @@ statement inside the daemon before any test could see its effect.
   runner is always started with a token minted in the test's tenant, since one left to add itself names no tenant and is
   refused. The stub IdP holds one identity for the next sign-in, which a shared authentication profile cannot live with;
   no test this epic ports signs in, so the hub tier settles it.
-- **Teardown.** The fixture deletes the fresh tenant or project it made, but no test's correctness depends on it: a
-  leftover tenant is invisible to others by construction, and a leftover project is invisible to a test that asserts
-  only on what it created.
+- **Nothing is cleaned up.** A test leaves behind every tenant, project, and record it made, and the hub keeps them
+  until the run stops it. Nothing depends on a cleanup that never comes: a leftover tenant is invisible to others by
+  construction, and a leftover project or record is invisible to a test that asserts only on what it created. Blizzard
+  retires records rather than deleting them, and a project cannot yet be retired at all, so a teardown would need
+  surfaces the product does not have and the tests do not need. What leftovers cost is the hub's to carry: every open
+  tenant keeps its own background passes running, so a hub's late tests run beside the sweeps of every tenant its early
+  ones made, and the hubs-per-worker measurement is taken over a whole run for that reason.
 - **Fresh hubs.** What cannot share a hub with any other test gets one started for it alone, the `fresh-hub` isolation
   level: a test that stops, kills, restarts, or migrates the hub, and a test whose subject is something multi-tenancy
   leaves global: tenant administration, the hub event log, users and hub admins, the superuser bootstrap, signing keys,
@@ -112,10 +116,15 @@ statement inside the daemon before any test could see its effect.
   tier counts them before it ports.
 - **Logs.** A shared hub's log interleaves every tenant's lines, so a test on one asserts only on lines tagged with its
   own `tenant_id`. Every line a tenant-scoped request produces carries that tag today; the lines a per-tenant background
-  pass writes do not yet, and the hub tier adds it. A test asserting on an untagged line, a hub-wide one, takes a
-  dedicated hub.
+  pass writes do not yet, and the hub tier adds it. A test asserting on an untagged line, a hub-wide one, takes
+  `fresh-hub`.
 
 ## Isolation levels
+
+An isolation level says how a test shares a real hub, so it belongs to the projects that have one: `service/hub/`,
+`service/fleet/`, where it governs the hub half and the runner host is always the test's own, and `ui/`, where the
+browser drives a shared hub. A test in `service/runner/` has no level to declare: it owns its host and a mock hub of its
+own, which nothing else reaches.
 
 Not every test needs a world of its own. One that creates an item, finds it listed, and deletes it can run beside a
 dozen others doing the same, so long as each touches only what it made; one that starts a runner and watches it claim
@@ -145,10 +154,18 @@ the harness, that gives every operation in `openapi/hub.openapi.json` the least 
 - **`fresh-hub`** for the hub-level routes `test_route_classification.py` already sets apart: tenant administration,
   users and hub admins, signing keys.
 - **`fresh-tenant`** for writes that reach the whole tenant: secrets, `config/apply`, runners and their enrollment,
-  graphs, routines, work sources, and repositories. `config/apply` leaves unnamed records alone, so it never removes
-  another test's, but what it creates is tenant-wide, and it starts here.
-- **`fresh-project`** for creating a project, and for writes inside a project the test made.
+  graphs, work sources, and repositories. `config/apply` leaves unnamed records alone, so it never removes another
+  test's, but what it creates is tenant-wide, and it starts here.
+- **`fresh-project`** for creating a project, and for writes inside a project the test made: its routines, scopes, and
+  repository and source links.
 - **`common`** for writes to items and chunks the test made itself.
+
+**A write to what the test made is the test's own.** The client records the id of everything a test creates, to narrow
+its lists, and the gate reads the same record: an operation that acts on one resource is allowed at `common` when that
+resource is one the test made, and needs the level the table names when it is anything else. A test that invites a
+person only it knows, signs them in, changes their role, and removes them touches nothing another test can see, so it
+runs at `common`; the same role change aimed at the admin the fixtures act as, or at a tenant-wide setting such as which
+providers may sign in, needs `fresh-tenant`. The table marks which operations act on a single resource a test can own.
 
 The table is exhaustive both ways, as the route classification guard is: every operation has an entry and every entry
 names an operation, so a new route reaches the tests classified or not at all. The mock fleet's levers go through the
@@ -169,12 +186,12 @@ expected way the tier gets faster. The [cross-check](#cross-check) catches a tes
 
 Fixtures build every test's data through the surfaces above. `blizzard-mock-data` writes live into a running hub's
 SQLite, which suits agents and people testing by hand; it never seeds a test in this tier. Store access is allowed only
-on a dedicated hub whose subject is the store, against files before the daemon starts or after it stops.
+in a `fresh-hub` test whose subject is the store, against files before the daemon starts or after it stops.
 
 ## The rulebook
 
 blizzard-context changes in a companion that lands with this epic. It redefines `blizzard:service-test` as the
-Playwright project plus the pytest cases that stay, in its command, its tier roster, and its `mise` task. It says that
+Playwright package plus the pytest cases that stay, in its command, its tier roster, and its `mise` task. It says that
 new daemon tests are written in Playwright. It scopes the statement-guard rule to every daemon a test spawns rather than
 to rows that run pytest, and narrows the rule that test data comes from `blizzard-mock-data` so it no longer binds this
 tier. The registry check learns to attribute a Playwright spec as firmly as it attributes a pytest file, the frontend
@@ -219,17 +236,16 @@ for a fault that surfaces slowly and belongs to the tests rather than to the cha
 
 ## Measurements owed
 
-`initiative:multi-tenancy` left two numbers to this epic, and the spike added a third. All three are taken on the CI
-runner's shape, four vCPUs, because a ratio found on a twenty-core laptop would not hold there.
+`initiative:multi-tenancy` left two numbers to this epic, both taken on the CI runner's shape, four vCPUs, because a
+ratio found on a twenty-core laptop would not hold there.
 
 - **Hubs per worker.** How many workers a shared hub serves before its one core becomes the wait, with and without the
-  statement guards' cost, which falls on that core.
+  statement guards' cost, which falls on that core, over a whole run, so the sweeps of the tenants it accumulates are
+  counted.
 - **Store contention.** How many concurrent tenants a SQLite hub carries before tests queue behind each other's writes.
   The shared hubs run on SQLite unless the slowest store waits at the chosen ratio come within reach of the five-second
   busy timeout; then they move to Postgres, which also amends the harness rule that tests run on SQLite and adds a
   database service to the CI jobs.
-- **Teardown.** How long a tenant the size a service test creates takes to delete, which decides whether that time is
-  part of each test's budget or hygiene that runs behind the suite.
 
 ## Proof
 
@@ -283,7 +299,7 @@ check, not by the hub.
 - **An environment variable for the CLI's tenant**, beside `BZ_HUB_URL`.
 
 Settings that stay hub-wide — route-token and produces enforcement, authentication, sweep intervals, forge write closure
-— ride profiles or dedicated hubs; none of them becomes per-tenant for the sake of the tests.
+— ride profiles or fresh hubs; none of them becomes per-tenant for the sake of the tests.
 
 ## Landing order
 
@@ -293,19 +309,19 @@ The epic lands as five children. The first two are independent of one another an
 2. **The CLI's tenant variable**, beside `BZ_HUB_URL`.
 3. **The daemons' environment contract**, lifted into the one place both suites read, with the pytest suite reading it
    first so the move changes nothing it runs.
-4. **The Playwright project and the shared-hub harness**: profiles, the common tenant, the isolation option and the
+4. **The Playwright package and the shared-hub harness**: profiles, the common tenant, the isolation option and the
    `world` fixture at all four levels, the gated client and its exhaustive operation table, the pid-file sweep, and the
    CI wiring: the `playwright` task, its two shards beside the pytest job under the existing required check, the daemons
-   from the built wheel, the pinned toolchain, failure artifacts, and `test_winter_free_ci.py` taught to see it. The
-   rulebook companion lands with it. It waits on 1 and 3.
+   the pinned toolchain, failure artifacts, and `test_winter_free_ci.py` taught to see it. The rulebook companion lands
+   with it. It waits on 1 and 3.
 5. **The three analytics ports and the measurements**, the Python originals and their citations deleted in the same
-   change, and the measured ratio, store, and teardown decisions recorded here, cheaper tenant creation among them if
-   the ratio asks for it. The cross-check's flag and its weekly and release runs land with it. It waits on 4.
+   change, and the measured ratio and store decisions recorded here, cheaper tenant creation among them if the ratio
+   asks for it. The cross-check's flag and its weekly and release runs land with it. It waits on 4.
 
 ## Done
 
 The three analytics files run in the Playwright package under `blizzard:service-test`'s required check, in two shards in
 both workflows, and their Python originals and blizzard-context citations are gone. Every daemon the project starts runs
 under the shared environment contract. The mock forge creates repositories on demand, and the cross-check runs weekly
-and in the release workflow. The three measurements are recorded with the decisions they drove, the tier's CI time
-before and after is recorded beside them, and the rulebook companion has landed.
+and in the release workflow. The two measurements are recorded with the decisions they drove, the tier's CI time before
+and after is recorded beside them, and the rulebook companion has landed.

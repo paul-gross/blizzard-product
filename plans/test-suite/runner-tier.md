@@ -51,7 +51,7 @@ test has its own runner today, and the parallelism lives across hosts. A test in
 hub of its own, since the mock is cheap to start and holds no migrations, and its levers and tenants' work are not
 isolated from one another. A test in `tests/service/fleet/`, where the hub is real too, runs on a shared hub at
 `fresh-tenant`, since its runner claims tenant-wide work, unless its subject is hub-wide: `runner_init`'s reset of the
-hub's data and `idp_federation`'s provider changes and key rotation each take a dedicated hub.
+hub's data and `idp_federation`'s provider changes and key rotation each take `fresh-hub`.
 
 This half of the tier is not expected to get faster. Sharing buys a test against the mock hub nothing, and a host
 started as a process costs more than a loop called in place. The initiative's guard holds it: the tier never becomes the

@@ -67,13 +67,13 @@ decided when this epic comes within striking distance. The e2e tier's move is al
 
 ### 2. E2E into the service and UI tiers
 
-- **Scenarios** move to `tests/service/fleet/`, each in a tenant of its own on a shared hub unless its subject is
-  hub-wide, and each Python original is deleted in the same change. `drive_until_done` and `runner_api` in
-  `tests/fleet_launchers.py` give way to a `blizzard-runner host` started in its stepping configuration, stepped through
-  its local API instead of `tick_once()` and serving that API itself instead of `build_hosted_app` on a thread. The
-  harness environment goes to the host process instead of `os.environ`. The store reads in `test_resume_preamble_e2e.py`
-  and `test_session_modes_e2e.py`, and the imports of `harness.preamble`, `events.broker`, and
-  `foundation.chunk_status`, give way to area 1's surfaces.
+- **Scenarios** move to `tests/service/fleet/`, each at its isolation level on a shared hub, `fresh-tenant` for any that
+  runs a runner and `fresh-hub` where its subject is hub-wide, and each Python original is deleted in the same change.
+  `drive_until_done` and `runner_api` in `tests/fleet_launchers.py` give way to a `blizzard-runner host` started in its
+  stepping configuration, stepped through its local API instead of `tick_once()` and serving that API itself instead of
+  `build_hosted_app` on a thread. The harness environment goes to the host process instead of `os.environ`. The store
+  reads in `test_resume_preamble_e2e.py` and `test_session_modes_e2e.py`, and the imports of `harness.preamble`,
+  `events.broker`, and `foundation.chunk_status`, give way to area 1's surfaces.
 - **Browser scenarios**, the `*_browser_e2e.py` files and the shell sweep, move to `tests/ui/` as the package's one
   project with a browser installed, against the frontend job's build.
 - **The tier retires.** `blizzard:e2e` leaves blizzard-context's verifiability matrix when its last file moves, and its
