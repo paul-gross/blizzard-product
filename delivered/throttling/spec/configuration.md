@@ -100,8 +100,8 @@ host keeps its throttles.
 ## Validation
 
 Every throttle error is a runner error in `HostConfig.load`'s sort
-([`delivered/runner-host`'s configuration contract](../../../delivered/runner-host/spec/configuration.md) §Validation):
-it halts that runner alone, names the key, and `blizzard runner host --check` reports it with the rest. They are:
+([`delivered/runner-host`'s configuration contract](../../runner-host/spec/configuration.md) §Validation): it halts that
+runner alone, names the key, and `blizzard runner host --check` reports it with the rest. They are:
 
 - an `on_decline` or `on_usage_limit` other than `"hold"` or `"release"`;
 - a `pace` or `utilization` table on a runner that names no `subscription`, or whose subscription's `provider` binds no

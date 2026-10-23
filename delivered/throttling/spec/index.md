@@ -8,9 +8,8 @@ go, that every dollar line counts the same figure, that a declining runner says 
 that the runner shows its own settings. This spec states how each of those is built and redefines none of it.
 
 The subscription a runner names is trusted as declared, as it is today
-([`delivered/runner-host`'s subscriptions contract](../../../delivered/runner-host/spec/subscriptions.md)
-§Declarations): nothing here binds a harness's credentials to the subscription its runner names, and nothing checks that
-they agree.
+([`delivered/runner-host`'s subscriptions contract](../../runner-host/spec/subscriptions.md) §Declarations): nothing
+here binds a harness's credentials to the subscription its runner names, and nothing checks that they agree.
 
 Paths are relative to `blizzard/src/blizzard/` unless a path names another root: one beginning `tests/`, `docs/`,
 `contracts/`, `openapi/`, or `web/` is relative to the `blizzard` repository's root. Line citations are to `master` as
