@@ -1,6 +1,6 @@
 ---
 epic: test-architecture
-refinement: pristine
+refinement: scaffolded
 status: horizon
 ---
 
