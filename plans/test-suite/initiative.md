@@ -97,8 +97,9 @@ that start a real runner host move with the runner tier even where their subject
 when the hub is real too. Each epic builds the public surfaces its own tests need, so the architecture work arrives just
 in time rather than in advance.
 
-[Optimization](./optimization/index.md) is listed last but runs alongside the others. Its work speeds the tiers that
-stay in Python and the pipeline around them, and none of it waits on the service tier's move.
+[Optimization](./optimization/index.md) is listed last and waits for the other three. Its work speeds the tiers that
+stay in Python and the pipeline around them, but the gate it measures is the one the three tier epics leave behind, so
+its spec stays provisional until they land.
 
 ## Boundaries
 

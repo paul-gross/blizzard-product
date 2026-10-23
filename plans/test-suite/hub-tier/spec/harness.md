@@ -69,10 +69,11 @@ at a tenant-wide setting such as which providers may sign in, is not, and needs 
 naming either fails before it starts, naming the `auth` profile.
 
 On an `auth` hub, the setup project signs the superuser in once, which claims the bootstrap, and creates the common
-tenant as that person, and the harness's internal client acts in the superuser's session. A `fresh-tenant` tenant is
-created the same way, with the superuser as its admin, and `api` acts in the superuser's session, as the tenant's admin.
-Acting as anyone else is `user.api` or a person's own `api`, always explicit. A test whose subject is the bootstrap
-itself takes `fresh-hub`, where nobody has signed in yet.
+tenant as that person, and the harness's internal client acts in the superuser's session. The setup project writes that
+session's cookie into `hubs/<project>.json` beside the hub's coordinates, so every worker's internal client acts in it
+without signing in again. A `fresh-tenant` tenant is created the same way, with the superuser as its admin, and `api`
+acts in the superuser's session, as the tenant's admin. Acting as anyone else is `user.api` or a person's own `api`,
+always explicit. A test whose subject is the bootstrap itself takes `fresh-hub`, where nobody has signed in yet.
 
 ## The CLI
 
@@ -80,7 +81,9 @@ itself takes `fresh-hub`, where nobody has signed in yet.
 daemons, with the contract's environment, `BZ_HUB_URL` set to the test's hub, `BZ_HUB_TENANT` to `tenant`, and
 `XDG_CONFIG_HOME` to an empty directory of the test's own, so no session but one the test made is ever read. It returns
 `{ code, stdout, stderr }` and fails the test on a timeout of thirty seconds. With `as: user` or any person `people`
-made, the CLI is first signed in as that person through `blizzard hub login`, walked through the IdP as above.
+made, the CLI is first signed in as that person by `blizzard hub login --paste`, the form with no loopback listener: the
+harness reads the authorize URL the CLI prints, walks it through the IdP as above, takes the code the hub's out-of-band
+answer carries, and writes it to the CLI's prompt on stdin.
 
 A verb the CLI runs keeps to the test's level by the same rules as a call through `api`.
 

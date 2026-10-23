@@ -36,15 +36,17 @@ own unless the test sets `XDG_CONFIG_HOME` by hand, as `test_host_init_readd_ser
 `BZ_HUB_TENANT` once [it exists](./surfaces.md#the-clis-tenant-variable)), and the worker-identity family
 `_strip_worker_identity_env` removes today, each by name. `isolatedConfigHome` asks each reader to point
 `XDG_CONFIG_HOME` at an empty directory of the run's own, so no CLI a test spawns finds a session it did not create.
-`refusals` names the exceptions the two guards raise (`blizzard.foundation.store.key_scoping`), which the harness
+`refusals` names the exceptions the two guards raise, `UnscopedTenantStatement`
+(`src/blizzard/hub/store/tenant_guard.py`) and `UnscopedRunnerStatement` (`src/blizzard/runner/store/runner_guard.py`),
+both subclasses of `blizzard.foundation.store.key_scoping`'s `UnscopedKeyedStatement`, which the harness
 [attributes and fails on](#refusals-attributed).
 
 The pytest suite reads the file first, in the change that introduces it. `pytest_configure` applies `set` and `unset`
 from it in place of its literals, and the autouse fixtures take their lists from it, so the pytest suite runs exactly
 what it ran before. A unit test, `tests/test_daemon_env_contract.py`, holds the file to the code it restates: the guard
-variables are `GUARD_ENVIRONMENT_VARIABLE` and `RUNNER_GUARD_ENVIRONMENT_VARIABLE`, strict reads are
-`STRICT_CONFIG_ENVIRONMENT_VARIABLE`, `unset` holds every name in `LEGACY_FORGE_VARIABLES`, and `refusals` names the two
-exception classes. A guard renamed in `src/` fails that test before it silently drops out of both suites.
+variables are each guard module's `GUARD_ENVIRONMENT_VARIABLE`, strict reads are `STRICT_CONFIG_ENVIRONMENT_VARIABLE`,
+`unset` holds every name in `LEGACY_FORGE_VARIABLES`, and `refusals` names the two exception classes. A guard renamed in
+`src/` fails that test before it silently drops out of both suites.
 
 The harness reads it in `harness/env.ts`. A daemon's environment is the runner's own, less every `unset` name and every
 variable under an `unsetPrefixes` prefix, plus `set`, plus `XDG_CONFIG_HOME` pointed at `.run/<run>/config-home/`, plus
@@ -88,11 +90,13 @@ still on disk to read.
 
 ## Logs
 
-A hub's log is JSON lines under `BZ_LOG_FORMAT=json`. Every line a tenant-bound request produces carries `tenant_id`,
-bound by `tenant_bound` in `src/blizzard/hub/api/auth_session.py`; lines from per-tenant background passes do not yet
-carry it, and the hub tier adds the tag there. `harness/logs.ts` reads a log incrementally and offers a test its hub's
-lines filtered to its own tenant. On a shared hub that is the only read it offers; a test that asserts on an untagged
-line is reading a hub-wide fact and is refused below `fresh-hub` ([isolation.md](./isolation.md#reads)).
+Under `BZ_LOG_FORMAT=json` the hub's own lines, written through structlog, are JSON. uvicorn writes its own lines beside
+them as plain text, its startup and shutdown notices and, today, the traceback of an unhandled request error, and
+`harness/logs.ts` passes over every line that does not parse as JSON. Every line a tenant-bound request produces carries
+`tenant_id`, bound by `tenant_bound` in `src/blizzard/hub/api/auth_session.py`; lines from per-tenant background passes
+do not yet carry it, and the hub tier adds the tag there. `harness/logs.ts` reads a log incrementally and offers a test
+its hub's lines filtered to its own tenant. On a shared hub that is the only read it offers; a test that asserts on an
+untagged line is reading a hub-wide fact and is refused below `fresh-hub` ([isolation.md](./isolation.md#reads)).
 
 A failing test has the tail of every log it touched attached to its report, filtered to its tenant on a shared hub and
 whole on a fresh one.
@@ -100,31 +104,25 @@ whole on a fresh one.
 ## Refusals, attributed
 
 A statement guard refuses inside the daemon, and a refusal nobody reads protects nothing: on a shared hub the tenant
-guard is the only thing that sees a cross-tenant statement at all. The harness therefore fails on every refusal, and
-fails whoever caused it, never a test that merely ran beside it. A refusal has one of three owners.
+guard is the only thing that sees a cross-tenant statement at all. The harness therefore fails on every refusal. It
+blames a test only where a test's request caused one, and otherwise fails the run.
 
 **A request: the test that sent it.** No exception handler in `src/blizzard/hub/app.py` maps `UnscopedTenantStatement`,
-so a refusal inside a request reaches FastAPI unhandled and answers `500`. The clients fail the test that sent the
-request the moment they receive an unexpected `5xx` ([isolation.md](./isolation.md#the-clients-and-the-ledger)),
-attaching the response and the log lines tagged with the test's tenant around it. A refusal on the request path is that
-test's failure, at the line that made the request.
+so a refusal inside a request answers `500`, and the hub logs it as one JSON line naming the request and its tenant
+([surfaces.md](./surfaces.md#unhandled-request-errors-in-the-hubs-log)). The clients fail the test that sent the request
+the moment they receive an unexpected `5xx` ([isolation.md](./isolation.md#the-clients-and-the-ledger)), attaching the
+response and the log lines tagged with the test's tenant around it. A refusal on the request path is that test's
+failure, at the line that made the request. Its log line names the request it came from, so the scan below passes over
+it rather than report it a second time.
 
-**A background pass in a tenant one test owns: that test.** A per-tenant pass writes its lines with `tenant_id` once the
-hub tier binds it there. The harness records, in `.run/<run-id>/tenants.json`, which test each tenant it creates belongs
-to. At `fresh-tenant` and `fresh-hub` the tenant is one test's, so:
+**Anything else: the run.** A refusal outside a request comes from a background pass, a sweep the hub runs on its own
+timer over every tenant. Its cause is the sweep's code, not the data a test made, and a pass rarely runs while the test
+whose data it reads is still running, so naming a test would point its reader at the wrong place. `teardown-<project>`
+scans every log its hubs wrote, whole, so a refusal written after the last test still counts, and fails the run on any
+refusal outside a request, printing the line: its logger, which names the sweep, its tenant or `hub-wide`, and the
+refused statement. A fresh hub's log is scanned the same way when its test stops it, and a runner host's when it stops,
+for `UnscopedRunnerStatement`.
 
-- When that test ends, its `tenant` fixture's teardown reads the lines tagged with its tenant so far and fails the test
-  if any names one of the contract's `refusals`.
-- A pass can run after its test has ended, and a passed test cannot be failed afterwards. The teardown project reads
-  every tagged line written after its test ended, and fails the run with a message naming the owning test and the line.
-
-A fresh hub's whole log is its test's, and is read the same way when the test stops it. A runner host the test owns is
-read when it stops, for `UnscopedRunnerStatement`.
-
-**A pass in a shared tenant, or a hub-wide line: the run.** A refusal in a line tagged with the common tenant, or with
-no tenant at all, belongs to no single test, and naming one would be a guess. The teardown project fails the run with
-the line and its tenant, or `hub-wide`, and blames no test. Rerunning the suspects at `fresh-tenant`, as
-[the cross-check](./isolation.md#the-cross-check) does weekly, narrows it to one.
-
-The teardown project scans every log its hubs wrote, whole, so a refusal written after the last test still turns the run
-red, attributed by the same three rules.
+The hub tier has the hubs tests share step their sweeps on request rather than on timers
+([its surfaces](../../hub-tier/spec/surfaces.md#sweeps-on-request)). From then on, a pass on a shared hub runs inside a
+request, and its refusal is the test's that asked for it, by the first rule.

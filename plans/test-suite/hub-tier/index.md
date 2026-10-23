@@ -30,14 +30,14 @@ holds one identity for the whole process and hands it to whichever sign-in compl
 worker's sign-in would come back as another worker's person.
 
 The IdP, in `blizzard-mock`, learns to hold many identities at once and to choose among them by the `login_hint` on its
-authorize URL, the standard OIDC parameter, so it stays shaped like a real provider. A `signedIn(person)` fixture
-registers the person with the IdP, starts at the hub's own `/api/auth/<provider>/authorize`, adds the hint as it follows
-the redirect to the IdP, and returns a request context holding that person's session. The hub is untouched and every
-sign-in walks the real flow. A member is invited through `POST /api/invitations` and then signs in the same way, and
-since that person is the test's own, the test can stay at `common`; the superuser is declared in the authentication
-profile and signed in once by the setup project. The epic confirms that many sign-ins on one hub stay under the login
-throttle before the group ports. Tests whose subject is the superuser bootstrap or a change of identity providers still
-take `fresh-hub`, because both are hub-wide.
+authorize URL, the standard OIDC parameter, so it stays shaped like a real provider. The `user` fixture, and
+`people.create` for every further person, register the person with the IdP, start at the hub's own
+`/api/auth/<provider>/authorize`, add the hint as they follow the redirect to the IdP, and hold that person's session.
+The hub is untouched and every sign-in walks the real flow. A member is invited through `POST /api/invitations` and then
+signs in the same way, and since that person is the test's own, the test can stay at `common`; the superuser is declared
+in the authentication profile and signed in once by the setup project. Every sign-in on a shared hub comes from one
+address, so the authentication profile turns the hub's login throttle off, through keys this epic adds. Tests whose
+subject is the superuser bootstrap or a change of identity providers still take `fresh-hub`, because both are hub-wide.
 
 Every test this epic moves lands in `tests/service/hub/`. The tests that start a real runner host beside the hub,
 `runner_init` and `idp_federation`, belong in `tests/service/fleet/` and move with the runner tier, which publishes the
@@ -57,11 +57,11 @@ the mock hub itself. `tenant_teardown` builds a hub in-process and moves down to
 The epic opens by classifying every file it moves, so the cost of the `fresh-hub` tests is known before the first port
 rather than discovered at the last. Each test gets its isolation level, the loosest its reads allow under the
 foundation's rules: `common`, `fresh-project`, `fresh-tenant`, or `fresh-hub`. The levels are also where the tier's
-speed comes from, so a test is not placed at `fresh-tenant` by habit. Route-token and produces enforcement, the forge
-annotation interval, and an authentication setup used by several tests are hub-wide startup settings and ride profiles.
-A test whose subject is something multi-tenancy leaves global takes a fresh hub, as the foundation lists, and so does
-any test that restarts the hub. The forge-status test asserting that no sweep loop starts is the model case: on a shared
-hub it could only show that its own issue went unlabelled, which is a weaker claim, so it takes `fresh-hub` instead.
+speed comes from, so a test is not placed at `fresh-tenant` by habit. Route-token and produces enforcement and an
+authentication setup used by several tests are hub-wide startup settings and ride profiles. A test whose subject is
+something multi-tenancy leaves global takes a fresh hub, as the foundation lists, and so does any test that restarts the
+hub. A test whose subject is a sweep steps that sweep for its own tenant, as below, and needs no hub of its own; only a
+test whose subject is a sweep's timer takes `fresh-hub`.
 
 ## Surfaces it builds
 
@@ -69,6 +69,13 @@ hub it could only show that its own issue went unlabelled, which is a weaker cla
   tenant-scoped request already does, so a test on a shared hub can assert on them and an operator can read one tenant's
   activity out of a shared log.
 - **Keyed sign-in** in the stub IdP, as above.
+- **A configurable login throttle**, so a hub signing many people in from one address, a test hub or an operator's
+  behind one proxy, can turn it off or tune it.
+- **Sweeps on request.** Each of the hub's background sweeps runs on its timer, as today, or is stepped: no timer, and a
+  pass runs only when a route asks for one, for one tenant or for all, answering once the pass has completed. The hubs
+  tests share step every sweep, so no pass runs behind a test's back, and a sweep's test runs one pass over its own
+  tenant and asserts. An operator gets the same handle: a misbehaving sweep can be stopped and walked one pass at a
+  time, or run at once after a configuration change.
 - **A cursor read** on the event stream, so a client can join from the tenant's current position, as below.
 - **Whatever a ported test proves missing.** A test that cannot be written against today's surfaces either finds its
   state through the real flow or earns a surface an operator would want too. A test-only route behind a configuration

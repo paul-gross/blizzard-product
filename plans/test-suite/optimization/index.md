@@ -24,7 +24,7 @@ Successful pushes to `master`, 18 October 2026:
 | crash sweep, CI profile        | 7.0–7.2 min             | 43 tests, `-n auto` on 4 vCPU                                            |
 | service tier                   | 3.2–5.8 min per shard   | 237 tests in 3 shards, `-n auto` on 4 vCPU, each test with its own stack |
 | dev hub image                  | 3.0–4.5 min             | multi-arch QEMU build on every push to `master`                          |
-| eslint + vitest + client drift | 1.9–2.2 min             | four `ng test` projects run one after another                            |
+| eslint + vitest + client drift | 1.9–2.2 min             | three `ng test` projects run one after another                           |
 
 Every check starts at once, so the PR critical path is the slowest single job, a pytest unit + component shard, and the
 crash sweep is next behind it. Queue time is negligible, about 2 s.

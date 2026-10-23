@@ -14,18 +14,64 @@ reconciler's own and anything it calls, carries `tenant_id` exactly as a request
 lines pass today is removed in the same change, since the bound value replaces it. The reconcilers it applies to are
 each one that iterates tenants:
 
-| Sweep                 | Reconciler                        | File                                                            |
-| --------------------- | --------------------------------- | --------------------------------------------------------------- |
-| Forge status          | `AnnotationReconciler`            | `src/blizzard/hub/domain/observability/forge_status.py`         |
-| Transcript derivation | `EventDerivationReconciler`       | `src/blizzard/hub/domain/observability/analytics/derivation.py` |
-| Close-intent drain    | `CloseDrainSweep`                 | `src/blizzard/hub/domain/work_items/closure.py`                 |
-| Tenant teardown       | `TenantTeardownSweep`             | `src/blizzard/hub/domain/tenancy/teardown.py`                   |
-| Trace export, egress  | `TraceExportSweep`, `EgressSweep` | where each iterates tenants, if it does                         |
+| Sweep                 | Reconciler                  | File                                                            |
+| --------------------- | --------------------------- | --------------------------------------------------------------- |
+| Forge status          | `AnnotationReconciler`      | `src/blizzard/hub/domain/observability/forge_status.py`         |
+| Transcript derivation | `EventDerivationReconciler` | `src/blizzard/hub/domain/observability/analytics/derivation.py` |
+| Close-intent drain    | `CloseDrainSweep`           | `src/blizzard/hub/domain/work_items/closure.py`                 |
+| Tenant teardown       | `TenantTeardownSweep`       | `src/blizzard/hub/domain/tenancy/teardown.py`                   |
 
 A pass's own summary line, `"sweep pass completed"` from `Sweep`, is hub-wide, written outside any tenant's loop, and
-stays untagged. A unit test per reconciler drives one pass over two tenants and asserts every line written inside each
-tenant's work carries that tenant's id. An operator reading one tenant's activity out of a shared hub's log gets the
-passes now, not only the requests.
+stays untagged. So do the lines of `TraceExportSweep` and `EgressSweep`, which export hub-wide and loop over no tenant.
+A unit test per reconciler drives one pass over two tenants and asserts every line written inside each tenant's work
+carries that tenant's id. An operator reading one tenant's activity out of a shared hub's log gets the passes now, not
+only the requests.
+
+## Sweeps on request
+
+Every hub runs its sweeps on timers, from `Sweep` in `src/blizzard/hub/app.py`: forge-status annotation every
+`annotation_interval_seconds`, 120 by default, transcript derivation and the close-intent drain every 60 seconds, tenant
+teardown every 30, and trace export and egress when they are configured, each with its first pass at boot. A test cannot
+know when a pass will run, so a test whose subject is a sweep waits on its log lines or on the clock, and a pass over a
+test's data mostly runs after the test has ended.
+
+Each sweep gains a mode in the hub file, declared in `blizzard.hub.config_keys` so it reaches
+`contracts/config/hub.json`:
+
+```toml
+[sweeps.forge_status]
+mode = "timed"   # the default; "stepped" starts no timer, and a pass runs only when a route asks
+```
+
+The sweeps are `forge_status`, `event_derivation`, `close_drain`, `tenant_teardown`, `trace_export`, and `egress`. A
+stepped sweep starts no timer and runs no boot pass. Everything else about it is as when timed.
+
+Two routes run a pass. Each holds its request open for the whole pass and answers once it has completed, so a caller
+that gets its answer can read every effect the pass had:
+
+| Route                                  | Runs                                                                                                                                   | Who may call |
+| -------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------- | ------------ |
+| `POST /api/sweeps/{name}/passes`       | One pass of a per-tenant sweep over the request's tenant alone. Refused with `422` for `trace_export` and `egress`, which are hub-wide | tenant admin |
+| `POST /api/admin/sweeps/{name}/passes` | One pass over every tenant, as a timed pass runs, and the only route for the hub-wide sweeps                                           | hub admin    |
+
+Each answers `200` with `{ "started_at", "finished_at", "outcome": "completed" | "failed", "error"? }`. A pass that
+raises answers `outcome: "failed"` with the error's message, as the runner's step routes do, since a timed pass's
+failure is logged and swallowed and a requested one reports it to its caller. Both routes serve in either mode. A pass
+over one tenant holds a lock for its sweep and tenant, and a pass over every tenant, timed or requested, holds its
+sweep's lock across all of them; a request meeting a held lock answers `409` with `{ "code": "sweep_in_progress" }` at
+once. Two tests stepping the same sweep in their own tenants never meet, and a test that meets the refusal raced a pass
+it should not have shared. The locks are in memory and end with the process.
+
+Each per-tenant reconciler's loop body, which [the tags above](#the-tenant-on-every-passs-lines) already bind to its
+tenant, becomes a pass for one tenant, and its timed pass loops that over every tenant, so a requested pass and a timed
+one run the same code. Component tests cover each mode, both routes, the lock's refusal, a failed pass's answer, and a
+per-tenant pass touching no other tenant.
+
+In the harness, every profile, the default among them, sets every sweep `stepped`, so no pass runs on a shared hub
+except one a test asks for. `api.sweep(name)` calls the per-tenant route in the test's tenant and fails the test unless
+the pass completed; `api.sweep(name, { allTenants: true })` calls the admin route and is refused below `fresh-hub`. A
+test whose subject is a sweep's timer takes `fresh-hub` and sets that sweep `timed` through its `hubConfig`
+([harness.md](./harness.md#a-fresh-hubs-own-configuration)), so timers run only on hubs of their own.
 
 ## Joining the stream from now
 

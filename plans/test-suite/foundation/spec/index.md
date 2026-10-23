@@ -21,13 +21,13 @@ The epic reaches beyond `blizzard`. In `blizzard-mock`, the mock forge learns to
 ([surfaces.md](./surfaces.md#repositories-on-demand)). In `blizzard-context`, a companion redefines the tier and writes
 down its architecture ([rulebook.md](./rulebook.md)). The workspace is unchanged.
 
-| Where                            | Read when                                                                                                                                                |
-| -------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| [package.md](./package.md)       | Laying out the Playwright package — its files, its projects, its toolchain, the generated wire types, and what the Python tooling is told to skip        |
-| [daemons.md](./daemons.md)       | Starting and stopping the daemons a run spawns, or shaping the environment contract both suites read and how refusals in their logs are attributed       |
-| [hubs.md](./hubs.md)             | Writing a profile, sharing a hub among workers, the setup and teardown projects, the common tenant, a fresh hub, or the mock fleet beside each hub       |
-| [isolation.md](./isolation.md)   | Declaring an isolation level, the fixtures a test names, the clients and the ledger, narrowing reads and the event stream, or the cross-check            |
-| [surfaces.md](./surfaces.md)     | Building what the epic asks of `blizzard-mock` and of the product — repositories on demand, the CLI's tenant variable, cheaper tenant creation           |
-| [ci.md](./ci.md)                 | Wiring the tier into CI — the `mise` tasks, the shards, the static job, the toolchain pin, failure evidence, the winter-free guard, the cross-check runs |
-| [rulebook.md](./rulebook.md)     | Writing the `blizzard-context` companion — the redefined tier, the scoped rules, the tier's invariants, the registry check, the exemplar                 |
-| [carry-over.md](./carry-over.md) | Landing the epic — the order of changes, the three ports, the measurements and what they decide                                                          |
+| Where                            | Read when                                                                                                                                                                       |
+| -------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| [package.md](./package.md)       | Laying out the Playwright package — its files, its projects, its toolchain, the generated wire types, and what the Python tooling is told to skip                               |
+| [daemons.md](./daemons.md)       | Starting and stopping the daemons a run spawns, or shaping the environment contract both suites read and how refusals in their logs fail a test or the run                      |
+| [hubs.md](./hubs.md)             | Writing a profile, sharing a hub among workers, the setup and teardown projects, the common tenant, a fresh hub, or the mock fleet beside each hub                              |
+| [isolation.md](./isolation.md)   | Declaring an isolation level, the fixtures a test names, the clients and the ledger, narrowing reads and the event stream, or the cross-check                                   |
+| [surfaces.md](./surfaces.md)     | Building what the epic asks of `blizzard-mock` and of the product — repositories on demand, the CLI's tenant variable, request errors in the hub's log, cheaper tenant creation |
+| [ci.md](./ci.md)                 | Wiring the tier into CI — the `mise` tasks, the shards, the static job, the toolchain pin, failure evidence, the winter-free guard, the cross-check runs                        |
+| [rulebook.md](./rulebook.md)     | Writing the `blizzard-context` companion — the redefined tier, the scoped rules, the tier's invariants, the registry check, the exemplar                                        |
+| [carry-over.md](./carry-over.md) | Landing the epic — the order of changes, the three ports, the measurements and what they decide                                                                                 |

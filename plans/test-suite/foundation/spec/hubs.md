@@ -35,13 +35,16 @@ cheap beside the hub.
 How many hubs a profile gets is `hubsFor(profile)`, computed in `playwright.config.ts` from the run's worker count:
 
 - **The default profile** gets `ceil(workers / WORKERS_PER_HUB)` hubs. `WORKERS_PER_HUB` is a constant in the config,
-  set to `1` until [the measurement](./carry-over.md#the-measurements) records its value.
+  set to `8`, so a run of up to eight workers shares one hub. [The measurement](./carry-over.md#the-measurements) checks
+  that start rather than choosing it.
 - **Any other profile** gets one hub, and its project sets `workers: 1`, so one worker runs its tests in sequence
   against it. A hub-wide setting only a few tests need costs one hub start, and only in a run that selects one of them.
 
 A worker reaches its hub by its `parallelIndex`, the stable slot Playwright gives each concurrent worker, never by
 `workerIndex`, which grows each time a worker restarts after a failure: hub `floor(parallelIndex / WORKERS_PER_HUB)` of
-its profile. A worker that restarts lands back on the hub its slot always used.
+the default profile. A worker that restarts lands back on the hub its slot always used. `parallelIndex` counts across
+the whole run, not per project, so the one worker of any other profile's project may hold any slot, and reaches its
+profile's one hub, hub `0`, whatever its slot.
 
 The `hub` fixture is worker-scoped and hands a test its hub's coordinates: the hub's URL, its forge's and IdP's, the
 common tenant's id, and its log's path. It reads them from `.run/<run-id>/hubs/<project>.json`, which the setup project
@@ -64,8 +67,8 @@ The first-only steps are made safe for concurrent setup projects by an exclusive
 the one that creates it runs them and writes `first.done`, and the others wait on that file.
 
 `teardown-<project>` stops every daemon its setup started and reads their logs for
-[refusals](./daemons.md#refusals-attributed) over their logs. Playwright runs it after the last test in the profile's
-project, and still runs it after a failure.
+[refusals](./daemons.md#refusals-attributed). Playwright runs it after the last test in the profile's project, and still
+runs it after a failure.
 
 ## The common tenant
 

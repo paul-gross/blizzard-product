@@ -29,8 +29,8 @@ leaf are relative to the `blizzard-context` repo root. Every rule added follows 
 
 - **The statement guards.** `verification/blizzard.md`'s paragraph naming "every `blizzard:` row that runs pytest" names
   instead every daemon any tier spawns, whatever runs the tier, and names `tests/daemon-env.json` as where the guards
-  are switched on for both suites. The two guard sections in `tier-rules.md` say the same, and that the harness's
-  harness fails a Playwright run on any refusal in a daemon's log, attributed to the test or tenant that caused it.
+  are switched on for both suites. The two guard sections in `tier-rules.md` say the same, and that the harness fails a
+  Playwright run on any refusal in a daemon's log, failing the test whose request caused it, or else the run.
 - **Test data.** `tier-rules.md`'s *Hermetic by construction* line, "Stand test data up through the mock-data CLI and
   its fixtures", binds the Python tiers only. A Playwright test builds its data through the hub's public surfaces and
   never through `tool:mock-data`, and `verification/blizzard/tools.md`'s `tool:mock-data` entry says so.

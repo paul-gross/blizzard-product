@@ -37,7 +37,7 @@ surfaces below fall short.
   the directory. The runner gains a host configuration in which the loop does not run on its own, and a call on its
   local API that runs one REAP → PULL → FILL → ADVANCE pass for a named runner and returns when the pass completes.
   Workers it spawns keep running between steps, as they do between timed passes, and a second step requested while one
-  is running waits or is refused. An operator gets the same thing a test does: a misbehaving runner can be frozen and
+  is running is refused at once. An operator gets the same thing a test does: a misbehaving runner can be frozen and
   walked one pass at a time. `blizzard-runner tick` becomes the same call when a host is running, instead of a refusal.
 - **Configuration as files.** `contracts/config/host.json` already documents the host file's keys and its durable paths,
   and `blizzard-runner init` and `add` already write the host file and its token. The epic extends that contract to what

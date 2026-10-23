@@ -32,9 +32,10 @@ The `runnerHost` fixture is a host built for the test alone, from the runner pro
 
 1. It mints a fixture world with `blizzard-mock-fixture mint` into the test's directory, which gives it origins and a
    workspace, and writes `.blizzard-mock-harness-fence` there.
-2. It runs `blizzard-runner init <dir>` with `BZ_HUB_URL` naming the test's hub: the test's own mock hub in
-   `service/runner/`, the shared hub in `service/fleet/` in `tenant`. `init` writes the host file, the harness files,
-   and `.env`, and registers the host and its first runner, as an operator's install does.
+2. It runs `blizzard-runner init <dir>` with `BZ_HUB_URL` naming the test's hub: in `service/runner/` the test's own
+   mock hub, `mockHub`, a test-scoped fixture that starts `blizzard-mock-hub` for the test alone and offers its levers,
+   `/_seed`, and `/_captured`; in `service/fleet/` the shared hub, in `tenant`. `init` writes the host file, the harness
+   files, and `.env`, and registers the host and its first runner, as an operator's install does.
 3. It merges the test's runner profile over the host file `init` wrote, as a hub profile merges
    ([the foundation](../../foundation/spec/hubs.md#profiles)), every key checked against `contracts/config/host.json`'s
    keys first. A profile here may expand `${workspace}`, `${origins}`, and `${mockBin}`, which name the minted world's

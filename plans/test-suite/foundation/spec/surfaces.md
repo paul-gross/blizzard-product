@@ -19,17 +19,20 @@ POST /_repos
 ```
 
 The forge creates the bare repository at `<repos-dir>/<owner>/<name>.git`, the first path `GitBackend._candidates` looks
-at, with `SubprocessGit.init_bare` and `--initial-branch=main`, and seeds it with `SubprocessGit.seed_repo` from the
-named entry of `fixture_workspace/seed.py`'s `TOY_REPOS`. `seed` defaults to `toy-api`, the repository every ported test
-addresses today, so a port keeps the files its original saw. The repository is served from the next request, since
-`GitBackend` looks a repository up on disk at every cache miss and caches only a hit. Its issues, pulls, and labels
-start empty, as any repository's do, the forge's in-memory state for it being created on first use. Creating is
-idempotent only by refusal: a second create of the same name answers `409`, and the harness's names never repeat.
+at, through a new `GitBackend.create(owner, name, files)`: GitPython's `Repo.init` with `bare=True` and
+`initial_branch="main"`, then one commit of the seed's files on `main`, made in a throwaway worktree as `GitBackend`
+already makes its merges. The files are the named entry of `fixture_workspace/seed.py`'s `TOY_REPOS`, which the forge
+imports as data and nothing more; the fixture CLI and its `SubprocessGit` are unchanged. `seed` defaults to `toy-api`,
+the repository every ported test addresses today, so a port keeps the files its original saw. The repository is served
+from the next request, since `GitBackend` looks a repository up on disk at every cache miss and caches only a hit. Its
+issues, pulls, and labels start empty, as any repository's do, the forge's in-memory state for it being created on first
+use. Creating is idempotent only by refusal: a second create of the same name answers `409`, and the harness's names
+never repeat.
 
-The route lives in a `forge/api/repos.py` router and a `ForgeService.create_repository` beside `clear_all_levers`, the
-seeding reached through the forge's existing git port rather than by importing the fixture CLI. The forge's README lists
-it with the levers, as test control rather than GitHub surface. `blizzard-mock`'s own tests cover the create, the
-refusal, and an immediate `GET /repos/{owner}/{name}` that sees it.
+The route lives in a `forge/api/repos.py` router and a `ForgeService.create_repository` beside `clear_all_levers`, which
+hands the seed's files to `GitBackend.create`. The forge's README lists it with the levers, as test control rather than
+GitHub surface. `blizzard-mock`'s own tests cover the create, the refusal, and an immediate `GET /repos/{owner}/{name}`
+that sees it.
 
 Nothing else in the forge changes. Its levers are already scoped per repository, per pull request, or per branch, and
 the scoping a shared hub needs is a rule of the tier's, not the forge's: a test arms levers only on its own repository,
@@ -54,12 +57,31 @@ The CLI's reference and `docs/deployment/tenants.md` name the variable beside `B
 `tests/test_hub_cli_tenant_header.py` learns the variable's three cases: it sends the header, `--tenant` overrides it,
 and an empty one sends none.
 
+## Unhandled request errors in the hub's log
+
+An exception no handler maps leaves a request through Starlette's `ServerErrorMiddleware`, which answers `500` and
+re-raises to uvicorn, whose logger writes the traceback. `blizzard hub host` starts uvicorn with its default logging
+(`src/blizzard/cli/runtime.py`), so that traceback is plain text, outside the structlog chain, and names no tenant. An
+operator reading one tenant's activity out of a hub's log cannot find the request that failed, and a test harness cannot
+tell which tenant a guard's refusal came from.
+
+`tenant_bound` (`src/blizzard/hub/api/auth_session.py`) also records the resolved tenant on `request.state`, and the hub
+registers a handler for `Exception` in `src/blizzard/hub/app.py` beside the ones it has. It writes one structlog line at
+`error`, event `unhandled request error`, with `tenant_id` from `request.state` when the request resolved one, `method`,
+`path`, `exception` naming the class, and the traceback in the field `format_exc_info` gives it, then answers the `500`
+the hub answers today. Reading the tenant from the request rather than from the bound context keeps the line tagged
+whichever context the handler runs in. uvicorn still writes its own traceback after it, since Starlette re-raises after
+any handler; that line is plain text as before, and the harness passes over it.
+
+A component test raises inside a tenant-bound route and asserts the one JSON line, its tenant, method, path, and
+exception, and the unchanged `500`.
+
 ## Cheaper tenant creation
 
 Creating a tenant mints its six packaged graphs (`src/blizzard/hub/graphs/`) in the same transaction as the tenant and
 its `default` project (`TenantAdministration.create`), and on the spike that dominated the cost of a `fresh-tenant` test
 and pushed the slowest calls toward the store's busy timeout. This epic builds the change below only if
-[the measured ratio](./carry-over.md#the-measurements) asks for more hubs than the CI runner has cores.
+[the measurement](./carry-over.md#the-measurements) finds one shared hub's core saturated by tenant creation.
 
 If built, the packaged graphs are minted on demand rather than at creation. Tenant creation records the tenant, seeds
 its sequence, creates its `default` project, and grants its admin, as now, and records that the tenant's packaged graphs

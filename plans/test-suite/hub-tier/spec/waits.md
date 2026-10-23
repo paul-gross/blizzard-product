@@ -42,18 +42,19 @@ routes publish inside the handler, after the write and before the response (`Chu
 `src/blizzard/hub/api/chunks.py`, and likewise in `fleet.py`, `queue.py`, `routines.py`, `work_sources.py`), and the
 broker hands an event to every subscriber's queue in id order. Frames a background sweep publishes are not ordered
 against a request, so the barrier proves nothing about them. Each negative assertion is checked against the path that
-emits its frames as it is ported, and one whose frames come from a sweep waits on the sweep's own completion instead, on
-a `fresh-hub` where that line is the test's to read, or keeps a bounded window with a comment saying why.
+emits its frames as it is ported, and one whose frames come from a sweep runs that sweep's pass itself with `api.sweep`
+([surfaces.md](./surfaces.md#sweeps-on-request)), whose answer arrives once every frame the pass published has been
+sent, and asserts after it.
 
 ## The forge-status model case
 
 `test_a_non_opted_in_source_starts_no_sweep_loop` sleeps three seconds and asserts its issue has no forge label. Its
 name and docstring say no sweep loop starts, but `HubServices.annotation` is always built
 (`src/blizzard/hub/composition.py`) and the loop does start; what the test proves is that a source that has not opted in
-is never labelled. On a shared hub it could show only that its own issue went unlabelled, so it takes `fresh-hub`, in
-the `annotation` profile's folder.
+is never labelled.
 
-Its port waits for two `"sweep pass completed"` lines from the `blizzard.hub.forge_status` logger after its issue is
-ingested, read from its fresh hub's whole log, so at least one full pass has run over the issue, and then asserts the
-issue has no label. The title keeps the original function name, so its citations move mechanically, and the port's
-comment says what it actually proves. Renaming it is a separate change, after the move.
+Its port runs at `fresh-tenant` on the default profile: it ingests its issue, runs one forge-status pass over its tenant
+with `api.sweep('forge_status')` ([surfaces.md](./surfaces.md#sweeps-on-request)), and asserts the issue has no label.
+The pass has completed when its answer arrives, so nothing is waited out. The title keeps the original function name, so
+its citations move mechanically, and the port's comment says what it actually proves. Renaming it is a separate change,
+after the move.

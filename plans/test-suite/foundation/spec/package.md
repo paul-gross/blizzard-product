@@ -38,7 +38,7 @@ tests/
 │   │   ├── mock.ts               hand-typed mock-fleet shapes
 │   │   └── wire/hub/             generated from openapi/hub.openapi.json
 │   ├── events.ts                 events
-│   ├── logs.ts                   hubLog, and attributing refusals
+│   ├── logs.ts                   hubLog, and scanning for refusals
 │   ├── daemons/                  hub.ts · forge.ts · idp.ts · mock-runner.ts
 │   ├── env.ts
 │   ├── profiles.ts
@@ -65,7 +65,7 @@ tests/
 | `harness/factories.ts` | The `issue`, `repository`, and `mockRunner` factory fixtures                                                                          |
 | `harness/client/`      | The clients, the ledger and the `resources.ts` map it reads, and `wire/`, the generated types                                         |
 | `harness/events.ts`    | The event-stream reader                                                                                                               |
-| `harness/logs.ts`      | Reading a daemon's log, by tenant, and attributing refusals to their owner                                                            |
+| `harness/logs.ts`      | Reading a daemon's log, by tenant, and scanning it for refusals                                                                       |
 | `harness/checks/`      | The harness's own proof, a spec that exercises every level against real hubs ([carry-over.md](./carry-over.md#the-order-of-landings)) |
 | `harness/scripts/`     | Scripts the workflows run over a run's reports, `cross-check.ts` among them                                                           |
 
@@ -82,7 +82,7 @@ build on one another, and a fixture already drawn appears again as `↑`:
 level                        test    { declared, served }
 └── isolation                option  set with test.use
 
-testHub                      test    internal: the hub this test reaches, and its request context
+testHub                      test    internal: the hub this test reaches, and the worker's request context for it
 ├── level ↑
 └── hub                      worker  this worker's shared hub, by parallelIndex; asked only below fresh-hub
     └── setup-<project>      —       the project dependency that wrote hubs/<project>.json
@@ -157,12 +157,15 @@ profile's setup and is selected by name, never by `service-*`.
 
 Each profile project has a setup project, `setup-<project>`, as its dependency, and that setup project names
 `teardown-<project>` as its teardown ([hubs.md](./hubs.md#setup-and-teardown)). A run that selects no test in a profile
-runs neither, so `--grep` on one `fresh-hub` test, or `--project=service-hub-auth`, starts no hub it does not use.
+runs neither, so `--project=service-hub-auth` starts no default-profile hub. A `fresh-hub` test is selected with its
+folder's project, so a run of that one test still runs the project's setup and starts its shared hubs, about ten seconds
+a developer pays once.
 
 Run-wide settings: `fullyParallel: true`; `forbidOnly` and `retries: 0` under `CI`; no `use.baseURL`, because a test
 reaches its hub only through fixtures; reporters `list` and `html`, plus `json` to `test-results/report.json` under
 `CI`; `outputDir` `test-results/`. The service projects install no browser and set no `browserName`. The worker count is
-the config's `workers`, set by [the measurement](./carry-over.md#the-measurements) and overridable on the command line.
+the config's `workers`: two under `CI` to start, moved only by [the measurement](./carry-over.md#the-measurements), and
+overridable on the command line.
 
 ## Toolchain
 
@@ -173,7 +176,8 @@ directory can be overridden, by `BLIZZARD_BIN_DIR` and `BLIZZARD_MOCK_BIN_DIR`. 
 with the message the pytest suite skips with, naming `winter provision <env>`. The tier never skips, since a skipped
 service tier reads as a green one.
 
-Node is the version `mise.toml` pins, made exact by this epic (`node = "22.<minor>.<patch>"` in place of `"22"`), and
+Node is the version `mise.toml` pins, made exact by this epic (`node = "22.<minor>.<patch>"` in place of `"22"`, at
+22.13 or later, the first 22 release to load `node:sqlite` without a flag, which the runner tier's store tests use), and
 `tests/package.json` declares the same in `engines`. Playwright's own version is pinned exactly, never by range, so the
 lockfile and the reports agree on it.
 

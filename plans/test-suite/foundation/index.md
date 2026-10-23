@@ -49,8 +49,8 @@ installed binaries an operator runs, never as imported code. The spike settled i
   on it believing in a configuration the hub never ran. The check is the harness's own and permanent; it asks nothing of
   the hub.
 - **`tsc --noEmit` and a linter in the gate**, because Playwright runs TypeScript without checking its types.
-- **A setup project with dependencies** rather than a global setup, so a run that selects only `fresh-hub` tests starts
-  no shared hub.
+- **A setup project with dependencies** rather than a global setup, so a run that selects no test in a profile starts
+  none of that profile's hubs.
 - **One request context per hub**, because cookies ignore the port and two hubs on one host would share a session.
 
 ## In CI
@@ -64,7 +64,8 @@ half. `blizzard:service-test` is the two together, and both report under the req
 - **Two shards.** The Playwright service projects run as two matrix jobs, `--shard=1/2` and `--shard=2/2`, beside the
   pytest half's job, and the existing summary job passes only when every one of them did. Each shard is its own machine
   and starts its own shared hubs and common tenant, so the hubs-per-worker measurement is taken against two shards, and
-  a later change to the count is weighed against it.
+  a later change to the count is weighed against it. Each shard runs two workers to start, and the count rises only as
+  the measurement and GitHub's runners allow.
 - **A pinned toolchain.** Node is pinned through `mise`, the package installs with `npm ci` from its committed lockfile,
   and `node_modules` is cached between runs.
 - **Failures leave evidence.** A failing job uploads Playwright's report and traces and every daemon's log, so a red run
@@ -84,8 +85,9 @@ statement inside the daemon before any test could see its effect.
 
 ## The shared hub
 
-- **Lifetime.** A few hubs per configuration profile, each started once and shared by a handful of workers, in the ratio
-  [the spike's ceiling](#the-ceiling-it-found) asks this epic to measure. A worker reaches its hub by its index.
+- **Lifetime.** One hub per configuration profile to start, started once and shared by up to eight workers, a ratio
+  [the spike's ceiling](#the-ceiling-it-found) asks this epic to check by measurement before it settles. A worker
+  reaches its hub by its index.
 - **A mock fleet per hub.** Each shared hub gets a mock forge and a stub IdP of its own, started beside it. Neither runs
   migrations, so the cost is small, and it keeps one hub's tests from racing another's on mock state.
 - **Profiles.** A profile is a hub configuration written as TOML, never built from Python objects, which makes the hub's
@@ -228,9 +230,9 @@ not arrive at on its own joins the companion in the change that settles it.
 A test that shares can pass for a reason that is not its own: a neighbour's activity nudges a sweep along, or a
 neighbour's item happens to satisfy a list it reads, and the assertion it was waiting on comes true by accident. Such a
 test is in the wrong bucket, and it would fail the day it ran alone. The harness can raise every test one isolation
-level by a flag, and a scheduled weekly workflow and the release workflow run the suite both ways, in random order at
-high parallelism; the two runs must pass the same tests. It never runs on a pull request, where it would double the tier
-for a fault that surfaces slowly and belongs to the tests rather than to the change.
+level by a flag, and a scheduled weekly workflow and the release workflow run the suite both ways, at high parallelism
+so every test meets a crowd of neighbours; the two runs must pass the same tests. It never runs on a pull request, where
+it would double the tier for a fault that surfaces slowly and belongs to the tests rather than to the change.
 
 ## Measurements owed
 
@@ -288,32 +290,36 @@ measures how many rather than assuming.
 
 ### What it asks of the product
 
-This epic builds the last of these. The first is built here only if the measured ratio asks for more hubs than the CI
-runner has cores. The spike's third finding, a misspelled key booting silently, is answered by the harness's own key
-check, not by the hub.
+This epic builds the last two of these. The first is built here only if the measurement finds one shared hub's core
+saturated by tenant creation. The spike's third finding, a misspelled key booting silently, is answered by the harness's
+own key check, not by the hub.
 
 - **Cheaper tenant creation**, such as minting packaged graphs lazily, which an operator creating tenants would feel
   too.
 - **An environment variable for the CLI's tenant**, beside `BZ_HUB_URL`.
+- **Unhandled request errors in the hub's own log**, tagged with the request's tenant, where today uvicorn writes them
+  as plain text that names no tenant, so a guard's refusal inside a request can be read out of a shared hub's log.
 
 Settings that stay hub-wide — route-token and produces enforcement, authentication, sweep intervals, forge write closure
 — ride profiles or fresh hubs; none of them becomes per-tenant for the sake of the tests.
 
 ## Landing order
 
-The epic lands as five children. The first two are independent of one another and of everything after them.
+The epic lands as six children. The first three are independent of one another and of everything after them.
 
 1. **Repositories on demand** in the mock forge, in `blizzard-mock`.
 2. **The CLI's tenant variable**, beside `BZ_HUB_URL`.
-3. **The daemons' environment contract**, lifted into the one place both suites read, with the pytest suite reading it
+3. **Unhandled request errors in the hub's own log**, as JSON tagged with the request's tenant.
+4. **The daemons' environment contract**, lifted into the one place both suites read, with the pytest suite reading it
    first so the move changes nothing it runs.
-4. **The Playwright package and the shared-hub harness**: profiles, the common tenant, the isolation option and the
+5. **The Playwright package and the shared-hub harness**: profiles, the common tenant, the isolation option and the
    fixtures that resolve at all four levels, the clients and their ledger, and the CI wiring: the `playwright` task, its
    two shards beside the pytest job under the existing required check, the daemons the pinned toolchain, failure
-   artifacts, and `test_winter_free_ci.py` taught to see it. The rulebook companion lands with it. It waits on 1 and 3.
-5. **The three analytics ports and the measurements**, the Python originals and their citations deleted in the same
+   artifacts, and `test_winter_free_ci.py` taught to see it. The rulebook companion lands with it. It waits on 1, 3,
+   and 4.
+6. **The three analytics ports and the measurements**, the Python originals and their citations deleted in the same
    change, and the measured ratio and store decisions recorded here, cheaper tenant creation among them if the ratio
-   asks for it. The cross-check's flag and its weekly and release runs land with it. It waits on 4.
+   asks for it. The cross-check's flag and its weekly and release runs land with it. It waits on 5.
 
 ## Done
 

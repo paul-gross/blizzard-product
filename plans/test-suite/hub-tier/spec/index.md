@@ -17,10 +17,10 @@ Paths are relative to the `blizzard` repo root unless a leaf says otherwise. The
 stub IdP learns keyed sign-in ([surfaces.md](./surfaces.md#keyed-sign-in)), and `blizzard-context`, whose citations of
 each moved test move with it ([carry-over.md](./carry-over.md#citations)).
 
-| Where                            | Read when                                                                                                                                                               |
-| -------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| [roster.md](./roster.md)         | Placing a file — which tests move, at which level and on which profile, which stay in Python, which move down a tier, and which wait for the runner                     |
-| [surfaces.md](./surfaces.md)     | Building what the ports need of the product and the mock fleet — tenant tags on background passes, the stream's join from now, the login throttle's keys, keyed sign-in |
-| [harness.md](./harness.md)       | Extending the foundation's harness — people and sign-in, the CLI, profile placeholders, a fresh hub's own configuration and lifecycle, the OTLP sink                    |
-| [waits.md](./waits.md)           | Rewriting a test that waits on the clock — opening the stream, positive assertions, the barrier act, and the event paths it holds for                                   |
-| [carry-over.md](./carry-over.md) | Landing the epic — the classification, the order of changes, the helpers that move first, the citations, and what is deleted                                            |
+| Where                            | Read when                                                                                                                                                                                  |
+| -------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| [roster.md](./roster.md)         | Placing a file — which tests move, at which level and on which profile, which stay in Python, which move down a tier, and which wait for the runner                                        |
+| [surfaces.md](./surfaces.md)     | Building what the ports need of the product and the mock fleet — tenant tags on background passes, sweeps on request, the stream's join from now, the login throttle's keys, keyed sign-in |
+| [harness.md](./harness.md)       | Extending the foundation's harness — people and sign-in, the CLI, profile placeholders, a fresh hub's own configuration and lifecycle, the OTLP sink                                       |
+| [waits.md](./waits.md)           | Rewriting a test that waits on the clock — opening the stream, positive assertions, the barrier act, and the event paths it holds for                                                      |
+| [carry-over.md](./carry-over.md) | Landing the epic — the classification, the order of changes, the helpers that move first, the citations, and what is deleted                                                               |

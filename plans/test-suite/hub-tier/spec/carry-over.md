@@ -1,7 +1,8 @@
 # Carry-over
 
-The epic changes where the hub's service tests run and adds three small surfaces, the tags on background passes' lines,
-the stream's join from now, and the IdP's keyed sign-in. Nothing an installation holds moves.
+The epic changes where the hub's service tests run and adds small surfaces: the tags on background passes' lines, sweeps
+on request, the stream's join from now, the login throttle's keys, and the IdP's keyed sign-in. A hub whose file names
+no sweep mode runs every sweep on its timer, as today. Nothing an installation holds moves.
 
 ## The order of landings
 
@@ -12,17 +13,22 @@ package having landed.
    the read rules place each at, written into the plan beside the roster before the first port, with the count of
    `fresh-hub` tests and their cost at about ten seconds each. If that cost would push the tier past the gate's slowest
    job, the classification is revisited before any port lands.
-2. **The surfaces**, each independent: the pass tags, the stream's `from=latest` in the hub and the runner, and keyed
-   sign-in in `blizzard-mock` ([surfaces.md](./surfaces.md)).
+2. **The surfaces**, each independent save one: the pass tags, the sweeps on request after the tags, the stream's
+   `from=latest` in the hub and the runner, the login throttle's keys, and keyed sign-in in `blizzard-mock`
+   ([surfaces.md](./surfaces.md)).
 3. **The harness's additions** ([harness.md](./harness.md)) and the barrier ([waits.md](./waits.md#the-barrier)), with
-   the profiles, after 2's stream and IdP changes. The superuser sign-in, people, and the `auth` profile's throttle
-   setting land together, proven by the harness's own spec signing several people in on one shared `auth` hub in quick
-   succession and each coming back as itself.
+   the profiles, every one of them setting every sweep `stepped`, after 2's sweep, stream, and IdP changes. The
+   superuser sign-in, people, and the `auth` profile's throttle setting land together, proven by the harness's own spec
+   signing several people in on one shared `auth` hub in quick succession and each coming back as itself.
 4. **The helpers that move first** ([below](#helpers-that-move-first)).
 5. **The ports**, one change per file or per split file, in any order after 3 and 4: the HTTP group first, since it
-   needs only the default and enforcement profiles, then the `annotation` files, then the `auth` group. Each port
-   deletes its Python original, or the tests it took from a split file, and moves its citations in the same change.
+   needs only the default and enforcement profiles, then the `auth` group. Each port deletes its Python original, or the
+   tests it took from a split file, and moves its citations in the same change.
 6. **`tenant_teardown` to the component tier**, independent of everything.
+
+Once the HTTP group has ported, the foundation's hubs-per-worker measurement
+([its carry-over](../../foundation/spec/carry-over.md#the-measurements)) is taken again over the tier as it then stands,
+since the foundation took it over `fresh-tenant` tests alone, and `WORKERS_PER_HUB` moves if the new numbers ask.
 
 ## Helpers that move first
 
