@@ -11,6 +11,10 @@ fleet once, gives each test as much of a hub as it needs and no more, and tears 
 stands on. It also needs the fleet's own rulebook to say where a service test now lives, or every worker who writes one
 in the meantime will write it in pytest. This epic builds that ground and proves it with the first tests to cross over.
 
+| Where                    | Read when                                                             |
+| ------------------------ | --------------------------------------------------------------------- |
+| [spec/](./spec/index.md) | Implementing any part of the epic or resolving its technical contract |
+
 ## The Playwright package
 
 A TypeScript Playwright Test package in the `blizzard` repo, rooted at `tests/` with its own `package.json` and one
@@ -47,7 +51,6 @@ installed binaries an operator runs, never as imported code. The spike settled i
 - **`tsc --noEmit` and a linter in the gate**, because Playwright runs TypeScript without checking its types.
 - **A setup project with dependencies** rather than a global setup, so a run that selects only `fresh-hub` tests starts
   no shared hub.
-- **A pid-file sweep** of the daemons a run starts, so a test runner killed outright leaves nothing behind.
 - **One request context per hub**, because cookies ignore the port and two hubs on one host would share a session.
 
 ## In CI
@@ -90,10 +93,10 @@ statement inside the daemon before any test could see its effect.
   [the package](#the-playwright-package) lays out. A profile may be small: a hub-wide setting only a few tests need gets
   a profile whose single hub starts the first time one of them runs and serves one worker. Where a test lives decides
   how its hub is configured; its isolation level decides how much of that hub it has to itself.
-- **A world per test, at its isolation level.** Every test receives its tenant and project from one fixture, at the
-  [isolation level](#isolation-levels) it declares, and a client that names that tenant in `X-Blizzard-Tenant` on every
-  request. Once more than one tenant is open, the hub answers a request that names none with `409 tenant_required`, so a
-  forgotten header fails loudly instead of leaking.
+- **A tenant and project per test, at its isolation level.** A test names the fixtures it needs, its tenant, its
+  project, its clients, and receives each at the [isolation level](#isolation-levels) it declares, with a client that
+  names that tenant in `X-Blizzard-Tenant` on every request. Once more than one tenant is open, the hub answers a
+  request that names none with `409 tenant_required`, so a forgotten header fails loudly instead of leaking.
 - **Repositories per test.** Each test works in repositories under names of its own. Today every test addresses the one
   fixture repository, `blizzard/<REPO_NAME>`, which only works because no two tests share a forge, and the mock forge
   cannot create a repository at runtime. This epic gives it that ability, in `blizzard-mock`.
@@ -141,15 +144,15 @@ under, and the harness gives it exactly that:
 The **common tenant** is created once per shared hub by the setup project. It is not the tenant a single-tenant hub
 answers header-less requests with; that is a different thing, and the name keeps them apart.
 
-**The level is a Playwright option.** A file or a `describe` block sets it with `test.use({ isolation })`, and every
-test asks for the same `world` fixture, which reads the option and builds or hands over the tenant and project to match.
-A test at `fresh-tenant` furnishes the rest through the surfaces an operator uses: secrets, then
-`POST /api/config/apply` for work sources, repositories, and project links in one call, then the runners it needs.
+**The level is a Playwright option.** A file or a `describe` block sets it with `test.use({ isolation })`, and the
+fixtures a test names read it: `tenant` and `project` build or hand over what the level gives, and the clients act
+there. The level says where a test runs; the fixtures it names say what it needs there, so no test scaffolds its own
+tenant, project, or person. A test at `fresh-tenant` furnishes the rest through the surfaces an operator uses: secrets,
+then `POST /api/config/apply` for work sources, repositories, and project links in one call, then the runners it needs.
 
-**The API client enforces it.** The client fixture depends on the isolation fixture and checks every call before it is
-sent, so a `fresh-project` test that tries a tenant-wide write fails on the spot with a message naming the level it
-needs, instead of quietly disturbing the common tenant for some other test to discover. The check reads a table, kept in
-the harness, that gives every operation in `openapi/hub.openapi.json` the least level it needs:
+**What a test writes decides the level it needs.** Nothing checks a call against the level before it is sent: a check
+would test nothing about blizzard, and would tax every new route with a classification, before anyone knows interference
+is a problem at all. The level is the author's to choose, by what the test writes:
 
 - **`fresh-hub`** for the hub-level routes `test_route_classification.py` already sets apart: tenant administration,
   users and hub admins, signing keys.
@@ -160,24 +163,19 @@ the harness, that gives every operation in `openapi/hub.openapi.json` the least 
   repository and source links.
 - **`common`** for writes to items and chunks the test made itself.
 
-**A write to what the test made is the test's own.** The client records the id of everything a test creates, to narrow
-its lists, and the gate reads the same record: an operation that acts on one resource is allowed at `common` when that
-resource is one the test made, and needs the level the table names when it is anything else. A test that invites a
-person only it knows, signs them in, changes their role, and removes them touches nothing another test can see, so it
-runs at `common`; the same role change aimed at the admin the fixtures act as, or at a tenant-wide setting such as which
-providers may sign in, needs `fresh-tenant`. The table marks which operations act on a single resource a test can own.
+**A write to what the test made is the test's own.** A test that invites a person only it knows, signs them in, changes
+their role, and removes them touches nothing another test can see, so it runs at `common`; the same role change aimed at
+the admin the fixtures act as, or at a tenant-wide setting such as which providers may sign in, needs `fresh-tenant`.
+Starting a mock runner or setting a forge lever needs `fresh-tenant` too. A test that writes beyond its level shows up
+in [the cross-check](#cross-check), which is the tier's alarm for interference; if the alarm rings often, checking calls
+before they are sent is the tool to reach for then.
 
-The table is exhaustive both ways, as the route classification guard is: every operation has an entry and every entry
-names an operation, so a new route reaches the tests classified or not at all. The mock fleet's levers go through the
-same client, and starting a mock runner or setting a forge lever needs `fresh-tenant`.
-
-**Reads are a rule, not a gate.** A call to list chunks is fine at any level; asserting the list holds exactly three is
-not, and that lives in the assertion. At `common` and `fresh-project` the client makes the right thing the easy one: a
-list comes back already narrowed to the ids the test created, and the whole list takes an explicit `api.unfiltered` call
-that a reviewer will see. Beyond that, a test at those two levels names everything it creates uniquely, asserts no
-count, emptiness, or absence across the tenant, filters its event stream to its own ids, chooses for a negative
-assertion's barrier an act only it would emit, and never finds anything by position, since the common tenant grows all
-run.
+**Reads are a rule too.** A call to list chunks is fine at any level; asserting the list holds exactly three is not, and
+that lives in the assertion. At `common` and `fresh-project` the client makes the right thing the easy one: a list comes
+back already narrowed to the ids the test created, and the whole list takes an explicit `api.unfiltered` call that a
+reviewer will see. Beyond that, a test at those two levels names everything it creates uniquely, asserts no count,
+emptiness, or absence across the tenant, filters its event stream to its own ids, chooses for a negative assertion's
+barrier an act only it would emit, and never finds anything by position, since the common tenant grows all run.
 
 **A port lands at the loosest level its reads allow,** and moving a test down a level later is ordinary work, the
 expected way the tier gets faster. The [cross-check](#cross-check) catches a test placed too loose.
@@ -204,10 +202,10 @@ reach for the built-in `request` fixture, write full URLs, wait with `waitForTim
 `beforeAll`; every one of those breaks a shared hub. The rules state the tier's invariants, each with the reason it
 exists:
 
-- **Everything comes from a fixture.** A test receives its hub, its world, its clients, its people, and its event stream
-  from the harness's fixtures, never builds one itself, and never uses Playwright's built-in `request`.
-- **Every call goes through the gated client.** No raw `fetch` against a daemon, no hand-built URL, and a route a test
-  needs that the client lacks is added to the client and classified in the operation table, not worked around.
+- **Everything comes from a fixture.** A test names the fixtures it needs, its tenant, project, clients, people, and
+  event stream, never builds one itself, and never uses Playwright's built-in `request`.
+- **Every call goes through the harness's clients.** No raw `fetch` against a daemon, no hand-built URL, and a route a
+  test needs that a client lacks is added to the client, not worked around.
 - **Isolation is declared and earned.** A test declares its level, the loosest its reads allow, and keeps the read rules
   at `common` and `fresh-project`: unique names, assertions narrowed to its own ids, no counts or absences across the
   tenant.
@@ -221,9 +219,9 @@ exists:
 
 The rules are kept beside an exemplar spec, a ported test chosen as the reference to pattern new ones from, in
 blizzard-context's exemplars. What the harness can enforce, it enforces as well: a lint rule bans the built-in `request`
-fixture and `waitForTimeout` in specs, and the gated client and its exhaustive table enforce the rest at run time. The
-rules grow as the ports teach them: a practice a later epic settles that a capable agent would not arrive at on its own
-joins the companion in the change that settles it.
+fixture and `waitForTimeout` in specs, the clients fail a test on any server error, and the cross-check notices a test
+that breaks the rest. The rules grow as the ports teach them: a practice a later epic settles that a capable agent would
+not arrive at on its own joins the companion in the change that settles it.
 
 ## Cross-check
 
@@ -310,10 +308,9 @@ The epic lands as five children. The first two are independent of one another an
 3. **The daemons' environment contract**, lifted into the one place both suites read, with the pytest suite reading it
    first so the move changes nothing it runs.
 4. **The Playwright package and the shared-hub harness**: profiles, the common tenant, the isolation option and the
-   `world` fixture at all four levels, the gated client and its exhaustive operation table, the pid-file sweep, and the
-   CI wiring: the `playwright` task, its two shards beside the pytest job under the existing required check, the daemons
-   the pinned toolchain, failure artifacts, and `test_winter_free_ci.py` taught to see it. The rulebook companion lands
-   with it. It waits on 1 and 3.
+   fixtures that resolve at all four levels, the clients and their ledger, and the CI wiring: the `playwright` task, its
+   two shards beside the pytest job under the existing required check, the daemons the pinned toolchain, failure
+   artifacts, and `test_winter_free_ci.py` taught to see it. The rulebook companion lands with it. It waits on 1 and 3.
 5. **The three analytics ports and the measurements**, the Python originals and their citations deleted in the same
    change, and the measured ratio and store decisions recorded here, cheaper tenant creation among them if the ratio
    asks for it. The cross-check's flag and its weekly and release runs land with it. It waits on 4.

@@ -11,6 +11,10 @@ runner and forge through their levers, and read the answers. What holds them in 
 handful of shortcuts. This epic moves them to the foundation's Playwright package, into `tests/service/hub/`, onto a
 shared hub wherever they can share, and builds the few surfaces their shortcuts stood in for.
 
+| Where                    | Read when                                                             |
+| ------------------------ | --------------------------------------------------------------------- |
+| [spec/](./spec/index.md) | Implementing any part of the epic or resolving its technical contract |
+
 ## The tests it moves
 
 | Group                      | Size     | What it needs before it can move                                                                                                                                                                                                                                                                                                                                                                                                                                                        |

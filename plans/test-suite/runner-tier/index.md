@@ -12,6 +12,10 @@ and read leases, escalations, and usage back through `SqlAlchemyRunnerStore`. No
 language, and none of it should: a runner that can only be tested from inside itself has never had its outside proven.
 This epic gives the runner the outside its tests need, then moves them.
 
+| Where                    | Read when                                                             |
+| ------------------------ | --------------------------------------------------------------------- |
+| [spec/](./spec/index.md) | Implementing any part of the epic or resolving its technical contract |
+
 ## The tests it moves
 
 | Group                           | Size     | Coupling today                                                                                                                                                                                                                                                                                                                                                             |

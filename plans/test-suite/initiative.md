@@ -88,17 +88,17 @@ for one, are replaced as the tests that hold them are ported, not before.
 
 ## The order
 
-The [foundation](./foundation.md) lands first: the Playwright package, the shared-hub harness, the mock fleet changes a
-shared hub needs, the blizzard-context changes that redefine the tier, and the three analytics test files ported to
-prove it. The [hub tier](./hub-tier.md) follows, porting the tests that already speak HTTP and building the few surfaces
-they still lack. The [runner tier](./runner-tier.md) comes last because it needs real product work: a host whose loop
-can be stepped from outside, and reads of the state its tests check today through the ORM. Tests that start a real
-runner host move with the runner tier even where their subject is the hub, into `tests/service/fleet/` when the hub is
-real too. Each epic builds the public surfaces its own tests need, so the architecture work arrives just in time rather
-than in advance.
+The [foundation](./foundation/index.md) lands first: the Playwright package, the shared-hub harness, the mock fleet
+changes a shared hub needs, the blizzard-context changes that redefine the tier, and the three analytics test files
+ported to prove it. The [hub tier](./hub-tier/index.md) follows, porting the tests that already speak HTTP and building
+the few surfaces they still lack. The [runner tier](./runner-tier/index.md) comes last because it needs real product
+work: a host whose loop can be stepped from outside, and reads of the state its tests check today through the ORM. Tests
+that start a real runner host move with the runner tier even where their subject is the hub, into `tests/service/fleet/`
+when the hub is real too. Each epic builds the public surfaces its own tests need, so the architecture work arrives just
+in time rather than in advance.
 
-[Optimization](./optimization.md) is listed last but runs alongside the others. Its work speeds the tiers that stay in
-Python and the pipeline around them, and none of it waits on the service tier's move.
+[Optimization](./optimization/index.md) is listed last but runs alongside the others. Its work speeds the tiers that
+stay in Python and the pipeline around them, and none of it waits on the service tier's move.
 
 ## Boundaries
 
