@@ -1,9 +1,9 @@
 # The rulebook companion
 
-blizzard-context is what a fleet worker reads before writing a test, so it changes in a companion that lands with
-[the package](./carry-over.md#the-order-of-landings), and the exemplar it points at lands with the ports. Paths in this
-leaf are relative to the `blizzard-context` repo root. Every rule added follows the `Rule` / `Why` / `Detect` / `Do` /
-`Don't` skeleton and earns its cold-spawn eval, as `CONTRIBUTING.md` requires.
+blizzard-context is what a fleet worker reads before writing a test, so it changes in a companion that lands after
+[the package](./carry-over.md#the-order-of-landings) and before the first port, and the exemplar it points at lands with
+the ports. Paths in this leaf are relative to the `blizzard-context` repo root. Every rule added follows the `Rule` /
+`Why` / `Detect` / `Do` / `Don't` skeleton and earns its cold-spawn eval, as `CONTRIBUTING.md` requires.
 
 ## The tier, redefined
 

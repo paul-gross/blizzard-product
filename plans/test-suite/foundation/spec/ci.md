@@ -27,7 +27,7 @@ The `service-test` task's command is unchanged, and its description narrows to t
 | Job                   | Matrix                              | Runs                                                                                                                    |
 | --------------------- | ----------------------------------- | ----------------------------------------------------------------------------------------------------------------------- |
 | `service-tier`        | `shard: [1, 2, 3]`, unchanged       | the pytest half, unchanged                                                                                              |
-| `service-playwright`  | `shard: [1, 2]`, `fail-fast: false` | `mise run playwright -- --project='service-*' --shard=${{ matrix.shard }}/2`                                            |
+| `service-playwright`  | `shard: [1, 2]`, `fail-fast: false` | `mise run playwright -- --project='service-*' --project=harness --shard=${{ matrix.shard }}/2`                          |
 | `service-tier-result` | —                                   | named `service tier (blizzard:service-test)`; needs both jobs above, and passes only when every shard of each succeeded |
 
 `service-playwright` checks out `blizzard` and `blizzard-mock` as `service-tier` does, through
@@ -38,7 +38,8 @@ workflow's pinned mise version with `install: true`, so Node comes from `mise.to
 `hashFiles('blizzard/tests/package-lock.json')`, and runs `npm ci` in `tests/` only on a miss. It sets `CI=1`. The
 required check's name is unchanged, so no repository setting moves.
 
-Each shard is its own machine, with its own shared hubs and common tenants; nothing crosses between them.
+Each shard is its own machine, with its own shared hubs and common tenants; nothing crosses between them. The `harness`
+project runs in the shards beside the service projects, so the harness's own specs are part of the required check.
 
 `release.yml` takes the same shape. Its single `service-tier` job is renamed `service-tier-pytest`, unsharded as now,
 `service-playwright` is added with the same two shards and steps, its mock checkout at the tag's own ref as

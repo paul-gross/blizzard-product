@@ -1,7 +1,7 @@
 ---
 epic: test-suite/foundation
 refinement: pristine
-status: horizon
+status: in-progress
 ---
 
 # Plan — `epic:test-suite/foundation`
@@ -305,7 +305,7 @@ Settings that stay hub-wide — route-token and produces enforcement, authentica
 
 ## Landing order
 
-The epic lands as six children. The first three are independent of one another and of everything after them.
+The epic lands as nine children. The first three are independent of one another and of everything after them.
 
 1. **Repositories on demand** in the mock forge, in `blizzard-mock`.
 2. **The CLI's tenant variable**, beside `BZ_HUB_URL`.
@@ -313,13 +313,17 @@ The epic lands as six children. The first three are independent of one another a
 4. **The daemons' environment contract**, lifted into the one place both suites read, with the pytest suite reading it
    first so the move changes nothing it runs.
 5. **The Playwright package and the shared-hub harness**: profiles, the common tenant, the isolation option and the
-   fixtures that resolve at all four levels, the clients and their ledger, and the CI wiring: the `playwright` task, its
-   two shards beside the pytest job under the existing required check, the daemons the pinned toolchain, failure
-   artifacts, and `test_winter_free_ci.py` taught to see it. The rulebook companion lands with it. It waits on 1, 3,
-   and 4.
-6. **The three analytics ports and the measurements**, the Python originals and their citations deleted in the same
-   change, and the measured ratio and store decisions recorded here, cheaper tenant creation among them if the ratio
-   asks for it. The cross-check's flag and its weekly and release runs land with it. It waits on 5.
+   fixtures that resolve at all four levels, the clients and their ledger, the pinned toolchain, and the static job,
+   proven by the harness's own specs. It waits on 1, 3, and 4.
+6. **The service jobs**: the `playwright` shards beside the pytest job under the existing required check in both
+   workflows, running the harness's own specs too, failure artifacts, and `test_winter_free_ci.py` taught to see them.
+   It waits on 5.
+7. **The rulebook companion**, in blizzard-context, before any port, so the first worker to write a spec reads the
+   tier's rules. It waits on 5.
+8. **The three analytics ports and the measurements**, the Python originals and their citations deleted in the same
+   change, and the measured ratio and store decisions recorded here, cheaper tenant creation among them if the
+   measurement asks for it. It waits on 6 and 7.
+9. **The cross-check**: the flag that raises every test a level, and its weekly and release runs. It waits on 8.
 
 ## Done
 

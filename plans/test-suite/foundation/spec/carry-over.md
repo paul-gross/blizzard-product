@@ -7,7 +7,7 @@ into the new package.
 
 ## The order of landings
 
-Each change leaves `master` green and the required check intact. The plan's six children map onto these landings:
+Each change leaves `master` green and the required check intact. The plan's nine children map onto these landings:
 
 1. **Repositories on demand**, in `blizzard-mock` ([surfaces.md](./surfaces.md#repositories-on-demand)). Independent of
    everything; 5 waits on it.
@@ -20,19 +20,33 @@ Each change leaves `master` green and the required check intact. The plan's six 
    exactly what it ran before, which every tier's CI run proves. Independent of 1 and 2; if 2 lands first, the file
    unsets `BZ_HUB_TENANT` from the start, and otherwise 2 adds it.
 5. **The package and the harness**, waiting on 1, 3, and 4: everything in [package.md](./package.md),
-   [daemons.md](./daemons.md), [hubs.md](./hubs.md), and [isolation.md](./isolation.md) but the cross-check runs; the
-   `playwright` and `playwright-check` tasks, the `service-playwright` jobs under `service-tier-result` in both
-   workflows, the static job, and the winter-free guard's three changes ([ci.md](./ci.md)). The rulebook companion lands
-   with it, in `blizzard-context`, all of [rulebook.md](./rulebook.md) but the exemplar row. The package holds no spec
-   of its own yet, so its service projects select nothing and pass, and the change proves the harness by one spec under
-   `tests/harness/checks/`, a project of its own and not a `service-` one, that brings up a shared hub and a fresh one,
-   resolves `tenant` and `project` at each level, and has a request answered `5xx` fail its test. That spec stays as the
-   harness's own proof.
-6. **The ports and the measurements**, waiting on 5 ([below](#the-ports), [below](#the-measurements)), with the
-   cross-check's flag and workflow ([isolation.md](./isolation.md#the-cross-check),
-   [ci.md](./ci.md#the-cross-check-runs)) and the exemplar row.
+   [daemons.md](./daemons.md), [hubs.md](./hubs.md), and [isolation.md](./isolation.md) but the cross-check, the
+   `playwright` and `playwright-check` tasks, and the static job ([ci.md](./ci.md#the-static-job)). The package holds no
+   service spec yet, and proves the harness by its own specs under `tests/harness/checks/`, the `harness` project, which
+   stay as its standing proof:
+   - **The levels.** A spec brings up a shared hub and a fresh one, resolves `tenant` and `project` at each level, and
+     has a request answered `5xx` fail its test.
+   - **The profile check.** A profile with a misspelled key, a deprecated key, or a value of the wrong type fails the
+     check before any hub starts, naming the key; a sound one passes. It starts no daemon.
+   - **The ledger.** At `common`, a list of chunks comes back holding only the test's own, `api.unfiltered` returns the
+     whole list, and a list call `resources.ts` does not name comes back whole.
+   - **The event-stream reader.** It parses the frames `contracts/sse/` defines, resumes from the last id with
+     `Last-Event-ID` when the connection drops, passes on at `common` only frames naming the test's own ids, and fails a
+     `waitFor` at its timeout.
+6. **The service jobs**, waiting on 5: the `service-playwright` jobs under `service-tier-result` in both workflows,
+   running the `harness` project beside the service projects, their failure evidence, and the winter-free guard's three
+   changes ([ci.md](./ci.md#the-service-jobs)).
+7. **The rulebook companion**, in `blizzard-context`, waiting on 5: all of [rulebook.md](./rulebook.md) but the exemplar
+   row. It lands before the first port, so the first worker to write a spec reads the tier's rules.
+8. **The ports and the measurements**, waiting on 6 and 7 ([below](#the-ports), [below](#the-measurements)), with the
+   exemplar row.
+9. **The cross-check**, waiting on 8: the `BLIZZARD_ISOLATION_RAISE` flag
+   ([isolation.md](./isolation.md#the-cross-check)), `harness/scripts/cross-check.ts`, and its workflow and release gate
+   ([ci.md](./ci.md#the-cross-check-runs)). A spec in `tests/harness/checks/` drives the comparison over hand-written
+   reports: it passes on two that agree, fails naming each test that passed in one and not the other with its declared
+   level, and fails when either report is missing.
 
-The cheaper tenant creation, if the measurement asks for it, lands as its own change after 6's measurement and before
+The cheaper tenant creation, if the measurement asks for it, lands as its own change after 8's measurement and before
 the ratio it enables is recorded.
 
 ## The ports
