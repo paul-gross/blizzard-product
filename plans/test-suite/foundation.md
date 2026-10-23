@@ -1,6 +1,6 @@
 ---
 epic: test-suite/foundation
-refinement: scaffolded
+refinement: pristine
 status: horizon
 ---
 

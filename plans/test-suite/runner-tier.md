@@ -1,6 +1,6 @@
 ---
 epic: test-suite/runner-tier
-refinement: scaffolded
+refinement: pristine
 status: horizon
 ---
 

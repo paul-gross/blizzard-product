@@ -1,6 +1,6 @@
 ---
 epic: test-suite/hub-tier
-refinement: scaffolded
+refinement: pristine
 status: horizon
 ---
 

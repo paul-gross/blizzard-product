@@ -1,6 +1,6 @@
 ---
 epic: test-suite/optimization
-refinement: refined
+refinement: pristine
 status: horizon
 ---
 

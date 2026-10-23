@@ -1,6 +1,6 @@
 ---
 initiative: test-suite
-refinement: scaffolded
+refinement: pristine
 epics:
   - foundation
   - hub-tier
