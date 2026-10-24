@@ -30,15 +30,16 @@ epic its status; their shape is owned by [context/structure/plans.md](./context/
    and blocked by every prerequisite it names — the child before it in the landing order, another epic's child, work
    already in flight (`workspace:/context/project/contributing.md` §Issue dependencies) — and set the epic `in-progress`
    in its plan and in every milestone epic chart naming it. The registry row stays put in [epics.md](./epics.md) and is
-   never annotated. The issue tracker is the factory's intake queue, not its memory: file only work that is startable.
-   Work is startable when every prerequisite it builds on has landed or is filed beside it, so each dependency can be
-   named. The hub cannot wait on work it cannot name: a chunk whose prerequisite is not yet filed starts the moment it
-   is promoted, against code that does not exist. A chain of dependencies is startable however long it runs, so long as
-   every link in it is filed. Ingest a chain whole and link its dependencies in the same pass
+   never annotated. The issue tracker is the factory's intake queue, not its memory: file work only once every
+   prerequisite it builds on can be named — landed, or filed beside it. The hub cannot wait on work it cannot name: a
+   chunk whose prerequisite is not yet filed starts the moment it is promoted, against code that does not exist. Work
+   need not be claimable today to be ingested: a chain is ingested whole however long it runs, each link waiting in
+   `ready` on the one before it, never held back until its prerequisites land. Link its dependencies in the same pass
    (`workspace:/context/project/workflows/marshalling.md` owes them the moment a chunk is minted), never ingesting now
-   and linking later. A follow-up removal is filed beside the epic as a standalone `(BREAK)` issue, belonging to no
-   epic, which waits uningested until an operator decides a release may carry the break
-   (`workspace:/context/project/contributing.md` §Issue titles).
+   and linking later. Only work waiting on something no issue can stand for — a release cut, a by-hand deployment step —
+   waits uningested, and its epic names that event as the gate. A follow-up removal is filed beside the epic as a
+   standalone `(BREAK)` issue, belonging to no epic, which waits uningested until an operator decides a release may
+   carry the break (`workspace:/context/project/contributing.md` §Issue titles).
 
 Exceptions and the far end of the lifecycle:
 

@@ -40,8 +40,8 @@ whether an idea is in scope, and will sharpen it if it is.
 An accepted proposal is promoted in steps. It enters [epics.md](./epics.md) with a stable id, a position in priority
 order, and a plan under `plans/` — as an epic, or as an initiative naming the epics it will land in. When an epic comes
 close enough to start, its plan earns detailed requirements with its scope decided. Only then is it filed to GitHub as
-startable issues, which the fleet picks up. Once it has landed, it leaves the registry and enters
-[delivered.md](./delivered.md).
+issues, each blocked by the ones it builds on, which the fleet picks up in that order. Once it has landed, it leaves the
+registry and enters [delivered.md](./delivered.md).
 
 Two things follow from that shape. Nothing here tracks day-to-day progress: each epic's plan marks it as waiting,
 underway, delivered, or retired, never who is working on it or how far along, so a proposal can sit accepted and
