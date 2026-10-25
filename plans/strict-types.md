@@ -1,7 +1,7 @@
 ---
 epic: strict-types
 refinement: scaffolded
-status: horizon
+status: in-progress
 ---
 
 # Plan — `epic:strict-types`

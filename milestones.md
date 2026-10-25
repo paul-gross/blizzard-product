@@ -182,7 +182,7 @@ the platform made on the operator's behalf, handed back to them as a decision.
 | `epic:test-suite/optimization`           | horizon     |
 | `epic:test-architecture`                 | horizon     |
 | `epic:architectural-sweep`               | delivered   |
-| `epic:strict-types`                      | horizon     |
+| `epic:strict-types`                      | in-progress |
 
 ## `milestone:human-in-the-loop` — the operator stops being the wire
 
