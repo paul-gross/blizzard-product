@@ -71,6 +71,12 @@ underscored internals. A test reaches a module only through what it publishes, s
 public surface or reveals a name that was public all along and loses its underscore. These slices are grouped by the
 name reached for, and they change how a test is written, not only how it is typed.
 
+The exemplars move with the code they model. Agents write new code by imitating them, so an exemplar left loose while
+its production counterpart is cleaned teaches the old shape to every module written in the meantime. Each slice brings
+the exemplar of its layer along in the same change — the permit store with the hub store adapters, the clean land action
+with hub delivery, the conformance sentinels and the private-name reach with their sweeps — and an exemplar is never the
+last thing in its layer to be typed, as `bzh:exemplar-conformance` already demands.
+
 Every slice is behavior-preserving. A type error that turns out to be a real bug is fixed in its slice when the fix is
 small and obvious, and filed on its own when it is not, so a typing slice never has to be reviewed as a behavior change.
 
