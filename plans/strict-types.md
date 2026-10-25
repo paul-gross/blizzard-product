@@ -21,25 +21,27 @@ that do work are hiding some 1,650 genuine type errors, 69 of them in shipping c
 each comment looks deliberate on its own and the gate stays green. It is the kind of drift only a measurement finds.
 
 This epic makes the checker strict and the code honest under it: every function's signature typed, every value's type
-known, and every remaining suppression scoped to the one rule it waives, with the reason beside it. Measured on `master`
-at `d2e3e916e`, strict mode with the blanket comments ignored reports about 21,000 errors — roughly 16,400 in the tests,
-4,500 in `src`, and a handful in the exemplars. Most are not independent: a single untyped parameter makes every value
-derived from it unknown, so a slice that types the root clears the errors downstream of it as well.
+known, and no suppression left that does not name the one rule it waives. Measured on `master` at `d2e3e916e`, strict
+mode with the blanket comments ignored reports about 21,000 errors — roughly 16,400 in the tests, 4,500 in `src`, and a
+handful in the exemplars. Most are not independent: a single untyped parameter makes every value derived from it
+unknown, so a slice that types the root clears the errors downstream of it as well.
 
 ## How it lands
 
-The first landing sets the ground every later slice stands on. It deletes the comments that silence nothing, rewrites
-each one that does work as a pyright-native `# pyright: ignore[<rule>]` naming the rule it actually waives, and turns
-off pyright's reading of bare `# type: ignore` so a blanket suppression can never return. In the same delivery it
-switches the checker to strict, with every error the codebase carries today recorded as known debt: new code is held to
-strict from that commit on, and the debt can only shrink. And it writes the rule down in `blizzard-context`, beside
-`bzh:python-toolchain`, so a reviewer has a rule to cite, which is what was missing all along.
+The work is a burn-down first and a switch second. Nothing in the gate changes while the count comes down: the debt is
+not recorded, no area is locked as it is cleaned, and pyright stays in `standard` mode until the number is low enough
+that turning strict on is a small change rather than a project.
+
+The first landing clears the ground and gives every later slice the same measuring stick. It deletes the roughly 1,900
+comments that silence nothing, and adds a strict report that gates nothing: pyright in strict mode, reading no bare
+`# type: ignore`, run on demand, so every slice measures its group before it starts and proves it gone when it finishes.
 
 After that the debt is paid down in slices, each changing many lines for one reason in one place. The order is the
 largest group of errors in the smallest area first, then each smaller group in turn, and where two groups are close in
 size the smaller area goes first, so the early slices remove the most debt while touching the fewest files. Each slice
-re-measures its group before it starts, because the slices before it will have cleared some of its knock-on errors. The
-concentrated groups, in the order they measure today:
+re-measures its group before it starts, because the slices before it will have cleared some of its knock-on errors. A
+slice that types a line a blanket comment was covering deletes the comment with it. The concentrated groups, in the
+order they measure today:
 
 | Slice                                     |  Errors | Files | The one reason                                                             |
 | ----------------------------------------- | ------: | ----: | -------------------------------------------------------------------------- |
@@ -49,30 +51,35 @@ concentrated groups, in the order they measure today:
 | Runner store adapters                     |    ~300 |    18 | Row-mapping helpers take untyped rows                                      |
 | Runner harness adapters                   |    ~290 |    32 | Harness output and settings are read as untyped dictionaries               |
 | Hub domain, auth, delivery, and both CLIs |    ~460 |    60 | Each package's own untyped edges, one slice per package                    |
-| Test families, largest first              | ~10,000 |   550 | Each family's untyped helpers and fakes, one slice per family or subsystem |
+| Test families, largest first              | ~11,000 |   550 | Each family's untyped helpers and fakes, one slice per family or subsystem |
 
-The test families are the bulk of the debt but not one group: the runner's tests alone carry about 3,100 errors across
-123 files, and split by the subsystem they exercise, each piece is smaller than the slices above it.
+The test families are the bulk of the debt but not one group: the runner's tests alone carry about 3,300 errors across
+some 160 files, and split by the subsystem they exercise, each piece is smaller than the slices above it.
 
 When what is left no longer clusters, the scraps are swept up across the whole codebase, one cause per sweep: test
 fixture parameters (`tmp_path`, `monkeypatch`, the `hub` and `store` fixtures), about 2,600 of them across 180 files;
 bare `dict` and other generics with no type arguments; context managers declared as returning an `Iterator`, which
-typeshed now marks deprecated; the `_conforms_*` protocol checks strict mode reports as unused; and the optional,
-attribute, and index errors left over. The last landing finds the recorded debt empty and removes the mechanism that
-held it.
+typeshed now marks deprecated; and the optional, attribute, and index errors left over.
+
+Two of the sweeps change a shape rather than add an annotation. The `_conforms_*` checks, some 270 functions that exist
+only so pyright proves a class satisfies a protocol it never inherits, are never called, so strict mode reports every
+one as unused. Each becomes a single annotated assignment of the class to the protocol's type,
+`_permit_store_conforms: type[IWritePermitRepository] = PermitStore`, which proves the same fit, missing members and
+mismatched signatures alike, without a function nobody calls; the architecture rule that prescribes the sentinel changes
+in the same delivery. And tests stop reaching into private names: some 830 places, across 260 files, read a module's
+underscored internals. A test reaches a module only through what it publishes, so each place either goes through the
+public surface or reveals a name that was public all along and loses its underscore. These slices are grouped by the
+name reached for, and they change how a test is written, not only how it is typed.
 
 Every slice is behavior-preserving. A type error that turns out to be a real bug is fixed in its slice when the fix is
 small and obvious, and filed on its own when it is not, so a typing slice never has to be reviewed as a behavior change.
 
-## Decisions before filing
+## Turning it on
 
-Three questions need answers before the first issue is filed. The first is how the debt is recorded. Pyright has no
-baseline of its own: `basedpyright`, a fork of it, records one in a file each slice shrinks, while stock pyright can
-only hold the line through a list of strict paths and per-rule switches, which is far coarser than the slices above. The
-second is whether tests may reach into a module's private names: strict mode reports about 870 places where they do, 690
-of them in tests, and the answer is either a rule waived for `tests/` or a sweep that removes the access. The third is
-whether the `_conforms_*` checks keep their shape with the unused-function rule waived for them, or take a shape strict
-mode reads as used.
+How strict mode is switched on, and how it is held once it is, is decided when the count is low, not before: what is
+left by then decides whether a final sweep clears it or a short list of waivers is written down. The epic is delivered
+when the gate runs strict. The rule lands with it, in `blizzard-context` beside `bzh:python-toolchain`, in the same
+change that makes the code obey it, so a reviewer has a rule to cite, which is what was missing all along.
 
 ## Out of scope
 
