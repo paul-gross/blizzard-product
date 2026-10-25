@@ -1,7 +1,7 @@
 ---
 epic: test-suite/foundation
 refinement: pristine
-status: in-progress
+status: delivered
 ---
 
 # Plan — `epic:test-suite/foundation`
@@ -246,6 +246,30 @@ ratio found on a twenty-core laptop would not hold there.
   The shared hubs run on SQLite unless the slowest store waits at the chosen ratio come within reach of the five-second
   busy timeout; then they move to Postgres, which also amends the harness rule that tests run on SQLite and adds a
   database service to the CI jobs.
+
+### What they measured
+
+Taken on 25 October 2026 against `master` at `d2e3e916e`: the three analytics ports and the harness's own specs under
+`--repeat-each=12`, 638 tests a run, at the CI worker count of two, pinned to four cores of a shared workstation, since
+GitHub's runners keep no hub CPU. Every run passed.
+
+| Configuration       | Wall time | Shared hubs' CPU |
+| ------------------- | --------- | ---------------- |
+| One hub, guards on  | 247 s     | 46 s             |
+| Hub per worker, on  | 241 s     | 49 s             |
+| One hub, guards off | 261 s     | 46 s             |
+| Hub per worker, off | 303 s     | 61 s             |
+
+- **Hubs per worker: `WORKERS_PER_HUB` stays `8`.** One hub is 2.5% behind a hub per worker, inside the ten percent that
+  would lower it. Its core is far from the wait: 46 CPU-seconds over a four-minute run is under a fifth of one core, so
+  cheaper tenant creation was not built. The guards' cost does not register, their shared hub spending the same 46 s
+  with them off; the guards-off runs read slower only because the workstation's load rose under them.
+- **Store contention: the shared hubs stay on SQLite.** At the chosen ratio, 1,536 calls, none over one second, the
+  slowest write 598 ms, a fleet completion, well short of the 2.5 s that would move them to Postgres. Creating a tenant
+  is the costliest call, 234 ms on average.
+- **The tier's CI time is unchanged.** The `service tier (blizzard:service-test)` check took a median 374 s over 45
+  `master` pushes before the epic and 377 s over 12 after it. The Python shards set it either way; the Playwright shards
+  finish in about a minute beside them.
 
 ## Proof
 

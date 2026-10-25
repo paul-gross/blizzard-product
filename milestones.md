@@ -176,7 +176,7 @@ the platform made on the operator's behalf, handed back to them as a decision.
 | `epic:config/sweep`                      | horizon     |
 | `epic:ui-toolkit`                        | horizon     |
 | `epic:documentation`                     | horizon     |
-| `epic:test-suite/foundation`             | in-progress |
+| `epic:test-suite/foundation`             | delivered   |
 | `epic:test-suite/hub-tier`               | horizon     |
 | `epic:test-suite/runner-tier`            | horizon     |
 | `epic:test-suite/optimization`           | horizon     |
