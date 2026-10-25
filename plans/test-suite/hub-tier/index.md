@@ -1,7 +1,7 @@
 ---
 epic: test-suite/hub-tier
 refinement: pristine
-status: horizon
+status: in-progress
 ---
 
 # Plan — `epic:test-suite/hub-tier`
@@ -52,16 +52,17 @@ pytest, in the service tier's pytest half, where the mock fleet is checked out: 
 the mock-data tool writing into a hub's store; and `host_token`, `runner_bindings`, and `mock_chunk_findings` exercise
 the mock hub itself. `tenant_teardown` builds a hub in-process and moves down to the component tier.
 
-## Classifying before porting
+## Placing each test
 
-The epic opens by classifying every file it moves, so the cost of the `fresh-hub` tests is known before the first port
-rather than discovered at the last. Each test gets its isolation level, the loosest its reads allow under the
-foundation's rules: `common`, `fresh-project`, `fresh-tenant`, or `fresh-hub`. The levels are also where the tier's
-speed comes from, so a test is not placed at `fresh-tenant` by habit. Route-token and produces enforcement and an
-authentication setup used by several tests are hub-wide startup settings and ride profiles. A test whose subject is
-something multi-tenancy leaves global takes a fresh hub, as the foundation lists, and so does any test that restarts the
-hub. A test whose subject is a sweep steps that sweep for its own tenant, as below, and needs no hub of its own; only a
-test whose subject is a sweep's timer takes `fresh-hub`.
+Each port places its own tests as it writes them, with no classification ahead of the first port: the read rules decide
+a test's level once its port shows what it reads, and no table drawn up beforehand would know that better. Each test
+gets its isolation level, the loosest its reads allow under the foundation's rules: `common`, `fresh-project`,
+`fresh-tenant`, or `fresh-hub`. The levels are also where the tier's speed comes from, so a test is not placed at
+`fresh-tenant` by habit. Route-token and produces enforcement and an authentication setup used by several tests are
+hub-wide startup settings and ride profiles. A test whose subject is something multi-tenancy leaves global takes a fresh
+hub, as the foundation lists, and so does any test that restarts the hub. A test whose subject is a sweep steps that
+sweep for its own tenant, as below, and needs no hub of its own; only a test whose subject is a sweep's timer takes
+`fresh-hub`.
 
 ## Surfaces it builds
 

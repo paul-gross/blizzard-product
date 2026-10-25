@@ -24,8 +24,10 @@ each one that iterates tenants:
 A pass's own summary line, `"sweep pass completed"` from `Sweep`, is hub-wide, written outside any tenant's loop, and
 stays untagged. So do the lines of `TraceExportSweep` and `EgressSweep`, which export hub-wide and loop over no tenant.
 A unit test per reconciler drives one pass over two tenants and asserts every line written inside each tenant's work
-carries that tenant's id. An operator reading one tenant's activity out of a shared hub's log gets the passes now, not
-only the requests.
+carries that tenant's id, reading the lines through `capture_logs(processors=[merge_contextvars])`, since a bare
+`capture_logs()` never sees a bound value. The `tenant=` keyword's removal renames a field an operator may filter on,
+and no contract document covers the hub's log, so the change carries a `changed` change note. An operator reading one
+tenant's activity out of a shared hub's log gets the passes now, not only the requests.
 
 ## Sweeps on request
 
@@ -43,24 +45,31 @@ Each sweep gains a mode in the hub file, declared in `blizzard.hub.config_keys` 
 mode = "timed"   # the default; "stepped" starts no timer, and a pass runs only when a route asks
 ```
 
-The sweeps are `forge_status`, `event_derivation`, `close_drain`, `tenant_teardown`, `trace_export`, and `egress`. A
-stepped sweep starts no timer and runs no boot pass. Everything else about it is as when timed.
+The sweeps are `forge_status`, `event_derivation`, `close_drain`, `tenant_teardown`, `trace_export`, and `egress`. Their
+trace spans keep the names they are documented under, so transcript derivation's is still `sweep transcript_events` and
+the close-intent drain's `sweep work_closure`. A stepped sweep starts no timer and runs no boot pass. Everything else
+about it is as when timed.
 
 Two routes run a pass. Each holds its request open for the whole pass and answers once it has completed, so a caller
 that gets its answer can read every effect the pass had:
 
-| Route                                  | Runs                                                                                                                                   | Who may call |
-| -------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------- | ------------ |
-| `POST /api/sweeps/{name}/passes`       | One pass of a per-tenant sweep over the request's tenant alone. Refused with `422` for `trace_export` and `egress`, which are hub-wide | tenant admin |
-| `POST /api/admin/sweeps/{name}/passes` | One pass over every tenant, as a timed pass runs, and the only route for the hub-wide sweeps                                           | hub admin    |
+| Route                                  | Runs                                                                                                                                                                                                                              | Who may call      |
+| -------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ----------------- |
+| `POST /api/sweeps/{name}/passes`       | One pass of a per-tenant sweep over the request's tenant alone. Refused with `422` for `trace_export` and `egress`, which are hub-wide, and for `tenant_teardown`, whose tenants are closed and so can never be the request's own | `analytics:admin` |
+| `POST /api/admin/sweeps/{name}/passes` | One pass over every tenant, as a timed pass runs, and the only route for the hub-wide sweeps and for tenant teardown                                                                                                              | `tenant:admin`    |
 
-Each answers `200` with `{ "started_at", "finished_at", "outcome": "completed" | "failed", "error"? }`. A pass that
-raises answers `outcome: "failed"` with the error's message, as the runner's step routes do, since a timed pass's
-failure is logged and swallowed and a requested one reports it to its caller. Both routes serve in either mode. A pass
-over one tenant holds a lock for its sweep and tenant, and a pass over every tenant, timed or requested, holds its
-sweep's lock across all of them; a request meeting a held lock answers `409` with `{ "code": "sweep_in_progress" }` at
-once. Two tests stepping the same sweep in their own tenants never meet, and a test that meets the refusal raced a pass
-it should not have shared. The locks are in memory and end with the process.
+The per-tenant route asks for `analytics:admin`, which already gates the one route that forces a pass today, the
+transcript re-derivation. A new permission would add a value a released client does not know.
+
+Each answers `200` with `{ "started_at", "finished_at", "outcome": "completed" | "failed", "error"? }`, its `outcome` an
+open set. A timed pass's failure is logged and swallowed, and a requested one reports it to its caller: a pass over one
+tenant answers `failed`, with the error's message, when that tenant's work fails, and a pass over every tenant, whose
+sweep already catches each tenant's fault and moves on, answers `failed` only when the pass itself raises. Both routes
+serve in either mode. A pass over one tenant holds a lock for its sweep and tenant, and a pass over every tenant, timed
+or requested, holds its sweep's lock across all of them; a request meeting a held lock answers `409` with
+`{ "code": "sweep_in_progress" }` at once, and a timed pass that meets one skips its interval and logs that it did. Two
+tests stepping the same sweep in their own tenants never meet, and a test that meets the refusal raced a pass it should
+not have shared. The locks are in memory and end with the process.
 
 Each per-tenant reconciler's loop body, which [the tags above](#the-tenant-on-every-passs-lines) already bind to its
 tenant, becomes a pass for one tenant, and its timed pass loops that over every tenant, so a requested pass and a timed
@@ -83,13 +92,17 @@ that wants only what happens from now on has no way to say so, so the service te
 The stream gains `?from=latest`. The stream subscribes, as it does today, then skips the replay entirely, and sends only
 events published after the subscription; the first frame, the `: blizzard hub event stream` comment, is unchanged, so a
 client knows when it is joined. Subscribing before skipping means no event published between the request and the
-subscription is lost and none from before it arrives. `from` takes only `latest`; any other value answers `422`.
-`from=latest` with a `Last-Event-ID` answers `422`, since the two ask for different things. The runner's stream, which
-shares `Stream`, gains the same parameter.
+subscription is lost and none from before it arrives, so the broker records its latest id under the same lock it
+registers the subscriber in, and nothing can be published between the two. `from` takes only `latest`; any other value
+answers `422`. A `Last-Event-ID` header wins over `from=latest`, because a reconnecting client, a browser's
+`EventSource` or the harness's reader, sends that header on the same URL it first opened, and must resume rather than be
+refused. Only `from=latest` and `?last_event_id=` together in the query answer `422`, since the two ask for different
+things. The runner's stream, which shares `Stream`, gains the same parameter.
 
-The frame shapes in `contracts/sse/` are unchanged. The stream is excluded from the OpenAPI document, so the parameter
-is documented where the stream is, in `docs/`'s event-stream reference, and `tests/test_sse_contract.py` gains a case
-for each answer.
+The frame shapes in `contracts/sse/` are unchanged. The stream is excluded from the OpenAPI document, and `docs/` has no
+event-stream reference, so the parameter is documented in `contracts/sse/README.md` and, for the runner's stream, in
+`docs/deployment/runner-doors.md`. `tests/test_sse_contract.py` checks frame shapes and never opens a stream, so each
+answer's case goes in `tests/test_foundation_events.py` and `tests/test_events.py`.
 
 ## A configurable login throttle
 

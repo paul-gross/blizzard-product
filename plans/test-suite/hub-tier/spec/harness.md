@@ -10,7 +10,8 @@ A profile is static TOML, but the `auth` profile must name its hub's own IdP as 
 known only once it starts. A profile's string values may therefore name the hub's mock coordinates: `${idp}` and
 `${forge}` expand to the stub IdP's and the mock forge's base URLs when the hub's file is written. Nothing else expands,
 and an unknown `${…}` fails the profile check before any hub starts. The key check is unaffected, since placeholders sit
-only in values.
+only in values. `startHubStack` starts the forge and the IdP before the hub, rather than all three at once, so both
+coordinates are known when the hub's file is written.
 
 ## People
 
@@ -75,15 +76,20 @@ without signing in again. A `fresh-tenant` tenant is created the same way, with 
 acts in the superuser's session, as the tenant's admin. Acting as anyone else is `user.api` or a person's own `api`,
 always explicit. A test whose subject is the bootstrap itself takes `fresh-hub`, where nobody has signed in yet.
 
+Every profile but the default runs one worker, so two workers never sign in on the same `auth` hub at once. The race the
+keyed sign-in removes is still real within a test, and the harness's own check proves it there: it signs several people
+in concurrently in one test, on one shared `auth` hub, and each comes back as itself.
+
 ## The CLI
 
 `cli(args, { as? })`, a factory fixture, runs the installed `blizzard` binary, from the same `.venv/bin/` as the
 daemons, with the contract's environment, `BZ_HUB_URL` set to the test's hub, `BZ_HUB_TENANT` to `tenant`, and
-`XDG_CONFIG_HOME` to an empty directory of the test's own, so no session but one the test made is ever read. It returns
-`{ code, stdout, stderr }` and fails the test on a timeout of thirty seconds. With `as: user` or any person `people`
-made, the CLI is first signed in as that person by `blizzard hub login --paste`, the form with no loopback listener: the
-harness reads the authorize URL the CLI prints, walks it through the IdP as above, takes the code the hub's out-of-band
-answer carries, and writes it to the CLI's prompt on stdin.
+`XDG_CONFIG_HOME` to an empty directory of the test's own, so no session but one the test made is ever read. The
+contract's environment sets a config home of its own, so the CLI's is passed to `daemonEnv` as an argument it keeps
+rather than overwrites. It returns `{ code, stdout, stderr }` and fails the test on a timeout of thirty seconds. With
+`as: user` or any person `people` made, the CLI is first signed in as that person by `blizzard hub login --paste`, the
+form with no loopback listener: the harness reads the authorize URL the CLI prints, walks it through the IdP as above,
+takes the code the hub's out-of-band answer carries, and writes it to the CLI's prompt on stdin.
 
 A verb the CLI runs keeps to the test's level by the same rules as a call through `api`.
 
@@ -101,6 +107,16 @@ directory again on the same port. The SIGTERM test and the tracing tests' flush 
 ## The OTLP sink
 
 `harness/otlp-sink.ts` is an OTLP/HTTP receiver on a port of its own, accepting what `tests/otlp_sink.py` accepts today
-and recording each export's spans with their attributes. `otlpSink()`, a factory fixture, starts one for the test and
-returns its endpoint, which a `fresh-hub` test names in its `hubConfig` tracing settings, and its spans, which the test
-reads once the hub has stopped and flushed.
+and recording each export's spans with their attributes, their scope's name, and their resource's attributes.
+`otlpSink()`, a factory fixture, starts one for the test and returns its endpoint and its spans, which the test reads
+once the hub has stopped and flushed. The hub file has no key for an OTLP endpoint, since the exporter reads it from the
+environment, so a `fresh-hub` test names the endpoint in its `hubEnv` as `OTEL_EXPORTER_OTLP_ENDPOINT`, and its
+`hubConfig` only turns tracing on.
+
+## The mock runner's client
+
+Several ports drive a mock runner beyond registering it: they start it with options, step it through its `/_drive/*`
+routes, and set its `/_levers/*`, and a spec may not hand-build a daemon's URL. `mockRunner(name, options)` passes the
+mock runner's start options through, and the `MockRunner` it returns gains `drive` and `lever` clients for those routes.
+`fleet(name, { projects })` mints a runner that serves the projects named, for the tests whose subject is which projects
+a runner serves.

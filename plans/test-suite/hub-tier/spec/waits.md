@@ -10,7 +10,8 @@ A test opens its stream before it acts, so nothing it waits for can precede the 
 drain:
 
 - **At `fresh-tenant` and `fresh-hub`**, `events.open()` connects with no cursor the moment the tenant exists. The
-  tenant is new, so the replay is the tenant's whole history from its first event, and the test reads all of it.
+  tenant is new, so the replay is the tenant's whole history from its first event, and the test reads all of it. A
+  stream opened with a barrier is the exception, below.
 - **At `common` and `fresh-project`**, the tenant's history is every other test's, so `events.open()` connects with
   `from=latest` ([surfaces.md](./surfaces.md#joining-the-stream-from-now)) and reads only frames naming the test's own
   ids.
@@ -30,12 +31,18 @@ produced arrives before the barrier's, and once the barrier's frame has arrived 
 it.
 
 `events.open({ barrier: true })` prepares one before subscribing: it files and ingests a barrier chunk through `issue`,
-then opens the stream, so the barrier chunk's own creation precedes the subscription and never appears in what the test
-reads. `events.barrier()` edits the barrier chunk's title through `PATCH /api/chunks/{chunk_id}`, waits for its
-`chunk-changed` frame with cause `edited`, and returns the frames that arrived before it. The reader drops every frame
-naming the barrier chunk, so the test sees only its own act's frames. The epic verifies, with a test of the harness's
-own, that a title edit emits no frame but that one, `queue-changed` in particular; if it emits more, the reader drops
-those too, by their place between the edit's request and its `chunk-changed` frame.
+then opens the stream with `from=latest` at every level, so the barrier chunk's own creation precedes the subscription
+and never appears in what the test reads. The join from now matters even on a new tenant: the barrier's ingest publishes
+a `queue-changed` whose payload is empty, so a stream opened with no cursor would replay it as if the test had caused
+it. `events.barrier()` edits the barrier chunk's `default_effort` through `PATCH /api/chunks/{chunk_id}`, which has no
+title field, waits for its `chunk-changed` frame with cause `edited`, and returns the frames that arrived before it. The
+reader drops every frame naming the barrier chunk, so the test sees only its own act's frames. The epic verifies, with a
+test of the harness's own, that the edit emits no frame but that one, `queue-changed` in particular; if it emits more,
+the reader drops those too, by their place between the edit's request and its `chunk-changed` frame.
+
+A `queue-changed` frame names no id, so a reader narrowed to the test's own ids at `common` and `fresh-project` can
+never admit one. A negative assertion about `queue-changed`, such as "exactly one", therefore needs `fresh-tenant` or
+above, where every frame on the stream is the test's own.
 
 The barrier holds only where the frames under test are published before the request that caused them returns. The hub's
 routes publish inside the handler, after the write and before the response (`ChunkChanged.publish` in
