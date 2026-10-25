@@ -32,9 +32,10 @@ The work is a burn-down first and a switch second. Nothing in the gate changes w
 not recorded, no area is locked as it is cleaned, and pyright stays in `standard` mode until the number is low enough
 that turning strict on is a small change rather than a project.
 
-The first landing clears the ground and gives every later slice the same measuring stick. It deletes the roughly 1,900
-comments that silence nothing, and adds a strict report that gates nothing: pyright in strict mode, reading no bare
-`# type: ignore`, run on demand, so every slice measures its group before it starts and proves it gone when it finishes.
+The first landing clears the ground and gives every later slice the same measuring stick. It deletes the comments in
+shipping code that silence nothing, about 150 of the 1,900 (the rest sit in tests, and go with the test wave), and adds
+a strict report that gates nothing: pyright in strict mode, reading no bare `# type: ignore`, run on demand, so every
+slice measures its group before it starts and proves it gone when it finishes.
 
 After that the debt is paid down in slices, each changing many lines for one reason in one place. The order is the
 largest group of errors in the smallest area first, then each smaller group in turn, and where two groups are close in
@@ -79,6 +80,19 @@ last thing in its layer to be typed, as `bzh:exemplar-conformance` already deman
 
 Every slice is behavior-preserving. A type error that turns out to be a real bug is fixed in its slice when the fix is
 small and obvious, and filed on its own when it is not, so a typing slice never has to be reviewed as a behavior change.
+
+## Shipping code first, tests after the migration
+
+The burn-down starts with `src/` and the exemplars and leaves the tests alone. `initiative:test-suite` is moving the
+service tier out of Python and into Playwright, and typing a test that is about to be ported is work thrown away, while
+touching the files it is being ported from only invites conflicts. So the first wave is every slice above that lives in
+shipping code — the store, compat, harness, domain, auth, delivery, and CLI slices, with their exemplars — and the
+sweeps for bare generics, context managers, conformance sentinels, and leftovers run over `src/` and the exemplars only.
+That is about 4,500 of the 21,000, and the part an agent reads before it builds on anything.
+
+Every test slice waits: the factories, the test families, the fixture-parameter sweep, the private-name slices, and the
+store migration tests that live under `src/`. They are cut and filed once the service tier has moved, against whatever
+tests remain in Python, and the ported service tests are never typed at all.
 
 ## Turning it on
 
