@@ -149,6 +149,12 @@ was written at all, and thousands of lines carry a comment telling it to look aw
 builds on a promise nobody is keeping. Strict typing, with every waiver naming the rule it waives, makes the signatures
 something a reader can lean on again.
 
+Its wiring makes a presumption from the same family: that any service may reach for everything the process holds. The
+hub hands nearly every route one bag of more than eighty services, so a signature that ought to say what a handler
+touches says only that it could touch anything. Composing each process through a container, and teaching each caller to
+name the few things it uses, lets the signature say it again — and the change is made the way a strangler fig replaces a
+tree, around the running platform rather than in place of it.
+
 Another presumption is about when a change reaches the people running it. Every merge to `master` is a release in all
 but name: the moment it lands, the hosted hub pulls it and the runners are rebuilt onto it. The operator who runs
 blizzard for themselves has no way to say not yet, and no notes telling them what an upgrade will ask of them. Releases
@@ -183,6 +189,7 @@ the platform made on the operator's behalf, handed back to them as a decision.
 | `epic:test-architecture`                 | horizon     |
 | `epic:architectural-sweep`               | delivered   |
 | `epic:strict-types`                      | in-progress |
+| `epic:adopt-di`                          | horizon     |
 
 ## `milestone:human-in-the-loop` — the operator stops being the wire
 
