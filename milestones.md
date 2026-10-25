@@ -143,6 +143,12 @@ what it is about, both ask the reader to carry a map the code no longer draws. G
 package a one-way place in the order, and every rule a home on the model it governs is the same hardening turned inward
 — and it holds only if the build refuses the drift, not if someone remembers to.
 
+Its signatures make a quieter presumption of the same kind. A signature is a promise about what a function takes and
+returns, and the type checker is what keeps it; blizzard's checker runs in a mode that never asks whether a signature
+was written at all, and thousands of lines carry a comment telling it to look away. An agent reading such a signature
+builds on a promise nobody is keeping. Strict typing, with every waiver naming the rule it waives, makes the signatures
+something a reader can lean on again.
+
 Another presumption is about when a change reaches the people running it. Every merge to `master` is a release in all
 but name: the moment it lands, the hosted hub pulls it and the runners are rebuilt onto it. The operator who runs
 blizzard for themselves has no way to say not yet, and no notes telling them what an upgrade will ask of them. Releases
@@ -176,6 +182,7 @@ the platform made on the operator's behalf, handed back to them as a decision.
 | `epic:test-suite/optimization`           | horizon     |
 | `epic:test-architecture`                 | horizon     |
 | `epic:architectural-sweep`               | delivered   |
+| `epic:strict-types`                      | horizon     |
 
 ## `milestone:human-in-the-loop` — the operator stops being the wire
 
