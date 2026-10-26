@@ -12,9 +12,11 @@
 
 Before 1.0, `X` is `0`. A tag, once pushed, is never moved, deleted, or reused
 (`workspace:/context/project/workflows/release.md`); a branch is never deleted. Both repositories carry every name in
-this table ([mock.md](./mock.md)). `release/*` branches and `v*` tags are protected on both by repository rulesets: a
-branch changes only through a pull request and is never force-pushed or deleted, and a tag is never updated or deleted.
-Creating a branch or pushing a tag is an attended step of a procedure; no fleet worker does either.
+this table ([mock.md](./mock.md)). `release/*` branches and `v*` tags are protected on both by repository rulesets. A
+branch changes through a pull request and is never force-pushed or deleted, except that the repository admin role may
+bypass the ruleset, which the train uses to create a new line's branch by pushing it and for nothing else. A tag is a
+signed annotated tag, as the ruleset requires, is created by the repository admin role alone, and is never updated or
+deleted. Creating a branch or pushing a tag is an attended step of a procedure; no fleet worker does either.
 
 ## Versions on `master` and on a branch
 
