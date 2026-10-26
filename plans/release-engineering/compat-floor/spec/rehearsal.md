@@ -15,7 +15,9 @@ statically. Its local equivalent is `mise run rehearsal`
 (`BLIZZARD_REHEARSAL=1 uv run pytest -m rehearsal tests/rehearsal/`), and its method is `blizzard:rehearsal`. A tree
 with no supported release skips it and says so.
 
-It runs once per supported release ([baseline.md](./baseline.md)), as a matrix over them, and each leg runs the hub
+It runs once per supported release ([baseline.md](./baseline.md)) that has a published GitHub Release, as a matrix
+over them: a candidate whose `release` run went red published no wheel to upgrade from, and is skipped until the line's
+next candidate replaces it as the newest tag. Each leg runs the hub
 store on SQLite and on Postgres, the backend the hosted hub runs (`packaging/docker/`); the runner store is SQLite only.
 The Postgres leg is a `services: postgres` container on the job, the first live Postgres in CI, and it also migrates an
 empty hub store and compares its reflection with `contracts/store/hub.json` ([surfaces.md](./surfaces.md) §Store
