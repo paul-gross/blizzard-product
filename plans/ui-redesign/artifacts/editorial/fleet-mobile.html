@@ -1,0 +1,1798 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Blizzard — the fleet</title>
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<style>
+@font-face{font-family:"Bz Serif";src:local("Noto Serif ExtraCondensed Thin"),local("NotoSerif-ExtraCondensedThin");font-weight:100;font-stretch:62.5%;font-style:normal}
+@font-face{font-family:"Bz Serif";src:local("Noto Serif ExtraCondensed Thin Italic"),local("NotoSerif-ExtraCondensedThinItalic");font-weight:100;font-stretch:62.5%;font-style:italic}
+@font-face{font-family:"Bz Serif";src:local("Noto Serif ExtraCondensed ExtraLight"),local("NotoSerif-ExtraCondensedExtraLight");font-weight:200;font-stretch:62.5%;font-style:normal}
+@font-face{font-family:"Bz Serif";src:local("Noto Serif ExtraCondensed ExtraLight Italic"),local("NotoSerif-ExtraCondensedExtraLightItalic");font-weight:200;font-stretch:62.5%;font-style:italic}
+@font-face{font-family:"Bz Serif";src:local("Noto Serif ExtraCondensed Light"),local("NotoSerif-ExtraCondensedLight");font-weight:300;font-stretch:62.5%;font-style:normal}
+@font-face{font-family:"Bz Serif";src:local("Noto Serif ExtraCondensed Light Italic"),local("NotoSerif-ExtraCondensedLightItalic");font-weight:300;font-stretch:62.5%;font-style:italic}
+@font-face{font-family:"Bz Serif";src:local("Noto Serif ExtraCondensed"),local("NotoSerif-ExtraCondensed");font-weight:400;font-stretch:62.5%;font-style:normal}
+@font-face{font-family:"Bz Serif";src:local("Noto Serif ExtraCondensed Italic"),local("NotoSerif-ExtraCondensedItalic");font-weight:400;font-stretch:62.5%;font-style:italic}
+@font-face{font-family:"Bz Serif";src:local("Noto Serif ExtraCondensed Medium"),local("NotoSerif-ExtraCondensedMedium");font-weight:500;font-stretch:62.5%;font-style:normal}
+@font-face{font-family:"Bz Serif";src:local("Noto Serif ExtraCondensed Medium Italic"),local("NotoSerif-ExtraCondensedMediumItalic");font-weight:500;font-stretch:62.5%;font-style:italic}
+@font-face{font-family:"Bz Serif";src:local("Noto Serif ExtraCondensed SemiBold"),local("NotoSerif-ExtraCondensedSemiBold");font-weight:600;font-stretch:62.5%;font-style:normal}
+@font-face{font-family:"Bz Serif";src:local("Noto Serif ExtraCondensed SemiBold Italic"),local("NotoSerif-ExtraCondensedSemiBoldItalic");font-weight:600;font-stretch:62.5%;font-style:italic}
+@font-face{font-family:"Bz Serif";src:local("Noto Serif ExtraCondensed Bold"),local("NotoSerif-ExtraCondensedBold");font-weight:700;font-stretch:62.5%;font-style:normal}
+@font-face{font-family:"Bz Serif";src:local("Noto Serif ExtraCondensed Bold Italic"),local("NotoSerif-ExtraCondensedBoldItalic");font-weight:700;font-stretch:62.5%;font-style:italic}
+@font-face{font-family:"Bz Serif";src:local("Noto Serif ExtraCondensed ExtraBold"),local("NotoSerif-ExtraCondensedExtraBold");font-weight:800;font-stretch:62.5%;font-style:normal}
+@font-face{font-family:"Bz Serif";src:local("Noto Serif ExtraCondensed ExtraBold Italic"),local("NotoSerif-ExtraCondensedExtraBoldItalic");font-weight:800;font-stretch:62.5%;font-style:italic}
+@font-face{font-family:"Bz Serif";src:local("Noto Serif ExtraCondensed Black"),local("NotoSerif-ExtraCondensedBlack");font-weight:900;font-stretch:62.5%;font-style:normal}
+@font-face{font-family:"Bz Serif";src:local("Noto Serif ExtraCondensed Black Italic"),local("NotoSerif-ExtraCondensedBlackItalic");font-weight:900;font-stretch:62.5%;font-style:italic}
+@font-face{font-family:"Bz Serif";src:local("Noto Serif Condensed Thin"),local("NotoSerif-CondensedThin");font-weight:100;font-stretch:75%;font-style:normal}
+@font-face{font-family:"Bz Serif";src:local("Noto Serif Condensed Thin Italic"),local("NotoSerif-CondensedThinItalic");font-weight:100;font-stretch:75%;font-style:italic}
+@font-face{font-family:"Bz Serif";src:local("Noto Serif Condensed ExtraLight"),local("NotoSerif-CondensedExtraLight");font-weight:200;font-stretch:75%;font-style:normal}
+@font-face{font-family:"Bz Serif";src:local("Noto Serif Condensed ExtraLight Italic"),local("NotoSerif-CondensedExtraLightItalic");font-weight:200;font-stretch:75%;font-style:italic}
+@font-face{font-family:"Bz Serif";src:local("Noto Serif Condensed Light"),local("NotoSerif-CondensedLight");font-weight:300;font-stretch:75%;font-style:normal}
+@font-face{font-family:"Bz Serif";src:local("Noto Serif Condensed Light Italic"),local("NotoSerif-CondensedLightItalic");font-weight:300;font-stretch:75%;font-style:italic}
+@font-face{font-family:"Bz Serif";src:local("Noto Serif Condensed"),local("NotoSerif-Condensed");font-weight:400;font-stretch:75%;font-style:normal}
+@font-face{font-family:"Bz Serif";src:local("Noto Serif Condensed Italic"),local("NotoSerif-CondensedItalic");font-weight:400;font-stretch:75%;font-style:italic}
+@font-face{font-family:"Bz Serif";src:local("Noto Serif Condensed Medium"),local("NotoSerif-CondensedMedium");font-weight:500;font-stretch:75%;font-style:normal}
+@font-face{font-family:"Bz Serif";src:local("Noto Serif Condensed Medium Italic"),local("NotoSerif-CondensedMediumItalic");font-weight:500;font-stretch:75%;font-style:italic}
+@font-face{font-family:"Bz Serif";src:local("Noto Serif Condensed SemiBold"),local("NotoSerif-CondensedSemiBold");font-weight:600;font-stretch:75%;font-style:normal}
+@font-face{font-family:"Bz Serif";src:local("Noto Serif Condensed SemiBold Italic"),local("NotoSerif-CondensedSemiBoldItalic");font-weight:600;font-stretch:75%;font-style:italic}
+@font-face{font-family:"Bz Serif";src:local("Noto Serif Condensed Bold"),local("NotoSerif-CondensedBold");font-weight:700;font-stretch:75%;font-style:normal}
+@font-face{font-family:"Bz Serif";src:local("Noto Serif Condensed Bold Italic"),local("NotoSerif-CondensedBoldItalic");font-weight:700;font-stretch:75%;font-style:italic}
+@font-face{font-family:"Bz Serif";src:local("Noto Serif Condensed ExtraBold"),local("NotoSerif-CondensedExtraBold");font-weight:800;font-stretch:75%;font-style:normal}
+@font-face{font-family:"Bz Serif";src:local("Noto Serif Condensed ExtraBold Italic"),local("NotoSerif-CondensedExtraBoldItalic");font-weight:800;font-stretch:75%;font-style:italic}
+@font-face{font-family:"Bz Serif";src:local("Noto Serif Condensed Black"),local("NotoSerif-CondensedBlack");font-weight:900;font-stretch:75%;font-style:normal}
+@font-face{font-family:"Bz Serif";src:local("Noto Serif Condensed Black Italic"),local("NotoSerif-CondensedBlackItalic");font-weight:900;font-stretch:75%;font-style:italic}
+@font-face{font-family:"Bz Serif";src:local("Noto Serif SemiCondensed Thin"),local("NotoSerif-SemiCondensedThin");font-weight:100;font-stretch:87.5%;font-style:normal}
+@font-face{font-family:"Bz Serif";src:local("Noto Serif SemiCondensed Thin Italic"),local("NotoSerif-SemiCondensedThinItalic");font-weight:100;font-stretch:87.5%;font-style:italic}
+@font-face{font-family:"Bz Serif";src:local("Noto Serif SemiCondensed ExtraLight"),local("NotoSerif-SemiCondensedExtraLight");font-weight:200;font-stretch:87.5%;font-style:normal}
+@font-face{font-family:"Bz Serif";src:local("Noto Serif SemiCondensed ExtraLight Italic"),local("NotoSerif-SemiCondensedExtraLightItalic");font-weight:200;font-stretch:87.5%;font-style:italic}
+@font-face{font-family:"Bz Serif";src:local("Noto Serif SemiCondensed Light"),local("NotoSerif-SemiCondensedLight");font-weight:300;font-stretch:87.5%;font-style:normal}
+@font-face{font-family:"Bz Serif";src:local("Noto Serif SemiCondensed Light Italic"),local("NotoSerif-SemiCondensedLightItalic");font-weight:300;font-stretch:87.5%;font-style:italic}
+@font-face{font-family:"Bz Serif";src:local("Noto Serif SemiCondensed"),local("NotoSerif-SemiCondensed");font-weight:400;font-stretch:87.5%;font-style:normal}
+@font-face{font-family:"Bz Serif";src:local("Noto Serif SemiCondensed Italic"),local("NotoSerif-SemiCondensedItalic");font-weight:400;font-stretch:87.5%;font-style:italic}
+@font-face{font-family:"Bz Serif";src:local("Noto Serif SemiCondensed Medium"),local("NotoSerif-SemiCondensedMedium");font-weight:500;font-stretch:87.5%;font-style:normal}
+@font-face{font-family:"Bz Serif";src:local("Noto Serif SemiCondensed Medium Italic"),local("NotoSerif-SemiCondensedMediumItalic");font-weight:500;font-stretch:87.5%;font-style:italic}
+@font-face{font-family:"Bz Serif";src:local("Noto Serif SemiCondensed SemiBold"),local("NotoSerif-SemiCondensedSemiBold");font-weight:600;font-stretch:87.5%;font-style:normal}
+@font-face{font-family:"Bz Serif";src:local("Noto Serif SemiCondensed SemiBold Italic"),local("NotoSerif-SemiCondensedSemiBoldItalic");font-weight:600;font-stretch:87.5%;font-style:italic}
+@font-face{font-family:"Bz Serif";src:local("Noto Serif SemiCondensed Bold"),local("NotoSerif-SemiCondensedBold");font-weight:700;font-stretch:87.5%;font-style:normal}
+@font-face{font-family:"Bz Serif";src:local("Noto Serif SemiCondensed Bold Italic"),local("NotoSerif-SemiCondensedBoldItalic");font-weight:700;font-stretch:87.5%;font-style:italic}
+@font-face{font-family:"Bz Serif";src:local("Noto Serif SemiCondensed ExtraBold"),local("NotoSerif-SemiCondensedExtraBold");font-weight:800;font-stretch:87.5%;font-style:normal}
+@font-face{font-family:"Bz Serif";src:local("Noto Serif SemiCondensed ExtraBold Italic"),local("NotoSerif-SemiCondensedExtraBoldItalic");font-weight:800;font-stretch:87.5%;font-style:italic}
+@font-face{font-family:"Bz Serif";src:local("Noto Serif SemiCondensed Black"),local("NotoSerif-SemiCondensedBlack");font-weight:900;font-stretch:87.5%;font-style:normal}
+@font-face{font-family:"Bz Serif";src:local("Noto Serif SemiCondensed Black Italic"),local("NotoSerif-SemiCondensedBlackItalic");font-weight:900;font-stretch:87.5%;font-style:italic}
+@font-face{font-family:"Bz Serif";src:local("Noto Serif Thin"),local("NotoSerif-Thin");font-weight:100;font-stretch:100%;font-style:normal}
+@font-face{font-family:"Bz Serif";src:local("Noto Serif Thin Italic"),local("NotoSerif-ThinItalic");font-weight:100;font-stretch:100%;font-style:italic}
+@font-face{font-family:"Bz Serif";src:local("Noto Serif ExtraLight"),local("NotoSerif-ExtraLight");font-weight:200;font-stretch:100%;font-style:normal}
+@font-face{font-family:"Bz Serif";src:local("Noto Serif ExtraLight Italic"),local("NotoSerif-ExtraLightItalic");font-weight:200;font-stretch:100%;font-style:italic}
+@font-face{font-family:"Bz Serif";src:local("Noto Serif Light"),local("NotoSerif-Light");font-weight:300;font-stretch:100%;font-style:normal}
+@font-face{font-family:"Bz Serif";src:local("Noto Serif Light Italic"),local("NotoSerif-LightItalic");font-weight:300;font-stretch:100%;font-style:italic}
+@font-face{font-family:"Bz Serif";src:local("Noto Serif"),local("NotoSerif-Regular");font-weight:400;font-stretch:100%;font-style:normal}
+@font-face{font-family:"Bz Serif";src:local("Noto Serif Italic"),local("NotoSerif-Italic");font-weight:400;font-stretch:100%;font-style:italic}
+@font-face{font-family:"Bz Serif";src:local("Noto Serif Medium"),local("NotoSerif-Medium");font-weight:500;font-stretch:100%;font-style:normal}
+@font-face{font-family:"Bz Serif";src:local("Noto Serif Medium Italic"),local("NotoSerif-MediumItalic");font-weight:500;font-stretch:100%;font-style:italic}
+@font-face{font-family:"Bz Serif";src:local("Noto Serif SemiBold"),local("NotoSerif-SemiBold");font-weight:600;font-stretch:100%;font-style:normal}
+@font-face{font-family:"Bz Serif";src:local("Noto Serif SemiBold Italic"),local("NotoSerif-SemiBoldItalic");font-weight:600;font-stretch:100%;font-style:italic}
+@font-face{font-family:"Bz Serif";src:local("Noto Serif Bold"),local("NotoSerif-Bold");font-weight:700;font-stretch:100%;font-style:normal}
+@font-face{font-family:"Bz Serif";src:local("Noto Serif Bold Italic"),local("NotoSerif-BoldItalic");font-weight:700;font-stretch:100%;font-style:italic}
+@font-face{font-family:"Bz Serif";src:local("Noto Serif ExtraBold"),local("NotoSerif-ExtraBold");font-weight:800;font-stretch:100%;font-style:normal}
+@font-face{font-family:"Bz Serif";src:local("Noto Serif ExtraBold Italic"),local("NotoSerif-ExtraBoldItalic");font-weight:800;font-stretch:100%;font-style:italic}
+@font-face{font-family:"Bz Serif";src:local("Noto Serif Black"),local("NotoSerif-Black");font-weight:900;font-stretch:100%;font-style:normal}
+@font-face{font-family:"Bz Serif";src:local("Noto Serif Black Italic"),local("NotoSerif-BlackItalic");font-weight:900;font-stretch:100%;font-style:italic}
+@font-face{font-family:"Bz Sans";src:local("Noto Sans ExtraCondensed Thin"),local("NotoSans-ExtraCondensedThin");font-weight:100;font-stretch:62.5%;font-style:normal}
+@font-face{font-family:"Bz Sans";src:local("Noto Sans ExtraCondensed Thin Italic"),local("NotoSans-ExtraCondensedThinItalic");font-weight:100;font-stretch:62.5%;font-style:italic}
+@font-face{font-family:"Bz Sans";src:local("Noto Sans ExtraCondensed ExtraLight"),local("NotoSans-ExtraCondensedExtraLight");font-weight:200;font-stretch:62.5%;font-style:normal}
+@font-face{font-family:"Bz Sans";src:local("Noto Sans ExtraCondensed ExtraLight Italic"),local("NotoSans-ExtraCondensedExtraLightItalic");font-weight:200;font-stretch:62.5%;font-style:italic}
+@font-face{font-family:"Bz Sans";src:local("Noto Sans ExtraCondensed Light"),local("NotoSans-ExtraCondensedLight");font-weight:300;font-stretch:62.5%;font-style:normal}
+@font-face{font-family:"Bz Sans";src:local("Noto Sans ExtraCondensed Light Italic"),local("NotoSans-ExtraCondensedLightItalic");font-weight:300;font-stretch:62.5%;font-style:italic}
+@font-face{font-family:"Bz Sans";src:local("Noto Sans ExtraCondensed"),local("NotoSans-ExtraCondensed");font-weight:400;font-stretch:62.5%;font-style:normal}
+@font-face{font-family:"Bz Sans";src:local("Noto Sans ExtraCondensed Italic"),local("NotoSans-ExtraCondensedItalic");font-weight:400;font-stretch:62.5%;font-style:italic}
+@font-face{font-family:"Bz Sans";src:local("Noto Sans ExtraCondensed Medium"),local("NotoSans-ExtraCondensedMedium");font-weight:500;font-stretch:62.5%;font-style:normal}
+@font-face{font-family:"Bz Sans";src:local("Noto Sans ExtraCondensed Medium Italic"),local("NotoSans-ExtraCondensedMediumItalic");font-weight:500;font-stretch:62.5%;font-style:italic}
+@font-face{font-family:"Bz Sans";src:local("Noto Sans ExtraCondensed SemiBold"),local("NotoSans-ExtraCondensedSemiBold");font-weight:600;font-stretch:62.5%;font-style:normal}
+@font-face{font-family:"Bz Sans";src:local("Noto Sans ExtraCondensed SemiBold Italic"),local("NotoSans-ExtraCondensedSemiBoldItalic");font-weight:600;font-stretch:62.5%;font-style:italic}
+@font-face{font-family:"Bz Sans";src:local("Noto Sans ExtraCondensed Bold"),local("NotoSans-ExtraCondensedBold");font-weight:700;font-stretch:62.5%;font-style:normal}
+@font-face{font-family:"Bz Sans";src:local("Noto Sans ExtraCondensed Bold Italic"),local("NotoSans-ExtraCondensedBoldItalic");font-weight:700;font-stretch:62.5%;font-style:italic}
+@font-face{font-family:"Bz Sans";src:local("Noto Sans ExtraCondensed ExtraBold"),local("NotoSans-ExtraCondensedExtraBold");font-weight:800;font-stretch:62.5%;font-style:normal}
+@font-face{font-family:"Bz Sans";src:local("Noto Sans ExtraCondensed ExtraBold Italic"),local("NotoSans-ExtraCondensedExtraBoldItalic");font-weight:800;font-stretch:62.5%;font-style:italic}
+@font-face{font-family:"Bz Sans";src:local("Noto Sans ExtraCondensed Black"),local("NotoSans-ExtraCondensedBlack");font-weight:900;font-stretch:62.5%;font-style:normal}
+@font-face{font-family:"Bz Sans";src:local("Noto Sans ExtraCondensed Black Italic"),local("NotoSans-ExtraCondensedBlackItalic");font-weight:900;font-stretch:62.5%;font-style:italic}
+@font-face{font-family:"Bz Sans";src:local("Noto Sans Condensed Thin"),local("NotoSans-CondensedThin");font-weight:100;font-stretch:75%;font-style:normal}
+@font-face{font-family:"Bz Sans";src:local("Noto Sans Condensed Thin Italic"),local("NotoSans-CondensedThinItalic");font-weight:100;font-stretch:75%;font-style:italic}
+@font-face{font-family:"Bz Sans";src:local("Noto Sans Condensed ExtraLight"),local("NotoSans-CondensedExtraLight");font-weight:200;font-stretch:75%;font-style:normal}
+@font-face{font-family:"Bz Sans";src:local("Noto Sans Condensed ExtraLight Italic"),local("NotoSans-CondensedExtraLightItalic");font-weight:200;font-stretch:75%;font-style:italic}
+@font-face{font-family:"Bz Sans";src:local("Noto Sans Condensed Light"),local("NotoSans-CondensedLight");font-weight:300;font-stretch:75%;font-style:normal}
+@font-face{font-family:"Bz Sans";src:local("Noto Sans Condensed Light Italic"),local("NotoSans-CondensedLightItalic");font-weight:300;font-stretch:75%;font-style:italic}
+@font-face{font-family:"Bz Sans";src:local("Noto Sans Condensed"),local("NotoSans-Condensed");font-weight:400;font-stretch:75%;font-style:normal}
+@font-face{font-family:"Bz Sans";src:local("Noto Sans Condensed Italic"),local("NotoSans-CondensedItalic");font-weight:400;font-stretch:75%;font-style:italic}
+@font-face{font-family:"Bz Sans";src:local("Noto Sans Condensed Medium"),local("NotoSans-CondensedMedium");font-weight:500;font-stretch:75%;font-style:normal}
+@font-face{font-family:"Bz Sans";src:local("Noto Sans Condensed Medium Italic"),local("NotoSans-CondensedMediumItalic");font-weight:500;font-stretch:75%;font-style:italic}
+@font-face{font-family:"Bz Sans";src:local("Noto Sans Condensed SemiBold"),local("NotoSans-CondensedSemiBold");font-weight:600;font-stretch:75%;font-style:normal}
+@font-face{font-family:"Bz Sans";src:local("Noto Sans Condensed SemiBold Italic"),local("NotoSans-CondensedSemiBoldItalic");font-weight:600;font-stretch:75%;font-style:italic}
+@font-face{font-family:"Bz Sans";src:local("Noto Sans Condensed Bold"),local("NotoSans-CondensedBold");font-weight:700;font-stretch:75%;font-style:normal}
+@font-face{font-family:"Bz Sans";src:local("Noto Sans Condensed Bold Italic"),local("NotoSans-CondensedBoldItalic");font-weight:700;font-stretch:75%;font-style:italic}
+@font-face{font-family:"Bz Sans";src:local("Noto Sans Condensed ExtraBold"),local("NotoSans-CondensedExtraBold");font-weight:800;font-stretch:75%;font-style:normal}
+@font-face{font-family:"Bz Sans";src:local("Noto Sans Condensed ExtraBold Italic"),local("NotoSans-CondensedExtraBoldItalic");font-weight:800;font-stretch:75%;font-style:italic}
+@font-face{font-family:"Bz Sans";src:local("Noto Sans Condensed Black"),local("NotoSans-CondensedBlack");font-weight:900;font-stretch:75%;font-style:normal}
+@font-face{font-family:"Bz Sans";src:local("Noto Sans Condensed Black Italic"),local("NotoSans-CondensedBlackItalic");font-weight:900;font-stretch:75%;font-style:italic}
+@font-face{font-family:"Bz Sans";src:local("Noto Sans SemiCondensed Thin"),local("NotoSans-SemiCondensedThin");font-weight:100;font-stretch:87.5%;font-style:normal}
+@font-face{font-family:"Bz Sans";src:local("Noto Sans SemiCondensed Thin Italic"),local("NotoSans-SemiCondensedThinItalic");font-weight:100;font-stretch:87.5%;font-style:italic}
+@font-face{font-family:"Bz Sans";src:local("Noto Sans SemiCondensed ExtraLight"),local("NotoSans-SemiCondensedExtraLight");font-weight:200;font-stretch:87.5%;font-style:normal}
+@font-face{font-family:"Bz Sans";src:local("Noto Sans SemiCondensed ExtraLight Italic"),local("NotoSans-SemiCondensedExtraLightItalic");font-weight:200;font-stretch:87.5%;font-style:italic}
+@font-face{font-family:"Bz Sans";src:local("Noto Sans SemiCondensed Light"),local("NotoSans-SemiCondensedLight");font-weight:300;font-stretch:87.5%;font-style:normal}
+@font-face{font-family:"Bz Sans";src:local("Noto Sans SemiCondensed Light Italic"),local("NotoSans-SemiCondensedLightItalic");font-weight:300;font-stretch:87.5%;font-style:italic}
+@font-face{font-family:"Bz Sans";src:local("Noto Sans SemiCondensed"),local("NotoSans-SemiCondensed");font-weight:400;font-stretch:87.5%;font-style:normal}
+@font-face{font-family:"Bz Sans";src:local("Noto Sans SemiCondensed Italic"),local("NotoSans-SemiCondensedItalic");font-weight:400;font-stretch:87.5%;font-style:italic}
+@font-face{font-family:"Bz Sans";src:local("Noto Sans SemiCondensed Medium"),local("NotoSans-SemiCondensedMedium");font-weight:500;font-stretch:87.5%;font-style:normal}
+@font-face{font-family:"Bz Sans";src:local("Noto Sans SemiCondensed Medium Italic"),local("NotoSans-SemiCondensedMediumItalic");font-weight:500;font-stretch:87.5%;font-style:italic}
+@font-face{font-family:"Bz Sans";src:local("Noto Sans SemiCondensed SemiBold"),local("NotoSans-SemiCondensedSemiBold");font-weight:600;font-stretch:87.5%;font-style:normal}
+@font-face{font-family:"Bz Sans";src:local("Noto Sans SemiCondensed SemiBold Italic"),local("NotoSans-SemiCondensedSemiBoldItalic");font-weight:600;font-stretch:87.5%;font-style:italic}
+@font-face{font-family:"Bz Sans";src:local("Noto Sans SemiCondensed Bold"),local("NotoSans-SemiCondensedBold");font-weight:700;font-stretch:87.5%;font-style:normal}
+@font-face{font-family:"Bz Sans";src:local("Noto Sans SemiCondensed Bold Italic"),local("NotoSans-SemiCondensedBoldItalic");font-weight:700;font-stretch:87.5%;font-style:italic}
+@font-face{font-family:"Bz Sans";src:local("Noto Sans SemiCondensed ExtraBold"),local("NotoSans-SemiCondensedExtraBold");font-weight:800;font-stretch:87.5%;font-style:normal}
+@font-face{font-family:"Bz Sans";src:local("Noto Sans SemiCondensed ExtraBold Italic"),local("NotoSans-SemiCondensedExtraBoldItalic");font-weight:800;font-stretch:87.5%;font-style:italic}
+@font-face{font-family:"Bz Sans";src:local("Noto Sans SemiCondensed Black"),local("NotoSans-SemiCondensedBlack");font-weight:900;font-stretch:87.5%;font-style:normal}
+@font-face{font-family:"Bz Sans";src:local("Noto Sans SemiCondensed Black Italic"),local("NotoSans-SemiCondensedBlackItalic");font-weight:900;font-stretch:87.5%;font-style:italic}
+@font-face{font-family:"Bz Sans";src:local("Noto Sans Thin"),local("NotoSans-Thin");font-weight:100;font-stretch:100%;font-style:normal}
+@font-face{font-family:"Bz Sans";src:local("Noto Sans Thin Italic"),local("NotoSans-ThinItalic");font-weight:100;font-stretch:100%;font-style:italic}
+@font-face{font-family:"Bz Sans";src:local("Noto Sans ExtraLight"),local("NotoSans-ExtraLight");font-weight:200;font-stretch:100%;font-style:normal}
+@font-face{font-family:"Bz Sans";src:local("Noto Sans ExtraLight Italic"),local("NotoSans-ExtraLightItalic");font-weight:200;font-stretch:100%;font-style:italic}
+@font-face{font-family:"Bz Sans";src:local("Noto Sans Light"),local("NotoSans-Light");font-weight:300;font-stretch:100%;font-style:normal}
+@font-face{font-family:"Bz Sans";src:local("Noto Sans Light Italic"),local("NotoSans-LightItalic");font-weight:300;font-stretch:100%;font-style:italic}
+@font-face{font-family:"Bz Sans";src:local("Noto Sans"),local("NotoSans-Regular");font-weight:400;font-stretch:100%;font-style:normal}
+@font-face{font-family:"Bz Sans";src:local("Noto Sans Italic"),local("NotoSans-Italic");font-weight:400;font-stretch:100%;font-style:italic}
+@font-face{font-family:"Bz Sans";src:local("Noto Sans Medium"),local("NotoSans-Medium");font-weight:500;font-stretch:100%;font-style:normal}
+@font-face{font-family:"Bz Sans";src:local("Noto Sans Medium Italic"),local("NotoSans-MediumItalic");font-weight:500;font-stretch:100%;font-style:italic}
+@font-face{font-family:"Bz Sans";src:local("Noto Sans SemiBold"),local("NotoSans-SemiBold");font-weight:600;font-stretch:100%;font-style:normal}
+@font-face{font-family:"Bz Sans";src:local("Noto Sans SemiBold Italic"),local("NotoSans-SemiBoldItalic");font-weight:600;font-stretch:100%;font-style:italic}
+@font-face{font-family:"Bz Sans";src:local("Noto Sans Bold"),local("NotoSans-Bold");font-weight:700;font-stretch:100%;font-style:normal}
+@font-face{font-family:"Bz Sans";src:local("Noto Sans Bold Italic"),local("NotoSans-BoldItalic");font-weight:700;font-stretch:100%;font-style:italic}
+@font-face{font-family:"Bz Sans";src:local("Noto Sans ExtraBold"),local("NotoSans-ExtraBold");font-weight:800;font-stretch:100%;font-style:normal}
+@font-face{font-family:"Bz Sans";src:local("Noto Sans ExtraBold Italic"),local("NotoSans-ExtraBoldItalic");font-weight:800;font-stretch:100%;font-style:italic}
+@font-face{font-family:"Bz Sans";src:local("Noto Sans Black"),local("NotoSans-Black");font-weight:900;font-stretch:100%;font-style:normal}
+@font-face{font-family:"Bz Sans";src:local("Noto Sans Black Italic"),local("NotoSans-BlackItalic");font-weight:900;font-stretch:100%;font-style:italic}
+@font-face{font-family:"Bz Mono";src:local("Noto Sans Mono ExtraCondensed Thin"),local("NotoSansMono-ExtraCondensedThin");font-weight:100;font-stretch:62.5%;font-style:normal}
+@font-face{font-family:"Bz Mono";src:local("Noto Sans Mono ExtraCondensed ExtraLight"),local("NotoSansMono-ExtraCondensedExtraLight");font-weight:200;font-stretch:62.5%;font-style:normal}
+@font-face{font-family:"Bz Mono";src:local("Noto Sans Mono ExtraCondensed Light"),local("NotoSansMono-ExtraCondensedLight");font-weight:300;font-stretch:62.5%;font-style:normal}
+@font-face{font-family:"Bz Mono";src:local("Noto Sans Mono ExtraCondensed"),local("NotoSansMono-ExtraCondensed");font-weight:400;font-stretch:62.5%;font-style:normal}
+@font-face{font-family:"Bz Mono";src:local("Noto Sans Mono ExtraCondensed Medium"),local("NotoSansMono-ExtraCondensedMedium");font-weight:500;font-stretch:62.5%;font-style:normal}
+@font-face{font-family:"Bz Mono";src:local("Noto Sans Mono ExtraCondensed SemiBold"),local("NotoSansMono-ExtraCondensedSemiBold");font-weight:600;font-stretch:62.5%;font-style:normal}
+@font-face{font-family:"Bz Mono";src:local("Noto Sans Mono ExtraCondensed Bold"),local("NotoSansMono-ExtraCondensedBold");font-weight:700;font-stretch:62.5%;font-style:normal}
+@font-face{font-family:"Bz Mono";src:local("Noto Sans Mono ExtraCondensed ExtraBold"),local("NotoSansMono-ExtraCondensedExtraBold");font-weight:800;font-stretch:62.5%;font-style:normal}
+@font-face{font-family:"Bz Mono";src:local("Noto Sans Mono ExtraCondensed Black"),local("NotoSansMono-ExtraCondensedBlack");font-weight:900;font-stretch:62.5%;font-style:normal}
+@font-face{font-family:"Bz Mono";src:local("Noto Sans Mono Condensed Thin"),local("NotoSansMono-CondensedThin");font-weight:100;font-stretch:75%;font-style:normal}
+@font-face{font-family:"Bz Mono";src:local("Noto Sans Mono Condensed ExtraLight"),local("NotoSansMono-CondensedExtraLight");font-weight:200;font-stretch:75%;font-style:normal}
+@font-face{font-family:"Bz Mono";src:local("Noto Sans Mono Condensed Light"),local("NotoSansMono-CondensedLight");font-weight:300;font-stretch:75%;font-style:normal}
+@font-face{font-family:"Bz Mono";src:local("Noto Sans Mono Condensed"),local("NotoSansMono-Condensed");font-weight:400;font-stretch:75%;font-style:normal}
+@font-face{font-family:"Bz Mono";src:local("Noto Sans Mono Condensed Medium"),local("NotoSansMono-CondensedMedium");font-weight:500;font-stretch:75%;font-style:normal}
+@font-face{font-family:"Bz Mono";src:local("Noto Sans Mono Condensed SemiBold"),local("NotoSansMono-CondensedSemiBold");font-weight:600;font-stretch:75%;font-style:normal}
+@font-face{font-family:"Bz Mono";src:local("Noto Sans Mono Condensed Bold"),local("NotoSansMono-CondensedBold");font-weight:700;font-stretch:75%;font-style:normal}
+@font-face{font-family:"Bz Mono";src:local("Noto Sans Mono Condensed ExtraBold"),local("NotoSansMono-CondensedExtraBold");font-weight:800;font-stretch:75%;font-style:normal}
+@font-face{font-family:"Bz Mono";src:local("Noto Sans Mono Condensed Black"),local("NotoSansMono-CondensedBlack");font-weight:900;font-stretch:75%;font-style:normal}
+@font-face{font-family:"Bz Mono";src:local("Noto Sans Mono SemiCondensed Thin"),local("NotoSansMono-SemiCondensedThin");font-weight:100;font-stretch:87.5%;font-style:normal}
+@font-face{font-family:"Bz Mono";src:local("Noto Sans Mono SemiCondensed ExtraLight"),local("NotoSansMono-SemiCondensedExtraLight");font-weight:200;font-stretch:87.5%;font-style:normal}
+@font-face{font-family:"Bz Mono";src:local("Noto Sans Mono SemiCondensed Light"),local("NotoSansMono-SemiCondensedLight");font-weight:300;font-stretch:87.5%;font-style:normal}
+@font-face{font-family:"Bz Mono";src:local("Noto Sans Mono SemiCondensed"),local("NotoSansMono-SemiCondensed");font-weight:400;font-stretch:87.5%;font-style:normal}
+@font-face{font-family:"Bz Mono";src:local("Noto Sans Mono SemiCondensed Medium"),local("NotoSansMono-SemiCondensedMedium");font-weight:500;font-stretch:87.5%;font-style:normal}
+@font-face{font-family:"Bz Mono";src:local("Noto Sans Mono SemiCondensed SemiBold"),local("NotoSansMono-SemiCondensedSemiBold");font-weight:600;font-stretch:87.5%;font-style:normal}
+@font-face{font-family:"Bz Mono";src:local("Noto Sans Mono SemiCondensed Bold"),local("NotoSansMono-SemiCondensedBold");font-weight:700;font-stretch:87.5%;font-style:normal}
+@font-face{font-family:"Bz Mono";src:local("Noto Sans Mono SemiCondensed ExtraBold"),local("NotoSansMono-SemiCondensedExtraBold");font-weight:800;font-stretch:87.5%;font-style:normal}
+@font-face{font-family:"Bz Mono";src:local("Noto Sans Mono SemiCondensed Black"),local("NotoSansMono-SemiCondensedBlack");font-weight:900;font-stretch:87.5%;font-style:normal}
+@font-face{font-family:"Bz Mono";src:local("Noto Sans Mono Thin"),local("NotoSansMono-Thin");font-weight:100;font-stretch:100%;font-style:normal}
+@font-face{font-family:"Bz Mono";src:local("Noto Sans Mono ExtraLight"),local("NotoSansMono-ExtraLight");font-weight:200;font-stretch:100%;font-style:normal}
+@font-face{font-family:"Bz Mono";src:local("Noto Sans Mono Light"),local("NotoSansMono-Light");font-weight:300;font-stretch:100%;font-style:normal}
+@font-face{font-family:"Bz Mono";src:local("Noto Sans Mono"),local("NotoSansMono-Regular");font-weight:400;font-stretch:100%;font-style:normal}
+@font-face{font-family:"Bz Mono";src:local("Noto Sans Mono Medium"),local("NotoSansMono-Medium");font-weight:500;font-stretch:100%;font-style:normal}
+@font-face{font-family:"Bz Mono";src:local("Noto Sans Mono SemiBold"),local("NotoSansMono-SemiBold");font-weight:600;font-stretch:100%;font-style:normal}
+@font-face{font-family:"Bz Mono";src:local("Noto Sans Mono Bold"),local("NotoSansMono-Bold");font-weight:700;font-stretch:100%;font-style:normal}
+@font-face{font-family:"Bz Mono";src:local("Noto Sans Mono ExtraBold"),local("NotoSansMono-ExtraBold");font-weight:800;font-stretch:100%;font-style:normal}
+@font-face{font-family:"Bz Mono";src:local("Noto Sans Mono Black"),local("NotoSansMono-Black");font-weight:900;font-stretch:100%;font-style:normal}
+/* Blizzard — editorial instrument. Shared tokens and type system. */
+:root{
+  --paper:#f3f2ec; --paper-2:#e9e7df; --paper-3:#dedbd1;
+  --ink:#141412; --ink-2:#3c3b37; --ink-3:#6f6d66; --ink-4:#a3a097; --ink-5:#c9c6bc;
+  --hair:rgba(20,20,18,.14); --hair-2:rgba(20,20,18,.28);
+  --human:#c62a1a; --human-wash:rgba(198,42,26,.07);
+  --pace:#9b5f00;
+  --serif:"Bz Serif","Noto Serif","STIX Two Text",Georgia,serif;
+  --sans:"Bz Sans","Noto Sans","Liberation Sans Narrow","Arial Narrow",sans-serif;
+  --mono:"Bz Mono","Noto Sans Mono","Liberation Mono",monospace;
+  color-scheme:light;
+}
+:root[data-theme=night]{
+  --paper:#0f0f0e; --paper-2:#1b1a18; --paper-3:#262521;
+  --ink:#ece9e0; --ink-2:#c4c1b7; --ink-3:#8e8b81; --ink-4:#5f5d56; --ink-5:#3d3c37;
+  --hair:rgba(236,233,224,.13); --hair-2:rgba(236,233,224,.26);
+  --human:#ff5d47; --human-wash:rgba(255,93,71,.09);
+  --pace:#e2a540;
+  color-scheme:dark;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{background:var(--paper);color:var(--ink)}
+body{font-family:var(--serif);font-size:14px;line-height:18px;font-variant-numeric:lining-nums tabular-nums;
+  -webkit-font-smoothing:antialiased;text-rendering:optimizeLegibility;font-kerning:normal}
+a{color:inherit;text-decoration:none}
+button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
+
+/* ---------- type roles ---------- */
+.sans{font-family:var(--sans)}
+.mono,.id{font-family:var(--mono);font-stretch:75%;font-weight:500;letter-spacing:0}
+.id{font-size:.86em}
+.it{font-style:italic}
+.human{color:var(--human)}
+.pace{color:var(--pace)}
+.dim{color:var(--ink-3)}
+.faint{color:var(--ink-4)}
+u.acc{text-decoration:underline;text-decoration-thickness:1px;text-underline-offset:2px}
+
+/* section flag: a heavy rule, a serif head, a light count */
+.flag{display:flex;align-items:baseline;gap:8px;border-top:2px solid var(--ink);padding-top:5px;height:30px;margin-bottom:6px}
+.flag h2{font:600 15px/18px var(--serif);font-stretch:87.5%;letter-spacing:-.005em}
+.flag .count{font:300 15px/18px var(--serif);color:var(--ink-3)}
+.flag .aside{margin-left:auto;font:400 12px/18px var(--sans);font-stretch:87.5%;color:var(--ink-3)}
+.flag.human{border-top-color:var(--human)}
+.flag.human h2{color:var(--human)}
+
+kbd{font:500 10.5px/14px var(--mono);font-stretch:75%;display:inline-block;min-width:15px;padding:0 3px;
+  border:1px solid var(--hair-2);border-bottom-width:2px;border-radius:2px;text-align:center;color:var(--ink-2);vertical-align:1px}
+
+/* focus: a margin bar in the gutter and a faint paper tint — never a glow */
+[data-nav]{position:relative;outline:none;cursor:pointer}
+[data-nav]:hover{background:var(--paper-2)}
+[data-nav]:focus-visible,[data-nav].focus{background:var(--paper-2)}
+[data-nav]:focus-visible::before,[data-nav].focus::before{content:"";position:absolute;left:-12px;top:0;bottom:0;width:3px;background:var(--ink)}
+[data-nav].human-item:focus-visible::before,[data-nav].human-item.focus::before{background:var(--human)}
+
+/* ticking digits briefly thicken when they move */
+.tick{transition:font-weight .5s ease}
+.tick.bump{font-weight:800;transition:none}
+
+/* ---------- instrument meter: hairline scale, spent bar, elapsed caret ---------- */
+.meter{position:relative;height:14px}
+.meter .scale{position:absolute;left:0;right:0;top:4px;height:7px;border-left:1px solid var(--ink-4);
+  background:linear-gradient(var(--ink-4),var(--ink-4)) 0 6px/100% 1px no-repeat,
+             repeating-linear-gradient(90deg,transparent 0 calc(10% - 1px),var(--ink-4) calc(10% - 1px) 10%) 0 3px/100% 4px no-repeat}
+.meter .spent{position:absolute;left:0;top:5px;height:5px;background:var(--ink)}
+.meter .elapsed{position:absolute;top:1px;width:1px;height:13px;background:var(--ink)}
+.meter .elapsed::after{content:"";position:absolute;left:-3px;top:-2px;border:3.5px solid transparent;border-top:4px solid var(--ink)}
+.meter.pace .spent{background:var(--pace)}
+
+/* ---------- overlays: reader, palette, help, toast ---------- */
+.scrim{position:fixed;inset:0;background:color-mix(in srgb,var(--paper) 60%,transparent);display:none;z-index:40}
+.scrim.on{display:block}
+.reader{position:fixed;top:0;right:0;bottom:0;width:min(680px,100vw);background:var(--paper);border-left:1px solid var(--ink);
+  transform:translateX(102%);transition:transform .22s cubic-bezier(.2,.7,.2,1);z-index:50;overflow:auto;padding:28px 36px 40px}
+.reader.on{transform:none}
+.reader .close{position:absolute;right:20px;top:18px;font:400 12px/18px var(--sans);color:var(--ink-3)}
+.reader .kicker{font:600 12px/18px var(--sans);font-stretch:87.5%}
+.reader h1{font:800 34px/36px var(--serif);font-stretch:75%;letter-spacing:-.012em;margin:6px 0 12px}
+.reader .deck{font:400 16px/24px var(--serif);color:var(--ink-2);margin-bottom:18px}
+.reader .facts{font:400 13px/18px var(--serif);color:var(--ink-2);column-count:2;column-gap:28px;margin-bottom:18px}
+.reader .facts p{break-inside:avoid;margin-bottom:6px}
+.reader .facts b{font-weight:600;color:var(--ink)}
+.reader table{width:100%;border-collapse:collapse;font:400 12.5px/18px var(--sans);font-stretch:87.5%}
+.reader th{text-align:left;font-weight:600;color:var(--ink-3);border-bottom:1px solid var(--ink);padding:0 8px 4px 0}
+.reader td{border-bottom:1px solid var(--hair);padding:5px 8px 5px 0;vertical-align:top}
+.reader td.r,.reader th.r{text-align:right}
+.reader tr.bounce td{font-style:italic;color:var(--ink-3)}
+.reader tr.now td{font-weight:700}
+.reader .cmd{font:500 13px/18px var(--mono);font-stretch:87.5%;border-top:1px solid var(--ink);border-bottom:1px solid var(--ink);padding:9px 0;margin:6px 0 18px;display:flex;gap:12px}
+.reader .cmd span{flex:1}
+.reader .cmd button{font:500 13px/18px var(--serif);color:var(--human)}
+.reader h3{font:600 13px/18px var(--serif);font-stretch:87.5%;border-top:2px solid var(--ink);padding-top:5px;margin:18px 0 6px}
+
+.palette{position:fixed;left:50%;top:96px;width:720px;max-width:calc(100vw - 24px);transform:translateX(-50%);background:var(--paper);
+  border:1px solid var(--ink);z-index:60;display:none}
+.palette.on{display:block}
+.palette input{width:100%;font:400 24px/36px var(--serif);background:transparent;border:0;border-bottom:1px solid var(--ink);padding:12px 18px;color:var(--ink);outline:none}
+.palette input::placeholder{color:var(--ink-4);font-style:italic}
+.palette ol{list-style:none;max-height:420px;overflow:auto;padding:6px 0}
+.palette li{display:grid;grid-template-columns:72px 1fr auto;gap:12px;padding:5px 18px;font:400 14px/18px var(--serif);cursor:pointer}
+.palette li .k{font:500 11px/18px var(--mono);font-stretch:75%;color:var(--ink-3)}
+.palette li .x{font:400 11px/18px var(--sans);font-stretch:87.5%;color:var(--ink-3)}
+.palette li.sel{background:var(--paper-2);box-shadow:inset 3px 0 0 var(--ink)}
+.palette li mark{background:none;color:inherit;font-weight:700;text-decoration:underline;text-underline-offset:2px}
+
+.help{position:fixed;left:50%;top:50%;transform:translate(-50%,-50%);width:660px;max-width:calc(100vw - 24px);background:var(--paper);border:1px solid var(--ink);padding:22px 28px 26px;z-index:60;display:none}
+.help.on{display:block}
+.help h2{font:800 26px/30px var(--serif);font-stretch:75%;margin-bottom:12px}
+.help dl{display:grid;grid-template-columns:96px 1fr 96px 1fr;gap:6px 14px;font:400 13px/18px var(--serif)}
+.help dt{text-align:right}
+.help p{font:italic 400 13px/18px var(--serif);color:var(--ink-3);margin-top:14px}
+
+.toast{position:fixed;left:50%;bottom:28px;transform:translate(-50%,20px);opacity:0;background:var(--ink);color:var(--paper);
+  font:500 13px/18px var(--mono);font-stretch:87.5%;padding:9px 16px;z-index:70;transition:all .2s;pointer-events:none;white-space:nowrap}
+.toast.on{opacity:1;transform:translate(-50%,0)}
+
+/* mobile frame: masthead, foot tabs */
+body{font-size:15px}
+.page{padding:0 16px 84px}
+.mast{display:flex;align-items:baseline;justify-content:space-between;padding-top:12px;height:46px}
+.nameplate{font:900 27px/30px var(--serif);font-stretch:62.5%;letter-spacing:-.02em}
+.dateline{font:400 12px/18px var(--sans);font-stretch:87.5%;color:var(--ink-3);display:flex;gap:10px;align-items:baseline}
+.dateline b{font-weight:600;color:var(--ink)}
+.dateline button{color:var(--ink-3);font:inherit;padding:6px 0}
+.mast-rule{height:5px;border-top:3px solid var(--ink);border-bottom:1px solid var(--ink)}
+.tabs{position:fixed;left:0;right:0;bottom:0;height:62px;background:var(--paper);border-top:1px solid var(--ink);display:grid;grid-template-columns:repeat(4,1fr);padding-bottom:10px;z-index:30}
+.tabs a{display:flex;align-items:center;justify-content:center;font:400 15px/18px var(--serif);color:var(--ink-3);position:relative}
+.tabs a.on{color:var(--ink);font-weight:700;font-stretch:87.5%}
+.tabs a.on::before{content:"";position:absolute;top:-1px;left:22%;right:22%;height:3px;background:var(--ink)}
+.tabs a .n{font:700 11px/14px var(--sans);color:var(--human);margin-left:4px;vertical-align:4px}
+.reader{padding:22px 18px 40px;border-left:0;top:auto;height:92vh;width:100vw;transform:translateY(102%);border-top:1px solid var(--ink)}
+.reader.on{transform:none}
+.reader h1{font-size:28px;line-height:30px}
+.reader .facts{column-count:1}
+.reader .cmd{font-size:11.5px;flex-wrap:wrap}
+.palette{top:20px}
+.help dl{grid-template-columns:70px 1fr}
+[data-nav]:focus-visible::before,[data-nav].focus::before{left:-10px}
+
+
+.verdict{padding:12px 0 12px}
+.verdict h1{font:800 34px/36px var(--serif);font-stretch:75%;letter-spacing:-.02em}
+.verdict h1 span{display:block}
+.verdict p{font:400 15px/21px var(--serif);color:var(--ink-2);margin-top:6px}
+.verdict p b{font-weight:600;color:var(--ink)}
+
+.gauge{display:grid;grid-template-columns:96px 1fr;column-gap:12px;align-items:end;padding:6px 0 8px;border-bottom:1px solid var(--hair)}
+.gauge .pc{font:200 44px/48px var(--serif);font-stretch:87.5%;letter-spacing:-.03em;grid-row:span 2}
+.gauge .pc small{font-size:20px;font-weight:300;letter-spacing:0}
+.gauge .lb{font:600 14px/18px var(--serif);font-stretch:87.5%}
+.gauge .lb i{font-weight:400;color:var(--ink-3)}
+.gauge .lb .vd{float:right;font:400 12px/18px var(--sans);font-stretch:87.5%;color:var(--ink-3)}
+.gauge.pace .pc,.gauge.pace .vd{color:var(--pace)}
+.gauge .meter{height:16px;margin-bottom:6px}
+.gauge .meter .scale{display:none}
+.gauge .meter .base{position:absolute;left:0;right:0;top:10px;height:1px;background:var(--ink-3)}
+.gauge .meter .tk{position:absolute;top:6px;width:1px;height:4px;background:var(--ink-4)}
+.gauge .meter .tk.big{top:3px;height:7px;background:var(--ink-3)}
+.gauge .meter .spent{top:5px;height:5px}
+.gauge .meter .elapsed{top:0;height:16px}
+
+section{margin-top:12px}
+.runner .name{display:flex;align-items:baseline;gap:8px}
+.runner h2{font:800 26px/30px var(--serif);font-stretch:75%;letter-spacing:-.015em}
+.runner .state{font:600 12.5px/18px var(--sans);font-stretch:87.5%}
+.runner .state.pace{color:var(--pace)}
+.runner .name .slots{margin-left:auto}
+.slots{display:flex;gap:3px}
+.slot{width:12px;height:15px;background:var(--ink);display:inline-block}
+.slot.free{background:none;box-shadow:inset 0 0 0 1px var(--ink-4)}
+.slot.human{background:var(--human)}
+.slot.deliv{background:repeating-linear-gradient(135deg,var(--ink) 0 2px,transparent 2px 4px);box-shadow:inset 0 0 0 1px var(--ink)}
+.runner .stand{font:400 13px/18px var(--serif);color:var(--ink-3);margin:2px 0 4px}
+.held{display:grid;grid-template-columns:54px 1fr auto;column-gap:10px;align-items:baseline;min-height:36px;padding:8px 0 4px;border-bottom:1px solid var(--hair)}
+.held .id{color:var(--ink-3)}
+.held .nd{font:400 14px/18px var(--serif)}
+.held .el{font:400 12.5px/18px var(--sans);font-stretch:87.5%;color:var(--ink-2);text-align:right}
+.held.delivering .nd{font-style:italic}
+.held.human .nd{font-weight:800;font-stretch:75%;color:var(--human)}
+.held.human .id,.held.human .el{color:var(--human)}
+.runner .acts{display:grid;grid-template-columns:1fr 1fr;border-bottom:1px solid var(--ink);margin-top:2px}
+.runner .acts button{height:44px;text-align:left;font:500 15px/18px var(--serif)}
+.runner .acts button + button{border-left:1px solid var(--hair);padding-left:12px}
+.host{font:400 14px/20px var(--serif);color:var(--ink-2)}
+.host b{font-weight:600;color:var(--ink)}
+</style>
+</head>
+<body>
+<div class="page">
+  <header class="mast">
+    <div class="nameplate">Blizzard</div>
+    <div class="dateline"><b data-clock>13:08:38</b><span>hub ok</span><button data-act="theme" data-theme-label>Daylight</button></div>
+  </header>
+  <div class="mast-rule"></div>
+
+  <section class="verdict" style="margin-top:0">
+    <h1>Working. <span class="human">Two slots wait on you.</span><span class="pace">OpenAI is pacing.</span></h1>
+    <p>xps reported <b id="seen">34s</b> ago. Both runners full — 10 of 14 environments; winter idle. r-chatgpt declines new work until 14:41.</p>
+  </section>
+
+  <section>
+    <div class="flag"><h2>Windows</h2><span class="aside">caret is time gone</span></div>
+    <div id="gauges"></div>
+  </section>
+
+  <section id="runners"></section>
+
+  <section>
+    <div class="flag"><h2>Host</h2><span class="count">xps</span><span class="aside">H-G1YK · online</span></div>
+    <p class="host">Last report <b data-rep>13:08:04</b>. Enrolled 2026/10/16 by paul-gross; hub at <span class="mono">127.0.0.1:8431</span>. Version <span class="mono">0.3.0.dev1002+f208eca7d</span> on both runners.</p>
+  </section>
+</div>
+<nav class="tabs"><a href="board-mobile.html">Board<span class="n">2</span></a><a class="on" href="#">Fleet</a><a href="#">Events</a><a href="#">Garden</a></nav>
+<script>
+/* Blizzard — editorial instrument. Shared data, live clock, overlays and keyboard. */
+const $ = (s, r = document) => r.querySelector(s);
+const $$ = (s, r = document) => [...r.querySelectorAll(s)];
+const esc = s => String(s).replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
+
+/* The hub's clock at capture: Sunday 25 October 2026, 13:08:38. The mock runs forward from it. */
+const T0 = new Date(2026, 9, 25, 13, 8, 38).getTime();
+const LOADED = Date.now();
+const now = () => T0 + (Date.now() - LOADED);
+const at = hms => { const [h, m, s = 0] = hms.split(':').map(Number); return new Date(2026, 9, 25, h, m, s).getTime(); };
+const pad = n => String(n).padStart(2, '0');
+const clock = t => { const d = new Date(t); return `${pad(d.getHours())}:${pad(d.getMinutes())}:${pad(d.getSeconds())}`; };
+const hm = t => { const d = new Date(t); return `${pad(d.getHours())}:${pad(d.getMinutes())}`; };
+const dur = ms => { const s = Math.max(0, Math.floor(ms / 1000)); const h = Math.floor(s / 3600), m = Math.floor(s % 3600 / 60), x = s % 60; return h ? `${h}:${pad(m)}:${pad(x)}` : `${m}:${pad(x)}`; };
+const ago = ms => { const s = Math.floor(ms / 1000); return s < 60 ? `${s}s` : s < 3600 ? `${Math.floor(s / 60)}m ${pad(s % 60)}s` : `${Math.floor(s / 3600)}h ${pad(Math.floor(s % 3600 / 60))}m`; };
+const usd = (v, est) => `${est ? '~' : ''}$${v.toFixed(2)}`;
+const words = ['no', 'one', 'two', 'three', 'four', 'five', 'six', 'seven', 'eight', 'nine', 'ten'];
+const word = n => words[n] ?? String(n);
+const Word = n => { const w = word(n); return w[0].toUpperCase() + w.slice(1); };
+
+const READY=[
+{
+"id": "C-ZEVE",
+"refs": [
+"blizzard#1366"
+],
+"title": "Carry every forge address over into a forge record",
+"epic": "FORGES",
+"node": "triage",
+"after": "C-6J9H",
+"n": 1
+},
+{
+"id": "C-MG3R",
+"refs": [
+"blizzard#1367"
+],
+"title": "Configure forges through the API, CLI, document, and board",
+"epic": "FORGES",
+"node": "triage",
+"after": "C-ZEVE",
+"n": 1
+},
+{
+"id": "C-4J2W",
+"refs": [
+"blizzard#1368"
+],
+"title": "Document the forge record and the landing seam",
+"epic": "FORGES",
+"node": "triage",
+"after": "C-MG3R",
+"n": 1
+},
+{
+"id": "C-4HAX",
+"refs": [
+"blizzard#1371"
+],
+"title": "Keep each branch's flow record in the shadow of the slot",
+"epic": "FLOWS",
+"node": "triage",
+"after": "C-4J2W",
+"n": 1
+},
+{
+"id": "C-50RX",
+"refs": [
+"blizzard#1372"
+],
+"title": "Take hub steps as turns on their branches' flows",
+"epic": "FLOWS",
+"node": "triage",
+"after": null,
+"n": 3
+},
+{
+"id": "C-FC1E",
+"refs": [
+"blizzard#1373"
+],
+"title": "Retire the slot's code and keep its deprecated table",
+"epic": "FLOWS",
+"node": "triage",
+"after": "C-50RX",
+"n": 1
+},
+{
+"id": "C-CG21",
+"refs": [
+"blizzard#1374"
+],
+"title": "Show flows on the API, CLI, live channel, and board",
+"epic": "FLOWS",
+"node": "triage",
+"after": "C-FC1E",
+"n": 1
+},
+{
+"id": "C-MAET",
+"refs": [
+"blizzard#1378"
+],
+"title": "Grow the landing seam and make a landing pass cheap",
+"epic": "POLICIES",
+"node": "triage",
+"after": "C-CG21",
+"n": 1
+},
+{
+"id": "C-N96M",
+"refs": [
+"blizzard#1379"
+],
+"title": "Share one rate budget per forge key, slowing before refusal",
+"epic": "POLICIES",
+"node": "triage",
+"after": null,
+"n": 2
+},
+{
+"id": "C-S990",
+"refs": [
+"blizzard#1380"
+],
+"title": "Run each repository's landing policy, in its project's order",
+"epic": "POLICIES",
+"node": "triage",
+"after": "C-N96M",
+"n": 1
+},
+{
+"id": "C-S93M",
+"refs": [
+"blizzard#1381"
+],
+"title": "Add the fast-forward and park landing policies",
+"epic": "POLICIES",
+"node": "triage",
+"after": "C-S990",
+"n": 1
+},
+{
+"id": "C-KTD7",
+"refs": [
+"blizzard#1382"
+],
+"title": "Show policies, landing order, and awaiting-merge on the board",
+"epic": "POLICIES",
+"node": "triage",
+"after": "C-S93M",
+"n": 1
+},
+{
+"id": "C-N1JR",
+"refs": [
+"hub:579"
+],
+"title": "Let the work-source and forge seams own labels, branch links and the annotating set",
+"epic": "HUB",
+"node": "triage",
+"after": null,
+"n": 2
+},
+{
+"id": "C-B6HS",
+"refs": [
+"blizzard#1444"
+],
+"title": "Type the hub store adapters' SQL helpers and rows",
+"epic": "STRICT",
+"node": "triage",
+"after": "C-S93M",
+"n": 1
+},
+{
+"id": "C-DFGP",
+"refs": [
+"blizzard#1448"
+],
+"title": "Type the hub domain models' untyped edges",
+"epic": "STRICT",
+"node": "triage",
+"after": null,
+"n": 3
+},
+{
+"id": "C-6P31",
+"refs": [
+"blizzard#1450"
+],
+"title": "Type the hub delivery land actions",
+"epic": "STRICT",
+"node": "triage",
+"after": "C-FC1E",
+"n": 1
+},
+{
+"id": "C-AKMG",
+"refs": [
+"blizzard#1451"
+],
+"title": "Type the hub and runner CLIs",
+"epic": "STRICT",
+"node": "triage",
+"after": "C-S990",
+"n": 1
+},
+{
+"id": "C-STGQ",
+"refs": [
+"blizzard#1452"
+],
+"title": "Give every bare generic in shipping code its type arguments",
+"epic": "STRICT",
+"node": "triage",
+"after": null,
+"n": 6
+},
+{
+"id": "C-QG6Y",
+"refs": [
+"blizzard#1453"
+],
+"title": "Declare shipping code's context managers as generators",
+"epic": "STRICT",
+"node": "triage",
+"after": null,
+"n": 6
+},
+{
+"id": "C-W9G8",
+"refs": [
+"blizzard#1454"
+],
+"title": "Replace the _conforms_* functions with annotated assignments",
+"epic": "STRICT",
+"node": "triage",
+"after": null,
+"n": 6
+},
+{
+"id": "C-ZMVH",
+"refs": [
+"blizzard#1455"
+],
+"title": "Stop shipping code reaching into other modules' private names",
+"epic": "STRICT",
+"node": "triage",
+"after": null,
+"n": 6
+},
+{
+"id": "C-6Q69",
+"refs": [
+"blizzard#1456"
+],
+"title": "Sweep the remaining strict errors out of shipping code",
+"epic": "STRICT",
+"node": "triage",
+"after": null,
+"n": 4
+},
+{
+"id": "C-00N1",
+"refs": [
+"blizzard#1457"
+],
+"title": "Spike: re-investigate typing across every project, tests first",
+"epic": "STRICT",
+"node": "triage",
+"after": "C-6Q69",
+"n": 1
+},
+{
+"id": "C-DF68",
+"refs": [
+"blizzard#1468"
+],
+"title": "Move the helpers other test files import out of the files the hub tier ports",
+"epic": "PW-HUBTIER",
+"node": "triage",
+"after": null,
+"n": 0
+},
+{
+"id": "C-0ACF",
+"refs": [
+"blizzard#1485"
+],
+"title": "Move the service-sized tenant teardown test to the component tier",
+"epic": "PW-HUBTIER",
+"node": "triage",
+"after": null,
+"n": 0
+},
+{
+"id": "C-JME3",
+"refs": [
+"blizzard#1460"
+],
+"title": "Run the hub's sweeps on request, per tenant or hub-wide",
+"epic": "PW-HUBTIER",
+"node": "triage",
+"after": "C-PTP2",
+"n": 1
+},
+{
+"id": "C-P79Q",
+"refs": [
+"blizzard#1464"
+],
+"title": "Give the harness the CLI, a configurable fresh hub, and an OTLP sink",
+"epic": "PW-HUBTIER",
+"node": "triage",
+"after": "C-MFJE",
+"n": 1
+},
+{
+"id": "C-WWXN",
+"refs": [
+"blizzard#1466"
+],
+"title": "Step every harness sweep and give the event reader a join from now and a barrier",
+"epic": "PW-HUBTIER",
+"node": "triage",
+"after": null,
+"n": 3
+},
+{
+"id": "C-RE86",
+"refs": [
+"blizzard#1467"
+],
+"title": "Sign people in through the stub IdP on an auth profile in the harness",
+"epic": "PW-HUBTIER",
+"node": "triage",
+"after": null,
+"n": 3
+},
+{
+"id": "C-GWDV",
+"refs": [
+"blizzard#1469"
+],
+"title": "Port the hub service tests and add the two enforcement profiles",
+"epic": "PW-HUBTIER",
+"node": "triage",
+"after": null,
+"n": 4
+},
+{
+"id": "C-W60F",
+"refs": [
+"blizzard#1470"
+],
+"title": "Port the finding-exits service tests, stepping the close drain",
+"epic": "PW-HUBTIER",
+"node": "triage",
+"after": null,
+"n": 4
+},
+{
+"id": "C-WKFH",
+"refs": [
+"blizzard#1471"
+],
+"title": "Port the event-log service tests, reading hub events over HTTP",
+"epic": "PW-HUBTIER",
+"node": "triage",
+"after": null,
+"n": 4
+},
+{
+"id": "C-Q5CS",
+"refs": [
+"blizzard#1472",
+"blizzard#1477",
+"blizzard#1481"
+],
+"title": "Port the runner served-projects service tests to Playwright",
+"epic": "PW-HUBTIER",
+"node": "triage",
+"after": null,
+"n": 4,
+"also": [
+"Port the runner declining service test and move its parse case down",
+"Port the real-hub runner token refusal test to Playwright"
+]
+},
+{
+"id": "C-YZVG",
+"refs": [
+"blizzard#1473"
+],
+"title": "Port the real-hub transcript-segment service tests to Playwright",
+"epic": "PW-HUBTIER",
+"node": "triage",
+"after": null,
+"n": 2
+},
+{
+"id": "C-64RN",
+"refs": [
+"blizzard#1474"
+],
+"title": "Port the projects ingest and delivery service tests to Playwright",
+"epic": "PW-HUBTIER",
+"node": "triage",
+"after": null,
+"n": 3
+},
+{
+"id": "C-6RRX",
+"refs": [
+"blizzard#1475"
+],
+"title": "Port the routine baselines service tests to Playwright",
+"epic": "PW-HUBTIER",
+"node": "triage",
+"after": null,
+"n": 4
+},
+{
+"id": "C-260B",
+"refs": [
+"blizzard#1476",
+"blizzard#1478"
+],
+"title": "Port the forge-status service tests onto a stepped sweep",
+"epic": "PW-HUBTIER",
+"node": "triage",
+"after": null,
+"n": 2,
+"also": [
+"Port the work-source records service tests to Playwright"
+]
+},
+{
+"id": "C-5MXB",
+"refs": [
+"blizzard#1479"
+],
+"title": "Port the two live-hub usage service tests",
+"epic": "PW-HUBTIER",
+"node": "triage",
+"after": null,
+"n": 3
+},
+{
+"id": "C-1A1R",
+"refs": [
+"blizzard#1480"
+],
+"title": "Port the two hub-only platform-tracing service tests",
+"epic": "PW-HUBTIER",
+"node": "triage",
+"after": null,
+"n": 2
+},
+{
+"id": "C-N0SD",
+"refs": [
+"blizzard#1482"
+],
+"title": "Port the OAuth login service tests onto the auth profile",
+"epic": "PW-HUBTIER",
+"node": "triage",
+"after": null,
+"n": 4
+},
+{
+"id": "C-MMVM",
+"refs": [
+"blizzard#1483",
+"blizzard#1484"
+],
+"title": "Port the CLI login exchange service tests onto the auth profile",
+"epic": "PW-HUBTIER",
+"node": "triage",
+"after": null,
+"n": 4,
+"also": [
+"Port the event-stream revocation service test onto the auth profile"
+]
+},
+{
+"id": "C-1DTX",
+"refs": [
+"hub:629"
+],
+"title": "Recheck the holder inside the route-token rekey, and document that a per-chunk pause outranks a restart's fence",
+"epic": "HUB",
+"node": "triage",
+"after": null,
+"n": 0
+},
+{
+"id": "C-HBRY",
+"refs": [
+"blizzard#1499"
+],
+"title": "Declare each runner's supported models and match them at hub eligibility",
+"epic": "HUB",
+"node": "triage",
+"after": "C-B6HS",
+"n": 1
+},
+{
+"id": "C-DB49",
+"refs": [
+"hub:632",
+"hub:633"
+],
+"title": "Order runner-store bind, park and requeue facts by append sequence, not timestamp",
+"epic": "HUB",
+"node": "triage",
+"after": "C-2475",
+"n": 1,
+"also": [
+"Make a repeated runner requeue change nothing at persistence"
+]
+},
+{
+"id": "C-SXBD",
+"refs": [
+"hub:639"
+],
+"title": "performance run (full)",
+"epic": "SURVEY",
+"node": "survey",
+"after": null,
+"n": 0
+},
+{
+"id": "C-5Q4G",
+"refs": [
+"hub:640"
+],
+"title": "performance run (full)",
+"epic": "SURVEY",
+"node": "survey",
+"after": null,
+"n": 0
+},
+{
+"id": "C-NH8N",
+"refs": [
+"hub:642"
+],
+"title": "performance run (full)",
+"epic": "SURVEY",
+"node": "survey",
+"after": null,
+"n": 0
+},
+{
+"id": "C-GMVT",
+"refs": [
+"hub:641"
+],
+"title": "performance run (full)",
+"epic": "SURVEY",
+"node": "survey",
+"after": null,
+"n": 0
+},
+{
+"id": "C-WTGG",
+"refs": [
+"hub:634"
+],
+"title": "comments run (full)",
+"epic": "SURVEY",
+"node": "survey",
+"after": null,
+"n": 0
+},
+{
+"id": "C-85FD",
+"refs": [
+"hub:638"
+],
+"title": "comments run (full)",
+"epic": "SURVEY",
+"node": "survey",
+"after": null,
+"n": 0
+},
+{
+"id": "C-F05Q",
+"refs": [
+"hub:635"
+],
+"title": "comments run (full)",
+"epic": "SURVEY",
+"node": "survey",
+"after": null,
+"n": 0
+},
+{
+"id": "C-YWK5",
+"refs": [
+"hub:636"
+],
+"title": "comments run (full)",
+"epic": "SURVEY",
+"node": "survey",
+"after": null,
+"n": 0
+},
+{
+"id": "C-6RTR",
+"refs": [
+"hub:637"
+],
+"title": "comments run (full)",
+"epic": "SURVEY",
+"node": "survey",
+"after": null,
+"n": 0
+}
+];
+const BACKLOG=[{"id": "C-WN6J", "refs": ["blizzard#1312"], "title": "Retire per-binding agents from runner bindings", "epic": "BREAK", "node": "triage", "after": null, "n": 0}];
+const DONE=[
+{
+"id": "C-VA7X",
+"refs": [
+"hub:602",
+"hub:613"
+],
+"title": "Make a gate's resolving transition name a decision from the current visit",
+"epic": null,
+"at": "12:24",
+"cost": "~$17.03",
+"more": 2
+},
+{
+"id": "C-AFTK",
+"refs": [
+"blizzard#1447"
+],
+"title": "Type the runner harness adapters' parsed output",
+"epic": "STRICT",
+"at": "12:03",
+"cost": "$7.36",
+"more": 0
+},
+{
+"id": "C-R1D5",
+"refs": [
+"hub:624",
+"hub:622",
+"hub:623"
+],
+"title": "Settle one owner for the statement guards and the lane rosters",
+"epic": null,
+"at": "11:25",
+"cost": "~$3.69",
+"more": 0
+},
+{
+"id": "C-BB9E",
+"refs": [
+"blizzard#1445"
+],
+"title": "Type the compat OpenAPI classifier",
+"epic": "STRICT",
+"at": "10:19",
+"cost": "$1.95",
+"more": 0
+},
+{
+"id": "C-TX56",
+"refs": [
+"blizzard#1175"
+],
+"title": "Cross-check a release's notes against its compat breaks",
+"epic": "NOTES",
+"at": "09:31",
+"cost": "$7.00",
+"more": 0
+},
+{
+"id": "C-F5V9",
+"refs": [
+"blizzard#1462"
+],
+"title": "Make the hub's login throttle configurable",
+"epic": "PW-HUBTIER",
+"at": "08:56",
+"cost": "$1.49",
+"more": 0
+},
+{
+"id": "C-RWE7",
+"refs": [
+"blizzard#1190"
+],
+"title": "Write the flag procedure and the operator's flags guide",
+"epic": "FLAGS",
+"at": "08:46",
+"cost": "$1.65",
+"more": 0
+},
+{
+"id": "C-2R1E",
+"refs": [
+"blizzard#1443"
+],
+"title": "Delete the inert type-ignores in shipping code and add a strict report",
+"epic": "STRICT",
+"at": "08:03",
+"cost": "$0.88",
+"more": 0
+},
+{
+"id": "C-QRP5",
+"refs": [
+"blizzard#1174"
+],
+"title": "Fail a pull request that owes a change note",
+"epic": "NOTES",
+"at": "06:59",
+"cost": "$5.32",
+"more": 0
+},
+{
+"id": "C-ZWE9",
+"refs": [
+"blizzard#1364"
+],
+"title": "Port land and the commit check onto one forge seam",
+"epic": "FORGES",
+"at": "06:29",
+"cost": "$40.11",
+"more": 0
+},
+{
+"id": "C-1BF8",
+"refs": [
+"blizzard#1189"
+],
+"title": "Hold flag tombstones, flips, and cuts to the release rules",
+"epic": "FLAGS",
+"at": "05:07",
+"cost": "$4.74",
+"more": 0
+},
+{
+"id": "C-PZD6",
+"refs": [
+"hub:603"
+],
+"title": "Rewrite inventory-style hub rows as read-triggers",
+"epic": null,
+"at": "04:48",
+"cost": "~$12.56",
+"more": 0
+},
+{
+"id": "C-RNZD",
+"refs": [
+"blizzard#1181"
+],
+"title": "Write the patch rule and the release promise",
+"epic": "LINES",
+"at": "00:14",
+"cost": "$3.89",
+"more": 0
+},
+{
+"id": "C-E7DE",
+"refs": [
+"blizzard#1173"
+],
+"title": "Publish release notes from change notes and require them",
+"epic": "NOTES",
+"at": "Yesterday 22:39",
+"cost": "$7.06",
+"more": 0
+},
+{
+"id": "C-TNFF",
+"refs": [
+"hub:609",
+"hub:604"
+],
+"title": "Bring findings-and-proposals.md up to the refusals and settlement the code already has",
+"epic": null,
+"at": "Yesterday 21:46",
+"cost": "$9.42",
+"more": 3
+},
+{
+"id": "C-CRTC",
+"refs": [
+"blizzard#1361"
+],
+"title": "Remove the hub's process runner, step environment, and marker token",
+"epic": "ACTIONS",
+"at": "Yesterday 15:21",
+"cost": "~$24.86",
+"more": 0
+},
+{
+"id": "C-66JE",
+"refs": [
+"hub:619",
+"hub:618"
+],
+"title": "Bring the command-failed and hub-migrated definitions in line with what is recorded",
+"epic": null,
+"at": "Yesterday 14:56",
+"cost": "$5.41",
+"more": 0
+},
+{
+"id": "C-8Z96",
+"refs": [
+"hub:615",
+"hub:617"
+],
+"title": "Make the pause, resume and detach messages describe the actual state",
+"epic": null,
+"at": "Yesterday 14:50",
+"cost": "$2.18",
+"more": 0
+},
+{
+"id": "C-JJPG",
+"refs": [
+"blizzard#1160"
+],
+"title": "Open the hub's pin change when blizzard publishes a release",
+"epic": "RELEASE",
+"at": "Yesterday 12:07",
+"cost": "$4.38",
+"more": 0
+},
+{
+"id": "C-R4EH",
+"refs": [
+"hub:612",
+"hub:607"
+],
+"title": "Count retries per visit, not per node across the whole chunk",
+"epic": null,
+"at": "Yesterday 12:04",
+"cost": "$7.09",
+"more": 0
+},
+{
+"id": "C-H48F",
+"refs": [
+"hub:601",
+"hub:600",
+"hub:614"
+],
+"title": "Filter a project's runner pauses before the activity feed caps them",
+"epic": null,
+"at": "Yesterday 11:52",
+"cost": "$7.26",
+"more": 0
+},
+{
+"id": "C-8YFS",
+"refs": [
+"blizzard#1180"
+],
+"title": "Hold release tags to their line and promote by borrowed proof",
+"epic": "LINES",
+"at": "Yesterday 11:50",
+"cost": "$5.36",
+"more": 0
+},
+{
+"id": "C-5EVY",
+"refs": [
+"hub:621",
+"hub:625"
+],
+"title": "Keep a chunk's work items in one project at ingest",
+"epic": null,
+"at": "Yesterday 11:06",
+"cost": "~$1.79",
+"more": 0
+},
+{
+"id": "C-BCN9",
+"refs": [
+"blizzard#1360"
+],
+"title": "Retire run: and carry every stored graph onto actions",
+"epic": "ACTIONS",
+"at": "Yesterday 09:27",
+"cost": "$46.52",
+"more": 0
+},
+{
+"id": "C-49G4",
+"refs": [
+"hub:606"
+],
+"title": "Gate an already-merged PR's head before counting it as this chunk's landing",
+"epic": null,
+"at": "Yesterday 07:41",
+"cost": "$1.16",
+"more": 0
+},
+{
+"id": "C-4RS8",
+"refs": [
+"blizzard#1413"
+],
+"title": "Run the isolation cross-check weekly and before releases",
+"epic": "PLAYWRIGHT",
+"at": "Yesterday 07:05",
+"cost": "$1.46",
+"more": 0
+},
+{
+"id": "C-NET9",
+"refs": [
+"blizzard#1412"
+],
+"title": "Port the analytics service tests and measure the shared hub",
+"epic": "PLAYWRIGHT",
+"at": "Yesterday 05:42",
+"cost": "~$7.17",
+"more": 0
+},
+{
+"id": "C-T4FK",
+"refs": [
+"blizzard#1359"
+],
+"title": "Move the packaged graphs onto actions",
+"epic": "ACTIONS",
+"at": "Yesterday 02:19",
+"cost": "$30.82",
+"more": 0
+},
+{
+"id": "C-Z1V5",
+"refs": [
+"blizzard#1411"
+],
+"title": "Write the Playwright tier's rulebook into blizzard-context",
+"epic": "PLAYWRIGHT",
+"at": "Yesterday 01:39",
+"cost": "~$6.75",
+"more": 0
+},
+{
+"id": "C-G769",
+"refs": [
+"hub:586"
+],
+"title": "Pin three runner survivors, and let `--fresh` delta mutation runs work unaided",
+"epic": null,
+"at": "Yesterday 00:34",
+"cost": "$7.49+",
+"more": 0
+},
+{
+"id": "C-MNG0",
+"refs": [
+"blizzard#1410"
+],
+"title": "Run the Playwright half in the service-tier CI jobs",
+"epic": "PLAYWRIGHT",
+"at": "2026/10/23",
+"cost": "$1.08",
+"more": 0
+},
+{
+"id": "C-XTP8",
+"refs": [
+"blizzard#1409"
+],
+"title": "Build the Playwright package and its shared-hub harness",
+"epic": "PLAYWRIGHT",
+"at": "2026/10/23",
+"cost": "$9.60",
+"more": 0
+},
+{
+"id": "C-0H9B",
+"refs": [
+"hub:591"
+],
+"title": "domain-conformance run (full)",
+"epic": null,
+"at": "2026/10/23",
+"cost": "~$6.70",
+"more": 0
+},
+{
+"id": "C-FWK6",
+"refs": [
+"blizzard#1358"
+],
+"title": "Take a hub node's action in a pass beside run: steps",
+"epic": "ACTIONS",
+"at": "2026/10/23",
+"cost": "$47.71",
+"more": 0
+},
+{
+"id": "C-7P8C",
+"refs": [
+"blizzard#1408"
+],
+"title": "Gather the daemons' test environment into one contract",
+"epic": "PLAYWRIGHT",
+"at": "2026/10/23",
+"cost": "$1.29",
+"more": 0
+},
+{
+"id": "C-TWJS",
+"refs": [
+"hub:585"
+],
+"title": "Pin the runner lifecycle's wiring arguments against surviving mutants",
+"epic": null,
+"at": "2026/10/23",
+"cost": "$4.61",
+"more": 0
+},
+{
+"id": "C-1KHP",
+"refs": [
+"blizzard#1407"
+],
+"title": "Log unhandled request errors as JSON tagged with their tenant",
+"epic": "PLAYWRIGHT",
+"at": "2026/10/23",
+"cost": "$1.71",
+"more": 0
+},
+{
+"id": "C-69GA",
+"refs": [
+"blizzard#1406"
+],
+"title": "Read the hub CLI's tenant from BZ_HUB_TENANT",
+"epic": "PLAYWRIGHT",
+"at": "2026/10/23",
+"cost": "$1.61",
+"more": 0
+}
+];
+const EPICS={"FORGES": "Forges", "FLOWS": "Flows", "POLICIES": "Policies", "STRICT": "Strict typing", "PW-HUBTIER": "Playwright hub tier", "NOTES": "Notes", "FLAGS": "Flags", "LINES": "Lines", "ACTIONS": "Actions", "RELEASE": "Release", "PLAYWRIGHT": "Playwright", "BREAK": "Break"};
+
+
+const GRAPH = ['triage', 'build', 'review', 'mutation', 'pre-push', 'deliver'];
+
+/* The two chunks parked on a human. C-6J9H is from the baseline; C-QWYS's reason, attempts and usage are invented. */
+const NEEDS = [
+  {
+    id: 'C-6J9H', ref: 'blizzard#1365', epic: 'FORGES', node: 'deliver', runner: 'xps/r-claude',
+    title: 'Report every record the forge migration would refuse',
+    why: 'bounce cap crossed',
+    deck: 'Six bounces at deliver crossed the cap of five at epoch 25. There is no composed command for this escalation: take over the parked session, or resolve it on the chunk and requeue.',
+    pr: 'paul-gross/blizzard #1498', cost: 8.20, est: false, attempts: 25, since: at('12:48:19'),
+    graph: 'G-YACK#adv-dwf-20261025', depends: [['C-ZWE9', 'done']], blocks: ['C-ZEVE', 'C-N1JR'],
+    usage: { input: '596', output: '121.8k', cread: '19.4M', ccreate: '729.0k' },
+  },
+  {
+    id: 'C-QWYS', ref: 'blizzard#1449', epic: 'STRICT', node: 'deliver', runner: 'xps/r-claude',
+    title: 'Type the hub auth repositories',
+    why: 'land answered failure',
+    deck: 'PR #1501 did not land: land answered failure on its second visit to deliver. The session is parked with its environment held — one of six blizzard-claude slots.',
+    pr: 'paul-gross/blizzard #1501', cost: 4.03, est: false, attempts: 14, since: at('13:02:40'),
+    graph: 'G-TP4E#bas-dwf-20261025', depends: [], blocks: [],
+    usage: { input: '312', output: '64.2k', cread: '9.1M', ccreate: '402.7k' },
+  },
+];
+
+/* The eight running chunks. `from` is when the runner claimed it (invented where the feed is silent); delivering chunks are in motion toward master. */
+const RUNNING = [
+  { id: 'C-WSCR', ref: 'blizzard#1497', node: 'review', runner: 'r-claude', title: 'Add an Anthropic credential renewer that refreshes via a haiku one-shot', cost: 1.58, est: false, from: at('12:27:11'), bounces: 2, pr: '#1500' },
+  { id: 'C-ZG7T', ref: 'hub:626', more: 1, node: 'pre-push', runner: 'r-claude', title: 'Land a gate resolution’s artifacts once when its landing consult fires', cost: 0.88, est: false, from: at('12:44:51'), bounces: 0 },
+  { id: 'C-FC1D', ref: 'hub:620', more: 4, node: 'review', runner: 'r-claude', title: 'Bring the work domain’s docs up to four rules the code enforces deliberately', cost: 0.27, est: false, from: at('12:51:53'), bounces: 0 },
+  { id: 'C-BWA2', ref: 'blizzard#1461', epic: 'PW-HUBTIER', node: 'mutation', runner: 'r-claude', title: 'Let an event-stream client join from the latest event', cost: 2.26, est: true, from: at('11:24:08'), bounces: 1 },
+  { id: 'C-MFJE', ref: 'blizzard#1465', epic: 'PW-HUBTIER', node: 'build', runner: 'r-chatgpt', title: 'Give the harness a mock runner it can drive and runners that serve projects', cost: 0.10, est: true, from: at('13:05:12'), bounces: 0 },
+  { id: 'C-2475', ref: 'blizzard#1446', epic: 'STRICT', node: 'build', runner: 'r-chatgpt', title: 'Type the runner store adapters’ row mapping', cost: 2.06, est: true, from: at('11:23:09'), bounces: 1 },
+  { id: 'C-PTP2', ref: 'blizzard#1459', epic: 'PW-HUBTIER', node: 'deliver', delivering: true, runner: 'r-chatgpt', title: 'Tag every per-tenant sweep line with its tenant', cost: 3.49, est: true, from: at('11:23:55'), bounces: 0, pr: '#1492' },
+  { id: 'C-27A6', ref: 'blizzard#1463', epic: 'PW-HUBTIER', node: 'deliver', delivering: true, runner: 'r-chatgpt', title: 'Choose the stub IdP’s identity by login_hint', cost: 1.47, est: true, from: at('11:25:47'), bounces: 0, pr: 'mock #121' },
+];
+
+/* Node histories. C-WSCR is the real one from the baseline; C-6J9H is reconstructed from the activity feed. */
+const HISTORY = {
+  'C-WSCR': [
+    ['1', 'default-delivery/triage', 'basic', 'build', '12:27', '263.8k', '$0.35'],
+    ['2', 'build', 'pass', 'review', '12:33', '1.0M', '$0.42'],
+    ['3', 'review', 'fail', 'build', '12:35', '484.3k', '$0.23', 'bounce'],
+    ['4', 'build', 'pass', 'review', '12:37', '335.3k', '$0.06'],
+    ['5', 'review', 'pass', 'pre-push', '12:39', '283.6k', '$0.13'],
+    ['6', 'pre-push', 'clean', 'deliver', '12:40', '252.9k', '$0.13'],
+    ['↺', 'bounce', 'PR #1500 in paul-gross/blizzard did not land: land answered failure', '', '12:51', '', '', 'bounce'],
+    ['7', 'deliver', 'failure', 'pre-push', '12:51', '', ''],
+    ['8', 'pre-push', 'clean', 'deliver', '12:54', '157.0k', '$0.05'],
+    ['↺', 'bounce', 'PR #1500 in paul-gross/blizzard did not land: land answered failure', '', '12:54', '', '', 'bounce'],
+    ['9', 'deliver', 'failure', 'pre-push', '12:54', '', ''],
+    ['10', 'pre-push', 'significant', 'build', '12:56', '270.7k', '$0.07'],
+    ['11', 'build', 'pass', 'review', '13:08', '669.4k', '$0.13'],
+    ['12', 'review', 'running', '', 'now', '', '', 'now'],
+  ],
+  'C-6J9H': [
+    ['19', 'mutation', 'pass', 'review', '12:19', '1.4M', '$0.61'],
+    ['20', 'review', 'pass', 'pre-push', '12:20', '402.1k', '$0.19'],
+    ['21', 'pre-push', 'clean', 'deliver', '12:23', '311.6k', '$0.14'],
+    ['↺', 'bounce', 'PR #1498 did not land: land answered failure', '', '12:37', '', '', 'bounce'],
+    ['22', 'deliver', 'failure', 'resolve', '12:37', '', ''],
+    ['23', 'resolve', 'pass', 'deliver', '12:40', '820.4k', '$0.38'],
+    ['↺', 'bounce', 'PR #1498 did not land: land answered failure', '', '12:42', '', '', 'bounce'],
+    ['24', 'resolve', 'pass', 'deliver', '12:46', '640.2k', '$0.29'],
+    ['↺', 'bounce', 'bounce cap (5) crossed after 6 bounces', '', '12:48', '', '', 'bounce'],
+    ['25', 'resolve', 'needs human', '', '12:48', '', '', 'now'],
+  ],
+};
+
+/* Fleet: one host, two runners, three workspaces, two subscriptions. */
+const FLEET = {
+  host: { name: 'xps', id: 'H-G1YK', url: 'http://127.0.0.1:8431', reported: at('13:08:04'), registered: '2026/10/16 04:36:51', added: '2026/10/16 04:36:09 by paul-gross', token: 'enrolled' },
+  version: '0.3.0.dev1002+f208eca7d',
+  runners: [
+    { name: 'r-claude', id: 'R-FNE4', harness: 'claude code', spends: 'Anthropic', agents: 3, busy: 6, state: 'working', seen: at('13:08:17'),
+      binds: [['blizzard', 'blizzard-claude', 6], ['winter', 'winter', 0]],
+      held: [['C-WSCR', 'review', 'running'], ['C-BWA2', 'mutation', 'running'], ['C-QWYS', 'deliver', 'needs_human'], ['C-ZG7T', 'pre-push', 'running'], ['C-FC1D', 'review', 'running'], ['C-6J9H', 'deliver', 'needs_human']] },
+    { name: 'r-chatgpt', id: 'R-NQ1B', harness: 'opencode', spends: 'OpenAI', agents: 3, busy: 4, state: 'declining', pace: '7d: 8% spent, 7% elapsed, until 14:41', seen: at('13:08:21'),
+      binds: [['blizzard', 'blizzard-chatgpt', 4], ['winter', 'winter', 0]],
+      held: [['C-MFJE', 'build', 'running'], ['C-27A6', 'deliver', 'delivering'], ['C-PTP2', 'deliver', 'delivering'], ['C-2475', 'build', 'running']] },
+  ],
+  workspaces: [
+    { name: 'blizzard-claude', runner: 'r-claude', slots: ['C-WSCR', 'C-BWA2', 'C-QWYS', 'C-ZG7T', 'C-FC1D', 'C-6J9H'] },
+    { name: 'blizzard-chatgpt', runner: 'r-chatgpt', slots: ['C-MFJE', 'C-27A6', 'C-PTP2', 'C-2475'] },
+    { name: 'winter', runner: 'r-claude · r-chatgpt', slots: [null, null, null, null] },
+  ],
+  windows: [
+    { sub: 'Anthropic', win: '5h', spent: 10, elapsed: 57, sampled: at('13:07:38'), verdict: 'in window' },
+    { sub: 'Anthropic', win: '7d', spent: 13, elapsed: 15, sampled: at('13:07:38'), verdict: 'in window' },
+    { sub: 'OpenAI', win: '7d', spent: 8, elapsed: 7, sampled: at('13:03:38'), verdict: 'declining until 14:41', pace: true },
+  ],
+};
+
+/* The wire: newest first, from the baseline's activity feed. */
+const WIRE = [
+  [at('13:08:38'), 'C-ZG7T', 'review → pre-push', 'r-claude'],
+  [at('13:08:38'), 'C-WSCR', 'build → review', 'r-claude'],
+  [at('13:08:34'), 'C-27A6', 'pre-push → deliver', 'r-chatgpt'],
+  [at('13:08:21'), 'C-PTP2', 'pre-push → deliver', 'r-chatgpt'],
+  [at('13:02:40'), 'C-QWYS', 'deliver → needs human', 'r-claude', 'human'],
+  [at('12:51:53'), 'C-FC1D', 'claimed', 'r-claude'],
+  [at('12:48:19'), 'C-6J9H', 'resolve → needs human', 'r-claude', 'human'],
+  [at('12:44:51'), 'C-ZG7T', 'claimed', 'r-claude'],
+  [at('12:44:05'), 'C-6RTR', 'ready at survey, with eight more', 'hub'],
+  [at('12:24:44'), 'C-VA7X', 'retrospective → done', 'r-claude'],
+];
+const WIRE_NEXT = [
+  ['C-FC1D', 'review → pre-push', 'r-claude'], ['C-BWA2', 'mutation → review', 'r-claude'], ['C-MFJE', 'build → review', 'r-chatgpt'],
+  ['C-2475', 'build → review', 'r-chatgpt'], ['C-WSCR', 'review → pre-push', 'r-claude'], ['C-ZG7T', 'pre-push → deliver', 'r-claude'],
+];
+
+const TODAY_SPEND = 114.44, YESTERDAY_SPEND = 161.25;
+const DONE_TODAY = DONE.filter(d => /^\d\d:\d\d$/.test(d.at || ''));
+const CLAIMABLE = READY.filter(r => !r.n);
+const ON_HUMAN = id => READY.filter(r => r.after === id);
+/* Ready chunks held, transitively, behind a single prerequisite. */
+const downstream = id => { const out = []; let q = [id]; while (q.length) { const x = q.shift(); for (const r of READY) if (r.after === x && !out.includes(r)) { out.push(r); q.push(r.id); } } return out; };
+const chunkById = id => NEEDS.find(c => c.id === id) || RUNNING.find(c => c.id === id) || READY.find(c => c.id === id) || DONE.find(c => c.id === id) || BACKLOG.find(c => c.id === id);
+const epicName = e => EPICS[e] || (e === 'SURVEY' ? 'Surveys' : e === 'HUB' ? 'Hub' : e || '');
+
+/* ---------- theme: daylight and night are both first-class ---------- */
+const Theme = {
+  init() {
+    const q = new URLSearchParams(location.search).get('theme');
+    let t = q || (() => { try { return localStorage.getItem('bz-theme'); } catch { return null; } })();
+    if (!t) t = matchMedia('(prefers-color-scheme: dark)').matches ? 'night' : 'day';
+    this.set(t, false);
+  },
+  set(t, save = true) {
+    document.documentElement.dataset.theme = t;
+    $$('[data-theme-label]').forEach(e => e.textContent = t === 'night' ? 'Night' : 'Daylight');
+    if (save) try { localStorage.setItem('bz-theme', t); } catch { }
+  },
+  toggle() { this.set(document.documentElement.dataset.theme === 'night' ? 'day' : 'night'); toast(`${document.documentElement.dataset.theme === 'night' ? 'Night' : 'Daylight'} edition`); },
+};
+
+/* ---------- toast ---------- */
+let toastTimer;
+function toast(msg) {
+  let t = $('.toast'); if (!t) { t = document.createElement('div'); t.className = 'toast'; document.body.append(t); }
+  t.textContent = msg; t.classList.add('on'); clearTimeout(toastTimer); toastTimer = setTimeout(() => t.classList.remove('on'), 2200);
+}
+function copy(text, label) { try { navigator.clipboard?.writeText(text); } catch { } toast(label || `Copied  ${text}`); }
+const takeover = id => copy(`blizzard runner takeover ${id}`, `Copied  blizzard runner takeover ${id}`);
+
+/* ---------- live ticking ---------- */
+const Live = {
+  costs: {},
+  start(onSecond) {
+    const loop = () => { onSecond?.(now()); $$('[data-clock]').forEach(e => e.textContent = clock(now())); $$('[data-since]').forEach(e => e.textContent = dur(now() - +e.dataset.since)); $$('[data-ago]').forEach(e => e.textContent = ago(now() - +e.dataset.ago)); };
+    loop(); setInterval(loop, 1000);
+  },
+  /* Costs accrue on running, non-delivering chunks in small steps; the moved digit thickens for a beat. */
+  accrue(onChange) {
+    setInterval(() => {
+      const live = RUNNING.filter(r => !r.delivering);
+      const r = live[Math.floor(Math.random() * live.length)];
+      const d = Math.round((0.01 + Math.random() * 0.03) * 100) / 100;
+      r.cost += d; Live.spend += d;
+      $$(`[data-cost="${r.id}"]`).forEach(e => { e.textContent = usd(r.cost, r.est); bump(e); });
+      $$('[data-spend]').forEach(e => { e.textContent = usd(Live.spend, true); bump(e); });
+      onChange?.(r);
+    }, 2600);
+  },
+  spend: TODAY_SPEND,
+};
+function bump(e) { e.classList.add('tick', 'bump'); setTimeout(() => e.classList.remove('bump'), 260); }
+
+/* ---------- reader: the chunk, opened in place ---------- */
+function openReader(id) {
+  const c = chunkById(id); if (!c) return;
+  const r = $('.reader'); const human = NEEDS.includes(c); const run = RUNNING.includes(c);
+  const ready = READY.includes(c); const done = DONE.includes(c);
+  const kicker = human ? `<span class="human">Needs you · ${c.node} · ${c.why}</span>` : run ? `${c.delivering ? 'Delivering' : 'Running'} · ${c.node} · ${c.runner}` : ready ? `Ready · ${c.node}${c.n ? ` · after ${c.after || word(c.n) + ' chunks'}` : ' · claimable now'}` : done ? `Landed · ${c.at}` : 'Backlog';
+  const hist = HISTORY[c.id];
+  const facts = [];
+  if (human) {
+    facts.push(`<p><b>Status</b> needs_human at <b>${c.node}</b> on ${c.runner}, after ${c.attempts} attempts.</p>`);
+    facts.push(`<p><b>Graph</b> ${c.graph}</p>`);
+    if (c.depends.length) facts.push(`<p><b>Depends on</b> ${c.depends.map(d => `<span class="id">${d[0]}</span> (${d[1]})`).join(', ')}</p>`);
+    const ds = downstream(c.id);
+    if (ds.length) facts.push(`<p><b>Holds back</b> ${ds.map(d => `<span class="id">${d.id}</span>`).join(' → ')}${c.blocks.filter(b => !ds.find(d => d.id === b)).map(b => `, <span class="id">${b}</span>`).join('')}</p>`);
+    facts.push(`<p><b>Usage</b> ${usd(c.cost)} · input ${c.usage.input} · output ${c.usage.output} · cache read ${c.usage.cread} · cache creation ${c.usage.ccreate}</p>`);
+    facts.push(`<p><b>Delivery</b> ${c.pr}</p>`);
+  } else if (run) {
+    facts.push(`<p><b>Runner</b> xps/${c.runner}, claimed ${hm(c.from)}, running <span data-since="${c.from}">${dur(now() - c.from)}</span></p>`);
+    facts.push(`<p><b>Cost so far</b> <span data-cost="${c.id}">${usd(c.cost, c.est)}</span>${c.bounces ? ` · ${c.bounces} bounce${c.bounces > 1 ? 's' : ''}` : ''}</p>`);
+    if (c.pr) facts.push(`<p><b>Delivery</b> PR ${c.pr}</p>`);
+  } else if (ready) {
+    facts.push(`<p><b>Work</b> ${c.refs.join(', ')}</p>`);
+    facts.push(`<p><b>Waits on</b> ${c.n ? (c.after ? `<span class="id">${c.after}</span>` : `${word(c.n)} chunks`) : 'nothing — the next free slot claims it'}</p>`);
+    const ds = downstream(c.id); if (ds.length) facts.push(`<p><b>Holds back</b> ${ds.map(d => `<span class="id">${d.id}</span>`).join(' → ')}</p>`);
+  } else if (done) {
+    facts.push(`<p><b>Landed</b> ${c.at} for ${c.cost}</p><p><b>Work</b> ${c.refs.join(', ')}${c.more ? ` and ${c.more} more` : ''}</p>`);
+  }
+  r.innerHTML = `
+    <button class="close" data-close>Close <kbd>esc</kbd></button>
+    <div class="kicker">${kicker}</div>
+    <h1>${esc(c.title)}</h1>
+    ${c.deck ? `<p class="deck">${esc(c.deck)}</p>` : ''}
+    <p class="deck" style="font-size:13px;line-height:18px;margin-top:-10px"><span class="id">${c.id}</span> · ${esc(c.ref || (c.refs || []).join(', '))}${c.epic ? ` · ${epicName(c.epic)}` : ''}</p>
+    ${human ? `<div class="cmd"><span>$ blizzard runner takeover ${c.id}</span><button data-takeover="${c.id}"><u class="acc">T</u>ake over — copy</button></div>` : ''}
+    <div class="facts">${facts.join('')}</div>
+    ${hist ? `<h3>Node history</h3><table><tr><th>#</th><th>Node</th><th>Outcome</th><th>Next</th><th class="r">Tokens</th><th class="r">Cost</th><th class="r">At</th></tr>
+      ${hist.map(h => `<tr class="${h[7] || ''}"><td>${h[0]}</td><td>${h[1]}</td><td>${h[2]}</td><td>${h[3]}</td><td class="r">${h[5]}</td><td class="r">${h[6]}</td><td class="r">${h[4]}</td></tr>`).join('')}</table>` : ''}
+    ${human ? `<h3>Escalation</h3><p class="deck" style="font-size:14px;line-height:18px">The chunk reached its bounce cap (epoch ${c.attempts}). <i>blizzard runner takeover</i> may still reach the parked session directly; if it refuses, resolve it on the chunk and requeue.</p>` : ''}`;
+  r.classList.add('on'); $('.scrim').classList.add('on'); r.dataset.id = id;
+  r.querySelector('[data-close]').onclick = closeAll;
+  r.querySelector('[data-takeover]')?.addEventListener('click', e => takeover(e.currentTarget.dataset.takeover));
+}
+
+/* ---------- command palette ---------- */
+const Palette = {
+  items() {
+    const cmds = [
+      ...NEEDS.map(c => ({ k: 'take over', label: `Take over ${c.id} — ${c.title}`, x: 't', run: () => takeover(c.id) })),
+      { k: 'go', label: 'Board', x: 'g b', run: () => go('board') },
+      { k: 'go', label: 'Fleet', x: 'g f', run: () => go('fleet') },
+      { k: 'view', label: 'Read the ready list', x: 'r', run: () => window.readReady?.() },
+      { k: 'view', label: 'Daylight or night edition', x: '\\', run: () => Theme.toggle() },
+      ...FLEET.runners.map(r => ({ k: 'runner', label: `Pause ${r.name}`, x: '', run: () => toast(`${r.name} paused — finishing held chunks`) })),
+    ];
+    const chunks = [...NEEDS, ...RUNNING, ...READY, ...DONE_TODAY].map(c => ({ k: c.id, label: c.title, x: NEEDS.includes(c) ? 'needs you' : RUNNING.includes(c) ? c.node : READY.includes(c) ? 'ready' : 'landed', run: () => openReader(c.id), human: NEEDS.includes(c) }));
+    return [...cmds, ...chunks];
+  },
+  open(seed = '') {
+    const p = $('.palette'); p.classList.add('on'); $('.scrim').classList.add('on');
+    const i = p.querySelector('input'); i.value = seed; i.focus(); this.sel = 0; this.render();
+  },
+  render() {
+    const q = $('.palette input').value.trim().toLowerCase();
+    const all = this.items();
+    const score = it => { const boost = it.human ? 60 : it.k === 'take over' ? 40 : 0; if (!q) return 1 + boost; const s = (it.k + ' ' + it.label).toLowerCase(); const i = s.indexOf(q); if (i >= 0) return 100 - Math.min(i, 60) + boost + (i === 0 || s[i - 1] === ' ' ? 20 : 0); let j = 0; for (const ch of s) if (ch === q[j]) j++; return j === q.length ? 10 + boost : 0; };
+    this.list = all.map(it => [score(it), it]).filter(x => x[0] > 0).sort((a, b) => b[0] - a[0]).map(x => x[1]).slice(0, 14);
+    const hi = s => { if (!q) return esc(s); const i = s.toLowerCase().indexOf(q); return i < 0 ? esc(s) : esc(s.slice(0, i)) + '<mark>' + esc(s.slice(i, i + q.length)) + '</mark>' + esc(s.slice(i + q.length)); };
+    $('.palette ol').innerHTML = this.list.map((it, n) => `<li class="${n === this.sel ? 'sel' : ''}" data-n="${n}"><span class="k ${it.human ? 'human' : ''}">${esc(it.k)}</span><span>${hi(it.label)}</span><span class="x">${esc(it.x)}</span></li>`).join('') || '<li><span></span><span class="dim it">Nothing matches.</span></li>';
+    $$('.palette li[data-n]').forEach(li => li.onclick = () => { this.sel = +li.dataset.n; this.choose(); });
+  },
+  choose() { const it = this.list?.[this.sel]; closeAll(); it?.run(); },
+  key(e) {
+    if (e.key === 'ArrowDown') { this.sel = Math.min(this.sel + 1, this.list.length - 1); this.render(); e.preventDefault(); }
+    else if (e.key === 'ArrowUp') { this.sel = Math.max(this.sel - 1, 0); this.render(); e.preventDefault(); }
+    else if (e.key === 'Enter') { this.choose(); e.preventDefault(); }
+  },
+};
+
+function closeAll() { $$('.reader,.palette,.help,.scrim').forEach(e => e.classList.remove('on')); window.onCloseAll?.(); }
+function go(where) { const mobile = /mobile/.test(location.pathname); location.href = `${where}-${mobile ? 'mobile' : 'desktop'}.html${location.search}`; }
+
+/* ---------- keyboard: j/k walk the page in reading order ---------- */
+const Keys = {
+  pending: null,
+  init(extra = {}) {
+    document.addEventListener('keydown', e => {
+      if ($('.palette.on')) { if (e.key === 'Escape') closeAll(); else Palette.key(e); return; }
+      if (e.target.matches('input,textarea')) return;
+      if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === 'k') { e.preventDefault(); Palette.open(); return; }
+      if (e.metaKey || e.ctrlKey || e.altKey) return;
+      const k = e.key;
+      if (this.pending === 'g') { this.pending = null; if (k === 'b') go('board'); if (k === 'f') go('fleet'); return; }
+      if (k === 'Escape') { closeAll(); return; }
+      if (k === '/' ) { e.preventDefault(); Palette.open(); return; }
+      if (k === '?') { $('.help').classList.toggle('on'); $('.scrim').classList.toggle('on', $('.help').classList.contains('on')); return; }
+      if (k === '\\') { Theme.toggle(); return; }
+      if (k === 'g') { this.pending = 'g'; setTimeout(() => this.pending = null, 900); return; }
+      if (k === 'j' || k === 'ArrowDown') { this.move(1); e.preventDefault(); return; }
+      if (k === 'k' || k === 'ArrowUp') { this.move(-1); e.preventDefault(); return; }
+      const cur = this.current();
+      if (k === 'Enter' && cur) { cur.dataset.chunk ? openReader(cur.dataset.chunk) : cur.click(); return; }
+      if (k === 't') { const id = cur?.dataset.chunk && NEEDS.find(n => n.id === cur.dataset.chunk) ? cur.dataset.chunk : NEEDS[0].id; takeover(id); return; }
+      if (k === 'o' && cur?.dataset.chunk) { const c = chunkById(cur.dataset.chunk); toast(c?.pr ? `Opening PR ${c.pr}` : `${cur.dataset.chunk} has no open pull request`); return; }
+      if (k === 'q' && cur?.dataset.chunk && NEEDS.find(n => n.id === cur.dataset.chunk)) { const id = cur.dataset.chunk; if (this.armed === id) { this.armed = null; toast(`Requeued ${id} at deliver — its environment is released`); } else { this.armed = id; setTimeout(() => this.armed === id && (this.armed = null), 2000); toast(`Requeue ${id}? Press q again`); } return; }
+      extra[k]?.(e, cur);
+    });
+    document.addEventListener('focusin', e => { if (e.target.matches('[data-nav]')) { $$('[data-nav].focus').forEach(x => x.classList.remove('focus')); } });
+  },
+  current() { return document.activeElement?.matches?.('[data-nav]') ? document.activeElement : $('[data-nav].focus'); },
+  move(d) {
+    const all = $$('[data-nav]').filter(e => e.offsetParent !== null);
+    const cur = this.current(); let i = all.indexOf(cur);
+    i = i < 0 ? (d > 0 ? 0 : all.length - 1) : Math.max(0, Math.min(all.length - 1, i + d));
+    all[i]?.focus({ preventScroll: false }); all[i]?.scrollIntoView({ block: 'nearest' });
+  },
+};
+
+function shell() {
+  document.body.insertAdjacentHTML('beforeend', `
+    <div class="scrim"></div><aside class="reader" aria-label="Chunk"></aside>
+    <div class="palette" role="dialog" aria-label="Command"><input placeholder="Find a chunk, or type a command…" aria-label="Command"><ol></ol></div>
+    <div class="help" role="dialog" aria-label="Keys"><h2>Keys</h2><dl>
+      <dt><kbd>j</kbd> <kbd>k</kbd></dt><dd>Walk the page in reading order</dd><dt><kbd>↵</kbd></dt><dd>Read the focused chunk</dd>
+      <dt><kbd>t</kbd></dt><dd>Take over — copies the resume command</dd><dt><kbd>o</kbd></dt><dd>Open its pull request</dd>
+      <dt><kbd>q</kbd></dt><dd>Requeue a parked chunk</dd><dt><kbd>r</kbd></dt><dd>Read the ready list at full size</dd>
+      <dt><kbd>/</kbd> <kbd>⌘K</kbd></dt><dd>Find or command</dd><dt><kbd>g</kbd> <kbd>b</kbd>/<kbd>f</kbd></dt><dd>Board, fleet</dd>
+      <dt><kbd>\\</kbd></dt><dd>Daylight or night</dd><dt><kbd>esc</kbd></dt><dd>Close</dd></dl>
+      <p>Weight and width carry state: the heavier and narrower a line, the more it wants you. Red is reserved for a chunk waiting on a human; ochre for a subscription pacing itself. Nothing else is coloured.</p></div>`);
+  $('.scrim').onclick = closeAll;
+  $('.palette input').addEventListener('input', () => { Palette.sel = 0; Palette.render(); });
+  document.addEventListener('click', e => {
+    const t = e.target.closest('[data-takeover]'); if (t && !t.closest('.reader')) { e.stopPropagation(); takeover(t.dataset.takeover); return; }
+    const a = e.target.closest('[data-chunk]'); if (a && !e.target.closest('.reader')) openReader(a.dataset.chunk);
+  });
+}
+
+
+const HELD_STATE = id => NEEDS.find(n => n.id === id) ? 'human' : RUNNING.find(r => r.id === id)?.delivering ? 'delivering' : 'running';
+const slotGlyph = id => !id ? '<i class="slot free"></i>' : `<i class="slot ${HELD_STATE(id) === 'human' ? 'human' : HELD_STATE(id) === 'delivering' ? 'deliv' : ''}"></i>`;
+
+function gauges() {
+  $('#gauges').innerHTML = FLEET.windows.map(w => `<div class="gauge ${w.pace ? 'pace' : ''}">
+    <span class="pc">${w.spent}<small>%</small></span>
+    <span class="lb">${w.sub} <i>${w.win}</i><span class="vd">${w.pace ? 'pacing to 14:41' : `${w.elapsed}% gone`}</span></span>
+    <span class="meter ${w.pace ? 'pace' : ''}"><span class="base"></span>${Array.from({ length: 11 }, (_, i) => `<i class="tk ${i % 5 === 0 ? 'big' : ''}" style="left:${i * 10}%"></i>`).join('')}<span class="spent" style="width:${w.spent}%"></span><span class="elapsed" style="left:${w.elapsed}%"></span></span>
+  </div>`).join('');
+}
+function runners() {
+  $('#runners').innerHTML = FLEET.runners.map(r => {
+    const ws = FLEET.workspaces.find(w => w.runner === r.name);
+    const rows = ws.slots.map(id => {
+      const n = NEEDS.find(x => x.id === id), c = n || RUNNING.find(x => x.id === id), st = HELD_STATE(id);
+      return `<div class="held ${st} ${st === 'human' ? 'human-item' : ''}" data-nav data-chunk="${id}" tabindex="0"><span class="id">${id}</span>
+        <span class="nd">${st === 'human' ? `${c.node} — needs you` : st === 'delivering' ? `${c.node}ing` : c.node}</span>
+        <span class="el">${n ? `<span data-ago="${n.since}">${ago(now() - n.since)}</span>` : `<span data-since="${c.from}">${dur(now() - c.from)}</span> · <span data-cost="${id}">${usd(c.cost, c.est)}</span>`}</span></div>`;
+    }).join('');
+    return `<article class="runner"><div class="flag" style="height:auto;border-top-width:2px"><div class="name" style="width:100%"><h2>${r.name}</h2><span class="state ${r.state === 'declining' ? 'pace' : ''}">${r.state}</span><span class="slots">${ws.slots.map(slotGlyph).join('')}</span></div></div>
+      <p class="stand">${r.harness} · ${r.spends} · ${ws.name} ${ws.slots.filter(Boolean).length}/${ws.slots.length} · winter 0/4 · seen <span data-ago="${r.seen}">${ago(now() - r.seen)}</span> ago</p>
+      ${rows}
+      <div class="acts"><button data-pause="${r.name}">Pause</button><button>Transcripts</button></div></article>`;
+  }).join('<div style="height:12px"></div>');
+}
+Theme.init(); shell(); gauges(); runners();
+let seenAt = FLEET.host.reported;
+Live.start(t => { if (t - seenAt > 31000) seenAt = t - 1000; $('#seen').textContent = ago(t - seenAt); $('[data-rep]').textContent = clock(seenAt); });
+Live.accrue();
+Keys.init();
+document.addEventListener('click', e => { const p = e.target.closest('[data-pause]'); if (p) toast(`${p.dataset.pause} paused — finishing held chunks`); });
+$$('[data-act]').forEach(b => b.onclick = () => Theme.toggle());
+</script>
+</body>
+</html>

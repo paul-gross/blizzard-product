@@ -1,0 +1,454 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>tacit — the docket</title>
+<style>
+/* Two inks. Graphite is the fleet's hand; vermilion is the operator's. Nothing else is coloured. */
+:root{
+  --ground:#ebe9e2; --sheet:#f4f3ee; --rule:#cdc9be; --rule2:#dedad0;
+  --fleet:#1c1c1a; --fleet2:#5f5c55; --fleet3:#9a968c;
+  --you:#cf3a1c; --you-wash:#f6dfd6;
+  --sans:"Noto Sans",sans-serif; --serif:"Noto Serif",serif; --mono:"Noto Sans Mono",monospace;
+}
+::selection{background:var(--you-wash);color:var(--you)}
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{width:1600px;height:1000px;overflow:hidden;background:var(--ground);color:var(--fleet);
+  font-family:var(--sans);font-stretch:87.5%;font-size:14px;line-height:1.38;-webkit-font-smoothing:antialiased}
+.id{font-family:var(--mono);font-size:13px;letter-spacing:-.02em}
+.ref{color:var(--fleet2)}
+.ink{font-family:var(--serif);font-style:italic;color:var(--you)}
+.num{font-variant-numeric:tabular-nums}
+
+/* masthead: one sentence, not a strip of tiles */
+header{height:74px;display:grid;grid-template-columns:150px 1fr 430px;align-items:end;padding:0 0 12px;border-bottom:1px solid var(--fleet)}
+.mark{padding-left:22px;font-family:var(--serif);font-size:22px;letter-spacing:.01em}
+.mark small{display:block;font-family:var(--sans);font-size:11.5px;color:var(--fleet2);letter-spacing:0}
+.posture{font-size:19px;line-height:1.3;font-stretch:87.5%;padding-right:20px}
+.posture b{font-weight:600}
+.posture .ink{font-size:19px}
+.purse{padding-right:22px;text-align:right;font-size:13px;color:var(--fleet2)}
+.purse .draw{display:flex;justify-content:flex-end;gap:2px;margin:4px 0 3px}
+.purse .draw i{width:5px;height:9px;background:var(--fleet)}
+.purse .draw i.o{background:none;border:1px solid var(--fleet3)}
+.purse .draw i.cap{background:var(--you);width:2px}
+
+main{display:grid;grid-template-columns:1150px 450px;height:calc(1000px - 74px - 34px)}
+.docket{overflow:hidden;border-right:1px solid var(--rule);position:relative}
+aside{overflow:hidden;padding:14px 22px 0 22px;background:var(--sheet)}
+
+/* the docket: fuse | motion | margin */
+.sec{display:grid;grid-template-columns:150px 1fr 230px;padding:10px 0 5px;align-items:baseline}
+.sec h2{grid-column:2;font-size:13px;font-weight:600;color:var(--fleet)}
+.sec h2 span{font-weight:400;color:var(--fleet2)}
+.sec .mh{grid-column:3;font-size:12px;color:var(--fleet3);padding-left:16px}
+.row{display:grid;grid-template-columns:150px 1fr 230px;border-top:1px solid var(--rule2);min-height:30px;cursor:default;position:relative}
+.row:hover{background:#e4e1d8}
+.row.sel{background:var(--sheet);box-shadow:inset 3px 0 0 var(--fleet)}
+.fuse{padding:7px 12px 0 22px;display:flex;flex-direction:column;gap:3px}
+.ticks{display:flex;gap:2px;height:10px;align-items:flex-end}
+.ticks i{width:2px;height:10px;background:var(--fleet)}
+.ticks i.s{height:6px;background:var(--fleet3)}
+.ft{font-size:12px;color:var(--fleet2)}
+.ft b{font-weight:600;color:var(--fleet)}
+.body{padding:5px 16px 5px 0;position:relative;min-width:0}
+.body .ln2{font-size:12.5px;color:var(--fleet2);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.body .ln2 .note{display:inline;font-size:12.5px}
+.body .ln2 .t{color:var(--fleet3)}
+.body .say{font-size:14.5px}
+.body .say b{font-weight:600}
+.body .t{color:var(--fleet2)}
+.body .note{font-size:12.5px;color:var(--fleet2);margin-top:2px}
+.body .note b{color:var(--fleet);font-weight:600}
+.margin{min-width:0;padding:6px 14px 4px 14px;border-left:1px solid var(--rule2);font-size:12.5px;color:var(--fleet3)}
+.margin .ink{font-size:13.5px}
+.margin .k{display:none}
+.row.sel .margin .k,.row:hover .margin .k{display:inline}
+.k{font-family:var(--mono);font-size:11px;color:var(--fleet2)}
+.k kbd{font-family:var(--mono);border-bottom:1px solid var(--fleet3);padding:0 2px;color:var(--fleet);margin-right:2px}
+
+/* blanks: motions with a hole the operator must fill */
+.row.blank{min-height:70px}
+.row.blank .body{padding:8px 16px 8px 0}
+.row.blank .say{font-size:17px;line-height:1.35}
+.hole{display:inline-block;min-width:170px;border-bottom:2px solid var(--you);color:var(--you);font-family:var(--serif);font-style:italic;height:1.15em;vertical-align:baseline}
+.opts{display:flex;gap:18px;margin-top:6px;font-size:13px}
+.opts span{color:var(--fleet2)}
+.opts span kbd{font-family:var(--mono);font-size:11px;color:var(--you);border:1px solid var(--you);padding:0 4px;margin-right:5px}
+.stake{font-size:12.5px;color:var(--fleet2);margin-top:4px}
+.stake b{color:var(--fleet);font-weight:600}
+.weight{display:inline-flex;gap:1px;vertical-align:middle;margin-left:6px}
+.weight i{width:3px;height:9px;background:var(--fleet)}
+
+/* the operator's marks */
+.row.objected .say,.row.auto .say{text-decoration:line-through;text-decoration-color:var(--you);text-decoration-thickness:2px}
+.row.auto{opacity:.78}
+.row.auto .fuse .ticks i{background:var(--you)}
+.row.held .ticks i{background:var(--you)}
+.row.held .ft::after{content:" held";font-family:var(--serif);font-style:italic;color:var(--you)}
+.row.signed{opacity:.5}
+.row.signed .say::after{content:"";}
+.row.leaving{transition:opacity .6s, max-height .6s;opacity:0}
+.repeat{font-size:12.5px;color:var(--fleet);border-left:2px solid var(--fleet);padding-left:6px;margin-top:4px}
+
+/* evidence, unfolded under a motion */
+.evidence{grid-column:2 / 4;padding:2px 20px 12px 0;display:none;font-size:12.5px;color:var(--fleet2)}
+.row.open .evidence{display:block}
+.trail{display:flex;flex-wrap:wrap;gap:0;margin:4px 0 6px;font-size:12.5px}
+.trail span{padding:1px 7px 1px 0;margin-right:7px;border-right:1px solid var(--rule)}
+.trail .f{color:var(--fleet);font-weight:600;text-decoration:underline;text-decoration-style:wavy;text-decoration-color:var(--fleet3)}
+.facts{display:grid;grid-template-columns:repeat(4,auto);gap:2px 26px;justify-content:start}
+.facts dt{color:var(--fleet3)} .facts dd{color:var(--fleet)}
+
+.horizon{display:grid;grid-template-columns:150px 1fr 230px;border-top:1px dashed var(--fleet3);padding:10px 0 12px}
+.horizon .body{font-size:13px;color:var(--fleet2)}
+.horizon .body b{color:var(--fleet);font-weight:600}
+.horizon .fuse{font-size:12px;color:var(--fleet3)}
+
+/* aside */
+aside h3{font-size:13px;font-weight:600;margin:0 0 6px;display:flex;justify-content:space-between;align-items:baseline}
+aside h3 span{font-weight:400;color:var(--fleet3);font-size:12px}
+.orders{margin-bottom:16px}
+.order{display:grid;grid-template-columns:24px 1fr 46px;padding:6px 0;border-top:1px solid var(--rule2);align-items:baseline;cursor:pointer}
+.order .n{font-family:var(--serif);color:var(--you);font-size:13px}
+.order .w{font-family:var(--serif);font-style:italic;color:var(--you);font-size:14px;line-height:1.3}
+.order .c{text-align:right;font-size:12px;color:var(--fleet2)}
+.order .c b{color:var(--fleet);font-weight:600}
+.order.off .w,.order.off .n{color:var(--fleet3);text-decoration:line-through}
+.order.new{background:var(--you-wash)}
+.composer{display:none;border:1px solid var(--you);background:#fff;padding:9px 10px;margin:4px 0 10px}
+.composer.on{display:block}
+.composer .w{font-family:var(--serif);font-style:italic;color:var(--you);font-size:14.5px;outline:none}
+.composer .h{font-size:11.5px;color:var(--fleet2);margin-top:5px}
+.lapsed .l{display:grid;grid-template-columns:44px 52px 1fr 52px;gap:6px;padding:3px 0;border-top:1px solid var(--rule2);font-size:12.5px;align-items:baseline}
+.lapsed .l .tm{color:var(--fleet3)}
+.lapsed .l .tt{white-space:nowrap;overflow:hidden;text-overflow:ellipsis;color:var(--fleet2)}
+.lapsed .l .cs{text-align:right}
+.lapsed .l.fresh{background:var(--you-wash)}
+.lapsed .l.rec .tt{color:var(--fleet)}
+.tally{font-size:13px;color:var(--fleet2);margin:0 0 6px}
+.tally b{color:var(--fleet);font-weight:600}
+
+.hand{margin-bottom:14px}
+.hand .l{display:grid;grid-template-columns:82px 1fr;gap:6px;padding:3px 0;border-top:1px solid var(--rule2);font-size:12.5px}
+.hand .l .tm{color:var(--fleet3)}
+.hand .l .w{font-family:var(--serif);font-style:italic;color:var(--you)}
+.hand .l.fresh{background:var(--you-wash)}
+.away{margin-bottom:14px;padding:10px 12px;border:1px solid var(--fleet);background:var(--ground)}
+.away p{font-size:13.5px;line-height:1.45}
+.away p b{font-weight:600}
+.away .ink{font-size:14px}
+footer{height:34px;border-top:1px solid var(--fleet);display:flex;align-items:center;gap:22px;padding:0 22px;font-size:12px;color:var(--fleet2);background:var(--ground)}
+footer kbd{font-family:var(--mono);font-size:11px;color:var(--fleet);border-bottom:1px solid var(--fleet3);padding:0 2px;margin-right:4px}
+footer .you kbd{color:var(--you);border-color:var(--you)}
+footer .sp{flex:1}
+footer .toast{font-family:var(--serif);font-style:italic;color:var(--you);font-size:13px}
+nav.views{display:flex;gap:14px}
+nav.views a{color:var(--fleet2);text-decoration:none}
+nav.views a.on{color:var(--fleet);border-bottom:1px solid var(--fleet)}
+</style>
+</head>
+<body>
+<header>
+  <div class="mark">tacit<small>blizzard · paul-gross</small></div>
+  <div class="posture" id="posture"></div>
+  <div class="purse">
+    <div><span class="num" id="clock">13:10:00</span> Sunday · you last looked at <b style="color:var(--fleet);font-weight:600">06:58</b></div>
+    <div class="draw" id="draw"></div>
+    <div>drawn today <b class="num" style="color:var(--fleet);font-weight:600" id="spent">~$114.44</b> of your <span class="ink">$150 allowance</span> · yesterday $161.25</div>
+  </div>
+</header>
+<main>
+  <section class="docket" id="docket"></section>
+  <aside>
+    <div class="orders">
+      <h3>Your standing orders <span>the fleet obeys these without asking</span></h3>
+      <div class="composer" id="composer">
+        <div class="w" id="cw" contenteditable="true" spellcheck="false"></div>
+        <div class="h"><span class="k"><kbd>enter</kbd></span> make it standing · <span class="k"><kbd>esc</kbd></span> just this once</div>
+      </div>
+      <div id="orders"></div>
+    </div>
+    <div class="away">
+      <h3>If you walk away now <span>the fleet’s forecast, re-written each minute</span></h3>
+      <p id="away"></p>
+    </div>
+    <div class="hand">
+      <h3>Your hand <span>every mark you made, newest first</span></h3>
+      <div id="hand"></div>
+    </div>
+    <div class="lapsed">
+      <h3>Lapsed without you <span>since 06:58 · silence was consent</span></h3>
+      <p class="tally" id="tally"></p>
+      <div id="lapsed"></div>
+    </div>
+  </aside>
+</main>
+<footer>
+  <nav class="views"><a class="on">docket</a><a href="fleet-desktop.html">purse &amp; hands</a></nav>
+  <span><kbd>j</kbd><kbd>k</kbd>move</span>
+  <span class="you"><kbd>space</kbd>consent now</span>
+  <span class="you"><kbd>x</kbd>object</span>
+  <span class="you"><kbd>X</kbd>object always</span>
+  <span class="you"><kbd>h</kbd>hold the fuse</span>
+  <span class="you"><kbd>1</kbd>–<kbd>3</kbd>fill a blank</span>
+  <span class="you"><kbd>t</kbd>take over</span>
+  <span><kbd>enter</kbd>evidence</span>
+  <span><kbd>u</kbd>undo</span>
+  <span class="sp"></span>
+  <span class="toast" id="toast"></span>
+</footer>
+
+<script>
+// ---- the fleet's docket at 13:10 on 25 Oct, from the baseline capture ----
+const T0 = 13*3600 + 10*60;
+let now = T0;
+const fmtT = s => { s=((s%86400)+86400)%86400; const h=Math.floor(s/3600), m=Math.floor(s%3600/60), x=s%60; return `${String(h).padStart(2,'0')}:${String(m).padStart(2,'0')}:${String(x).padStart(2,'0')}` };
+const hm = s => fmtT(s).slice(0,5);
+
+const orders = [
+  {n:1, w:"Hold every delivery into winter for my signature.", fired:0, on:true},
+  {n:2, w:"Keep each subscription at or under its 7-day pace.", fired:14, on:true},
+  {n:3, w:"Ask me before any chunk spends past $25.", fired:1, on:true},
+  {n:4, w:"Claim survey runs only after 19:00.", fired:9, on:true},
+  {n:6, w:"Spend at most $150 a day; past it, claim nothing new.", fired:0, on:true},
+];
+
+// kind: blank (needs a human), motion (proceeds when its fuse burns), auto (already objected by a standing order)
+const items = [
+  {id:"6J9H", kind:"blank", stakeN:5, holds:23,
+   say:`<b class="id">C-6J9H</b> could not land <b>PR #1498</b> after 25 attempts. Shall I <span class="hole"></span> ?`,
+   t:"blizzard#1365 [FORGES] Report every record the forge migration would refuse",
+   opts:["land it by hand, I'll watch","send it back to build","park it and free the slot"],
+   stake:`waiting on you since 12:48 · spent <b>$8.20</b> · holds <b>C-ZEVE</b> and <b>C-N1JR</b> directly, <b>23 chunks</b> downstream across FORGES, FLOWS, POLICIES, STRICT`,
+   ev:{trail:["build pass","review pass","pre-push clean","deliver fail","… 21 more deliver attempts","deliver fail: land answered failure"],runner:"xps/r-claude",node:"deliver",graph:"G-YACK#adv-dwf-20261025",cost:"$8.20 · 19.4M cache read",pr:"paul-gross/blizzard #1498",dep:"after C-ZWE9 (done)"}},
+  {id:"QWYS", kind:"blank", stakeN:1, holds:0,
+   say:`<b class="id">C-QWYS</b> stopped at resolve on <b>PR #1501</b>. Shall I <span class="hole"></span> ?`,
+   t:"blizzard#1449 [STRICT] Type the hub auth repositories",
+   opts:["rebase and retry the land","send it back to build","hand the session to me"],
+   stake:`waiting on you since 12:52 · spent <b>$4.03</b> · holds <b>nothing</b> downstream`,
+   ev:{trail:["build pass","review pass","pre-push clean","deliver: resolve needs a human"],runner:"xps/r-claude",node:"deliver",graph:"G-TP4E#bas-dwf-20261025",cost:"$4.03",pr:"paul-gross/blizzard #1501",dep:"none"}},
+
+  {id:"PTP2", kind:"motion", fuse:100,
+   say:`<b class="id">C-PTP2</b> will land <b>PR #1492</b> into paul-gross/blizzard.`,
+   t:"blizzard#1459 [PW-HUBTIER] Tag every per-tenant sweep line with its tenant",
+   note:`pre-push clean · ~$3.49 · frees <b>C-JME3</b>`, gen:"Hold every landing from r-chatgpt for my signature.",
+   ev:{trail:["triage","build pass","review pass","mutation pass","pre-push clean","deliver …"],runner:"xps/r-chatgpt",node:"deliver",graph:"G-TP4E#bas-dwf-20261025",cost:"~$3.49",pr:"paul-gross/blizzard #1492",dep:"none"}},
+  {id:"27A6", kind:"motion", fuse:190,
+   say:`<b class="id">C-27A6</b> will land <b>PR #121</b> into paul-gross/blizzard-mock.`,
+   t:"blizzard#1463 [PW-HUBTIER] Choose the stub IdP's identity by login_hint",
+   note:`pre-push clean · ~$1.47 · <b>C-RE86</b> drops to 2 unmet`, gen:"Hold every landing into blizzard-mock for my signature.",
+   ev:{trail:["triage","build pass","review pass","pre-push clean","deliver …"],runner:"xps/r-chatgpt",node:"deliver",graph:"G-TP4E#bas-dwf-20261025",cost:"~$1.47",pr:"paul-gross/blizzard-mock #121",dep:"none"}},
+  {id:"WSCR", kind:"motion", fuse:null, trig:"on review pass",
+   say:`<b class="id">C-WSCR</b> will try landing <b>PR #1500</b> a third time.`,
+   t:"blizzard#1497 Add an Anthropic credential renewer that refreshes via a haiku one-shot",
+   note:`$1.58 so far · in review now`, repeat:`Both earlier landings failed the same way: “land answered failure”. I have no new reason to expect a different result.`,
+   gen:"Object to a third landing after two identical failures.",
+   ev:{trail:["build pass","review fail","build pass","review pass","pre-push clean","deliver fail","pre-push clean","deliver fail","pre-push significant","build pass","review …"],fails:[1,5,7],runner:"xps/r-claude",node:"review · attempt 12",graph:"G-TP4E#bas-dwf-20261025",cost:"$1.58 · 3.5M cache read",pr:"paul-gross/blizzard #1500",dep:"none"}},
+  {id:"ZG7T", kind:"motion", fuse:370,
+   say:`<b class="id">C-ZG7T</b> will open a PR for <b>hub:626</b> and <b>hub:627</b> and go to deliver.`,
+   t:"Land a gate resolution's artifacts once · Pin two unguarded humans invariants",
+   note:`pre-push running · $0.70`, gen:"Hold every hub-doc chunk at pre-push for my read.",
+   ev:{trail:["triage","build pass","review pass","pre-push …"],runner:"xps/r-claude",node:"pre-push",graph:"G-TP4E#bas-dwf-20261025",cost:"$0.70",pr:"not yet",dep:"none"}},
+  {id:"1DTX", kind:"motion", fuse:540,
+   say:`<b class="id">r-claude</b> will claim <b class="id">C-1DTX</b> into the next free blizzard-claude slot.`,
+   t:"hub:629 Recheck the holder inside the route-token rekey, and document that a per-chunk pause outranks a restart's fence",
+   note:`first unblocked chunk in the queue · est. $2–4`, gen:"Ask me before r-claude claims any hub: chunk.",
+   ev:{trail:["ready, unblocked, 1st in order"],runner:"—",node:"triage",graph:"G-TP4E#bas-dwf-20261025",cost:"$0",pr:"—",dep:"none"}},
+  {id:"BWA2", kind:"motion", fuse:720,
+   say:`<b class="id">C-BWA2</b> will finish mutation and move to pre-push.`,
+   t:"blizzard#1461 [PW-HUBTIER] Let an event-stream client join from the latest event",
+   note:`~$2.26 now, ~$3.10 by pre-push`, gen:"Skip mutation on PW-HUBTIER ports.",
+   ev:{trail:["triage","build pass","review pass","mutation …"],runner:"xps/r-claude",node:"mutation",graph:"G-TP4E#bas-dwf-20261025",cost:"~$2.26",pr:"not yet",dep:"none"}},
+  {id:"2475", kind:"motion", fuse:1080,
+   say:`<b class="id">C-2475</b> will finish build and go to review.`,
+   t:"blizzard#1446 [STRICT] Type the runner store adapters' row mapping",
+   note:`~$2.06 · once it lands, frees <b>C-DB49</b> (hub:632, hub:633)`, gen:"Hold STRICT chunks at review for my read.",
+   ev:{trail:["triage","build …"],runner:"xps/r-chatgpt",node:"build",graph:"G-TP4E#bas-dwf-20261025",cost:"~$2.06",pr:"not yet",dep:"none"}},
+  {id:"FC1D", kind:"motion", fuse:1320,
+   say:`<b class="id">C-FC1D</b> will finish the five doc corrections and go to review.`,
+   t:"hub:620 · hub:628 · hub:616 · hub:630 · hub:631",
+   note:`$0.27 · building`, gen:"Ask me before one chunk carries more than three items.",
+   ev:{trail:["triage","build …"],runner:"xps/r-claude",node:"build",graph:"G-TP4E#bas-dwf-20261025",cost:"$0.27",pr:"not yet",dep:"none"}},
+  {id:"MFJE", kind:"motion", fuse:1500,
+   say:`<b class="id">C-MFJE</b> will finish build and go to review.`,
+   t:"blizzard#1465 [PW-HUBTIER] Give the harness a mock runner it can drive and runners that serve projects",
+   note:`~$0.10 · frees <b>C-P79Q</b>`, gen:"Hold PW-HUBTIER chunks at review for my read.",
+   ev:{trail:["triage","build …"],runner:"xps/r-chatgpt",node:"build",graph:"G-TP4E#bas-dwf-20261025",cost:"~$0.10",pr:"not yet",dep:"none"}},
+  {id:"DF68", kind:"auto", fuse:5460, order:2,
+   say:`<b class="id">r-chatgpt</b> would claim <b class="id">C-DF68</b> and <b class="id">C-0ACF</b> now.`,
+   t:"blizzard#1468 Move the helpers other test files import · blizzard#1485 Move the tenant teardown test",
+   note:`OpenAI 7d: 8% spent, 7% elapsed · resumes at 14:41`,
+   ev:{trail:["ready, unblocked"],runner:"xps/r-chatgpt (declining)",node:"triage",graph:"G-TP4E#bas-dwf-20261025",cost:"$0",pr:"—",dep:"none"}},
+];
+
+const lapsed = [
+  ["12:24","VA7X","hub:602 Make a gate's resolving transition name a decision, +3","~$17.03"],
+  ["12:03","AFTK","blizzard#1447 [STRICT] Type the runner harness adapters' parsed output","$7.36"],
+  ["11:25","R1D5","hub:624 Settle one owner for the statement guards, +2","~$3.69"],
+  ["10:19","BB9E","blizzard#1445 [STRICT] Type the compat OpenAPI classifier","$1.95"],
+  ["09:31","TX56","blizzard#1175 [NOTES] Cross-check a release's notes against its compat breaks","$7.00"],
+  ["08:56","F5V9","blizzard#1462 [PW-HUBTIER] Make the hub's login throttle configurable","$1.49"],
+  ["08:46","RWE7","blizzard#1190 [FLAGS] Write the flag procedure and the operator's flags guide","$1.65"],
+  ["08:03","2R1E","blizzard#1443 [STRICT] Delete the inert type-ignores in shipping code","$0.88"],
+  ["06:18","R1D5","reaped on r-chatgpt (await worker identity), retried — recovered",""],
+];
+const hand = [
+  ["06:58","consented early: C-ZWE9 past $25 (§3), $40.11"],
+  ["06:57","objected: C-PZD6 third retry after reap — then lifted"],
+  ["yest. 21:10","made §4 from an objection to a survey claim"],
+];
+let spent = 114.44;
+let sel = 0;
+const undo = [];
+
+function ticks(sec, cls){
+  if(sec==null) return `<div class="ticks" title="event-driven"><i class="s"></i><i class="s"></i><i class="s"></i></div>`;
+  const m = Math.ceil(sec/60), n = Math.min(m,30);
+  let h = ''; for(let i=0;i<n;i++) h += `<i${i>=n-1 && sec%60 && sec<60*30 ? ' class="s"':''}></i>`;
+  return `<div class="ticks">${h}${m>30?'<span style="font-size:10px;color:var(--fleet3);margin-left:3px">+'+(m-30)+'</span>':''}</div>`;
+}
+function fuseText(it){
+  if(it.kind==='blank') return `<span class="ft">no fuse — <span class="ink">yours</span></span>`;
+  if(it.fuse==null) return `<span class="ft"><b>${it.trig}</b></span>`;
+  const s = Math.max(0,it.fuse), m = Math.floor(s/60), x = s%60;
+  const when = hm(now+s);
+  return `<span class="ft"><b class="num">${m}:${String(x).padStart(2,'0')}</b> · at ${when}</span>`;
+}
+function margin(it){
+  if(it.mark) return it.mark;
+  if(it.kind==='blank') return `<span class="k"><kbd>1</kbd><kbd>2</kbd><kbd>3</kbd>fill · <kbd>t</kbd>take over · <kbd>enter</kbd>evidence</span>`;
+  if(it.kind==='auto') return `<span class="ink">objected by your order §${it.order}</span><br><span class="k"><kbd>space</kbd>overrule it, just this once</span>`;
+  return `<span class="k"><kbd>x</kbd>object · <kbd>X</kbd>always · <kbd>h</kbd>hold · <kbd>space</kbd>now</span>`;
+}
+function evidence(it){
+  const e = it.ev; if(!e) return '';
+  const tr = e.trail.map((s,i)=>`<span class="${(e.fails||[]).includes(i)||/fail|needs/.test(s)?'f':''}">${s}</span>`).join('');
+  return `<div class="evidence"><div class="trail">${tr}</div><dl class="facts">
+    <dt>runner</dt><dd>${e.runner}</dd><dt>node</dt><dd>${e.node}</dd>
+    <dt>spent</dt><dd>${e.cost}</dd><dt>PR</dt><dd>${e.pr}</dd>
+    <dt>graph</dt><dd class="id">${e.graph}</dd><dt>after</dt><dd>${e.dep}</dd></dl></div>`;
+}
+function rowHTML(it,i){
+  const cls = ['row',it.kind, it.state||'', i===sel?'sel':'', it.open?'open':''].join(' ');
+  let body = `<div class="say">${it.say.replace('<span class="hole"></span>', it.fill?`<span class="hole">${it.fill}</span>`:'<span class="hole"></span>')}</div><div class="t">${it.t}</div>`;
+  if(it.kind==='blank'){
+    body += `<div class="opts">${it.opts.map((o,j)=>`<span><kbd>${j+1}</kbd>${o}</span>`).join('')}</div>`;
+    body += `<div class="stake">${it.stake}<span class="weight">${'<i></i>'.repeat(it.stakeN)}</span></div>`;
+  } else {
+    body = `<div class="say">${it.say}</div><div class="ln2"><span class="note">${it.note}</span> <span class="t">· ${it.t}</span></div>`;
+    if(it.repeat) body += `<div class="repeat">${it.repeat}</div>`;
+  }
+  return `<div class="${cls}" data-i="${i}">
+    <div class="fuse">${it.kind==='blank'?'':ticks(it.fuse)}${fuseText(it)}</div>
+    <div class="body">${body}</div>
+    <div class="margin">${margin(it)}</div>${evidence(it)}</div>`;
+}
+function render(){
+  const live = items.filter(it=>!it.gone);
+  const blanks = live.filter(it=>it.kind==='blank');
+  const motions = live.filter(it=>it.kind!=='blank');
+  const blankStake = 25;
+  let h = `<div class="sec"><h2>Cannot proceed without you <span>· ${blanks.filter(b=>!b.fill).length} blank${blanks.filter(b=>!b.fill).length===1?'':'s'}, ordered by what they hold</span></h2><div class="mh">your marks go in this margin</div></div>`;
+  h += blanks.map(it=>rowHTML(it, items.indexOf(it))).join('');
+  h += `<div class="sec"><h2>Proceeding unless you object <span>· the next hour, soonest fuse first</span></h2></div>`;
+  h += motions.map(it=>rowHTML(it, items.indexOf(it))).join('');
+  h += `<div class="horizon"><div class="fuse">beyond the hour</div><div class="body">
+    <b>44 more motions</b> past ${hm(now+3600)}: the FORGES chain (4) moves the moment you fill C-6J9H’s blank; 9 survey runs wait for 19:00 by your order §4;
+    your $150 allowance runs dry near <b>17:40</b> and §6 stops new claims; 31 chunks wait on others to land.
+   </div><div class="margin"></div></div>`;
+  document.getElementById('docket').innerHTML = h;
+  document.querySelectorAll('.row').forEach(r=>r.addEventListener('click',()=>{sel=+r.dataset.i; if(items[sel].kind!=='blank'||true) items[sel].open=!items[sel].open; render();}));
+
+  const running = 8, need = blanks.filter(b=>!b.fill).length, held = blanks.filter(b=>!b.fill).reduce((a,b)=>a+b.holds,0);
+  const nextLook = need ? `<span class="ink">fill ${need===1?'that blank':'those two blanks'}</span> and nothing needs you before <b>~17:40</b>, when your allowance runs dry.`
+                        : `nothing needs you before <b>~17:40</b>, when your allowance runs dry.`;
+  document.getElementById('posture').innerHTML =
+    `${running} at work, 53 queued and 41 of those waiting on others. <b>${need} need${need===1?'s':''} you</b>${need?(held?`, holding ${held} chunk${held===1?'':'s'} behind ${need===1?'it':'them'}`:`, though ${need===1?'it holds':'they hold'} nothing up`):''}. ${need?'If you ':''}${nextLook}`;
+
+  document.getElementById('orders').innerHTML = orders.map((o,i)=>`<div class="order ${o.on?'':'off'} ${o.new?'new':''}" data-o="${i}"><span class="n">§${o.n}</span><span class="w">${o.w}</span><span class="c">fired <b>${o.fired}</b></span></div>`).join('');
+  document.querySelectorAll('.order').forEach(e=>e.addEventListener('click',()=>{const o=orders[+e.dataset.o]; o.on=!o.on; toast(o.on?`§${o.n} stands again`:`§${o.n} lifted — the fleet stops obeying it`); render();}));
+
+  const open = blanks.filter(b=>!b.fill).length;
+  document.getElementById('away').innerHTML =
+    (open ? (blanks.find(b=>b.id==='6J9H'&&!b.fill) ? `<b>23 chunks</b> sit idle all night behind C-6J9H; the fleet works around the open blank${open===2?'s':''}. <span class="ink">Fill it first.</span> `
+              : `C-QWYS stays open and holds nothing. `) : '')
+    + `By <b>17:40</b> about <b>9 chunks</b> land and your <b>$150</b> is drawn; §6 then stops new claims until midnight and the night carries <b>~14 more</b> by 07:00. Nothing wakes you. <span class="ink">Raise the allowance in the purse to keep every hand busy.</span>`;
+  document.getElementById('hand').innerHTML = hand.slice(0,5).map(l=>`<div class="l ${l.fresh?'fresh':''}"><span class="tm num">${l[0]}</span><span class="w">${l[1]}</span></div>`).join('');
+  const delivered = lapsed.filter(l=>l[3]).length;
+  document.getElementById('tally').innerHTML = `<b>${delivered} landed</b> for <b>$${lapsed.reduce((a,l)=>a+(parseFloat(l[3].replace(/[~$]/g,''))||0),0).toFixed(2)}</b>; 2 reaped attempts recovered on their own; your orders objected <b>24 times</b> on your behalf.`;
+  document.getElementById('lapsed').innerHTML = lapsed.map(l=>`<div class="l ${l.fresh?'fresh':''} ${l[3]?'':'rec'}"><span class="tm num">${l[0]}</span><span class="id">C-${l[1]}</span><span class="tt">${l[2]}</span><span class="cs num">${l[3]}</span></div>`).join('');
+
+  const d = document.getElementById('draw'); let dh=''; const used=Math.round(spent/150*40);
+  for(let i=0;i<40;i++) dh += `<i class="${i<used?'':'o'}"></i>`; d.innerHTML = dh + '<i class="cap"></i>';
+  document.getElementById('spent').textContent = '~$'+spent.toFixed(2);
+}
+
+function mark(s){ hand.unshift([nowMark(), s]); hand[0].fresh=true; }
+function toast(s){ const t=document.getElementById('toast'); t.textContent=s; clearTimeout(toast.h); toast.h=setTimeout(()=>t.textContent='',4000); }
+function snapshot(){ undo.push(JSON.stringify({items,orders,lapsed,hand})); }
+function restore(){ const s=undo.pop(); if(!s) return toast('nothing to undo'); const o=JSON.parse(s); items.splice(0,items.length,...o.items); orders.splice(0,orders.length,...o.orders); lapsed.splice(0,lapsed.length,...o.lapsed); hand.splice(0,hand.length,...o.hand); toast('undone'); render(); }
+const nowMark = () => hm(now);
+
+function lapse(it, by){
+  it.gone = true;
+  lapsed.unshift([nowMark(), it.id, (it.say.replace(/<[^>]+>/g,'')).replace(/\s+/g,' ').slice(0,90), it.note && it.note.match(/\$[\d.]+/) ? it.note.match(/~?\$[\d.]+/)[0] : '']);
+  lapsed[0].fresh = true;
+  if(sel>=items.length || items[sel].gone) moveSel(1);
+}
+function moveSel(d){
+  const vis = items.map((it,i)=>[it,i]).filter(([it])=>!it.gone).map(([,i])=>i);
+  // reading order: blanks then motions
+  const order = vis.filter(i=>items[i].kind==='blank').concat(vis.filter(i=>items[i].kind!=='blank'));
+  let p = order.indexOf(sel); if(p<0) p=0; else p=Math.max(0,Math.min(order.length-1,p+d)); sel=order[p];
+}
+function act(key){
+  const it = items[sel]; if(!it) return;
+  if(key==='x'){ if(it.kind!=='motion') return; snapshot(); it.state='objected'; it.mark=`<span class="ink">objected ${nowMark()} — ${it.id} returns to waiting</span>`; toast(`objected: ${it.id} will not do this`); mark(`objected: C-${it.id}`); }
+  else if(key==='X'){ if(it.kind!=='motion') return; const c=document.getElementById('composer'); c.classList.add('on'); const w=document.getElementById('cw'); w.textContent=it.gen; w.focus(); document.getSelection().selectAllChildren(w); return; }
+  else if(key==='h'){ if(it.kind!=='motion') return; snapshot(); it.state = it.state==='held'?'':'held'; it.mark = it.state?`<span class="ink">held at ${nowMark()} until you release it</span>`:''; toast(it.state?`fuse on ${it.id} held`:`fuse on ${it.id} burning again`); mark(it.state?`held C-${it.id}`:`released C-${it.id}`); }
+  else if(key===' '){ snapshot();
+    if(it.kind==='auto'){ it.kind='motion'; it.fuse=4; it.mark=`<span class="ink">overruled §${it.order}, once</span>`; toast(`§${it.order} overruled for ${it.id}`); }
+    else if(it.kind==='motion'){ it.state='signed'; it.mark=`<span class="ink">consented ${nowMark()}</span>`; render(); setTimeout(()=>{lapse(it); render();},700); toast(`consented: ${it.id} goes now`); mark(`consented now: C-${it.id}`); return; } }
+  else if(/[123]/.test(key)){ if(it.kind!=='blank') return; snapshot(); it.fill = it.opts[+key-1]; it.mark=`<span class="ink">filled ${nowMark()}</span>`; toast(`${it.id}: ${it.fill}`); mark(`filled C-${it.id}: ${it.fill}`); setTimeout(()=>{ it.gone=true; lapsed.unshift([nowMark(),it.id,`you: ${it.fill}`,'']); lapsed[0].fresh=true; moveSel(1); render(); },1100); }
+  else if(key==='t'){ it.mark=`<span class="ink">copied</span> <span class="id" style="color:var(--fleet)">blizzard chunk takeover C-${it.id}</span>`; toast(`resume command for C-${it.id} copied — the fleet stands back`); mark(`took over C-${it.id}`); }
+  else if(key==='Enter'){ it.open=!it.open; }
+  render();
+}
+document.getElementById('cw').addEventListener('keydown',e=>{
+  e.stopPropagation();
+  const c=document.getElementById('composer');
+  if(e.key==='Enter'){ e.preventDefault(); snapshot(); const n=Math.max(...orders.map(o=>o.n))+1; orders.unshift({n, w:e.target.textContent.trim(), fired:1, on:true, new:true});
+    const it=items[sel]; it.kind='auto'; it.order=n; it.state=''; it.mark=''; c.classList.remove('on'); e.target.blur(); toast(`§${n} stands — the fleet will not ask again`); mark(`made §${n} from C-${it.id}`); render(); }
+  if(e.key==='Escape'){ c.classList.remove('on'); e.target.blur(); act('x'); }
+});
+document.addEventListener('keydown',e=>{
+  if(e.target.isContentEditable) return;
+  if(e.key==='j'||e.key==='ArrowDown'){ moveSel(1); render(); }
+  else if(e.key==='k'||e.key==='ArrowUp'){ moveSel(-1); render(); }
+  else if(e.key==='u') restore();
+  else if(e.key===' '){ e.preventDefault(); act(' '); }
+  else if(['x','X','h','t','Enter','1','2','3'].includes(e.key)) act(e.key);
+});
+
+// the clock: fuses burn, motions lapse into the record when they reach zero
+setInterval(()=>{
+  now++;
+  document.getElementById('clock').textContent = fmtT(now);
+  let changed=false;
+  items.forEach(it=>{ if(it.gone||it.fuse==null||it.state==='held'||it.state==='objected') return;
+    if(it.kind==='motion'||it.kind==='auto'){ it.fuse--; changed=true; if(it.fuse<=0 && it.kind==='motion'){ lapse(it); toast(`${it.id} went ahead — no objection`); } } });
+  if(now%7===0) spent += 0.03;
+  if(changed) render();
+},1000);
+
+render();
+// #keys=j,j,x,... replays keystrokes, so the mock can be screenshotted mid-interaction
+const m = location.hash.match(/keys=([^&]*)/);
+if(m){ m[1].split(',').forEach(k=>{ k=decodeURIComponent(k); if(k==='sp') k=' ';
+  if(k.startsWith('type:')){ const w=document.getElementById('cw'); if(document.activeElement===w){ w.textContent=k.slice(5);} return; }
+  const t = document.activeElement && document.activeElement.isContentEditable ? document.activeElement : document;
+  t.dispatchEvent(new KeyboardEvent('keydown',{key:k,bubbles:true})); }); }
+</script>
+</body>
+</html>

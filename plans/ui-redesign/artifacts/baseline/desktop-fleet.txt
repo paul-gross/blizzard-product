@@ -1,0 +1,227 @@
+BLIZZARD
+PAUL-GROSS
+CHUNKS
+990
+BACKLOG
+1
+READY
+53
+WAITING
+0
+NEEDS HUMAN
+2
+RUNNING
+8
+DONE
+926
+TODAY
+~$114.44
+YESTERDAY
+~$161.25
+HUB
+ok
+BOARD
+FLEET
+GRAPHS
+EVENTS
+GARDENING
+ADMIN
+PROJECT LENS
+All
+blizzard
+winter
+FLEET
+1
+xps
+6 agents
+H-G1YK
+HOST
+H-G1YK
+xps
+·
+H-G1YK
+·
+ONLINE
+·
+[34s]
+Enroll
+Revoke token
+Retire
+CONNECTION
+LAST REPORT
+2026/10/25 13:10:01 [34s]
+REGISTERED
+2026/10/16 04:36:51
+ADDED
+2026/10/16 04:36:09 by paul-gross
+URL
+http://127.0.0.1:8431
+TOKEN
+ENROLLED
+AGENTS
+10 / 6 busy across 2 runners
+WORKSPACES · ENVIRONMENTS
+10 / 14 IN USE
+blizzard-claude
+6 / 6 in use
+C-WSCR
+REVIEW
+r-claude
+1 env
+C-BWA2
+MUTATION
+r-claude
+1 env
+C-QWYS
+DELIVER
+r-claude
+1 env
+C-ZG7T
+PRE-PUSH
+r-claude
+1 env
+C-FC1D
+REVIEW
+r-claude
+1 env
+C-6J9H
+DELIVER
+r-claude
+1 env
+winter
+0 / 4 in use
+FREE
+FREE
+FREE
+FREE
+blizzard-chatgpt
+4 / 4 in use
+C-MFJE
+BUILD
+r-chatgpt
+1 env
+C-27A6
+DELIVER
+r-chatgpt
+1 env
+C-PTP2
+DELIVER
+r-chatgpt
+1 env
+C-2475
+BUILD
+r-chatgpt
+1 env
+SUBSCRIPTION USAGE
+ANTHROPIC
+[3m]
+5h
+7d
+OPENAI
+[1m]
+7d
+RUNNERS · 2
+r-chatgpt
+·
+R-NQ1B
+·
+opencode · 3 agents · 4 busy
+·
+[17s]
+Pause
+BINDS
+blizzard
+·
+blizzard-chatgpt
+·
+4 working
+winter
+·
+winter
+·
+0 working
+SPENDS
+OpenAI
+HARNESS
+OPENCODE
+GATES
+none
+VERSION
+0.3.0.dev1002+f208eca7d
+IN WINDOW
+STATE
+DECLINING — PACE: 7D: 8% SPENT, 7% ELAPSED, UNTIL 14:41
+DECLINING
+declining — pace: 7d: 8% spent, 7% elapsed, until 14:41
+HELD CHUNKS · 4
+C-MFJE
+BUILD
+·
+RUNNING
+C-27A6
+DELIVER
+·
+DELIVERING
+C-PTP2
+DELIVER
+·
+DELIVERING
+C-2475
+BUILD
+·
+RUNNING
+r-claude
+·
+R-FNE4
+·
+claude code · 3 agents · 6 busy
+·
+[21s]
+Pause
+BINDS
+blizzard
+·
+blizzard-claude
+·
+6 working
+winter
+·
+winter
+·
+0 working
+SPENDS
+Anthropic
+HARNESS
+CLAUDE CODE
+GATES
+none
+VERSION
+0.3.0.dev1002+f208eca7d
+IN WINDOW
+STATE
+WORKING
+HELD CHUNKS · 6
+C-WSCR
+REVIEW
+·
+RUNNING
+C-BWA2
+MUTATION
+·
+RUNNING
+C-QWYS
+DELIVER
+·
+NEEDS_HUMAN
+C-ZG7T
+PRE-PUSH
+·
+RUNNING
+C-FC1D
+REVIEW
+·
+RUNNING
+C-6J9H
+DELIVER
+·
+NEEDS_HUMAN

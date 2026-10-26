@@ -1,0 +1,455 @@
+blizzard
+paul-gross
+⋮
+1
+NEEDS YOU
+8
+RUNNING
+54
+READY
+18
+DONE TODAY
+2/2
+RUNNERS UP
+FLEET SPEND · TODAY
+~$107.18
+175.6M tok
+blizzard#1365
+C-6J9H
+[FORGES] Report every record the forge migration would refuse
+DELIVER
+·
+xps
+/
+r-claude
+$8.20
+blizzard#1497
+C-WSCR
+Add an Anthropic credential renewer that refreshes via a haiku one-shot
+PRE-PUSH
+·
+xps
+/
+r-claude
+$1.39
+blizzard#1463
+C-27A6
+[PW-HUBTIER] Choose the stub IdP's identity by login_hint
+REVIEW
+·
+xps
+/
+r-chatgpt
+~$0.81
+blizzard#1461
+C-BWA2
+[PW-HUBTIER] Let an event-stream client join from the latest event
+MUTATION
+·
+xps
+/
+r-claude
+~$2.26
+blizzard#1459
+C-PTP2
+[PW-HUBTIER] Tag every per-tenant sweep line with its tenant
+PRE-PUSH
+·
+xps
+/
+r-chatgpt
+~$3.27
+blizzard#1449
+C-QWYS
+[STRICT] Type the hub auth repositories
+RESOLVE
+·
+xps
+/
+r-claude
+$3.77
+blizzard#1446
+C-2475
+[STRICT] Type the runner store adapters' row mapping
+BUILD
+·
+xps
+/
+r-chatgpt
+~$2.06
+hub:626
+C-ZG7T
+Land a gate resolution's artifacts once when its landing consult fires
+hub:627
+Pin two unguarded humans invariants: a bounce-cap escalation's empty raw command, and the unavailable-owner takeover refusal
+PRE-PUSH
+·
+xps
+/
+r-claude
+$0.88
+hub:620
+C-FC1D
+Bring the work domain's docs up to four rules the code enforces deliberately
+hub:628
+Correct six stale or overbroad claims in domain/humans
+hub:616
+Document the budget lever and the per-tick claim gate in throttling.md
+hub:630
+State what transcripts actually carry, and who may read them, in never-code.md
+hub:631
+State in hosts.md that a binding to an undeclared workspace or subscription halts the runner
+BUILD
+·
+xps
+/
+r-claude
+$0.27
+blizzard#1366
+C-ZEVE
+[FORGES] Carry every forge address over into a forge record
+TRIAGE
+blizzard#1367
+C-MG3R
+[FORGES] Configure forges through the API, CLI, document, and board
+TRIAGE
+blizzard#1368
+C-4J2W
+[FORGES] Document the forge record and the landing seam
+TRIAGE
+blizzard#1371
+C-4HAX
+[FLOWS] Keep each branch's flow record in the shadow of the slot
+TRIAGE
+blizzard#1372
+C-50RX
+[FLOWS] Take hub steps as turns on their branches' flows
+TRIAGE
+blizzard#1373
+C-FC1E
+[FLOWS] Retire the slot's code and keep its deprecated table
+TRIAGE
+blizzard#1374
+C-CG21
+[FLOWS] Show flows on the API, CLI, live channel, and board
+TRIAGE
+blizzard#1378
+C-MAET
+[POLICIES] Grow the landing seam and make a landing pass cheap
+TRIAGE
+blizzard#1379
+C-N96M
+[POLICIES] Share one rate budget per forge key, slowing before refusal
+TRIAGE
+blizzard#1380
+C-S990
+[POLICIES] Run each repository's landing policy, in its project's order
+TRIAGE
+blizzard#1381
+C-S93M
+[POLICIES] Add the fast-forward and park landing policies
+TRIAGE
+blizzard#1382
+C-KTD7
+[POLICIES] Show policies, landing order, and awaiting-merge on the board
+TRIAGE
+hub:579
+C-N1JR
+Let the work-source and forge seams own labels, branch links and the annotating set
+TRIAGE
+blizzard#1444
+C-B6HS
+[STRICT] Type the hub store adapters' SQL helpers and rows
+TRIAGE
+blizzard#1448
+C-DFGP
+[STRICT] Type the hub domain models' untyped edges
+TRIAGE
+blizzard#1450
+C-6P31
+[STRICT] Type the hub delivery land actions
+TRIAGE
+blizzard#1451
+C-AKMG
+[STRICT] Type the hub and runner CLIs
+TRIAGE
+blizzard#1452
+C-STGQ
+[STRICT] Give every bare generic in shipping code its type arguments
+TRIAGE
+blizzard#1453
+C-QG6Y
+[STRICT] Declare shipping code's context managers as generators
+TRIAGE
+blizzard#1454
+C-W9G8
+[STRICT] Replace the _conforms_* functions with annotated assignments
+TRIAGE
+blizzard#1455
+C-ZMVH
+[STRICT] Stop shipping code reaching into other modules' private names
+TRIAGE
+blizzard#1456
+C-6Q69
+[STRICT] Sweep the remaining strict errors out of shipping code
+TRIAGE
+blizzard#1457
+C-00N1
+[STRICT] Spike: re-investigate typing across every project, tests first
+TRIAGE
+blizzard#1465
+C-MFJE
+[PW-HUBTIER] Give the harness a mock runner it can drive and runners that serve projects
+TRIAGE
+blizzard#1468
+C-DF68
+[PW-HUBTIER] Move the helpers other test files import out of the files the hub tier ports
+TRIAGE
+blizzard#1485
+C-0ACF
+[PW-HUBTIER] Move the service-sized tenant teardown test to the component tier
+TRIAGE
+blizzard#1460
+C-JME3
+[PW-HUBTIER] Run the hub's sweeps on request, per tenant or hub-wide
+TRIAGE
+blizzard#1464
+C-P79Q
+[PW-HUBTIER] Give the harness the CLI, a configurable fresh hub, and an OTLP sink
+TRIAGE
+blizzard#1466
+C-WWXN
+[PW-HUBTIER] Step every harness sweep and give the event reader a join from now and a barrier
+TRIAGE
+blizzard#1467
+C-RE86
+[PW-HUBTIER] Sign people in through the stub IdP on an auth profile in the harness
+TRIAGE
+blizzard#1469
+C-GWDV
+[PW-HUBTIER] Port the hub service tests and add the two enforcement profiles
+TRIAGE
+blizzard#1470
+C-W60F
+[PW-HUBTIER] Port the finding-exits service tests, stepping the close drain
+TRIAGE
+blizzard#1471
+C-WKFH
+[PW-HUBTIER] Port the event-log service tests, reading hub events over HTTP
+TRIAGE
+blizzard#1472
+C-Q5CS
+[PW-HUBTIER] Port the runner served-projects service tests to Playwright
+blizzard#1477
+[PW-HUBTIER] Port the runner declining service test and move its parse case down
+blizzard#1481
+[PW-HUBTIER] Port the real-hub runner token refusal test to Playwright
+TRIAGE
+blizzard#1473
+C-YZVG
+[PW-HUBTIER] Port the real-hub transcript-segment service tests to Playwright
+TRIAGE
+blizzard#1474
+C-64RN
+[PW-HUBTIER] Port the projects ingest and delivery service tests to Playwright
+TRIAGE
+blizzard#1475
+C-6RRX
+[PW-HUBTIER] Port the routine baselines service tests to Playwright
+TRIAGE
+blizzard#1476
+C-260B
+[PW-HUBTIER] Port the forge-status service tests onto a stepped sweep
+blizzard#1478
+[PW-HUBTIER] Port the work-source records service tests to Playwright
+TRIAGE
+blizzard#1479
+C-5MXB
+[PW-HUBTIER] Port the two live-hub usage service tests
+TRIAGE
+blizzard#1480
+C-1A1R
+[PW-HUBTIER] Port the two hub-only platform-tracing service tests
+TRIAGE
+blizzard#1482
+C-N0SD
+[PW-HUBTIER] Port the OAuth login service tests onto the auth profile
+TRIAGE
+blizzard#1483
+C-MMVM
+[PW-HUBTIER] Port the CLI login exchange service tests onto the auth profile
+blizzard#1484
+[PW-HUBTIER] Port the event-stream revocation service test onto the auth profile
+TRIAGE
+hub:629
+C-1DTX
+Recheck the holder inside the route-token rekey, and document that a per-chunk pause outranks a restart's fence
+TRIAGE
+blizzard#1499
+C-HBRY
+Declare each runner's supported models and match them at hub eligibility
+TRIAGE
+hub:632
+C-DB49
+Order runner-store bind, park and requeue facts by append sequence, not timestamp
+hub:633
+Make a repeated runner requeue change nothing at persistence
+TRIAGE
+hub:639
+C-SXBD
+performance run (full)
+SURVEY
+hub:640
+C-5Q4G
+performance run (full)
+SURVEY
+hub:642
+C-NH8N
+performance run (full)
+SURVEY
+hub:641
+C-GMVT
+performance run (full)
+SURVEY
+hub:634
+C-WTGG
+comments run (full)
+SURVEY
+hub:638
+C-85FD
+comments run (full)
+SURVEY
+hub:635
+C-F05Q
+comments run (full)
+SURVEY
+hub:636
+C-YWK5
+comments run (full)
+SURVEY
+hub:637
+C-6RTR
+comments run (full)
+SURVEY
+▲ READY
+BACKLOG ▼
+blizzard#1312
+C-WN6J
+(BREAK) Retire per-binding agents from runner bindings
+TRIAGE
+blizzard#1462
+C-F5V9
+[PW-HUBTIER] Make the hub's login throttle configurable
+DONE
+$1.49
+blizzard#1447
+C-AFTK
+[STRICT] Type the runner harness adapters' parsed output
+DONE
+$7.36
+blizzard#1445
+C-BB9E
+[STRICT] Type the compat OpenAPI classifier
+DONE
+$1.95
+blizzard#1443
+C-2R1E
+[STRICT] Delete the inert type-ignores in shipping code and add a strict report
+DONE
+$0.88
+hub:624
+C-R1D5
+Settle one owner for the statement guards and the lane rosters
+hub:622
+Give blizzard-context's change-history Vale rule the blizzard repo's tokens
+hub:623
+Fix ten rule-slot shape defects: overlong Whys, stray paragraphs, a missing Don't
+DONE
+~$3.69
+hub:619
+C-66JE
+Bring the command-failed and hub-migrated definitions in line with what is recorded
+hub:618
+Say closure and transcript announcements are best-effort across a crash
+DONE
+$5.41
+hub:615
+C-8Z96
+Make the pause, resume and detach messages describe the actual state
+hub:617
+Show a chunk's runner and environments in `chunk show` only while it holds its claim
+DONE
+$2.18
+hub:609
+C-TNFF
+Bring findings-and-proposals.md up to the refusals and settlement the code already has
+hub:604
+Collapse the restatements of domain/projects.md to pointers
+hub:605
+State in routines-and-scopes.md that declaring a record re-enables it, and that unlinking drops a scope's sweep history
+hub:608
+Correct three overbroad claims in domain/artifacts
+hub:611
+Correct two overbroad sentences in declared-sessions.md
+DONE
+$9.42
+hub:603
+C-PZD6
+Rewrite inventory-style hub rows as read-triggers
+DONE
+~$12.56
+hub:602
+C-VA7X
+Make a gate's resolving transition name a decision from the current visit
+hub:613
+Open a graph gate's decision on every arrival at a human-judged node, not only on a transition
+hub:599
+Check declared outputs before accepting cross-graph completion
+hub:610
+Refuse a hub node judged by a human
+DONE
+~$17.03
+blizzard#1190
+C-RWE7
+[FLAGS] Write the flag procedure and the operator's flags guide
+DONE
+$1.65
+blizzard#1175
+C-TX56
+[NOTES] Cross-check a release's notes against its compat breaks
+DONE
+$7.00
+blizzard#1174
+C-QRP5
+[NOTES] Fail a pull request that owes a change note
+DONE
+$5.32
+blizzard#1189
+C-1BF8
+[FLAGS] Hold flag tombstones, flips, and cuts to the release rules
+DONE
+$4.74
+blizzard#1181
+C-RNZD
+[LINES] Write the patch rule and the release promise
+DONE
+$3.89
+blizzard#1173
+C-E7DE
+[NOTES] Publish release notes from change notes and require them
+DONE
+$7.06
+blizzard#1364
+C-ZWE9
+[FORGES] Port land and the commit check onto one forge seam
+DONE
+$40.11
+blizzard#1361
+C-CRTC
+[ACTIONS] Remove the hub's process runner, step environment, and marker token
+DONE
+~$24.86
+BOARD
+FLEET
+EVENTS
+GARDENING

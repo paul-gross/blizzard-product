@@ -1,0 +1,663 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><title>blizzard · fleet</title>
+<style>
+:root {
+  --ground: #12110e; --ground-2: #181612; --ground-3: #201d18; --now: #1b1914;
+  --rule: #2a2721; --rule-2: #3b372f;
+  --ink: #ede7da; --ink-2: #aaa293; --ink-3: #6f695e; --ink-4: #47423a;
+  --live: #c6f03c; --alarm: #ff5a35; --alarm-dim: #7a2a18; --loop: #ee82d4; --loop-dim: #6a3360;
+  --sans: "Noto Sans", sans-serif; --mono: "Noto Sans Mono", monospace; --serif: "Noto Serif", serif;
+}
+* { box-sizing: border-box; }
+html, body { margin: 0; background: var(--ground); color: var(--ink); }
+body { font: 400 13px/1.35 var(--sans); font-stretch: 87.5%; -webkit-font-smoothing: antialiased; overflow: hidden; }
+.mono { font-family: var(--mono); font-variant-numeric: tabular-nums; font-stretch: 87.5%; }
+.serif { font-family: var(--serif); font-style: italic; font-stretch: 100%; }
+.k { display: inline-block; min-width: 15px; padding: 0 3px; border: 1px solid var(--rule-2); border-bottom-width: 2px; border-radius: 3px; font: 500 10px/13px var(--mono); color: var(--ink-2); text-align: center; }
+.alarm { color: var(--alarm); } .live { color: var(--live); } .loop { color: var(--loop); } .dim { color: var(--ink-3); } .mid { color: var(--ink-2); }
+button { font: inherit; color: inherit; background: none; border: 0; padding: 0; cursor: pointer; }
+@keyframes flash { 0% { box-shadow: 0 0 0 0 rgba(237,231,218,.55); background-color: rgba(237,231,218,.14); } 100% { box-shadow: 0 0 0 8px rgba(237,231,218,0); } }
+@keyframes alarmring { 0% { box-shadow: 0 0 0 0 rgba(255,90,53,.7); } 100% { box-shadow: 0 0 0 10px rgba(255,90,53,0); } }
+@keyframes svgflash { 0% { stroke-opacity: 1; stroke-width: 9; } 100% { stroke-opacity: 0; stroke-width: 1; } }
+.toast { position: fixed; left: 50%; bottom: 22px; transform: translateX(-50%); background: var(--ink); color: var(--ground); padding: 7px 12px; border-radius: 4px; font: 500 12px var(--mono); opacity: 0; transition: opacity .15s; pointer-events: none; z-index: 50; }
+.toast.on { opacity: 1; }
+
+header { position: absolute; inset: 0 0 auto 0; height: 44px; display: flex; align-items: center; gap: 26px; padding: 0 18px; border-bottom: 1px solid var(--rule); }
+.mark { font: italic 500 21px/1 var(--serif); letter-spacing: -.01em; }
+.mark small { font: 400 12px var(--sans); font-style: normal; color: var(--ink-3); margin-left: 8px; letter-spacing: 0; }
+nav { display: flex; gap: 18px; }
+nav a { color: var(--ink-3); text-decoration: none; font-size: 13px; padding: 12px 0 11px; border-bottom: 2px solid transparent; }
+nav a.on { color: var(--ink); border-color: var(--ink); }
+nav a:hover { color: var(--ink-2); }
+.hdr-r { margin-left: auto; display: flex; gap: 22px; align-items: center; color: var(--ink-3); font-size: 12px; }
+.lens b { color: var(--ink); font-weight: 500; } .lens span { margin-left: 10px; }
+#verdict { position: absolute; top: 44px; left: 0; width: 1236px; height: 50px; display: flex; align-items: center; padding: 0 18px; gap: 18px; border-bottom: 1px solid var(--rule); }
+#verdict .say { font: italic 400 18.5px/1.2 var(--serif); color: var(--ink); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+#verdict .say em { font-style: italic; } #verdict .say .alarm { color: var(--alarm); }
+#verdict .facts { margin-left: auto; white-space: nowrap; color: var(--ink-3); font-size: 12px; }
+#verdict .facts b { color: var(--ink); font-weight: 500; }
+.livemark { display: inline-flex; align-items: center; gap: 6px; }
+.livemark i { width: 7px; height: 7px; background: var(--live); display: inline-block; }
+.paused .livemark i { background: var(--ink-3); }
+#rail { position: absolute; top: 44px; left: 1236px; width: 364px; bottom: 0; border-left: 1px solid var(--rule); background: var(--ground-2); display: flex; flex-direction: column; }
+.sec { padding: 12px 16px 12px; border-bottom: 1px solid var(--rule); }
+.sec h3 { margin: 0 0 8px; font: 600 12.5px var(--sans); font-stretch: 87.5%; color: var(--ink); display: flex; gap: 8px; align-items: baseline; }
+.sec h3 .n { font: 400 11px var(--mono); color: var(--ink-3); }
+.sec h3 .r { margin-left: auto; font-weight: 400; color: var(--ink-3); font-size: 11px; }
+.ask { padding: 8px 0 10px; border-top: 1px solid var(--rule); cursor: pointer; }
+.ask:first-of-type { border-top: 0; padding-top: 2px; }
+.ask .top { display: flex; gap: 8px; align-items: baseline; }
+.ask .top .cid { font: 600 12px var(--mono); color: var(--alarm); }
+.ask .top .ref { color: var(--ink-3); font-size: 11.5px; }
+.ask .top .age { margin-left: auto; font: 11px var(--mono); color: var(--alarm); }
+.ask .tt { font-size: 13.5px; line-height: 1.3; margin: 3px 0 4px; color: var(--ink); }
+.ask .why { color: var(--ink-2); font-size: 12px; }
+.ask .meta { color: var(--ink-3); font-size: 11.5px; margin-top: 4px; }
+.ask .meta b { color: var(--alarm); font-weight: 500; }
+.ask .acts { display: flex; gap: 14px; margin-top: 7px; font-size: 12px; color: var(--ink-2); }
+.ask .acts span { display: inline-flex; gap: 5px; align-items: center; }
+.ask.focus { margin: 0 -16px; padding-left: 14px; padding-right: 16px; border-left: 2px solid var(--alarm); background: rgba(255,90,53,.05); }
+#feed { height: 196px; overflow: hidden; }
+.ev { display: grid; grid-template-columns: 38px 40px 1fr; gap: 6px; font-size: 11.5px; padding: 2px 0; color: var(--ink-2); }
+.ev .t { font: 10.5px var(--mono); color: var(--ink-3); } .ev .i { font: 500 10.5px var(--mono); color: var(--ink); }
+.ev.bounce .x { color: var(--loop); } .ev.alarm .x, .ev.alarm .i { color: var(--alarm); } .ev.land .x { color: var(--ink); }
+.ev.new { animation: flash 1s ease-out 1; }
+#keys { position: absolute; left: 0; bottom: 0; width: 1236px; height: 30px; display: flex; gap: 16px; align-items: center; padding: 0 18px; color: var(--ink-3); font-size: 11.5px; border-top: 1px solid var(--rule); }
+#keys span { display: inline-flex; gap: 5px; align-items: center; }
+#tip { position: absolute; pointer-events: none; background: var(--ink); color: var(--ground); padding: 6px 9px; max-width: 300px; font-size: 12px; line-height: 1.3; border-radius: 3px; z-index: 30; display: none; }
+#tip .cid { font: 600 11px var(--mono); } #tip .s { color: #5d574d; font-size: 11px; }
+#pal, #help { position: absolute; left: 50%; top: 120px; transform: translateX(-50%); width: 600px; background: var(--ground-3); border: 1px solid var(--rule-2); border-radius: 6px; box-shadow: 0 24px 80px rgba(0,0,0,.6); z-index: 40; display: none; }
+#pal input { width: 100%; background: none; border: 0; border-bottom: 1px solid var(--rule-2); padding: 14px 16px; font: 16px var(--sans); color: var(--ink); outline: none; }
+#pal .res { max-height: 380px; overflow: hidden; padding: 4px 0; }
+#pal .r { display: flex; gap: 10px; padding: 6px 16px; font-size: 13px; color: var(--ink-2); align-items: baseline; }
+#pal .r .cid { font: 500 11.5px var(--mono); color: var(--ink); width: 40px; }
+#pal .r .s { margin-left: auto; color: var(--ink-3); font-size: 11.5px; white-space: nowrap; }
+#pal .r .tt { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+#pal .r.sel { background: var(--rule); color: var(--ink); }
+#help { padding: 18px 22px; columns: 2; column-gap: 30px; font-size: 12.5px; color: var(--ink-2); }
+#help div { display: flex; justify-content: space-between; padding: 3px 0; break-inside: avoid; }
+#help h4 { margin: 0 0 6px; font: italic 16px var(--serif); color: var(--ink); column-span: all; }
+
+body { width: 1600px; height: 1000px; position: relative; }
+#hostline { position: absolute; top: 94px; left: 0; width: 1236px; height: 30px; display: flex; gap: 14px; align-items: center; padding: 0 18px; border-bottom: 1px solid var(--rule); font-size: 12px; color: var(--ink-3); white-space: nowrap; }
+#hostline b { color: var(--ink); font-weight: 600; font-size: 13px; }
+#hostline .mono { font-size: 11px; color: var(--ink-2); }
+#hostline .acts { margin-left: auto; display: flex; gap: 16px; }
+#hostline .acts button { color: var(--ink-2); } #hostline .acts button.alarm { color: var(--alarm); }
+#stage { position: absolute; top: 124px; left: 0; width: 1236px; height: 876px; }
+#flow { position: absolute; inset: 0; }
+svg text { font-family: var(--sans); font-stretch: 87.5%; }
+svg .m { font-family: var(--mono); font-stretch: 87.5%; }
+.seg { cursor: pointer; }
+.dimmed .seg:not(.hl) { opacity: .25; }
+.seg.hl rect.b { stroke: var(--ink); stroke-width: 1; }
+.slotrow.focus rect.row { fill: var(--ground-3); }
+.slotrow.flash rect.row { animation: rowflash 1s ease-out 1; }
+@keyframes rowflash { 0% { fill: rgba(237,231,218,.18); } 100% { fill: rgba(237,231,218,0); } }
+#rail .who { display: flex; gap: 8px; align-items: baseline; }
+#rail .who b { font: 600 15px var(--sans); font-stretch: 87.5%; }
+#rail .who .s { font-size: 12px; }
+.kv { display: grid; grid-template-columns: 74px 1fr; row-gap: 4px; column-gap: 10px; font-size: 12px; margin-top: 10px; }
+.kv .k2 { color: var(--ink-3); } .kv .v { color: var(--ink-2); } .kv .v b { color: var(--ink); font-weight: 500; }
+.state { margin-top: 10px; padding: 8px 10px; border-left: 2px solid var(--alarm); background: rgba(255,90,53,.06); font-size: 12.5px; color: var(--ink); }
+.state.ok { border-color: var(--live); background: rgba(198,240,60,.04); }
+.held { margin-top: 10px; display: grid; grid-template-columns: 40px 64px 1fr 44px; gap: 2px 8px; font-size: 12px; align-items: baseline; }
+.held .cid { font: 500 11px var(--mono); } .held .n { color: var(--ink-2); } .held .st { color: var(--ink-3); font-size: 11.5px; } .held .c { font: 10.5px var(--mono); color: var(--ink-3); text-align: right; }
+.held .h .cid, .held .h .st { color: var(--alarm); }
+.held > div { display: contents; }
+.btnrow { display: flex; gap: 16px; margin-top: 12px; font-size: 12px; color: var(--ink-2); }
+.btnrow span { display: inline-flex; gap: 5px; align-items: center; }
+#rsec { flex: 1; min-height: 0; overflow: hidden; }
+.capmap { display: grid; gap: 5px; font-size: 11.5px; color: var(--ink-3); }
+.capmap .cg { display: flex; align-items: center; } .capmap .cg > span:first-child { width: 112px; }
+.capmap .cells { display: flex; gap: 3px; } .capmap i { width: 22px; height: 12px; border: 1px solid var(--rule-2); }
+.capmap i.b { background: var(--ink-2); border-color: var(--ink-2); } .capmap i.h { background: var(--alarm); border-color: var(--alarm); }
+.capmap i.d { background: repeating-linear-gradient(45deg, transparent 0 3px, rgba(255,90,53,.6) 3px 4px); border-color: var(--alarm-dim); }
+.capmap i.mine { outline: 1px solid var(--ink-3); outline-offset: 1px; }
+</style></head>
+<body>
+<header>
+  <div class="mark">blizzard<small>paul-gross</small></div>
+  <nav><a href="board-desktop.html">Flow</a><a class="on" href="#">Fleet</a><a href="#">Graphs</a><a href="#">Events</a><a href="#">Garden</a><a href="#">Admin</a></nav>
+  <div class="hdr-r"><span class="lens"><b>all</b><span>blizzard</span><span>winter</span></span><span>hub <span class="live">ok</span></span><span><span class="k">⌘</span> <span class="k">K</span></span></div>
+</header>
+<div id="verdict"></div>
+<div id="hostline"></div>
+<div id="stage"><svg id="flow" width="1236" height="846"></svg><div id="keys"></div></div>
+<aside id="rail"><div class="sec" id="rsec"></div><div class="sec" id="feed"></div></aside>
+<div id="tip"></div>
+<div id="help"></div>
+<div class="toast" id="toast"></div>
+<script>
+// ---- Current: shared data model (real chunk data from the baseline capture, 2026-10-25 13:10) ----
+const T = s => { const neg = s.startsWith('-'); const [h, m] = s.replace('-', '').split(':').map(Number); return neg ? (h * 60 + m) - 1440 : h * 60 + m; };
+const LANES = [
+  { key: 'intake', label: 'Triage', sub: 'triage · survey' },
+  { key: 'build', label: 'Build' },
+  { key: 'review', label: 'Review' },
+  { key: 'mutation', label: 'Mutation' },
+  { key: 'pre-push', label: 'Pre-push' },
+  { key: 'deliver', label: 'Deliver' },
+  { key: 'landed', label: 'Landed' },
+];
+const NOW0 = T('13:10');
+
+// In flight: running, delivering and needs-human. Paths are [lane, enteredAt].
+const INFLIGHT = [
+  { id: 'WSCR', refs: ['blizzard#1497'], title: 'Add an Anthropic credential renewer that refreshes via a haiku one-shot', status: 'running', runner: 'r-claude', ws: 'blizzard-claude', cost: 1.58, est: false, pr: 'PR #1500', graph: 'bas-dwf', tok: '3.9M',
+    path: [[0,'12:22'],[1,'12:27'],[2,'12:33'],[1,'12:35'],[2,'12:37'],[4,'12:39'],[5,'12:40'],[4,'12:51'],[5,'12:54'],[4,'12:55'],[1,'12:56'],[2,'13:08']],
+    why: { 3: 'review fail', 7: 'land answered failure', 9: 'land answered failure', 10: 'pre-push: significant' } },
+  { id: '6J9H', refs: ['blizzard#1365'], title: '[FORGES] Report every record the forge migration would refuse', status: 'needs_human', runner: 'r-claude', ws: 'blizzard-claude', cost: 8.20, est: false, pr: 'PR #1498', graph: 'adv-dwf', tok: '20.3M', attempts: 25,
+    path: [[0,'09:40'],[1,'09:52'],[2,'10:30'],[1,'10:41'],[2,'11:02'],[3,'11:09'],[4,'11:20'],[5,'11:31'],[4,'11:44'],[5,'11:52'],[4,'12:03'],[5,'12:10'],[4,'12:19'],[5,'12:25'],[4,'12:31'],[5,'12:38'],[4,'12:41'],[5,'12:44']],
+    haltAt: '12:48', reason: 'Bounce cap crossed: 6 deliver failures. No composed command for this escalation.', takeover: 'blizzard runner takeover C-6J9H' },
+  { id: 'QWYS', refs: ['blizzard#1449'], title: '[STRICT] Type the hub auth repositories', status: 'needs_human', runner: 'r-claude', ws: 'blizzard-claude', cost: 4.03, est: false, pr: 'PR #1501', graph: 'adv-dwf', tok: '9.6M', attempts: 11,
+    path: [[0,'10:55'],[1,'11:02'],[2,'11:40'],[3,'11:52'],[4,'12:15'],[5,'12:26'],[4,'12:36'],[5,'12:44']],
+    haltAt: '13:01', reason: 'Gate at deliver: land refused twice on a conflicting head. Decide: rebase or park.', takeover: 'blizzard runner takeover C-QWYS' },
+  { id: 'BWA2', refs: ['blizzard#1461'], title: '[PW-HUBTIER] Let an event-stream client join from the latest event', status: 'running', runner: 'r-claude', ws: 'blizzard-claude', cost: 2.26, est: true, graph: 'adv-dwf', tok: '5.1M',
+    path: [[0,'11:48'],[1,'11:55'],[2,'12:31'],[3,'12:47']] },
+  { id: 'ZG7T', refs: ['hub:626', 'hub:627'], title: 'Land a gate resolution’s artifacts once when its landing consult fires', status: 'running', runner: 'r-claude', ws: 'blizzard-claude', cost: 0.70, est: false, graph: 'bas-hwf', tok: '1.8M',
+    path: [[0,'12:10'],[1,'12:14'],[2,'12:44'],[4,'13:08']] },
+  { id: 'FC1D', refs: ['hub:620', 'hub:628', '+3'], title: 'Bring the work domain’s docs up to four rules the code enforces deliberately', status: 'running', runner: 'r-claude', ws: 'blizzard-claude', cost: 1.12, est: true, graph: 'bas-hwf', tok: '2.7M',
+    path: [[0,'11:30'],[1,'11:38'],[2,'12:20'],[1,'12:29'],[2,'12:58']], why: { 3: 'review fail' } },
+  { id: 'MFJE', refs: ['blizzard#1465'], title: '[PW-HUBTIER] Give the harness a mock runner it can drive and runners that serve projects', status: 'running', runner: 'r-chatgpt', ws: 'blizzard-chatgpt', cost: 0.10, est: true, graph: 'adv-dwf-opencode', tok: '0.3M',
+    path: [[0,'12:49'],[1,'12:55']] },
+  { id: '27A6', refs: ['blizzard#1463'], title: '[PW-HUBTIER] Choose the stub IdP’s identity by login_hint', status: 'delivering', runner: 'r-chatgpt', ws: 'blizzard-chatgpt', cost: 1.47, est: true, pr: 'mock PR #121', graph: 'adv-dwf-opencode', tok: '4.0M',
+    path: [[0,'10:12'],[1,'10:20'],[2,'11:16'],[1,'11:24'],[2,'11:58'],[3,'12:06'],[4,'12:31'],[5,'13:08']], why: { 3: 'review fail' } },
+  { id: 'PTP2', refs: ['blizzard#1459'], title: '[PW-HUBTIER] Tag every per-tenant sweep line with its tenant', status: 'delivering', runner: 'r-chatgpt', ws: 'blizzard-chatgpt', cost: 3.49, est: true, pr: 'PR #1492', graph: 'adv-dwf-opencode', tok: '8.4M',
+    path: [[0,'09:58'],[1,'10:05'],[2,'10:51'],[3,'11:03'],[4,'11:40'],[5,'12:20'],[4,'12:41'],[5,'13:08']], why: { 6: 'land answered failure' } },
+  { id: '2475', refs: ['blizzard#1446'], title: '[STRICT] Type the runner store adapters’ row mapping', status: 'running', runner: 'r-chatgpt', ws: 'blizzard-chatgpt', cost: 2.06, est: true, graph: 'adv-dwf-opencode', tok: '5.0M',
+    path: [[0,'12:30'],[1,'12:36']] },
+];
+
+// Landed in the last 48h: [id, refs, title, completedAt, cost, est]
+const DONE = [
+  ['VA7X', ['hub:602', 'hub:613', '+2'], 'Make a gate’s resolving transition name a decision from the current visit', '12:24', 17.03, true],
+  ['AFTK', ['blizzard#1447'], '[STRICT] Type the runner harness adapters’ parsed output', '12:03', 7.36],
+  ['R1D5', ['hub:624', 'hub:622', 'hub:623'], 'Settle one owner for the statement guards and the lane rosters', '11:25', 3.69, true],
+  ['BB9E', ['blizzard#1445'], '[STRICT] Type the compat OpenAPI classifier', '10:19', 1.95],
+  ['TX56', ['blizzard#1175'], '[NOTES] Cross-check a release’s notes against its compat breaks', '09:31', 7.00],
+  ['F5V9', ['blizzard#1462'], '[PW-HUBTIER] Make the hub’s login throttle configurable', '08:56', 1.49],
+  ['RWE7', ['blizzard#1190'], '[FLAGS] Write the flag procedure and the operator’s flags guide', '08:46', 1.65],
+  ['2R1E', ['blizzard#1443'], '[STRICT] Delete the inert type-ignores in shipping code and add a strict report', '08:03', 0.88],
+  ['QRP5', ['blizzard#1174'], '[NOTES] Fail a pull request that owes a change note', '06:59', 5.32],
+  ['ZWE9', ['blizzard#1364'], '[FORGES] Port land and the commit check onto one forge seam', '06:29', 40.11],
+  ['1BF8', ['blizzard#1189'], '[FLAGS] Hold flag tombstones, flips, and cuts to the release rules', '05:07', 4.74],
+  ['PZD6', ['hub:603'], 'Rewrite inventory-style hub rows as read-triggers', '04:48', 12.56, true],
+  ['RNZD', ['blizzard#1181'], '[LINES] Write the patch rule and the release promise', '00:14', 3.89],
+  ['E7DE', ['blizzard#1173'], '[NOTES] Publish release notes from change notes and require them', '-22:39', 7.06],
+  ['TNFF', ['hub:609', 'hub:604', '+3'], 'Bring findings-and-proposals.md up to the refusals and settlement the code already has', '-21:46', 9.42],
+  ['CRTC', ['blizzard#1361'], '[ACTIONS] Remove the hub’s process runner, step environment, and marker token', '-15:21', 24.86, true],
+  ['66JE', ['hub:619', 'hub:618'], 'Bring the command-failed and hub-migrated definitions in line with what is recorded', '-14:56', 5.41],
+  ['8Z96', ['hub:615', 'hub:617'], 'Make the pause, resume and detach messages describe the actual state', '-14:50', 2.18],
+  ['JJPG', ['blizzard#1160'], '[RELEASE] Open the hub’s pin change when blizzard publishes a release', '-12:07', 4.38],
+  ['R4EH', ['hub:612', 'hub:607'], 'Count retries per visit, not per node across the whole chunk', '-12:04', 7.09],
+  ['H48F', ['hub:601', 'hub:600', 'hub:614'], 'Filter a project’s runner pauses before the activity feed caps them', '-11:52', 7.26],
+  ['8YFS', ['blizzard#1180'], '[LINES] Hold release tags to their line and promote by borrowed proof', '-11:50', 5.36],
+  ['5EVY', ['hub:621', 'hub:625'], 'Keep a chunk’s work items in one project at ingest', '-11:06', 1.79, true],
+  ['BCN9', ['blizzard#1360'], '[ACTIONS] Retire run: and carry every stored graph onto actions', '-09:27', 46.52],
+];
+
+// Upstream: ready (and one backlog) chunks with their blocking threads.
+const READY = [
+  ['ZEVE', 'blizzard#1366', '[FORGES] Carry every forge address over into a forge record', ['6J9H']],
+  ['MG3R', 'blizzard#1367', '[FORGES] Configure forges through the API, CLI, document, and board', ['ZEVE']],
+  ['4J2W', 'blizzard#1368', '[FORGES] Document the forge record and the landing seam', ['MG3R']],
+  ['4HAX', 'blizzard#1371', '[FLOWS] Keep each branch’s flow record in the shadow of the slot', ['4J2W']],
+  ['50RX', 'blizzard#1372', '[FLOWS] Take hub steps as turns on their branches’ flows', ['4HAX', 'ZEVE', 'MG3R']],
+  ['FC1E', 'blizzard#1373', '[FLOWS] Retire the slot’s code and keep its deprecated table', ['50RX']],
+  ['CG21', 'blizzard#1374', '[FLOWS] Show flows on the API, CLI, live channel, and board', ['FC1E']],
+  ['MAET', 'blizzard#1378', '[POLICIES] Grow the landing seam and make a landing pass cheap', ['CG21']],
+  ['N96M', 'blizzard#1379', '[POLICIES] Share one rate budget per forge key, slowing before refusal', ['MAET', 'MG3R']],
+  ['S990', 'blizzard#1380', '[POLICIES] Run each repository’s landing policy, in its project’s order', ['N96M']],
+  ['S93M', 'blizzard#1381', '[POLICIES] Add the fast-forward and park landing policies', ['S990']],
+  ['KTD7', 'blizzard#1382', '[POLICIES] Show policies, landing order, and awaiting-merge on the board', ['S93M']],
+  ['N1JR', 'hub:579', 'Let the work-source and forge seams own labels, branch links and the annotating set', ['6J9H', 'ZEVE']],
+  ['B6HS', 'blizzard#1444', '[STRICT] Type the hub store adapters’ SQL helpers and rows', ['S93M']],
+  ['DFGP', 'blizzard#1448', '[STRICT] Type the hub domain models’ untyped edges', ['B6HS', '2475', 'QWYS']],
+  ['6P31', 'blizzard#1450', '[STRICT] Type the hub delivery land actions', ['FC1E']],
+  ['AKMG', 'blizzard#1451', '[STRICT] Type the hub and runner CLIs', ['S990']],
+  ['STGQ', 'blizzard#1452', '[STRICT] Give every bare generic in shipping code its type arguments', ['B6HS', 'DFGP', '6P31', 'AKMG', 'QWYS', '2475']],
+  ['QG6Y', 'blizzard#1453', '[STRICT] Declare shipping code’s context managers as generators', ['B6HS', 'DFGP', '6P31', 'AKMG', 'QWYS', '2475']],
+  ['W9G8', 'blizzard#1454', '[STRICT] Replace the _conforms_* functions with annotated assignments', ['B6HS', 'DFGP', '6P31', 'AKMG', 'QWYS', '2475']],
+  ['ZMVH', 'blizzard#1455', '[STRICT] Stop shipping code reaching into other modules’ private names', ['B6HS', 'DFGP', '6P31', 'AKMG', 'QWYS', '2475']],
+  ['6Q69', 'blizzard#1456', '[STRICT] Sweep the remaining strict errors out of shipping code', ['STGQ', 'QG6Y', 'W9G8', 'ZMVH']],
+  ['00N1', 'blizzard#1457', '[STRICT] Spike: re-investigate typing across every project, tests first', ['6Q69']],
+  ['HBRY', 'blizzard#1499', 'Declare each runner’s supported models and match them at hub eligibility', ['B6HS']],
+  ['DF68', 'blizzard#1468', '[PW-HUBTIER] Move the helpers other test files import out of the files the hub tier ports', []],
+  ['0ACF', 'blizzard#1485', '[PW-HUBTIER] Move the service-sized tenant teardown test to the component tier', []],
+  ['JME3', 'blizzard#1460', '[PW-HUBTIER] Run the hub’s sweeps on request, per tenant or hub-wide', ['PTP2']],
+  ['P79Q', 'blizzard#1464', '[PW-HUBTIER] Give the harness the CLI, a configurable fresh hub, and an OTLP sink', ['MFJE']],
+  ['WWXN', 'blizzard#1466', '[PW-HUBTIER] Step every harness sweep and give the event reader a join from now and a barrier', ['JME3', 'P79Q', 'BWA2']],
+  ['RE86', 'blizzard#1467', '[PW-HUBTIER] Sign people in through the stub IdP on an auth profile in the harness', ['27A6', 'P79Q', 'DF68']],
+  ['GWDV', 'blizzard#1469', '[PW-HUBTIER] Port the hub service tests and add the two enforcement profiles', ['P79Q', 'WWXN', 'RE86', 'DF68']],
+  ['W60F', 'blizzard#1470', '[PW-HUBTIER] Port the finding-exits service tests, stepping the close drain', ['P79Q', 'WWXN', 'GWDV', 'DF68']],
+  ['WKFH', 'blizzard#1471', '[PW-HUBTIER] Port the event-log service tests, reading hub events over HTTP', ['P79Q', 'WWXN', 'GWDV', 'DF68']],
+  ['Q5CS', 'blizzard#1472', '[PW-HUBTIER] Port the runner served-projects service tests to Playwright', ['P79Q', 'WWXN', 'MFJE', 'DF68']],
+  ['YZVG', 'blizzard#1473', '[PW-HUBTIER] Port the real-hub transcript-segment service tests to Playwright', ['P79Q', 'GWDV']],
+  ['64RN', 'blizzard#1474', '[PW-HUBTIER] Port the projects ingest and delivery service tests to Playwright', ['P79Q', 'GWDV', 'DF68']],
+  ['6RRX', 'blizzard#1475', '[PW-HUBTIER] Port the routine baselines service tests to Playwright', ['P79Q', 'WWXN', 'GWDV', 'DF68']],
+  ['260B', 'blizzard#1476', '[PW-HUBTIER] Port the forge-status service tests onto a stepped sweep', ['P79Q', 'JME3']],
+  ['5MXB', 'blizzard#1479', '[PW-HUBTIER] Port the two live-hub usage service tests', ['P79Q', 'GWDV', 'DF68']],
+  ['1A1R', 'blizzard#1480', '[PW-HUBTIER] Port the two hub-only platform-tracing service tests', ['P79Q', 'GWDV']],
+  ['N0SD', 'blizzard#1482', '[PW-HUBTIER] Port the OAuth login service tests onto the auth profile', ['P79Q', 'RE86', 'GWDV', 'DF68']],
+  ['MMVM', 'blizzard#1483', '[PW-HUBTIER] Port the CLI login exchange service tests onto the auth profile', ['P79Q', 'RE86', 'GWDV', 'DF68']],
+  ['1DTX', 'hub:629', 'Recheck the holder inside the route-token rekey, and document that a per-chunk pause outranks a restart’s fence', []],
+  ['DB49', 'hub:632', 'Order runner-store bind, park and requeue facts by append sequence, not timestamp', ['2475']],
+  ['SXBD', 'hub:639', 'performance run (full)', []],
+  ['5Q4G', 'hub:640', 'performance run (full)', []],
+  ['NH8N', 'hub:642', 'performance run (full)', []],
+  ['GMVT', 'hub:641', 'performance run (full)', []],
+  ['WTGG', 'hub:634', 'comments run (full)', []],
+  ['85FD', 'hub:638', 'comments run (full)', []],
+  ['F05Q', 'hub:635', 'comments run (full)', []],
+  ['YWK5', 'hub:636', 'comments run (full)', []],
+  ['6RTR', 'hub:637', 'comments run (full)', []],
+  ['WN6J', 'blizzard#1312', '(BREAK) Retire per-binding agents from runner bindings', [], 'backlog'],
+];
+
+// Subscription windows: spent and elapsed fractions now; pace history is synthesised from them.
+const WINDOWS = [
+  { key: 'a5h', provider: 'Anthropic', span: '5h', spent: 0.12, elapsed: 0.58, sampled: '44s' },
+  { key: 'a7d', provider: 'Anthropic', span: '7d', spent: 0.09, elapsed: 0.10, sampled: '44s' },
+  { key: 'o7d', provider: 'OpenAI', span: '7d', spent: 0.08, elapsed: 0.07, sampled: '4m', declineUntil: '14:41' },
+];
+
+const HOST = { name: 'xps', id: 'H-G1YK', state: 'online', lastReport: '34s', registered: '2026/10/16 04:36', addedBy: 'paul-gross', url: 'http://127.0.0.1:8431', token: 'enrolled' };
+const RUNNERS = [
+  { name: 'r-claude', id: 'R-FNE4', harness: 'claude code', spends: 'Anthropic', windows: ['a5h', 'a7d'], agents: 3, version: '0.3.0.dev1002+f208eca7d', gates: 'none', state: 'working', seen: '21s',
+    binds: [['blizzard', 'blizzard-claude', 6], ['winter', 'winter', 4]] },
+  { name: 'r-chatgpt', id: 'R-NQ1B', harness: 'opencode', spends: 'OpenAI', windows: ['o7d'], agents: 3, version: '0.3.0.dev1002+f208eca7d', gates: 'none', state: 'declining', seen: '17s',
+    stateNote: 'Ahead of pace on OpenAI 7d: 8% spent at 7% elapsed. Takes no new work until 14:41.',
+    binds: [['blizzard', 'blizzard-chatgpt', 4], ['winter', 'winter', 4]] },
+];
+const SPEND = { today: 114.44, yesterday: 161.25, tokToday: '185.5M' };
+
+// ---- derived model ----
+function seeded(seed) { let s = seed >>> 0; return () => { s = (s * 1664525 + 1013904223) >>> 0; return s / 4294967296; }; }
+function synthPath(end, cost, rnd) {
+  // walk backwards from landing: deliver <- pre-push <- (mutation) <- review <- build <- intake
+  const scale = Math.min(3.2, 0.7 + Math.sqrt(cost) / 2.2);
+  const seq = [[0, 6 + rnd() * 8], [1, 18 + rnd() * 30], [2, 6 + rnd() * 12]];
+  if (rnd() < 0.35 || cost > 10) seq.push([1, 10 + rnd() * 20], [2, 5 + rnd() * 8]);
+  if (cost > 30) seq.push([1, 25], [2, 9]);
+  if (rnd() < 0.5) seq.push([3, 10 + rnd() * 18]);
+  seq.push([4, 8 + rnd() * 16], [5, 6 + rnd() * 10]);
+  if (rnd() < 0.3 || cost > 15) seq.push([4, 7 + rnd() * 8], [5, 5 + rnd() * 6]);
+  const total = seq.reduce((a, s) => a + s[1] * scale, 0);
+  let t = end - total; const path = [];
+  for (const [lane, d] of seq) { path.push([lane, t]); t += d * scale; }
+  path.push([6, end]);
+  return path;
+}
+function buildModel() {
+  const rnd = seeded(1497);
+  const chunks = new Map();
+  for (const c of INFLIGHT) {
+    chunks.set(c.id, { ...c, path: c.path.map(([l, s]) => [l, T(s)]), haltAt: c.haltAt ? T(c.haltAt) : null, kind: 'flight', costAt: [] });
+  }
+  for (const [id, refs, title, at, cost, est] of DONE) {
+    const end = T(at);
+    chunks.set(id, { id, refs, title, status: 'done', cost, est: !!est, path: synthPath(end, cost, rnd), doneAt: end, kind: 'done' });
+  }
+  for (const [id, ref, title, blockedBy, status] of READY) {
+    chunks.set(id, { id, refs: [ref], title, status: status || 'ready', blockedBy, cost: 0, kind: 'upstream' });
+  }
+  return chunks;
+}
+function epicOf(c) { const m = /^\[([A-Z-]+)\]/.exec(c.title || ''); return m ? m[1] : (c.refs[0] || '').startsWith('hub:') ? 'hub' : c.status === 'backlog' ? 'BREAK' : 'misc'; }
+function fmt$(v, est) { return (est ? '~' : '') + '$' + v.toFixed(2); }
+function hhmm(t) { const d = ((Math.round(t) % 1440) + 1440) % 1440; return String(Math.floor(d / 60)).padStart(2, '0') + ':' + String(d % 60).padStart(2, '0'); }
+function dur(m) { m = Math.max(0, Math.round(m)); return m < 60 ? m + 'm' : Math.floor(m / 60) + 'h' + String(m % 60).padStart(2, '0'); }
+function laneOf(c) { return c.path[c.path.length - 1][0]; }
+function enteredAt(c) { return c.path[c.path.length - 1][1]; }
+function bounces(c) { let n = 0; for (let i = 1; i < c.path.length; i++) if (c.path[i][0] < c.path[i - 1][0]) n++; return n; }
+// Everything transitively waiting on a chunk (its downstream blast radius).
+function dependents(chunks, id) {
+  const out = new Set(); const q = [id];
+  while (q.length) { const x = q.shift(); for (const c of chunks.values()) if (c.kind === 'upstream' && c.blockedBy && c.blockedBy.includes(x) && !out.has(c.id)) { out.add(c.id); q.push(c.id); } }
+  return out;
+}
+function unmet(chunks, c) { return (c.blockedBy || []).filter(b => { const p = chunks.get(b); return p && p.status !== 'done'; }); }
+
+// ---- Current: simulated live events over the real chunk data ----
+const SLOTS = { 'blizzard-claude': { runner: 'r-claude', n: 6 }, 'blizzard-chatgpt': { runner: 'r-chatgpt', n: 4 }, 'winter': { runner: null, n: 4 } };
+const S = {
+  now: NOW0, chunks: buildModel(), events: [], spend: SPEND.today, flash: new Map(), paused: false,
+  declineUntil: T('14:41'), paused_runners: new Set(), listeners: [], rnd: seeded(20261025),
+};
+function flights() { return [...S.chunks.values()].filter(c => c.kind === 'flight'); }
+function upstream() { return [...S.chunks.values()].filter(c => c.kind === 'upstream'); }
+function landed() { return [...S.chunks.values()].filter(c => c.kind === 'done'); }
+function declining(runner) { return runner === 'r-chatgpt' && S.now < S.declineUntil; }
+function log(id, text, kind) { const ev = { t: S.now, id, text, kind }; S.events.unshift(ev); S.events.length = Math.min(S.events.length, 40); S.flash.set(id, kind); }
+function nextLane(c) {
+  const l = laneOf(c);
+  if (l === 2) return (c.graph || '').startsWith('adv') && !c.path.some(p => p[0] === 3) ? 3 : 4;
+  return Math.min(6, l + 1);
+}
+// Seed the log with the real tail of the activity feed.
+[['12:48', '6J9H', 'needs a human: bounce cap crossed after 6 bounces', 'alarm'], ['13:01', 'QWYS', 'needs a human: land refused on a conflicting head', 'alarm'],
+ ['13:08', 'ZG7T', 'review → pre-push', 'step'], ['13:08', 'WSCR', 'build → review', 'step'], ['13:08', '27A6', 'pre-push → deliver', 'step'], ['13:08', 'PTP2', 'pre-push → deliver', 'step']]
+  .forEach(([t, id, text, kind]) => S.events.unshift({ t: T(t), id, text, kind }));
+
+function admit() {
+  for (const [ws, slot] of Object.entries(SLOTS)) {
+    if (!slot.runner || S.paused_runners.has(slot.runner)) continue;
+    const held = flights().filter(c => c.ws === ws).length;
+    if (held >= slot.n) continue;
+    if (declining(slot.runner)) continue;
+    const next = upstream().find(c => c.status === 'ready' && unmet(S.chunks, c).length === 0);
+    if (!next) return;
+    Object.assign(next, { kind: 'flight', status: 'running', runner: slot.runner, ws, path: [[0, S.now]], cost: 0, est: true, tok: '0.0M',
+      graph: next.refs[0].startsWith('hub:') ? 'bas-hwf' : 'adv-dwf' });
+    log(next.id, 'claimed by ' + slot.runner + ', entering triage', 'admit');
+  }
+}
+function simTick() {
+  S.now += 1;
+  const rnd = S.rnd;
+  for (const c of flights()) {
+    if (c.status === 'needs_human' || S.paused_runners.has(c.runner)) continue;
+    const inc = 0.004 + rnd() * 0.035; c.cost += inc; S.spend += inc;
+  }
+  if (S.now === S.declineUntil) log('r-chatgpt', 'back under pace on OpenAI 7d; accepting work', 'admit');
+  const movers = flights().filter(c => c.status !== 'needs_human' && !S.paused_runners.has(c.runner) && S.now - enteredAt(c) >= 3);
+  if (movers.length && rnd() < 0.55) {
+    const c = movers[Math.floor(rnd() * movers.length)];
+    const l = laneOf(c), to = nextLane(c), from = LANES[l].label.toLowerCase();
+    if (l === 2 && rnd() < 0.22) { c.path.push([1, S.now]); log(c.id, 'review fail ↺ build', 'bounce'); }
+    else if (l === 5 && rnd() < 0.2) { c.path.push([4, S.now]); log(c.id, 'land answered failure ↺ pre-push', 'bounce'); }
+    else if (to === 6) {
+      c.path.push([6, S.now]); Object.assign(c, { kind: 'done', status: 'done', doneAt: S.now });
+      log(c.id, 'landed ' + fmt$(c.cost, c.est), 'land');
+      for (const u of upstream()) if ((u.blockedBy || []).includes(c.id) && unmet(S.chunks, u).length === 0) log(u.id, 'unblocked by C-' + c.id, 'unblock');
+    } else { c.path.push([to, S.now]); if (to === 5) c.status = 'delivering'; log(c.id, from + ' → ' + LANES[to].label.toLowerCase(), 'step'); }
+  }
+  admit();
+  S.listeners.forEach(f => f());
+}
+function requeue(id) {
+  const c = S.chunks.get(id); if (!c || c.status !== 'needs_human') return false;
+  c.status = 'running'; c.haltAt = null; c.path.push([4, S.now]); log(id, 'requeued by paul-gross ↺ pre-push', 'bounce'); S.listeners.forEach(f => f()); return true;
+}
+let simTimer = null;
+function startSim(ms) { simTimer = setInterval(() => { if (!S.paused) simTick(); }, ms); }
+function medianDwell(lane) {
+  const ds = [];
+  for (const c of S.chunks.values()) if (c.path) for (let i = 0; i < c.path.length - 1; i++) if (c.path[i][0] === lane) ds.push(c.path[i + 1][1] - c.path[i][1]);
+  ds.sort((a, b) => a - b); return ds.length ? ds[Math.floor(ds.length / 2)] : 0;
+}
+function anomalyOf(c) {
+  if (c.status === 'needs_human') return 'halted';
+  const l = laneOf(c), med = medianDwell(l);
+  if (l > 0 && med && S.now - enteredAt(c) > Math.max(25, 2.5 * med)) return 'slow';
+  if (bounces(c) >= 3) return 'looping';
+  return null;
+}
+// Depth of an upstream chunk: how many sequential landings stand between it and a slot.
+function depthMap() {
+  const memo = new Map();
+  const d = id => {
+    if (memo.has(id)) return memo.get(id);
+    const c = S.chunks.get(id); if (!c || c.kind !== 'upstream') return 0;
+    memo.set(id, 1);
+    const v = 1 + Math.max(0, ...unmet(S.chunks, c).map(d));
+    memo.set(id, v); return v;
+  };
+  for (const c of upstream()) d(c.id);
+  return memo;
+}
+function criticalBlocker(c, depth) {
+  const u = unmet(S.chunks, c); if (!u.length) return null;
+  return u.reduce((a, b) => ((depth.get(b) || 0) > (depth.get(a) || 0) ? b : a));
+}
+function damOf(c) { // the halted in-flight chunk an upstream chunk ultimately waits on
+  const seen = new Set(); const q = [c.id];
+  while (q.length) { const x = q.shift(); const k = S.chunks.get(x); if (!k || seen.has(x)) continue; seen.add(x);
+    if (k.kind === 'flight' && k.status === 'needs_human') return x; if (k.kind === 'upstream') q.push(...unmet(S.chunks, k)); }
+  return null;
+}
+function medianCycle() {
+  const ds = landed().map(c => c.doneAt - c.path[0][1]).sort((a, b) => a - b); return ds[Math.floor(ds.length / 2)] || 120;
+}
+// Test hooks: #t=<ticks>&keys=a,b&hover=<id> drive the mock headlessly.
+function hooks(render) {
+  const H = new URLSearchParams(location.hash.slice(1));
+  const n = +H.get('t') || 0; const ls = S.listeners; S.listeners = []; for (let i = 0; i < n; i++) simTick(); S.listeners = ls;
+  render();
+  (H.get('keys') || '').split(',').filter(Boolean).forEach(k => document.dispatchEvent(new KeyboardEvent('keydown', { key: k === 'space' ? ' ' : k, metaKey: k === 'K', bubbles: true })));
+  const hv = H.get('hover'); if (hv) { const el = document.querySelector(`[data-id="${hv}"]`); if (el) { const r = el.getBoundingClientRect(); el.dispatchEvent(new MouseEvent('mousemove', { clientX: r.x + r.width / 2, clientY: r.y + r.height / 2, bubbles: true })); } }
+  return H;
+}
+
+const $ = s => document.querySelector(s);
+const esc = s => String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;');
+const X0 = 150, XN = 700, XP = 948, XF = 1222;
+const ZOOMS = [60, 180, 420, 1440]; let zoom = 2; const FUT = 240;
+function xOf(t) { const W = ZOOMS[zoom]; return X0 + (t - (S.now - W)) / W * (XN - X0); }
+function xFut(t) { return XP + (t - S.now) / FUT * (XF - XP); }
+const view = { runner: 'r-chatgpt', slot: null, hover: null };
+const WS_ORDER = [['blizzard-claude', 'r-claude'], ['blizzard-chatgpt', 'r-chatgpt'], ['winter', 'both']];
+// ---- slot assignment: which environment held which chunk, when ----
+const slotOf = new Map();
+function assignSlots() {
+  const busy = {}; for (const [ws] of WS_ORDER) busy[ws] = Array.from({ length: SLOTS[ws].n }, () => []);
+  const take = (c, ws, a, b) => { for (let i = 0; i < busy[ws].length; i++) if (busy[ws][i].every(([x, y]) => b <= x || a >= y)) { busy[ws][i].push([a, b]); slotOf.set(c.id, [ws, i]); return true; } return false; };
+  for (const c of flights()) take(c, c.ws, c.path[0][1], 99999);
+  const done = landed().sort((a, b) => a.path[0][1] - b.path[0][1]);
+  for (const c of done) { let h = 7; for (const ch of c.id) h = (h * 31 + ch.charCodeAt(0)) >>> 0; const first = h % 5 < 3 ? 'blizzard-claude' : 'blizzard-chatgpt'; const second = first === 'blizzard-claude' ? 'blizzard-chatgpt' : 'blizzard-claude';
+    if (!take(c, first, c.path[0][1], c.doneAt)) take(c, second, c.path[0][1], c.doneAt); }
+}
+assignSlots();
+function ensureSlot(c) {
+  if (slotOf.has(c.id)) return;
+  const used = new Set(flights().filter(f => f.ws === c.ws && slotOf.has(f.id)).map(f => slotOf.get(f.id)[1]));
+  for (let i = 0; i < SLOTS[c.ws].n; i++) if (!used.has(i)) { slotOf.set(c.id, [c.ws, i]); return; }
+}
+const SHADE = ['#3a362f', '#5b554b', '#7d766a', '#8f887b', '#aaa293', '#cfc8ba', '#ede7da'];
+let rows = [];
+function render() {
+  for (const c of flights()) ensureSlot(c);
+  const now = S.now, W = ZOOMS[zoom], t0 = now - W;
+  let s = `<defs><pattern id="hatch" width="5" height="5" patternUnits="userSpaceOnUse" patternTransform="rotate(45)"><line x1="0" y1="0" x2="0" y2="5" stroke="#ff5a35" stroke-opacity=".55" stroke-width="1.4"/></pattern>
+  <pattern id="idle" width="6" height="6" patternUnits="userSpaceOnUse" patternTransform="rotate(45)"><line x1="0" y1="0" x2="0" y2="6" stroke="#ede7da" stroke-opacity=".09" stroke-width="1"/></pattern>
+  <clipPath id="past"><rect x="${X0}" y="0" width="${XN - X0}" height="900"/></clipPath></defs>`;
+  s += `<rect x="${XN}" y="0" width="${XP - XN - 6}" height="846" fill="var(--now)"/>`;
+  // axis
+  const stepH = W <= 60 ? 10 : W <= 180 ? 30 : W <= 420 ? 60 : 180;
+  for (let t = Math.ceil(t0 / stepH) * stepH; t < now - W * .06; t += stepH) { const x = xOf(t); s += `<line x1="${x}" x2="${x}" y1="20" y2="846" stroke="var(--rule)"/><text class="m" x="${x}" y="14" font-size="10" fill="var(--ink-3)" text-anchor="middle">${hhmm(t)}</text>`; }
+  for (let t = Math.ceil(now / 60) * 60; t < now + FUT; t += 60) { const x = xFut(t); s += `<line x1="${x}" x2="${x}" y1="20" y2="846" stroke="var(--rule)" stroke-dasharray="1 3"/><text class="m" x="${x}" y="14" font-size="10" fill="var(--ink-3)" text-anchor="middle">${hhmm(t)}</text>`; }
+  s += `<text class="m" x="${XN}" y="14" font-size="10.5" fill="var(--ink)" text-anchor="middle">${hhmm(now)}</text><line x1="${XN}" x2="${XN}" y1="20" y2="846" stroke="var(--ink)" stroke-opacity=".7"/>`;
+  s += `<text x="${XP}" y="34" font-size="11" fill="var(--ink-3)">ahead</text>`;
+  // ---- windows: the banks that throttle the flow ----
+  let y = 32;
+  s += `<text x="16" y="${y + 12}" font-size="12.5" font-weight="600" fill="var(--ink)">Subscription windows</text><text x="16" y="${y + 27}" font-size="11" fill="var(--ink-3)">pace = spent ÷ elapsed</text>`;
+  y += 38;
+  for (const w of WINDOWS) {
+    const h = 44, mid = y + h / 2, pace = w.spent / w.elapsed, over = pace > 1 && (!w.declineUntil || now < T(w.declineUntil));
+    const r = RUNNERS.find(r => r.windows.includes(w.key));
+    s += `<line x1="0" x2="${XF}" y1="${y}" y2="${y}" stroke="var(--rule)"/>`;
+    s += `<text x="16" y="${y + 17}" font-size="12.5" fill="var(--ink)">${w.provider} ${w.span}</text><text class="m" x="16" y="${y + 32}" font-size="10.5" fill="var(--ink-3)">${r.name} · ${w.sampled}</text>`;
+    // pace 1.0 reference and history
+    const yv = v => mid - Math.max(-1, Math.min(1, Math.log2(v) / 2.4)) * (h / 2 - 5);
+    s += `<line x1="${X0}" x2="${XF}" y1="${yv(1)}" y2="${yv(1)}" stroke="var(--ink-3)" stroke-dasharray="2 3"/><text x="${X0 + 3}" y="${yv(1) - 3}" font-size="9.5" fill="var(--ink-3)">pace</text>`;
+    const rr = seeded(w.key.length * 977 + w.key.charCodeAt(0)); let v = pace; const pts = [];
+    for (let t = now; t >= t0; t -= Math.max(2, W / 140)) { pts.push([t, v]); v = Math.max(.08, v * (1 + (rr() - .5) * .07) - (w.key === 'o7d' && t > now - 45 ? .004 : 0)); }
+    pts.reverse();
+    let d = pts.map(([t, v], k) => (k ? 'L' : 'M') + xOf(t).toFixed(1) + ',' + yv(v).toFixed(1)).join('');
+    let fillOver = ''; pts.forEach(([t, v], k) => { if (v > 1 && k) fillOver += `<rect x="${xOf(pts[k - 1][0])}" y="${yv(v)}" width="${xOf(t) - xOf(pts[k - 1][0]) + .5}" height="${yv(1) - yv(v)}" fill="var(--alarm)" fill-opacity=".25"/>`; });
+    s += `<g clip-path="url(#past)">${fillOver}<path d="${d}" fill="none" stroke="${over ? 'var(--alarm)' : 'var(--ink)'}" stroke-width="1.5"/></g>`;
+    s += `<text class="m" x="${XN + 10}" y="${y + 17}" font-size="12" fill="${over ? 'var(--alarm)' : 'var(--ink)'}">${Math.round(w.spent * 100)}% <tspan fill="var(--ink-3)" font-size="10.5">spent of ${w.span}</tspan></text>`;
+    s += `<text class="m" x="${XN + 10}" y="${y + 32}" font-size="10.5" fill="var(--ink-3)">${Math.round(w.elapsed * 100)}% elapsed · pace ${pace.toFixed(2)}</text>`;
+    // projection ahead
+    if (w.declineUntil) {
+      const until = T(w.declineUntil);
+      if (now < until) { s += `<rect x="${XP}" y="${y + 4}" width="${xFut(until) - XP}" height="${h - 8}" fill="url(#hatch)"/><path d="M${XP},${yv(pace)}L${xFut(until)},${yv(1)}L${XF},${yv(.92)}" fill="none" stroke="var(--alarm)" stroke-dasharray="3 3"/>`;
+        s += `<text x="${xFut(until) + 6}" y="${y + 15}" font-size="11.5" fill="var(--alarm)">declining until ${w.declineUntil}</text><text x="${xFut(until) + 6}" y="${y + 38}" font-size="11" fill="var(--ink-3)">then back on pace</text>`; }
+      else s += `<text x="${XP}" y="${y + 17}" font-size="11.5" fill="var(--ink-2)">on pace since ${w.declineUntil}</text>`;
+    } else {
+      const span = w.span === '5h' ? 300 : 10080; const roll = now + span * (1 - w.elapsed);
+      s += `<path d="M${XP},${yv(pace)}L${XF},${yv(pace * 1.04)}" fill="none" stroke="var(--ink-2)" stroke-dasharray="3 3"/>`;
+      if (roll < now + FUT) s += `<line x1="${xFut(roll)}" x2="${xFut(roll)}" y1="${y + 4}" y2="${y + h - 4}" stroke="var(--ink-2)"/><text x="${xFut(roll) + 5}" y="${y + 15}" font-size="11" fill="var(--ink-2)">window rolls ${hhmm(roll)}</text>`;
+      else s += `<text x="${XP}" y="${y + 15}" font-size="11" fill="var(--ink-3)">${pace < .5 ? 'deep headroom' : 'on pace'}; rolls ${w.span === '7d' ? 'in ' + Math.round(7 * (1 - w.elapsed)) + 'd' : hhmm(roll)}</text>`;
+    }
+    y += h;
+  }
+  s += `<line x1="0" x2="${XF}" y1="${y}" y2="${y}" stroke="var(--rule)"/>`;
+  // ---- environments: every slot's occupancy over time ----
+  y += 14;
+  s += `<text x="16" y="${y + 12}" font-size="12.5" font-weight="600" fill="var(--ink)">Environments</text>`;
+  const fl = flights(); const busyN = fl.length;
+  s += `<text x="${X0}" y="${y + 12}" font-size="11" fill="var(--ink-3)">${busyN} of 14 held · idle time hatched · shade deepens toward deliver · <tspan fill="var(--loop)">bounces</tspan> · <tspan fill="var(--alarm)">halts</tspan></text>`;
+  y += 22; rows = [];
+  const RH = 31;
+  for (const [ws, owner] of WS_ORDER) {
+    const n = SLOTS[ws].n, held = fl.filter(c => c.ws === ws).length;
+    const runner = SLOTS[ws].runner; const dec = runner && declining(runner); const paused = runner && S.paused_runners.has(runner);
+    s += `<line x1="0" x2="${XF}" y1="${y}" y2="${y}" stroke="var(--rule-2)"/>`;
+    s += `<text x="16" y="${y + 17}" font-size="12.5" font-weight="500" fill="var(--ink)">${ws}</text><text class="m" x="16" y="${y + 31}" font-size="10.5" fill="${held === n ? 'var(--ink-2)' : 'var(--ink-3)'}">${held}/${n} · ${owner}</text>`;
+    for (let i = 0; i < n; i++) {
+      const ry = y + (i === 0 ? 4 : 4) + i * RH, mid = ry + RH / 2;
+      const key = ws + ':' + i; rows.push(key);
+      const occ = [...S.chunks.values()].filter(c => slotOf.has(c.id) && slotOf.get(c.id)[0] === ws && slotOf.get(c.id)[1] === i);
+      let row = `<g class="slotrow${view.slot === key ? ' focus' : ''}${occ.some(c => S.flash.has(c.id)) ? ' flash' : ''}" data-slot="${key}"><rect class="row" x="${X0 - 4}" y="${ry}" width="${XF - X0 + 4}" height="${RH - 3}" fill="transparent"/>`;
+      row += `<text class="m" x="${X0 - 10}" y="${mid + 3}" font-size="10" fill="var(--ink-4)" text-anchor="end">env ${i + 1}</text>`;
+      // idle background in the past
+      row += `<rect x="${X0}" y="${ry + 6}" width="${XN - X0}" height="${RH - 15}" fill="url(#idle)"/>`;
+      let segs = '';
+      for (const c of occ) {
+        const end = c.kind === 'done' ? c.doneAt : now; if (end < t0) continue;
+        let g = `<g class="seg" data-id="${c.id}">`;
+        const xa0 = Math.max(X0, xOf(c.path[0][1])), xb0 = Math.min(XN, xOf(end));
+        g += `<rect class="b" x="${xa0}" y="${ry + 5}" width="${Math.max(1, xb0 - xa0)}" height="${RH - 13}" fill="var(--ground)"/>`;
+        c.path.forEach((p, k) => {
+          if (p[0] === 6) return;
+          const tb = k + 1 < c.path.length ? c.path[k + 1][1] : end; const halt = c.status === 'needs_human' && k === c.path.length - 1 && c.haltAt;
+          const xa = xOf(p[1]), xb = xOf(halt ? c.haltAt : tb);
+          g += `<rect x="${xa}" y="${ry + 6}" width="${Math.max(.5, xb - xa - .5)}" height="${RH - 15}" fill="${SHADE[p[0]]}" fill-opacity="${c.kind === 'done' ? .55 : .95}"/>`;
+          if (halt) g += `<rect x="${xOf(c.haltAt)}" y="${ry + 6}" width="${XN - xOf(c.haltAt)}" height="${RH - 15}" fill="url(#hatch)"/><rect x="${xOf(c.haltAt)}" y="${ry + 6}" width="2" height="${RH - 15}" fill="var(--alarm)"/>`;
+          if (k > 0 && p[0] < c.path[k - 1][0]) g += `<rect x="${xa - 1}" y="${ry + 2}" width="2.2" height="${RH - 7}" fill="var(--loop)"/>`;
+        });
+        if (c.kind === 'done') g += `<rect x="${xOf(c.doneAt) - 1}" y="${ry + 3}" width="2" height="${RH - 9}" fill="var(--ink)"/>`;
+        if (xb0 - xa0 > 40) g += `<rect x="${xa0 + 2}" y="${mid - 6}" width="31" height="12" fill="var(--ground)" fill-opacity=".85"/><text class="m" x="${xa0 + 4}" y="${mid + 3.5}" font-size="10" fill="${c.kind === 'done' ? 'var(--ink-3)' : 'var(--ink)'}">${c.id}</text>`;
+        segs += g + '</g>';
+      }
+      row += `<g clip-path="url(#past)">${segs}</g>`;
+      // present: the holder
+      const cur = fl.find(c => slotOf.get(c.id) && slotOf.get(c.id)[0] === ws && slotOf.get(c.id)[1] === i);
+      if (cur) {
+        const h = cur.status === 'needs_human'; const a = anomalyOf(cur);
+        row += `<g class="seg" data-id="${cur.id}"><rect x="${XN + 6}" y="${ry + 4}" width="2" height="${RH - 11}" fill="${h ? 'var(--alarm)' : 'var(--live)'}"/>`;
+        row += `<text class="m" x="${XN + 14}" y="${mid + 3.5}" font-size="11" font-weight="500" fill="${h ? 'var(--alarm)' : 'var(--ink)'}">${cur.id}</text>`;
+        row += `<text x="${XN + 52}" y="${mid + 3.5}" font-size="12" fill="var(--ink-2)">${LANES[laneOf(cur)].label.toLowerCase()}</text>`;
+        row += `<text class="m" x="${XN + 120}" y="${mid + 3.5}" font-size="10.5" fill="${h || a === 'slow' ? 'var(--alarm)' : 'var(--ink-3)'}">${h ? 'halted ' + dur(now - cur.haltAt) : dur(now - enteredAt(cur))}</text>`;
+        row += `<text class="m" x="${XP - 14}" y="${mid + 3.5}" font-size="10.5" fill="var(--ink-3)" text-anchor="end">${fmt$(cur.cost, cur.est)}</text></g>`;
+        if (h) row += `<text x="${XP + 2}" y="${mid + 3.5}" font-size="11" fill="var(--alarm)">slot held until a human decides</text>`;
+      } else {
+        const why = !runner ? 'free · nothing queued for winter' : paused ? 'free · runner paused' : dec ? 'free · held by decline' : 'free · claiming next';
+        row += `<text x="${XN + 14}" y="${mid + 3.5}" font-size="12" fill="${dec || paused ? 'var(--alarm)' : 'var(--ink-3)'}">${why}</text>`;
+        if (runner && !paused) { const next = upstream().find(c => c.status === 'ready' && !unmet(S.chunks, c).length); const at = dec ? S.declineUntil : now;
+          if (next) row += `<rect x="${xFut(at)}" y="${ry + 6}" width="${Math.min(XF, xFut(at + 90)) - xFut(at)}" height="${RH - 15}" fill="none" stroke="var(--ink-3)" stroke-dasharray="2 2"/><text class="m" x="${xFut(at) + 5}" y="${mid + 3.5}" font-size="10" fill="var(--ink-3)">${next.id} next</text>`; }
+      }
+      if (paused) row += `<rect x="${XP}" y="${ry + 6}" width="${XF - XP}" height="${RH - 15}" fill="url(#hatch)"/>`;
+      s += row + '</g>';
+    }
+    if (ws === 'blizzard-chatgpt' && declining('r-chatgpt')) { const xu = xFut(S.declineUntil); s += `<line x1="${xu}" x2="${xu}" y1="${y + 2}" y2="${y + n * RH + 2}" stroke="var(--alarm)" stroke-dasharray="3 3"/>`; }
+    if (ws === 'winter') s += `<text x="${X0 + (XN - X0) / 2}" y="${y + n * RH / 2 + 6}" font-size="13" fill="var(--ink-3)" text-anchor="middle" font-style="italic">idle all window: winter has nothing ready</text>`;
+    y += n * RH + 6;
+  }
+  s += `<line x1="0" x2="${XF}" y1="${y}" y2="${y}" stroke="var(--rule-2)"/>`;
+  // ---- spend by runner: what each bank costs ----
+  y += 14; const bh = 96;
+  s += `<text x="16" y="${y + 12}" font-size="12.5" font-weight="600" fill="var(--ink)">Spend by runner</text><text x="16" y="${y + 27}" font-size="11" fill="var(--ink-3)">accrued over the window</text>`;
+  const runnerOf = c => c.runner || (slotOf.get(c.id) ? SLOTS[slotOf.get(c.id)[0]].runner : null);
+  const acc = (rn, t) => { let v = 0; for (const c of S.chunks.values()) { if (!c.path || c.kind === 'upstream' || runnerOf(c) !== rn) continue; const a = c.path[0][1], b = c.kind === 'done' ? c.doneAt : now; v += c.cost * Math.max(0, Math.min(1, (t - a) / Math.max(1, b - a))); } return v; };
+  const tot = { 'r-claude': acc('r-claude', now) - acc('r-claude', t0), 'r-chatgpt': acc('r-chatgpt', now) - acc('r-chatgpt', t0) };
+  const mx = Math.max(tot['r-claude'], tot['r-chatgpt'], 1);
+  [['r-claude', 'var(--ink)'], ['r-chatgpt', 'var(--ink-2)']].forEach(([rn, col], k) => {
+    const base = acc(rn, t0); let d = '';
+    for (let q = 0; q <= 90; q++) { const t = t0 + W * q / 90; d += (q ? 'L' : 'M') + xOf(t).toFixed(1) + ',' + (y + bh - 6 - (acc(rn, t) - base) / mx * (bh - 16)).toFixed(1); }
+    s += `<path d="${d}" fill="none" stroke="${col}" stroke-width="1.5" ${k ? 'stroke-dasharray="4 2"' : ''}/>`;
+    const yy = y + bh - 6 - tot[rn] / mx * (bh - 16);
+    s += `<text class="m" x="${XN + 10}" y="${yy + 4}" font-size="11" fill="${col}">${rn} ${fmt$(tot[rn], true)}</text>`;
+  });
+  s += `<text x="${XP}" y="${y + 17}" font-size="11" fill="var(--ink-3)">in ${dur(W)}: ${fmt$(tot['r-claude'] + tot['r-chatgpt'], true)} · today ${fmt$(S.spend, true)} · yesterday ${fmt$(SPEND.yesterday)}</text>`;
+  $('#flow').innerHTML = s;
+  renderVerdict(); renderHost(); renderRail(); renderFeed(); S.flash.clear(); applyFocus();
+}
+function renderVerdict() {
+  const fl = flights(), cap = 10, h = fl.filter(c => c.status === 'needs_human');
+  let say = fl.length >= cap ? `Capacity-bound: all 10 blizzard environments held` : `${cap - fl.length} of 10 blizzard environments free`;
+  if (h.length) say += `, <span class="alarm">${h.length} by halted chunks</span>`;
+  say += '.';
+  if (declining('r-chatgpt')) say += ` <span class="alarm">r-chatgpt</span> declines work until 14:41.`;
+  say += ` winter idle.`;
+  $('#verdict').innerHTML = `<div class="say">${say}</div><div class="facts">1 host · 2 runners · <span class="livemark"><i></i>${S.paused ? 'paused' : 'live'} ${hhmm(S.now)}</span></div>`;
+}
+function renderHost() {
+  $('#hostline').innerHTML = `<b>${HOST.name}</b><span class="mono">${HOST.id}</span><span class="live">online</span><span>last report <span class="mono">${HOST.lastReport}</span></span><span class="mono">${HOST.url}</span><span>token enrolled</span><span>registered <span class="mono">${HOST.registered}</span> by ${HOST.addedBy}</span><span class="acts"><button>Enroll</button><button>Revoke token</button><button class="alarm">Retire</button></span>`;
+}
+function renderRail() {
+  const r = RUNNERS.find(r => r.name === view.runner); const dec = declining(r.name); const paused = S.paused_runners.has(r.name);
+  const held = flights().filter(c => c.runner === r.name);
+  let h = `<h3>Runner <span class="r"><span class="k">tab</span> next runner</span></h3>`;
+  h += `<div class="who"><b>${r.name}</b><span class="mono dim">${r.id}</span><span class="s ${paused ? 'alarm' : dec ? 'alarm' : 'live'}">${paused ? 'paused' : dec ? 'declining' : 'working'}</span><span class="dim s" style="margin-left:auto">seen ${r.seen}</span></div>`;
+  if (paused) h += `<div class="state">Paused by paul-gross. Held chunks keep their slots; nothing new is claimed.</div>`;
+  else if (dec) h += `<div class="state">${r.stateNote}</div>`;
+  else h += `<div class="state ok">Working: claims as environments free. ${r.windows.map(k => { const w = WINDOWS.find(x => x.key === k); return `${w.provider} ${w.span} ${Math.round(w.spent * 100)}%`; }).join(', ')} spent.</div>`;
+  h += `<div class="kv"><span class="k2">binds</span><span class="v">${r.binds.map(([p, ws, n]) => `${p} → <b>${ws}</b> · ${flights().filter(c => c.runner === r.name && c.ws === ws).length} working`).join('<br>')}</span>
+    <span class="k2">spends</span><span class="v"><b>${r.spends}</b></span><span class="k2">harness</span><span class="v">${r.harness} · ${r.agents} agents</span>
+    <span class="k2">gates</span><span class="v">${r.gates}</span><span class="k2">version</span><span class="v mono" style="font-size:11px">${r.version}</span></div>`;
+  h += `<h3 style="margin-top:14px">Capacity on ${HOST.name} <span class="n">${flights().length}/14 environments · 10 agents</span></h3><div class="capmap">`;
+  for (const [ws] of WS_ORDER) { h += `<div class="cg"><span>${ws}</span><span class="cells">`; for (let i = 0; i < SLOTS[ws].n; i++) { const c = flights().find(f => slotOf.get(f.id) && slotOf.get(f.id)[0] === ws && slotOf.get(f.id)[1] === i); const r2 = SLOTS[ws].runner;
+      h += `<i class="${c ? (c.status === 'needs_human' ? 'h' : 'b') : r2 && (declining(r2) || S.paused_runners.has(r2)) ? 'd' : ''}${SLOTS[ws].runner === r.name ? ' mine' : ''}" ${c ? `data-id="${c.id}"` : ''}></i>`; } h += `</span></div>`; }
+  h += `</div>`;
+  h += `<h3 style="margin-top:14px">Held <span class="n">${held.length}</span></h3><div class="held">`;
+  for (const c of held) { const hh = c.status === 'needs_human'; h += `<div class="${hh ? 'h' : ''}" data-id="${c.id}"><span class="cid">${c.id}</span><span class="n">${LANES[laneOf(c)].label.toLowerCase()}</span><span class="st">${hh ? 'needs human, ' + dur(S.now - c.haltAt) : c.status + ', ' + dur(S.now - enteredAt(c))}</span><span class="c">${fmt$(c.cost, c.est)}</span></div>`; }
+  const spent = held.reduce((a, c) => a + c.cost, 0);
+  h += `</div><div class="kv"><span class="k2">in flight</span><span class="v"><b>${fmt$(spent, true)}</b> on held chunks</span></div>`;
+  h += `<div class="btnrow"><span><span class="k">p</span>${paused ? 'resume' : 'pause'}</span><span><span class="k">d</span>drain</span><span><span class="k">l</span>logs</span></div>`;
+  $('#rsec').innerHTML = h;
+}
+let lastEv = -1;
+function renderFeed() {
+  let h = `<h3>Fleet log <span class="r">claims, frees, windows</span></h3>`;
+  S.events.slice(0, 9).forEach((e, i) => { h += `<div class="ev ${e.kind}${lastEv >= 0 && i < S.events.length - lastEv && i < 3 ? ' new' : ''}"><span class="t">${hhmm(e.t)}</span><span class="i">${e.id.length > 4 ? '' : e.id}</span><span class="x">${e.id.length > 4 ? e.id + ' ' : ''}${esc(e.text)}</span></div>`; });
+  lastEv = S.events.length; $('#feed').innerHTML = h;
+}
+function applyFocus() {
+  const id = view.hover; document.body.classList.toggle('dimmed', !!id);
+  document.querySelectorAll('.seg').forEach(el => el.classList.toggle('hl', el.dataset.id === id));
+}
+const tip = $('#tip');
+document.addEventListener('mousemove', e => {
+  const el = e.target.closest && e.target.closest('[data-id]'); const id = el ? el.dataset.id : null;
+  if (id !== view.hover) { view.hover = id; applyFocus(); }
+  if (id && S.chunks.get(id)) { const c = S.chunks.get(id); tip.innerHTML = `<span class="cid">C-${id}</span> ${c.refs[0]}<br>${esc(c.title)}<br><span class="s">${c.kind === 'done' ? 'landed ' + hhmm(c.doneAt) : c.status.replace('_', ' ') + ' · ' + LANES[laneOf(c)].label.toLowerCase()} · ${fmt$(c.cost, c.est)} · ${bounces(c)} bounce${bounces(c) === 1 ? '' : 's'}</span>`; tip.style.display = 'block'; tip.style.left = Math.min(1290, e.clientX + 14) + 'px'; tip.style.top = e.clientY + 14 + 'px'; }
+  else tip.style.display = 'none';
+});
+document.addEventListener('click', e => { const r = e.target.closest && e.target.closest('[data-slot]'); if (r) { view.slot = r.dataset.slot; const ws = view.slot.split(':')[0]; if (SLOTS[ws].runner) view.runner = SLOTS[ws].runner; render(); } });
+function toast(m) { const t = $('#toast'); t.textContent = m; t.classList.add('on'); clearTimeout(toast.h); toast.h = setTimeout(() => t.classList.remove('on'), 1600); }
+const HELP = [['j k', 'move between environments'], ['tab', 'next runner'], ['p', 'pause / resume runner'], ['d', 'drain runner'], ['[ ]', 'time window'], ['space', 'pause live stream'], ['g b', 'go to the flow board'], ['esc', 'clear']];
+$('#help').innerHTML = '<h4>Keys</h4>' + HELP.map(([k, v]) => `<div><span>${v}</span><span>${k.split(' ').map(x => `<span class="k">${x}</span>`).join(' ')}</span></div>`).join('');
+$('#keys').innerHTML = [['j k', 'environment'], ['tab', 'runner'], ['p', 'pause runner'], ['[ ]', 'window'], ['space', 'pause live'], ['g b', 'flow board']].map(([k, v]) => `<span>${k.split(' ').map(x => `<span class="k">${x}</span>`).join('')} ${v}</span>`).join('') + '<span style="margin-left:auto"><span class="k">?</span> all keys</span>';
+let g = false;
+document.addEventListener('keydown', e => {
+  if (g) { g = false; if (e.key === 'b') location.href = 'board-desktop.html'; return; }
+  switch (e.key) {
+    case 'j': case 'k': case 'ArrowDown': case 'ArrowUp': { const d = e.key === 'j' || e.key === 'ArrowDown' ? 1 : -1; let i = rows.indexOf(view.slot); i = i < 0 ? 0 : (i + d + rows.length) % rows.length; view.slot = rows[i]; const ws = view.slot.split(':')[0]; if (SLOTS[ws].runner) view.runner = SLOTS[ws].runner; render(); break; }
+    case 'Tab': e.preventDefault(); view.runner = view.runner === 'r-claude' ? 'r-chatgpt' : 'r-claude'; render(); break;
+    case 'p': if (S.paused_runners.has(view.runner)) { S.paused_runners.delete(view.runner); log(view.runner, 'resumed by paul-gross', 'admit'); } else { S.paused_runners.add(view.runner); log(view.runner, 'paused by paul-gross', 'alarm'); } render(); break;
+    case 'd': toast(view.runner + ': draining, finishes held chunks then stops (mock)'); break;
+    case '[': zoom = Math.max(0, zoom - 1); render(); break;
+    case ']': zoom = Math.min(ZOOMS.length - 1, zoom + 1); render(); break;
+    case ' ': S.paused = !S.paused; render(); e.preventDefault(); break;
+    case 'g': g = true; break;
+    case '?': $('#help').style.display = $('#help').style.display === 'block' ? 'none' : 'block'; break;
+    case 'Escape': $('#help').style.display = 'none'; view.slot = null; render(); break;
+  }
+});
+S.listeners.push(render);
+hooks(render);
+if (!new URLSearchParams(location.hash.slice(1)).has('still')) startSim(2000);
+</script></body></html>

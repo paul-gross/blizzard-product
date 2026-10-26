@@ -1,0 +1,857 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><title>blizzard · flow</title>
+<style>
+:root {
+  --ground: #12110e; --ground-2: #181612; --ground-3: #201d18; --now: #1b1914;
+  --rule: #2a2721; --rule-2: #3b372f;
+  --ink: #ede7da; --ink-2: #aaa293; --ink-3: #6f695e; --ink-4: #47423a;
+  --live: #c6f03c; --alarm: #ff5a35; --alarm-dim: #7a2a18; --loop: #ee82d4; --loop-dim: #6a3360;
+  --sans: "Noto Sans", sans-serif; --mono: "Noto Sans Mono", monospace; --serif: "Noto Serif", serif;
+}
+* { box-sizing: border-box; }
+html, body { margin: 0; background: var(--ground); color: var(--ink); }
+body { font: 400 13px/1.35 var(--sans); font-stretch: 87.5%; -webkit-font-smoothing: antialiased; overflow: hidden; }
+.mono { font-family: var(--mono); font-variant-numeric: tabular-nums; font-stretch: 87.5%; }
+.serif { font-family: var(--serif); font-style: italic; font-stretch: 100%; }
+.k { display: inline-block; min-width: 15px; padding: 0 3px; border: 1px solid var(--rule-2); border-bottom-width: 2px; border-radius: 3px; font: 500 10px/13px var(--mono); color: var(--ink-2); text-align: center; }
+.alarm { color: var(--alarm); } .live { color: var(--live); } .loop { color: var(--loop); } .dim { color: var(--ink-3); } .mid { color: var(--ink-2); }
+button { font: inherit; color: inherit; background: none; border: 0; padding: 0; cursor: pointer; }
+@keyframes flash { 0% { box-shadow: 0 0 0 0 rgba(237,231,218,.55); background-color: rgba(237,231,218,.14); } 100% { box-shadow: 0 0 0 8px rgba(237,231,218,0); } }
+@keyframes alarmring { 0% { box-shadow: 0 0 0 0 rgba(255,90,53,.7); } 100% { box-shadow: 0 0 0 10px rgba(255,90,53,0); } }
+@keyframes svgflash { 0% { stroke-opacity: 1; stroke-width: 9; } 100% { stroke-opacity: 0; stroke-width: 1; } }
+.toast { position: fixed; left: 50%; bottom: 22px; transform: translateX(-50%); background: var(--ink); color: var(--ground); padding: 7px 12px; border-radius: 4px; font: 500 12px var(--mono); opacity: 0; transition: opacity .15s; pointer-events: none; z-index: 50; }
+.toast.on { opacity: 1; }
+
+header { position: absolute; inset: 0 0 auto 0; height: 44px; display: flex; align-items: center; gap: 26px; padding: 0 18px; border-bottom: 1px solid var(--rule); }
+.mark { font: italic 500 21px/1 var(--serif); letter-spacing: -.01em; }
+.mark small { font: 400 12px var(--sans); font-style: normal; color: var(--ink-3); margin-left: 8px; letter-spacing: 0; }
+nav { display: flex; gap: 18px; }
+nav a { color: var(--ink-3); text-decoration: none; font-size: 13px; padding: 12px 0 11px; border-bottom: 2px solid transparent; }
+nav a.on { color: var(--ink); border-color: var(--ink); }
+nav a:hover { color: var(--ink-2); }
+.hdr-r { margin-left: auto; display: flex; gap: 22px; align-items: center; color: var(--ink-3); font-size: 12px; }
+.lens b { color: var(--ink); font-weight: 500; } .lens span { margin-left: 10px; }
+#verdict { position: absolute; top: 44px; left: 0; width: 1236px; height: 50px; display: flex; align-items: center; padding: 0 18px; gap: 18px; border-bottom: 1px solid var(--rule); }
+#verdict .say { font: italic 400 18.5px/1.2 var(--serif); color: var(--ink); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+#verdict .say em { font-style: italic; } #verdict .say .alarm { color: var(--alarm); }
+#verdict .facts { margin-left: auto; white-space: nowrap; color: var(--ink-3); font-size: 12px; }
+#verdict .facts b { color: var(--ink); font-weight: 500; }
+.livemark { display: inline-flex; align-items: center; gap: 6px; }
+.livemark i { width: 7px; height: 7px; background: var(--live); display: inline-block; }
+.paused .livemark i { background: var(--ink-3); }
+#rail { position: absolute; top: 44px; left: 1236px; width: 364px; bottom: 0; border-left: 1px solid var(--rule); background: var(--ground-2); display: flex; flex-direction: column; }
+.sec { padding: 12px 16px 12px; border-bottom: 1px solid var(--rule); }
+.sec h3 { margin: 0 0 8px; font: 600 12.5px var(--sans); font-stretch: 87.5%; color: var(--ink); display: flex; gap: 8px; align-items: baseline; }
+.sec h3 .n { font: 400 11px var(--mono); color: var(--ink-3); }
+.sec h3 .r { margin-left: auto; font-weight: 400; color: var(--ink-3); font-size: 11px; }
+.ask { padding: 8px 0 10px; border-top: 1px solid var(--rule); cursor: pointer; }
+.ask:first-of-type { border-top: 0; padding-top: 2px; }
+.ask .top { display: flex; gap: 8px; align-items: baseline; }
+.ask .top .cid { font: 600 12px var(--mono); color: var(--alarm); }
+.ask .top .ref { color: var(--ink-3); font-size: 11.5px; }
+.ask .top .age { margin-left: auto; font: 11px var(--mono); color: var(--alarm); }
+.ask .tt { font-size: 13.5px; line-height: 1.3; margin: 3px 0 4px; color: var(--ink); }
+.ask .why { color: var(--ink-2); font-size: 12px; }
+.ask .meta { color: var(--ink-3); font-size: 11.5px; margin-top: 4px; }
+.ask .meta b { color: var(--alarm); font-weight: 500; }
+.ask .acts { display: flex; gap: 14px; margin-top: 7px; font-size: 12px; color: var(--ink-2); }
+.ask .acts span { display: inline-flex; gap: 5px; align-items: center; }
+.ask.focus { margin: 0 -16px; padding-left: 14px; padding-right: 16px; border-left: 2px solid var(--alarm); background: rgba(255,90,53,.05); }
+#feed { height: 196px; overflow: hidden; }
+.ev { display: grid; grid-template-columns: 38px 40px 1fr; gap: 6px; font-size: 11.5px; padding: 2px 0; color: var(--ink-2); }
+.ev .t { font: 10.5px var(--mono); color: var(--ink-3); } .ev .i { font: 500 10.5px var(--mono); color: var(--ink); }
+.ev.bounce .x { color: var(--loop); } .ev.alarm .x, .ev.alarm .i { color: var(--alarm); } .ev.land .x { color: var(--ink); }
+.ev.new { animation: flash 1s ease-out 1; }
+#keys { position: absolute; left: 0; bottom: 0; width: 1236px; height: 30px; display: flex; gap: 16px; align-items: center; padding: 0 18px; color: var(--ink-3); font-size: 11.5px; border-top: 1px solid var(--rule); }
+#keys span { display: inline-flex; gap: 5px; align-items: center; }
+#tip { position: absolute; pointer-events: none; background: var(--ink); color: var(--ground); padding: 6px 9px; max-width: 300px; font-size: 12px; line-height: 1.3; border-radius: 3px; z-index: 30; display: none; }
+#tip .cid { font: 600 11px var(--mono); } #tip .s { color: #5d574d; font-size: 11px; }
+#pal, #help { position: absolute; left: 50%; top: 120px; transform: translateX(-50%); width: 600px; background: var(--ground-3); border: 1px solid var(--rule-2); border-radius: 6px; box-shadow: 0 24px 80px rgba(0,0,0,.6); z-index: 40; display: none; }
+#pal input { width: 100%; background: none; border: 0; border-bottom: 1px solid var(--rule-2); padding: 14px 16px; font: 16px var(--sans); color: var(--ink); outline: none; }
+#pal .res { max-height: 380px; overflow: hidden; padding: 4px 0; }
+#pal .r { display: flex; gap: 10px; padding: 6px 16px; font-size: 13px; color: var(--ink-2); align-items: baseline; }
+#pal .r .cid { font: 500 11.5px var(--mono); color: var(--ink); width: 40px; }
+#pal .r .s { margin-left: auto; color: var(--ink-3); font-size: 11.5px; white-space: nowrap; }
+#pal .r .tt { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+#pal .r.sel { background: var(--rule); color: var(--ink); }
+#help { padding: 18px 22px; columns: 2; column-gap: 30px; font-size: 12.5px; color: var(--ink-2); }
+#help div { display: flex; justify-content: space-between; padding: 3px 0; break-inside: avoid; }
+#help h4 { margin: 0 0 6px; font: italic 16px var(--serif); color: var(--ink); column-span: all; }
+
+body { width: 1600px; height: 1000px; position: relative; }
+#stage { position: absolute; top: 94px; left: 0; width: 1236px; height: 906px; }
+#flow { position: absolute; inset: 0; }
+#chips { position: absolute; inset: 0; pointer-events: none; }
+.chip { position: absolute; left: 684px; width: 254px; height: 18px; display: flex; align-items: center; gap: 6px; padding: 0 5px 0 6px; font-size: 12px; pointer-events: auto; cursor: pointer; border-left: 2px solid var(--ink-4); border-radius: 0 2px 2px 0; }
+.chip .cid { font: 500 11px var(--mono); color: var(--ink); width: 34px; flex: none; }
+.chip .ct { flex: 1; min-width: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; color: var(--ink-2); }
+.chip .cd, .chip .cc { font: 400 10.5px var(--mono); color: var(--ink-3); flex: none; font-variant-numeric: tabular-nums; }
+.chip .cc { width: 42px; text-align: right; }
+.chip.running { border-left-color: var(--live); }
+.chip.halted { border-left-color: var(--alarm); background: rgba(255,90,53,.09); }
+.chip.halted .cid, .chip.halted .cd { color: var(--alarm); }
+.chip.slow .cd { color: var(--alarm); } .chip.looping .cid { color: var(--loop); }
+.chip.more { color: var(--ink-3); border-left-color: transparent; font-size: 11.5px; }
+.chip:hover, .chip.focus { background: var(--ground-3); }
+.chip.focus { outline: 1px solid var(--ink); outline-offset: -1px; }
+.chip.flash { animation: flash .9s ease-out 1; }
+.chip.halted.flash { animation: alarmring .8s ease-out 3; }
+.dimmed .chip:not(.hl):not(.focus) { opacity: .35; }
+svg text { font-family: var(--sans); font-stretch: 87.5%; }
+svg .m { font-family: var(--mono); font-stretch: 87.5%; }
+.ln { fill: none; stroke-linecap: round; transition: stroke-opacity .12s; }
+.dimmed .ln:not(.hl), .dimmed .dot:not(.hl), .dimmed .thr:not(.hl) { stroke-opacity: .09; fill-opacity: .2; }
+.ln.hl { stroke-opacity: 1 !important; }
+.dot { cursor: pointer; }
+.thr { fill: none; }
+.svgflash { fill: none; stroke: var(--ink); animation: svgflash .9s ease-out 1 forwards; }
+#insp { flex: 1; min-height: 0; overflow: hidden; }
+.insp-id { display: flex; gap: 8px; align-items: baseline; font-size: 12px; color: var(--ink-3); }
+.insp-id .cid { font: 600 13px var(--mono); color: var(--ink); }
+.insp-t { font-size: 15px; line-height: 1.3; margin: 4px 0 4px; }
+.insp-m { color: var(--ink-3); font-size: 11.5px; }
+.insp-m b { color: var(--ink-2); font-weight: 400; }
+.hist { margin-top: 10px; display: grid; grid-template-columns: 38px 66px 1fr 38px; column-gap: 8px; row-gap: 1px; font-size: 11.5px; align-items: center; }
+.hist .t { font: 10.5px var(--mono); color: var(--ink-3); }
+.hist .n { color: var(--ink-2); }
+.hist .bar { height: 6px; background: var(--ink-4); }
+.hist .d { font: 10.5px var(--mono); color: var(--ink-3); text-align: right; }
+.hist .bo .n, .hist .bo .t { color: var(--loop); }
+.hist .cur .n { color: var(--live); } .hist .cur .bar { background: var(--live); }
+.hist .halt .n { color: var(--alarm); } .hist .halt .bar { background: var(--alarm); }
+.hist .why { grid-column: 2 / 5; color: var(--loop); font-size: 11px; margin: -1px 0 2px; }
+.hist > div { display: contents; }
+.insp-cost { display: flex; gap: 16px; margin-top: 10px; font: 12px var(--mono); color: var(--ink-2); }
+.insp-cost b { color: var(--ink); font-weight: 500; }
+</style></head>
+<body>
+<header>
+  <div class="mark">blizzard<small>paul-gross</small></div>
+  <nav><a class="on" href="#">Flow</a><a href="fleet-desktop.html">Fleet</a><a href="#">Graphs</a><a href="#">Events</a><a href="#">Garden</a><a href="#">Admin</a></nav>
+  <div class="hdr-r"><span class="lens"><b>all</b><span>blizzard</span><span>winter</span></span><span>hub <span class="live">ok</span></span><span><span class="k">⌘</span> <span class="k">K</span></span></div>
+</header>
+<div id="verdict"></div>
+<div id="stage"><svg id="flow" width="1236" height="876"></svg><div id="chips"></div><div id="keys"></div></div>
+<aside id="rail"><div class="sec" id="asks"></div><div class="sec" id="insp"></div><div class="sec" id="feed"></div></aside>
+<div id="tip"></div>
+<div id="pal"><input id="palq" placeholder="Jump to a chunk, runner or command…" autocomplete="off"><div class="res" id="palr"></div></div>
+<div id="help"></div>
+<div class="toast" id="toast"></div>
+<script>
+// ---- Current: shared data model (real chunk data from the baseline capture, 2026-10-25 13:10) ----
+const T = s => { const neg = s.startsWith('-'); const [h, m] = s.replace('-', '').split(':').map(Number); return neg ? (h * 60 + m) - 1440 : h * 60 + m; };
+const LANES = [
+  { key: 'intake', label: 'Triage', sub: 'triage · survey' },
+  { key: 'build', label: 'Build' },
+  { key: 'review', label: 'Review' },
+  { key: 'mutation', label: 'Mutation' },
+  { key: 'pre-push', label: 'Pre-push' },
+  { key: 'deliver', label: 'Deliver' },
+  { key: 'landed', label: 'Landed' },
+];
+const NOW0 = T('13:10');
+
+// In flight: running, delivering and needs-human. Paths are [lane, enteredAt].
+const INFLIGHT = [
+  { id: 'WSCR', refs: ['blizzard#1497'], title: 'Add an Anthropic credential renewer that refreshes via a haiku one-shot', status: 'running', runner: 'r-claude', ws: 'blizzard-claude', cost: 1.58, est: false, pr: 'PR #1500', graph: 'bas-dwf', tok: '3.9M',
+    path: [[0,'12:22'],[1,'12:27'],[2,'12:33'],[1,'12:35'],[2,'12:37'],[4,'12:39'],[5,'12:40'],[4,'12:51'],[5,'12:54'],[4,'12:55'],[1,'12:56'],[2,'13:08']],
+    why: { 3: 'review fail', 7: 'land answered failure', 9: 'land answered failure', 10: 'pre-push: significant' } },
+  { id: '6J9H', refs: ['blizzard#1365'], title: '[FORGES] Report every record the forge migration would refuse', status: 'needs_human', runner: 'r-claude', ws: 'blizzard-claude', cost: 8.20, est: false, pr: 'PR #1498', graph: 'adv-dwf', tok: '20.3M', attempts: 25,
+    path: [[0,'09:40'],[1,'09:52'],[2,'10:30'],[1,'10:41'],[2,'11:02'],[3,'11:09'],[4,'11:20'],[5,'11:31'],[4,'11:44'],[5,'11:52'],[4,'12:03'],[5,'12:10'],[4,'12:19'],[5,'12:25'],[4,'12:31'],[5,'12:38'],[4,'12:41'],[5,'12:44']],
+    haltAt: '12:48', reason: 'Bounce cap crossed: 6 deliver failures. No composed command for this escalation.', takeover: 'blizzard runner takeover C-6J9H' },
+  { id: 'QWYS', refs: ['blizzard#1449'], title: '[STRICT] Type the hub auth repositories', status: 'needs_human', runner: 'r-claude', ws: 'blizzard-claude', cost: 4.03, est: false, pr: 'PR #1501', graph: 'adv-dwf', tok: '9.6M', attempts: 11,
+    path: [[0,'10:55'],[1,'11:02'],[2,'11:40'],[3,'11:52'],[4,'12:15'],[5,'12:26'],[4,'12:36'],[5,'12:44']],
+    haltAt: '13:01', reason: 'Gate at deliver: land refused twice on a conflicting head. Decide: rebase or park.', takeover: 'blizzard runner takeover C-QWYS' },
+  { id: 'BWA2', refs: ['blizzard#1461'], title: '[PW-HUBTIER] Let an event-stream client join from the latest event', status: 'running', runner: 'r-claude', ws: 'blizzard-claude', cost: 2.26, est: true, graph: 'adv-dwf', tok: '5.1M',
+    path: [[0,'11:48'],[1,'11:55'],[2,'12:31'],[3,'12:47']] },
+  { id: 'ZG7T', refs: ['hub:626', 'hub:627'], title: 'Land a gate resolution’s artifacts once when its landing consult fires', status: 'running', runner: 'r-claude', ws: 'blizzard-claude', cost: 0.70, est: false, graph: 'bas-hwf', tok: '1.8M',
+    path: [[0,'12:10'],[1,'12:14'],[2,'12:44'],[4,'13:08']] },
+  { id: 'FC1D', refs: ['hub:620', 'hub:628', '+3'], title: 'Bring the work domain’s docs up to four rules the code enforces deliberately', status: 'running', runner: 'r-claude', ws: 'blizzard-claude', cost: 1.12, est: true, graph: 'bas-hwf', tok: '2.7M',
+    path: [[0,'11:30'],[1,'11:38'],[2,'12:20'],[1,'12:29'],[2,'12:58']], why: { 3: 'review fail' } },
+  { id: 'MFJE', refs: ['blizzard#1465'], title: '[PW-HUBTIER] Give the harness a mock runner it can drive and runners that serve projects', status: 'running', runner: 'r-chatgpt', ws: 'blizzard-chatgpt', cost: 0.10, est: true, graph: 'adv-dwf-opencode', tok: '0.3M',
+    path: [[0,'12:49'],[1,'12:55']] },
+  { id: '27A6', refs: ['blizzard#1463'], title: '[PW-HUBTIER] Choose the stub IdP’s identity by login_hint', status: 'delivering', runner: 'r-chatgpt', ws: 'blizzard-chatgpt', cost: 1.47, est: true, pr: 'mock PR #121', graph: 'adv-dwf-opencode', tok: '4.0M',
+    path: [[0,'10:12'],[1,'10:20'],[2,'11:16'],[1,'11:24'],[2,'11:58'],[3,'12:06'],[4,'12:31'],[5,'13:08']], why: { 3: 'review fail' } },
+  { id: 'PTP2', refs: ['blizzard#1459'], title: '[PW-HUBTIER] Tag every per-tenant sweep line with its tenant', status: 'delivering', runner: 'r-chatgpt', ws: 'blizzard-chatgpt', cost: 3.49, est: true, pr: 'PR #1492', graph: 'adv-dwf-opencode', tok: '8.4M',
+    path: [[0,'09:58'],[1,'10:05'],[2,'10:51'],[3,'11:03'],[4,'11:40'],[5,'12:20'],[4,'12:41'],[5,'13:08']], why: { 6: 'land answered failure' } },
+  { id: '2475', refs: ['blizzard#1446'], title: '[STRICT] Type the runner store adapters’ row mapping', status: 'running', runner: 'r-chatgpt', ws: 'blizzard-chatgpt', cost: 2.06, est: true, graph: 'adv-dwf-opencode', tok: '5.0M',
+    path: [[0,'12:30'],[1,'12:36']] },
+];
+
+// Landed in the last 48h: [id, refs, title, completedAt, cost, est]
+const DONE = [
+  ['VA7X', ['hub:602', 'hub:613', '+2'], 'Make a gate’s resolving transition name a decision from the current visit', '12:24', 17.03, true],
+  ['AFTK', ['blizzard#1447'], '[STRICT] Type the runner harness adapters’ parsed output', '12:03', 7.36],
+  ['R1D5', ['hub:624', 'hub:622', 'hub:623'], 'Settle one owner for the statement guards and the lane rosters', '11:25', 3.69, true],
+  ['BB9E', ['blizzard#1445'], '[STRICT] Type the compat OpenAPI classifier', '10:19', 1.95],
+  ['TX56', ['blizzard#1175'], '[NOTES] Cross-check a release’s notes against its compat breaks', '09:31', 7.00],
+  ['F5V9', ['blizzard#1462'], '[PW-HUBTIER] Make the hub’s login throttle configurable', '08:56', 1.49],
+  ['RWE7', ['blizzard#1190'], '[FLAGS] Write the flag procedure and the operator’s flags guide', '08:46', 1.65],
+  ['2R1E', ['blizzard#1443'], '[STRICT] Delete the inert type-ignores in shipping code and add a strict report', '08:03', 0.88],
+  ['QRP5', ['blizzard#1174'], '[NOTES] Fail a pull request that owes a change note', '06:59', 5.32],
+  ['ZWE9', ['blizzard#1364'], '[FORGES] Port land and the commit check onto one forge seam', '06:29', 40.11],
+  ['1BF8', ['blizzard#1189'], '[FLAGS] Hold flag tombstones, flips, and cuts to the release rules', '05:07', 4.74],
+  ['PZD6', ['hub:603'], 'Rewrite inventory-style hub rows as read-triggers', '04:48', 12.56, true],
+  ['RNZD', ['blizzard#1181'], '[LINES] Write the patch rule and the release promise', '00:14', 3.89],
+  ['E7DE', ['blizzard#1173'], '[NOTES] Publish release notes from change notes and require them', '-22:39', 7.06],
+  ['TNFF', ['hub:609', 'hub:604', '+3'], 'Bring findings-and-proposals.md up to the refusals and settlement the code already has', '-21:46', 9.42],
+  ['CRTC', ['blizzard#1361'], '[ACTIONS] Remove the hub’s process runner, step environment, and marker token', '-15:21', 24.86, true],
+  ['66JE', ['hub:619', 'hub:618'], 'Bring the command-failed and hub-migrated definitions in line with what is recorded', '-14:56', 5.41],
+  ['8Z96', ['hub:615', 'hub:617'], 'Make the pause, resume and detach messages describe the actual state', '-14:50', 2.18],
+  ['JJPG', ['blizzard#1160'], '[RELEASE] Open the hub’s pin change when blizzard publishes a release', '-12:07', 4.38],
+  ['R4EH', ['hub:612', 'hub:607'], 'Count retries per visit, not per node across the whole chunk', '-12:04', 7.09],
+  ['H48F', ['hub:601', 'hub:600', 'hub:614'], 'Filter a project’s runner pauses before the activity feed caps them', '-11:52', 7.26],
+  ['8YFS', ['blizzard#1180'], '[LINES] Hold release tags to their line and promote by borrowed proof', '-11:50', 5.36],
+  ['5EVY', ['hub:621', 'hub:625'], 'Keep a chunk’s work items in one project at ingest', '-11:06', 1.79, true],
+  ['BCN9', ['blizzard#1360'], '[ACTIONS] Retire run: and carry every stored graph onto actions', '-09:27', 46.52],
+];
+
+// Upstream: ready (and one backlog) chunks with their blocking threads.
+const READY = [
+  ['ZEVE', 'blizzard#1366', '[FORGES] Carry every forge address over into a forge record', ['6J9H']],
+  ['MG3R', 'blizzard#1367', '[FORGES] Configure forges through the API, CLI, document, and board', ['ZEVE']],
+  ['4J2W', 'blizzard#1368', '[FORGES] Document the forge record and the landing seam', ['MG3R']],
+  ['4HAX', 'blizzard#1371', '[FLOWS] Keep each branch’s flow record in the shadow of the slot', ['4J2W']],
+  ['50RX', 'blizzard#1372', '[FLOWS] Take hub steps as turns on their branches’ flows', ['4HAX', 'ZEVE', 'MG3R']],
+  ['FC1E', 'blizzard#1373', '[FLOWS] Retire the slot’s code and keep its deprecated table', ['50RX']],
+  ['CG21', 'blizzard#1374', '[FLOWS] Show flows on the API, CLI, live channel, and board', ['FC1E']],
+  ['MAET', 'blizzard#1378', '[POLICIES] Grow the landing seam and make a landing pass cheap', ['CG21']],
+  ['N96M', 'blizzard#1379', '[POLICIES] Share one rate budget per forge key, slowing before refusal', ['MAET', 'MG3R']],
+  ['S990', 'blizzard#1380', '[POLICIES] Run each repository’s landing policy, in its project’s order', ['N96M']],
+  ['S93M', 'blizzard#1381', '[POLICIES] Add the fast-forward and park landing policies', ['S990']],
+  ['KTD7', 'blizzard#1382', '[POLICIES] Show policies, landing order, and awaiting-merge on the board', ['S93M']],
+  ['N1JR', 'hub:579', 'Let the work-source and forge seams own labels, branch links and the annotating set', ['6J9H', 'ZEVE']],
+  ['B6HS', 'blizzard#1444', '[STRICT] Type the hub store adapters’ SQL helpers and rows', ['S93M']],
+  ['DFGP', 'blizzard#1448', '[STRICT] Type the hub domain models’ untyped edges', ['B6HS', '2475', 'QWYS']],
+  ['6P31', 'blizzard#1450', '[STRICT] Type the hub delivery land actions', ['FC1E']],
+  ['AKMG', 'blizzard#1451', '[STRICT] Type the hub and runner CLIs', ['S990']],
+  ['STGQ', 'blizzard#1452', '[STRICT] Give every bare generic in shipping code its type arguments', ['B6HS', 'DFGP', '6P31', 'AKMG', 'QWYS', '2475']],
+  ['QG6Y', 'blizzard#1453', '[STRICT] Declare shipping code’s context managers as generators', ['B6HS', 'DFGP', '6P31', 'AKMG', 'QWYS', '2475']],
+  ['W9G8', 'blizzard#1454', '[STRICT] Replace the _conforms_* functions with annotated assignments', ['B6HS', 'DFGP', '6P31', 'AKMG', 'QWYS', '2475']],
+  ['ZMVH', 'blizzard#1455', '[STRICT] Stop shipping code reaching into other modules’ private names', ['B6HS', 'DFGP', '6P31', 'AKMG', 'QWYS', '2475']],
+  ['6Q69', 'blizzard#1456', '[STRICT] Sweep the remaining strict errors out of shipping code', ['STGQ', 'QG6Y', 'W9G8', 'ZMVH']],
+  ['00N1', 'blizzard#1457', '[STRICT] Spike: re-investigate typing across every project, tests first', ['6Q69']],
+  ['HBRY', 'blizzard#1499', 'Declare each runner’s supported models and match them at hub eligibility', ['B6HS']],
+  ['DF68', 'blizzard#1468', '[PW-HUBTIER] Move the helpers other test files import out of the files the hub tier ports', []],
+  ['0ACF', 'blizzard#1485', '[PW-HUBTIER] Move the service-sized tenant teardown test to the component tier', []],
+  ['JME3', 'blizzard#1460', '[PW-HUBTIER] Run the hub’s sweeps on request, per tenant or hub-wide', ['PTP2']],
+  ['P79Q', 'blizzard#1464', '[PW-HUBTIER] Give the harness the CLI, a configurable fresh hub, and an OTLP sink', ['MFJE']],
+  ['WWXN', 'blizzard#1466', '[PW-HUBTIER] Step every harness sweep and give the event reader a join from now and a barrier', ['JME3', 'P79Q', 'BWA2']],
+  ['RE86', 'blizzard#1467', '[PW-HUBTIER] Sign people in through the stub IdP on an auth profile in the harness', ['27A6', 'P79Q', 'DF68']],
+  ['GWDV', 'blizzard#1469', '[PW-HUBTIER] Port the hub service tests and add the two enforcement profiles', ['P79Q', 'WWXN', 'RE86', 'DF68']],
+  ['W60F', 'blizzard#1470', '[PW-HUBTIER] Port the finding-exits service tests, stepping the close drain', ['P79Q', 'WWXN', 'GWDV', 'DF68']],
+  ['WKFH', 'blizzard#1471', '[PW-HUBTIER] Port the event-log service tests, reading hub events over HTTP', ['P79Q', 'WWXN', 'GWDV', 'DF68']],
+  ['Q5CS', 'blizzard#1472', '[PW-HUBTIER] Port the runner served-projects service tests to Playwright', ['P79Q', 'WWXN', 'MFJE', 'DF68']],
+  ['YZVG', 'blizzard#1473', '[PW-HUBTIER] Port the real-hub transcript-segment service tests to Playwright', ['P79Q', 'GWDV']],
+  ['64RN', 'blizzard#1474', '[PW-HUBTIER] Port the projects ingest and delivery service tests to Playwright', ['P79Q', 'GWDV', 'DF68']],
+  ['6RRX', 'blizzard#1475', '[PW-HUBTIER] Port the routine baselines service tests to Playwright', ['P79Q', 'WWXN', 'GWDV', 'DF68']],
+  ['260B', 'blizzard#1476', '[PW-HUBTIER] Port the forge-status service tests onto a stepped sweep', ['P79Q', 'JME3']],
+  ['5MXB', 'blizzard#1479', '[PW-HUBTIER] Port the two live-hub usage service tests', ['P79Q', 'GWDV', 'DF68']],
+  ['1A1R', 'blizzard#1480', '[PW-HUBTIER] Port the two hub-only platform-tracing service tests', ['P79Q', 'GWDV']],
+  ['N0SD', 'blizzard#1482', '[PW-HUBTIER] Port the OAuth login service tests onto the auth profile', ['P79Q', 'RE86', 'GWDV', 'DF68']],
+  ['MMVM', 'blizzard#1483', '[PW-HUBTIER] Port the CLI login exchange service tests onto the auth profile', ['P79Q', 'RE86', 'GWDV', 'DF68']],
+  ['1DTX', 'hub:629', 'Recheck the holder inside the route-token rekey, and document that a per-chunk pause outranks a restart’s fence', []],
+  ['DB49', 'hub:632', 'Order runner-store bind, park and requeue facts by append sequence, not timestamp', ['2475']],
+  ['SXBD', 'hub:639', 'performance run (full)', []],
+  ['5Q4G', 'hub:640', 'performance run (full)', []],
+  ['NH8N', 'hub:642', 'performance run (full)', []],
+  ['GMVT', 'hub:641', 'performance run (full)', []],
+  ['WTGG', 'hub:634', 'comments run (full)', []],
+  ['85FD', 'hub:638', 'comments run (full)', []],
+  ['F05Q', 'hub:635', 'comments run (full)', []],
+  ['YWK5', 'hub:636', 'comments run (full)', []],
+  ['6RTR', 'hub:637', 'comments run (full)', []],
+  ['WN6J', 'blizzard#1312', '(BREAK) Retire per-binding agents from runner bindings', [], 'backlog'],
+];
+
+// Subscription windows: spent and elapsed fractions now; pace history is synthesised from them.
+const WINDOWS = [
+  { key: 'a5h', provider: 'Anthropic', span: '5h', spent: 0.12, elapsed: 0.58, sampled: '44s' },
+  { key: 'a7d', provider: 'Anthropic', span: '7d', spent: 0.09, elapsed: 0.10, sampled: '44s' },
+  { key: 'o7d', provider: 'OpenAI', span: '7d', spent: 0.08, elapsed: 0.07, sampled: '4m', declineUntil: '14:41' },
+];
+
+const HOST = { name: 'xps', id: 'H-G1YK', state: 'online', lastReport: '34s', registered: '2026/10/16 04:36', addedBy: 'paul-gross', url: 'http://127.0.0.1:8431', token: 'enrolled' };
+const RUNNERS = [
+  { name: 'r-claude', id: 'R-FNE4', harness: 'claude code', spends: 'Anthropic', windows: ['a5h', 'a7d'], agents: 3, version: '0.3.0.dev1002+f208eca7d', gates: 'none', state: 'working', seen: '21s',
+    binds: [['blizzard', 'blizzard-claude', 6], ['winter', 'winter', 4]] },
+  { name: 'r-chatgpt', id: 'R-NQ1B', harness: 'opencode', spends: 'OpenAI', windows: ['o7d'], agents: 3, version: '0.3.0.dev1002+f208eca7d', gates: 'none', state: 'declining', seen: '17s',
+    stateNote: 'Ahead of pace on OpenAI 7d: 8% spent at 7% elapsed. Takes no new work until 14:41.',
+    binds: [['blizzard', 'blizzard-chatgpt', 4], ['winter', 'winter', 4]] },
+];
+const SPEND = { today: 114.44, yesterday: 161.25, tokToday: '185.5M' };
+
+// ---- derived model ----
+function seeded(seed) { let s = seed >>> 0; return () => { s = (s * 1664525 + 1013904223) >>> 0; return s / 4294967296; }; }
+function synthPath(end, cost, rnd) {
+  // walk backwards from landing: deliver <- pre-push <- (mutation) <- review <- build <- intake
+  const scale = Math.min(3.2, 0.7 + Math.sqrt(cost) / 2.2);
+  const seq = [[0, 6 + rnd() * 8], [1, 18 + rnd() * 30], [2, 6 + rnd() * 12]];
+  if (rnd() < 0.35 || cost > 10) seq.push([1, 10 + rnd() * 20], [2, 5 + rnd() * 8]);
+  if (cost > 30) seq.push([1, 25], [2, 9]);
+  if (rnd() < 0.5) seq.push([3, 10 + rnd() * 18]);
+  seq.push([4, 8 + rnd() * 16], [5, 6 + rnd() * 10]);
+  if (rnd() < 0.3 || cost > 15) seq.push([4, 7 + rnd() * 8], [5, 5 + rnd() * 6]);
+  const total = seq.reduce((a, s) => a + s[1] * scale, 0);
+  let t = end - total; const path = [];
+  for (const [lane, d] of seq) { path.push([lane, t]); t += d * scale; }
+  path.push([6, end]);
+  return path;
+}
+function buildModel() {
+  const rnd = seeded(1497);
+  const chunks = new Map();
+  for (const c of INFLIGHT) {
+    chunks.set(c.id, { ...c, path: c.path.map(([l, s]) => [l, T(s)]), haltAt: c.haltAt ? T(c.haltAt) : null, kind: 'flight', costAt: [] });
+  }
+  for (const [id, refs, title, at, cost, est] of DONE) {
+    const end = T(at);
+    chunks.set(id, { id, refs, title, status: 'done', cost, est: !!est, path: synthPath(end, cost, rnd), doneAt: end, kind: 'done' });
+  }
+  for (const [id, ref, title, blockedBy, status] of READY) {
+    chunks.set(id, { id, refs: [ref], title, status: status || 'ready', blockedBy, cost: 0, kind: 'upstream' });
+  }
+  return chunks;
+}
+function epicOf(c) { const m = /^\[([A-Z-]+)\]/.exec(c.title || ''); return m ? m[1] : (c.refs[0] || '').startsWith('hub:') ? 'hub' : c.status === 'backlog' ? 'BREAK' : 'misc'; }
+function fmt$(v, est) { return (est ? '~' : '') + '$' + v.toFixed(2); }
+function hhmm(t) { const d = ((Math.round(t) % 1440) + 1440) % 1440; return String(Math.floor(d / 60)).padStart(2, '0') + ':' + String(d % 60).padStart(2, '0'); }
+function dur(m) { m = Math.max(0, Math.round(m)); return m < 60 ? m + 'm' : Math.floor(m / 60) + 'h' + String(m % 60).padStart(2, '0'); }
+function laneOf(c) { return c.path[c.path.length - 1][0]; }
+function enteredAt(c) { return c.path[c.path.length - 1][1]; }
+function bounces(c) { let n = 0; for (let i = 1; i < c.path.length; i++) if (c.path[i][0] < c.path[i - 1][0]) n++; return n; }
+// Everything transitively waiting on a chunk (its downstream blast radius).
+function dependents(chunks, id) {
+  const out = new Set(); const q = [id];
+  while (q.length) { const x = q.shift(); for (const c of chunks.values()) if (c.kind === 'upstream' && c.blockedBy && c.blockedBy.includes(x) && !out.has(c.id)) { out.add(c.id); q.push(c.id); } }
+  return out;
+}
+function unmet(chunks, c) { return (c.blockedBy || []).filter(b => { const p = chunks.get(b); return p && p.status !== 'done'; }); }
+
+// ---- Current: simulated live events over the real chunk data ----
+const SLOTS = { 'blizzard-claude': { runner: 'r-claude', n: 6 }, 'blizzard-chatgpt': { runner: 'r-chatgpt', n: 4 }, 'winter': { runner: null, n: 4 } };
+const S = {
+  now: NOW0, chunks: buildModel(), events: [], spend: SPEND.today, flash: new Map(), paused: false,
+  declineUntil: T('14:41'), paused_runners: new Set(), listeners: [], rnd: seeded(20261025),
+};
+function flights() { return [...S.chunks.values()].filter(c => c.kind === 'flight'); }
+function upstream() { return [...S.chunks.values()].filter(c => c.kind === 'upstream'); }
+function landed() { return [...S.chunks.values()].filter(c => c.kind === 'done'); }
+function declining(runner) { return runner === 'r-chatgpt' && S.now < S.declineUntil; }
+function log(id, text, kind) { const ev = { t: S.now, id, text, kind }; S.events.unshift(ev); S.events.length = Math.min(S.events.length, 40); S.flash.set(id, kind); }
+function nextLane(c) {
+  const l = laneOf(c);
+  if (l === 2) return (c.graph || '').startsWith('adv') && !c.path.some(p => p[0] === 3) ? 3 : 4;
+  return Math.min(6, l + 1);
+}
+// Seed the log with the real tail of the activity feed.
+[['12:48', '6J9H', 'needs a human: bounce cap crossed after 6 bounces', 'alarm'], ['13:01', 'QWYS', 'needs a human: land refused on a conflicting head', 'alarm'],
+ ['13:08', 'ZG7T', 'review → pre-push', 'step'], ['13:08', 'WSCR', 'build → review', 'step'], ['13:08', '27A6', 'pre-push → deliver', 'step'], ['13:08', 'PTP2', 'pre-push → deliver', 'step']]
+  .forEach(([t, id, text, kind]) => S.events.unshift({ t: T(t), id, text, kind }));
+
+function admit() {
+  for (const [ws, slot] of Object.entries(SLOTS)) {
+    if (!slot.runner || S.paused_runners.has(slot.runner)) continue;
+    const held = flights().filter(c => c.ws === ws).length;
+    if (held >= slot.n) continue;
+    if (declining(slot.runner)) continue;
+    const next = upstream().find(c => c.status === 'ready' && unmet(S.chunks, c).length === 0);
+    if (!next) return;
+    Object.assign(next, { kind: 'flight', status: 'running', runner: slot.runner, ws, path: [[0, S.now]], cost: 0, est: true, tok: '0.0M',
+      graph: next.refs[0].startsWith('hub:') ? 'bas-hwf' : 'adv-dwf' });
+    log(next.id, 'claimed by ' + slot.runner + ', entering triage', 'admit');
+  }
+}
+function simTick() {
+  S.now += 1;
+  const rnd = S.rnd;
+  for (const c of flights()) {
+    if (c.status === 'needs_human' || S.paused_runners.has(c.runner)) continue;
+    const inc = 0.004 + rnd() * 0.035; c.cost += inc; S.spend += inc;
+  }
+  if (S.now === S.declineUntil) log('r-chatgpt', 'back under pace on OpenAI 7d; accepting work', 'admit');
+  const movers = flights().filter(c => c.status !== 'needs_human' && !S.paused_runners.has(c.runner) && S.now - enteredAt(c) >= 3);
+  if (movers.length && rnd() < 0.55) {
+    const c = movers[Math.floor(rnd() * movers.length)];
+    const l = laneOf(c), to = nextLane(c), from = LANES[l].label.toLowerCase();
+    if (l === 2 && rnd() < 0.22) { c.path.push([1, S.now]); log(c.id, 'review fail ↺ build', 'bounce'); }
+    else if (l === 5 && rnd() < 0.2) { c.path.push([4, S.now]); log(c.id, 'land answered failure ↺ pre-push', 'bounce'); }
+    else if (to === 6) {
+      c.path.push([6, S.now]); Object.assign(c, { kind: 'done', status: 'done', doneAt: S.now });
+      log(c.id, 'landed ' + fmt$(c.cost, c.est), 'land');
+      for (const u of upstream()) if ((u.blockedBy || []).includes(c.id) && unmet(S.chunks, u).length === 0) log(u.id, 'unblocked by C-' + c.id, 'unblock');
+    } else { c.path.push([to, S.now]); if (to === 5) c.status = 'delivering'; log(c.id, from + ' → ' + LANES[to].label.toLowerCase(), 'step'); }
+  }
+  admit();
+  S.listeners.forEach(f => f());
+}
+function requeue(id) {
+  const c = S.chunks.get(id); if (!c || c.status !== 'needs_human') return false;
+  c.status = 'running'; c.haltAt = null; c.path.push([4, S.now]); log(id, 'requeued by paul-gross ↺ pre-push', 'bounce'); S.listeners.forEach(f => f()); return true;
+}
+let simTimer = null;
+function startSim(ms) { simTimer = setInterval(() => { if (!S.paused) simTick(); }, ms); }
+function medianDwell(lane) {
+  const ds = [];
+  for (const c of S.chunks.values()) if (c.path) for (let i = 0; i < c.path.length - 1; i++) if (c.path[i][0] === lane) ds.push(c.path[i + 1][1] - c.path[i][1]);
+  ds.sort((a, b) => a - b); return ds.length ? ds[Math.floor(ds.length / 2)] : 0;
+}
+function anomalyOf(c) {
+  if (c.status === 'needs_human') return 'halted';
+  const l = laneOf(c), med = medianDwell(l);
+  if (l > 0 && med && S.now - enteredAt(c) > Math.max(25, 2.5 * med)) return 'slow';
+  if (bounces(c) >= 3) return 'looping';
+  return null;
+}
+// Depth of an upstream chunk: how many sequential landings stand between it and a slot.
+function depthMap() {
+  const memo = new Map();
+  const d = id => {
+    if (memo.has(id)) return memo.get(id);
+    const c = S.chunks.get(id); if (!c || c.kind !== 'upstream') return 0;
+    memo.set(id, 1);
+    const v = 1 + Math.max(0, ...unmet(S.chunks, c).map(d));
+    memo.set(id, v); return v;
+  };
+  for (const c of upstream()) d(c.id);
+  return memo;
+}
+function criticalBlocker(c, depth) {
+  const u = unmet(S.chunks, c); if (!u.length) return null;
+  return u.reduce((a, b) => ((depth.get(b) || 0) > (depth.get(a) || 0) ? b : a));
+}
+function damOf(c) { // the halted in-flight chunk an upstream chunk ultimately waits on
+  const seen = new Set(); const q = [c.id];
+  while (q.length) { const x = q.shift(); const k = S.chunks.get(x); if (!k || seen.has(x)) continue; seen.add(x);
+    if (k.kind === 'flight' && k.status === 'needs_human') return x; if (k.kind === 'upstream') q.push(...unmet(S.chunks, k)); }
+  return null;
+}
+function medianCycle() {
+  const ds = landed().map(c => c.doneAt - c.path[0][1]).sort((a, b) => a - b); return ds[Math.floor(ds.length / 2)] || 120;
+}
+// Test hooks: #t=<ticks>&keys=a,b&hover=<id> drive the mock headlessly.
+function hooks(render) {
+  const H = new URLSearchParams(location.hash.slice(1));
+  const n = +H.get('t') || 0; const ls = S.listeners; S.listeners = []; for (let i = 0; i < n; i++) simTick(); S.listeners = ls;
+  render();
+  (H.get('keys') || '').split(',').filter(Boolean).forEach(k => document.dispatchEvent(new KeyboardEvent('keydown', { key: k === 'space' ? ' ' : k, metaKey: k === 'K', bubbles: true })));
+  const hv = H.get('hover'); if (hv) { const el = document.querySelector(`[data-id="${hv}"]`); if (el) { const r = el.getBoundingClientRect(); el.dispatchEvent(new MouseEvent('mousemove', { clientX: r.x + r.width / 2, clientY: r.y + r.height / 2, bubbles: true })); } }
+  return H;
+}
+
+// ---------------- geometry ----------------
+const X0 = 96, XN = 676, XS = 946, XF = 1222, CHIP_W = 254;
+const BANK = [26, 62], LT = 72, LH = 84, LANE_N = 7;
+const WIN_T = LT + LH * LANE_N + 14, WIN_H = 24, THR_T = WIN_T + WIN_H * 3 + 14, THR_H = 88;
+const ZOOMS = [60, 180, 420, 1440, 2880]; let zoom = 2;
+const view = { focus: '6J9H', hover: null, pinned: true, scale: false };
+const $ = s => document.querySelector(s);
+const laneY = l => LT + l * LH;
+function xOf(t) { const W = ZOOMS[zoom]; return X0 + (t - (S.now - W)) / W * (XN - X0); }
+function hash(s) { let h = 7; for (const ch of s) h = (h * 31 + ch.charCodeAt(0)) >>> 0; return h; }
+function track(c) { return 16 + (hash(c.id) % 48); }
+const esc = s => String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;');
+
+// ---------------- in-flight layout (the present column) ----------------
+function presentLayout() {
+  const per = new Map(); const out = new Map();
+  const order = { halted: 0, slow: 1, looping: 2 };
+  for (const c of flights()) { const l = laneOf(c); if (!per.has(l)) per.set(l, []); per.get(l).push(c); }
+  for (const [l, cs] of per) {
+    cs.sort((a, b) => (order[anomalyOf(a)] ?? 9) - (order[anomalyOf(b)] ?? 9) || enteredAt(a) - enteredAt(b));
+    const cap = 4; const shown = cs.length > cap ? cs.slice(0, cap - 1) : cs;
+    shown.forEach((c, i) => out.set(c.id, { lane: l, y: laneY(l) + 5 + i * 19, i }));
+    if (cs.length > cap) out.set('more:' + l, { lane: l, y: laneY(l) + 5 + (cap - 1) * 19, n: cs.length - shown.length, rest: cs.slice(cap - 1) });
+  }
+  return out;
+}
+
+// ---------------- upstream layout (the future) ----------------
+const GROUPS = ['FORGES', 'FLOWS', 'POLICIES', 'hub:579', 'STRICT', 'PW-HUBTIER', 'hub', 'BREAK'];
+function upstreamLayout() {
+  const depth = depthMap(); const ups = upstream();
+  const maxD = Math.max(1, ...ups.map(c => depth.get(c.id)));
+  const colW = Math.min(24, (XF - XS - 54) / maxD);
+  const groups = new Map(GROUPS.map(g => [g, []]));
+  for (const c of ups) { let g = c.refs[0] === 'hub:579' ? 'hub:579' : epicOf(c); if (g === 'misc') g = 'STRICT'; if (!groups.has(g)) groups.set(g, []); groups.get(g).push(c); }
+  const rows = []; let need = 0;
+  for (const [g, cs] of groups) { if (!cs.length) continue; const stack = new Map(); for (const c of cs) { const d = depth.get(c.id); stack.set(d, (stack.get(d) || 0) + 1); } const h = Math.min(4, Math.max(...stack.values())); rows.push({ g, cs, h }); need += h; }
+  const avail = LH * LANE_N - rows.length * 16 - 8; const step = Math.min(9, avail / need);
+  const pos = new Map(); let y = LT + 10;
+  for (const r of rows) {
+    const seen = new Map();
+    for (const c of r.cs.sort((a, b) => depth.get(a.id) - depth.get(b.id))) {
+      const d = depth.get(c.id), k = seen.get(d) || 0; seen.set(d, k + 1);
+      pos.set(c.id, { x: XS + 10 + (d - 1) * colW + Math.floor(k / 4) * 7, y: y + (k % 4) * step, d });
+    }
+    r.y = y; r.y2 = y + (r.h - 1) * step; y += r.h * step + 16;
+  }
+  return { pos, rows, depth, colW, maxD };
+}
+
+// ---------------- render ----------------
+let lastEvCount = -1;
+function render() {
+  const now = S.now, W = ZOOMS[zoom], t0 = now - W;
+  const P = presentLayout(), U = upstreamLayout();
+  const fl = flights(); const halted = fl.filter(c => c.status === 'needs_human');
+  let s = '';
+  s += `<defs><pattern id="hatch" width="5" height="5" patternUnits="userSpaceOnUse" patternTransform="rotate(45)"><line x1="0" y1="0" x2="0" y2="5" stroke="#ff5a35" stroke-opacity=".55" stroke-width="1.4"/></pattern>
+  <pattern id="hatchI" width="5" height="5" patternUnits="userSpaceOnUse" patternTransform="rotate(45)"><line x1="0" y1="0" x2="0" y2="5" stroke="#ede7da" stroke-opacity=".18" stroke-width="1"/></pattern>
+  <clipPath id="past"><rect x="${X0}" y="0" width="${XN - X0}" height="900"/></clipPath></defs>`;
+  // present column ground
+  s += `<rect x="${XN}" y="0" width="${XS - XN - 6}" height="${THR_T + THR_H}" fill="var(--now)"/>`;
+  // time grid
+  const stepH = W <= 60 ? 10 : W <= 180 ? 30 : W <= 420 ? 60 : W <= 1440 ? 180 : 360;
+  for (let t = Math.ceil(t0 / stepH) * stepH; t < now - W * .06; t += stepH) {
+    const x = xOf(t); s += `<line x1="${x}" x2="${x}" y1="${BANK[0]}" y2="${THR_T + THR_H}" stroke="var(--rule)" stroke-width="1"/>`;
+    s += `<text class="m" x="${x}" y="14" font-size="10" fill="var(--ink-3)" text-anchor="middle">${t < 0 ? 'y ' : ''}${hhmm(t)}</text>`;
+  }
+  s += `<text class="m" x="${XN}" y="14" font-size="10.5" fill="var(--ink)" text-anchor="middle">${hhmm(now)}</text>`;
+  s += `<line x1="${XN}" x2="${XN}" y1="20" y2="${THR_T + THR_H}" stroke="var(--ink)" stroke-opacity=".7"/>`;
+  // future axis: projected by chain depth
+  const mc = medianCycle();
+  [1, 5, 10, 15].filter(d => d <= U.maxD).forEach(d => {
+    const x = XS + 10 + (d - 1) * U.colW;
+    s += `<text class="m" x="${x}" y="14" font-size="10" fill="var(--ink-3)" text-anchor="${d === 1 ? 'start' : 'middle'}">${d === 1 ? 'next' : '+' + Math.round(d * mc * .55 / 60) + 'h'}</text>`;
+  });
+  s += `<text x="${XS - 2}" y="${BANK[0] + 10}" font-size="11" fill="var(--ink-3)">upstream</text>`;
+
+  // ---- top bank: slot capacity over time ----
+  const cap = view.scale ? 80 : 10;
+  const bh = BANK[1] - BANK[0];
+  let area = `M${X0},${BANK[1]}`; let sat = ''; let satSince = null;
+  const occ = t => { let n = 0; for (const c of S.chunks.values()) { if (!c.path || c.kind === 'upstream') continue; const a = c.path[0][1], b = c.kind === 'done' ? c.doneAt : now + 1; if (t >= a && t < b) n++; } return n; };
+  const stepT = Math.max(1, Math.round(W / 300));
+  for (let t = t0; t <= now; t += stepT) {
+    const n = Math.min(cap, occ(t)); const y = BANK[1] - n / cap * bh; area += `L${xOf(t)},${y}`;
+    if (n >= cap) { if (satSince == null) satSince = t; sat += `<rect x="${xOf(t)}" y="${BANK[0]}" width="${Math.max(1, (XN - X0) * stepT / W) + .5}" height="${bh}" fill="url(#hatch)"/>`; } else satSince = null;
+  }
+  area += `L${XN},${BANK[1]}Z`;
+  s += `<g clip-path="url(#past)">${sat}<path d="${area}" fill="var(--ink)" fill-opacity=".13" stroke="var(--ink-2)" stroke-width="1"/></g>`;
+  s += `<line x1="${X0}" x2="${XN}" y1="${BANK[0]}" y2="${BANK[0]}" stroke="var(--ink-3)" stroke-dasharray="2 3"/>`;
+  s += `<text x="12" y="${BANK[0] + 12}" font-size="12" font-weight="600" fill="var(--ink)">Slots</text>`;
+  const nowOcc = fl.length;
+  s += `<text class="m" x="12" y="${BANK[0] + 27}" font-size="10.5" fill="${nowOcc >= cap ? 'var(--alarm)' : 'var(--ink-3)'}">${nowOcc}/${cap} held</text>`;
+  const free = Object.entries(SLOTS).filter(([w, sl]) => sl.runner).map(([w, sl]) => sl.n - fl.filter(c => c.ws === w).length).reduce((a, b) => a + b, 0);
+  const bankNote = nowOcc >= cap ? `saturated ${satSince != null ? 'since ' + hhmm(satSince) : ''}` : declining('r-chatgpt') && free ? `${free} free, r-chatgpt held` : `${free} free`;
+  s += `<text x="${XN + 8}" y="${BANK[0] + 13}" font-size="11.5" fill="${nowOcc >= cap ? 'var(--alarm)' : 'var(--ink-2)'}">${bankNote}</text>`;
+  s += `<text x="${XN + 8}" y="${BANK[0] + 28}" font-size="11" fill="var(--ink-3)">winter 0/4 idle · no winter work queued</text>`;
+
+  // ---- lanes ----
+  for (let l = 0; l < LANE_N; l++) {
+    const y = laneY(l);
+    s += `<line x1="0" x2="${XS - 6}" y1="${y}" y2="${y}" stroke="var(--rule)"/>`;
+    const inLane = fl.filter(c => laneOf(c) === l); const med = medianDwell(l);
+    const pooled = inLane.filter(c => anomalyOf(c) === 'halted' || anomalyOf(c) === 'slow').length;
+    s += `<text x="12" y="${y + 17}" font-size="13" font-weight="500" fill="${pooled ? 'var(--alarm)' : 'var(--ink)'}">${LANES[l].label}</text>`;
+    if (l < 6) {
+      s += `<text class="m" x="12" y="${y + 32}" font-size="10.5" fill="var(--ink-3)">${inLane.length} in · med ${dur(med)}</text>`;
+      // occupancy ticks: one per chunk in lane, alarm when pooled
+      inLane.slice(0, 10).forEach((c, i) => { const a = anomalyOf(c); s += `<rect x="${12 + i * 7}" y="${y + 40}" width="5" height="9" fill="${a === 'halted' || a === 'slow' ? 'var(--alarm)' : a === 'looping' ? 'var(--loop)' : 'var(--ink-2)'}" fill-opacity="${a === 'halted' ? 1 : a ? .7 : .7}"/>`; });
+      if (inLane.length > 10) s += `<text class="m" x="${12 + 10 * 7 + 2}" y="${y + 48.5}" font-size="10" fill="var(--ink-3)">+${inLane.length - 10}</text>`;
+      if (pooled) s += `<rect x="${XN}" y="${y + 1}" width="${XS - XN - 6}" height="${LH - 1}" fill="var(--alarm)" fill-opacity=".05"/>`;
+    } else {
+      const today = landed().filter(c => c.doneAt >= 0).length;
+      s += `<text class="m" x="12" y="${y + 32}" font-size="10.5" fill="var(--ink-3)">${today} today</text>`;
+    }
+  }
+  s += `<line x1="0" x2="${XS - 6}" y1="${laneY(LANE_N)}" y2="${laneY(LANE_N)}" stroke="var(--rule)"/>`;
+
+  // ---- the Marey lines: every chunk's walk through the nodes over time ----
+  let lines = '';
+  const all = [...S.chunks.values()].filter(c => c.path && c.kind !== 'upstream');
+  for (const c of all) {
+    const end = c.kind === 'done' ? c.doneAt : now;
+    if (end < t0) continue;
+    const o = track(c), pts = c.path, halted = c.status === 'needs_human';
+    const age = c.kind === 'done' ? (now - c.doneAt) / W : 0;
+    const baseOp = c.kind === 'done' ? Math.max(.1, .3 - age * .22) : c.synthetic ? .3 : .9;
+    const col = halted ? 'var(--alarm)' : 'var(--ink)';
+    const totalT = Math.max(1, end - pts[0][1]);
+    const wAt = t => .9 + 2.4 * Math.sqrt(Math.max(0, c.cost * (t - pts[0][1]) / totalT) / 40);
+    let d = '', loops = '';
+    for (let i = 0; i < pts.length; i++) {
+      const [l, ta] = pts[i]; const tb = i + 1 < pts.length ? pts[i + 1][1] : end;
+      const y = laneY(l) + o * (LH / 80), xa = xOf(ta), xb = xOf(Math.min(tb, halted && c.haltAt && i === pts.length - 1 ? c.haltAt : tb));
+      if (l === 6) { lines += `<line class="ln" data-id="${c.id}" x1="${xa}" x2="${xa}" y1="${laneY(6) + 8}" y2="${laneY(6) + 14 + Math.min(52, 4 + Math.sqrt(c.cost) * 7)}" stroke="var(--ink)" stroke-opacity="${baseOp + .25}" stroke-width="2.2"/>`;
+        if (c.cost >= 10) lines += `<text class="m" x="${xa + 4}" y="${laneY(6) + 22}" font-size="10" fill="var(--ink-2)">${fmt$(c.cost, c.est)}</text>`; continue; }
+      const segOp = c.kind === 'flight' && !halted && i < pts.length - 1 ? .34 : baseOp;
+      lines += `<path class="ln" data-id="${c.id}" d="M${xa},${y}H${Math.max(xa, xb)}" stroke="${col}" stroke-opacity="${segOp}" stroke-width="${wAt(ta).toFixed(2)}"/>`;
+      if (halted && c.haltAt && i === pts.length - 1) {
+        lines += `<path class="ln" data-id="${c.id}" d="M${xOf(c.haltAt)},${y}H${XN}" stroke="var(--alarm)" stroke-width="2" stroke-dasharray="3 3"/>`;
+        lines += `<line class="ln" data-id="${c.id}" x1="${xOf(c.haltAt)}" x2="${xOf(c.haltAt)}" y1="${y - 7}" y2="${y + 7}" stroke="var(--alarm)" stroke-width="2"/>`;
+      }
+      if (i + 1 < pts.length) {
+        const [l2] = pts[i + 1]; const y2 = laneY(l2) + o * (LH / 80);
+        if (l2 < l) { // bounce: a loop that swings back against time
+          const r = Math.min(c.kind === 'done' ? 6 : 10, (y - y2) / 3);
+          loops += `<path class="ln" data-id="${c.id}" d="M${xb},${y}C${xb + r},${y} ${xb + r * .6},${y2 + (y - y2) * .5} ${xb - r},${(y + y2) / 2} S${xb - r * .4},${y2} ${xb},${y2}" stroke="var(--loop)" stroke-opacity="${c.kind === 'done' ? baseOp + .08 : halted ? 1 : c.synthetic ? .22 : .75}" stroke-width="${Math.max(1.4, wAt(tb)).toFixed(2)}"/>`;
+        } else if (l2 === 6) {
+          lines += `<path class="ln" data-id="${c.id}" d="M${xb},${y}L${xb},${laneY(6) + 8}" stroke="var(--ink)" stroke-opacity="${baseOp * .8}" stroke-width="1"/>`;
+        } else {
+          lines += `<path class="ln" data-id="${c.id}" d="M${xb},${y}C${xb + 3},${y} ${xb + 1},${y2} ${xb + 4},${y2}" stroke="${col}" stroke-opacity="${c.kind === 'flight' && !halted ? .3 : baseOp * .8}" stroke-width="${wAt(tb).toFixed(2)}"/>`;
+        }
+      }
+    }
+    lines += loops;
+  }
+  s += `<g clip-path="url(#past)">${lines}</g>`;
+  // heads outside clip
+  for (const c of fl) { if (c.synthetic) continue; const y = laneY(laneOf(c)) + track(c) * (LH / 80); const p = P.get(c.id) || P.get('more:' + laneOf(c)); const cy = p ? p.y + 9 : y;
+    s += `<path class="ln" data-id="${c.id}" d="M${XN},${y}C${XN + 6},${y} ${XN + 2},${cy} ${XN + 8},${cy}" stroke="${c.status === 'needs_human' ? 'var(--alarm)' : 'var(--ink)'}" stroke-opacity=".8" stroke-width="1.2"/>`;
+    if (c.status !== 'needs_human') s += `<circle class="ln" data-id="${c.id}" cx="${XN}" cy="${y}" r="2.8" fill="var(--live)" stroke="none"/>`;
+    else s += `<rect class="ln" data-id="${c.id}" x="${XN - 3}" y="${y - 3}" width="6" height="6" fill="var(--alarm)" stroke="none"/>`; }
+  // landing flashes
+  for (const [id, kind] of S.flash) { const c = S.chunks.get(id); if (!c || !c.path) continue; const l = laneOf(c);
+    const y = l === 6 ? laneY(6) + 20 : laneY(l) + track(c) * (LH / 80);
+    const x = l === 6 ? xOf(c.doneAt) : XN;
+    s += `<circle class="svgflash" cx="${x}" cy="${y}" r="9" style="stroke:${kind === 'bounce' ? 'var(--loop)' : kind === 'alarm' ? 'var(--alarm)' : 'var(--ink)'}"/>`; }
+
+  // ---- upstream: dependency threads into the future ----
+  let thr = '', dots = '';
+  const damIds = new Set(); halted.forEach(h => dependents(S.chunks, h.id).forEach(x => damIds.add(x)));
+  for (const c of upstream()) {
+    const p = U.pos.get(c.id); if (!p) continue;
+    const crit = criticalBlocker(c, U.depth); const dammed = damIds.has(c.id);
+    const tc = dammed ? 'var(--alarm)' : 'var(--ink-2)';
+    for (const b of unmet(S.chunks, c)) {
+      const isCrit = b === crit; let from;
+      const bp = U.pos.get(b);
+      if (bp) from = [bp.x, bp.y];
+      else { const fp = P.get(b) || P.get('more:' + (S.chunks.get(b) ? laneOf(S.chunks.get(b)) : 0)); if (!fp) continue; from = [XN + 8 + CHIP_W, fp.y + 9]; }
+      const mx = (from[0] + p.x) / 2;
+      thr += `<path class="thr${isCrit ? '' : ' extra'}" data-id="${c.id}" data-b="${b}" d="M${from[0]},${from[1]}C${mx},${from[1]} ${mx},${p.y} ${p.x},${p.y}" stroke="${tc}" stroke-opacity="${isCrit ? (dammed ? .55 : .3) : 0}" stroke-width="${isCrit ? 1 : .8}"/>`;
+    }
+    const ready0 = unmet(S.chunks, c).length === 0;
+    dots += `<circle class="dot" data-id="${c.id}" cx="${p.x}" cy="${p.y}" r="${ready0 ? 3.6 : 2.8}" fill="${ready0 ? 'var(--ink)' : dammed ? 'var(--alarm)' : 'var(--ink-3)'}" fill-opacity="${ready0 ? .95 : dammed ? .65 : .8}" ${c.status === 'backlog' ? 'stroke="var(--ink-2)" fill="none"' : ''}/>`;
+  }
+  s += thr + dots;
+  for (const r of U.rows) s += `<text x="${XF + 8}" y="${r.y + 3.5}" font-size="10.5" fill="var(--ink-3)" text-anchor="end">${r.g === 'hub' ? 'hub · survey' : r.g === 'BREAK' ? 'backlog' : r.g}</text>`;
+  for (const h of halted) { const n = dependents(S.chunks, h.id).size; if (!n) continue; const fp = P.get(h.id); if (!fp) continue;
+    s += `<text x="${XS + 4}" y="${fp.y + 13}" font-size="11" fill="var(--alarm)">${n} dammed</text>`; }
+
+  // ---- bottom bank: subscription windows, pace = spent ÷ elapsed ----
+  s += `<text x="12" y="${WIN_T - 2}" font-size="12" font-weight="600" fill="var(--ink)">Windows</text>`;
+  WINDOWS.forEach((w, i) => {
+    const y = WIN_T + 6 + i * WIN_H, mid = y + WIN_H / 2;
+    const pace = w.spent / w.elapsed; const over = pace > 1;
+    s += `<text x="12" y="${mid + 4}" font-size="11" fill="var(--ink-2)">${w.provider} ${w.span}</text>`;
+    s += `<line x1="${X0}" x2="${XF}" y1="${mid}" y2="${mid}" stroke="var(--ink-4)" stroke-dasharray="1 3"/>`;
+    // pace history: synthesised walk ending at today's pace
+    const r = seeded(hash(w.key)); let v = pace; const ptsW = [];
+    for (let t = now; t >= t0; t -= Math.max(2, W / 120)) { ptsW.push([t, v]); v = Math.max(.1, v + (r() - .5) * .08 + (w.key === 'o7d' && t > now - 40 ? -.006 : 0)); }
+    const yv = v => mid - (v - 1) * 26;
+    let dp = ''; ptsW.reverse().forEach(([t, v], k) => { dp += (k ? 'L' : 'M') + xOf(t).toFixed(1) + ',' + Math.max(y - 2, Math.min(y + WIN_H + 2, yv(v))).toFixed(1); });
+    s += `<g clip-path="url(#past)"><path d="${dp}" fill="none" stroke="${over ? 'var(--alarm)' : 'var(--ink-2)'}" stroke-width="1.3"/></g>`;
+    s += `<text class="m" x="${XN + 8}" y="${mid + 4}" font-size="10.5" fill="${over ? 'var(--alarm)' : 'var(--ink-2)'}">${Math.round(w.spent * 100)}% spent · ${Math.round(w.elapsed * 100)}% gone</text>`;
+    if (w.declineUntil) {
+      const until = T(w.declineUntil); const left = until - now;
+      if (left > 0) { const x2 = Math.min(XF, XS + left / 240 * (XF - XS));
+        s += `<rect x="${XS}" y="${mid - 6}" width="${x2 - XS}" height="12" fill="url(#hatch)"/><text x="${x2 + 6}" y="${mid + 4}" font-size="11" fill="var(--alarm)">r-chatgpt declining until ${w.declineUntil}</text>`; }
+      else s += `<text x="${XS}" y="${mid + 4}" font-size="11" fill="var(--ink-3)">back under pace</text>`;
+    } else s += `<text x="${XS}" y="${mid + 4}" font-size="11" fill="var(--ink-3)">${pace < .5 ? 'headroom' : 'on pace'}</text>`;
+  });
+
+  // ---- throughput: what landed, what it cost, and spend accrual vs yesterday ----
+  const ty = THR_T, th = THR_H;
+  s += `<line x1="0" x2="${XS - 6}" y1="${ty - 6}" y2="${ty - 6}" stroke="var(--rule)"/>`;
+  s += `<text x="12" y="${ty + 10}" font-size="12" font-weight="600" fill="var(--ink)">Spend</text>`;
+  s += `<text class="m" x="12" y="${ty + 25}" font-size="10.5" fill="var(--ink-2)">${fmt$(S.spend, true)}</text>`;
+  s += `<text class="m" x="12" y="${ty + 39}" font-size="10.5" fill="var(--ink-3)">y ${fmt$(SPEND.yesterday)}</text>`;
+  // cumulative spend since midnight (today solid, yesterday dotted), scaled to yesterday's total
+  const spendAt = t => { let v = 0; for (const c of S.chunks.values()) { if (!c.path || c.kind === 'upstream' || !c.cost) continue; const a = c.path[0][1], b = c.kind === 'done' ? c.doneAt : now; v += c.cost * Math.max(0, Math.min(1, (t - a) / Math.max(1, b - a))); } return v; };
+  const base0 = spendAt(0), kCal = S.spend / Math.max(1, spendAt(now) - base0);
+  let dT = ''; for (let k = 0; k <= 80; k++) { const t = Math.max(t0, 0) + (now - Math.max(t0, 0)) * k / 80; dT += (k ? 'L' : 'M') + xOf(t).toFixed(1) + ',' + (ty + th - 4 - (spendAt(t) - base0) * kCal / SPEND.yesterday * (th - 18)).toFixed(1); }
+  const dayCurve = (total, shift, warp) => { let d = ''; const n = 60; for (let k = 0; k <= n; k++) { const t = Math.max(t0, 0) + (Math.min(now, 1440) - Math.max(t0, 0)) * k / n; const f = Math.pow(Math.max(0, t) / 1440, warp); d += (k ? 'L' : 'M') + xOf(t).toFixed(1) + ',' + (ty + th - 4 - (total * f) / SPEND.yesterday * (th - 18)).toFixed(1); } return d; };
+  const warpToday = Math.log(S.spend / SPEND.yesterday) / Math.log(Math.max(1, now) / 1440);
+  s += `<g clip-path="url(#past)"><line x1="${X0}" x2="${XN}" y1="${ty + 14}" y2="${ty + 14}" stroke="var(--ink-3)" stroke-dasharray="2 3"/><text x="${X0 + 4}" y="${ty + 10}" font-size="10" fill="var(--ink-3)">yesterday's total, ${fmt$(SPEND.yesterday)}</text><path d="${dT}" fill="none" stroke="var(--ink)" stroke-width="1.5"/></g>`;
+  const ydNow = SPEND.yesterday * Math.pow(now / 1440, 1.15);
+  s += `<text class="m" x="${XN + 8}" y="${ty + 26}" font-size="11" fill="var(--ink)">${fmt$(S.spend, true)} today</text>`;
+  s += `<text class="m" x="${XN + 8}" y="${ty + 41}" font-size="10.5" fill="var(--ink-3)">${Math.round(S.spend / SPEND.yesterday * 100)}% of yesterday's total</text>`;
+  s += `<text class="m" x="${XN + 8}" y="${ty + 56}" font-size="10.5" fill="var(--ink-3)">${SPEND.tokToday} tok · ${landed().filter(c => c.doneAt >= 0).length} landed</text>`;
+  // midnight marker
+  if (t0 < 0) s += `<text x="${xOf(0) + 4}" y="${ty + th - 6}" font-size="10" fill="var(--ink-3)">midnight</text>`;
+  $('#flow').innerHTML = s;
+  S.flash.forEach((k, id) => { if (k === 'land' || k === 'bounce' || k === 'step' || k === 'alarm') {} });
+
+  // ---- present-column chips ----
+  let ch = '';
+  for (const [id, p] of P) {
+    if (id.startsWith('more:')) { const anom = p.rest.filter(c => anomalyOf(c)).length; ch += `<div class="chip more" style="top:${p.y}px">+${p.n} more${anom ? ` · <span class="alarm">${anom} slow</span>` : ''} · oldest ${dur(now - Math.min(...p.rest.map(enteredAt)))}</div>`; continue; }
+    const c = S.chunks.get(id); const a = anomalyOf(c);
+    const cls = ['chip', c.status === 'needs_human' ? 'halted' : 'running', a || '', S.flash.has(id) ? 'flash' : ''].join(' ');
+    const dw = c.status === 'needs_human' ? 'halted ' + dur(now - (c.haltAt || enteredAt(c))) : dur(now - enteredAt(c));
+    ch += `<div class="${cls}" data-id="${id}" style="top:${p.y}px"><span class="cid">${id}</span><span class="ct">${esc(c.title.replace(/^\[[A-Z-]+\] /, ''))}</span><span class="cd">${dw}</span><span class="cc">${fmt$(c.cost, c.est)}</span></div>`;
+  }
+  // intake: what would enter next, and why it is not
+  if (!fl.some(c => laneOf(c) === 0)) {
+    const nxt = upstream().filter(c => c.status === 'ready' && !unmet(S.chunks, c).length);
+    const why = nowOcc >= cap ? 'waiting for a slot' : declining('r-chatgpt') ? 'r-chatgpt declining' : 'claiming';
+    ch += `<div class="chip more" style="top:${laneY(0) + 5}px">${nxt.length} ready, ${why}</div>`;
+    ch += `<div class="chip more" style="top:${laneY(0) + 24}px;font-family:var(--mono);font-size:10.5px">${nxt.slice(0, 5).map(c => c.id).join(' ')}${nxt.length > 5 ? ' …' : ''}</div>`;
+  }
+  const lastLand = landed().sort((a, b) => b.doneAt - a.doneAt)[0];
+  if (lastLand) ch += `<div class="chip ${S.flash.has(lastLand.id) ? 'flash' : ''}" data-id="${lastLand.id}" style="top:${laneY(6) + 5}px;border-left-color:var(--ink)"><span class="cid">${lastLand.id}</span><span class="ct">landed ${dur(now - lastLand.doneAt)} ago</span><span class="cc">${fmt$(lastLand.cost, lastLand.est)}</span></div>`;
+  $('#chips').innerHTML = ch;
+
+  renderVerdict(halted, nowOcc, cap); renderAsks(halted); renderInspector(); renderFeed();
+  S.flash.clear(); applyFocus();
+}
+
+function renderVerdict(halted, occ, cap) {
+  const pools = [];
+  for (let l = 1; l < 6; l++) { const cs = flights().filter(c => laneOf(c) === l); const a = cs.filter(c => anomalyOf(c) === 'halted' || anomalyOf(c) === 'slow').length; if (a) pools.push([l, cs.length, a]); }
+  pools.sort((a, b) => b[2] - a[2]);
+  let say = '';
+  if (pools.length) { const [l, n, a] = pools[0]; say = `Pooling at <span class="alarm">${LANES[l].label.toLowerCase()}</span>: ${n} chunks, ${halted.length ? `<span class="alarm">${halted.length} waiting on you</span>` : a + ' slow'}.`; }
+  else say = `Flowing. ${flights().length} in flight, nothing pooling.`;
+  const dam = halted.map(h => [h.id, dependents(S.chunks, h.id).size]).sort((a, b) => b[1] - a[1])[0];
+  if (dam && dam[1]) say += ` ${dam[1]} dammed behind <span class="alarm">C-${dam[0]}</span>.`;
+  if (occ >= cap) say += ` Capacity-bound.`;
+  else if (declining('r-chatgpt')) say += ` r-chatgpt held to 14:41.`;
+  const today = landed().filter(c => c.doneAt >= 0).length;
+  $('#verdict').innerHTML = `<div class="say">${say}</div><div class="facts"><b>${today}</b> landed today · median cycle <b>${dur(medianCycle())}</b> · <span class="livemark"><i></i>${S.paused ? 'paused' : 'live'} ${hhmm(S.now)}</span></div>`;
+  document.body.classList.toggle('paused', S.paused);
+}
+function renderAsks(halted) {
+  let h = `<h3>Needs you <span class="n">${halted.length}</span><span class="r">asks 0 · gates 0</span></h3>`;
+  if (!halted.length) h += `<div class="dim" style="font-size:12px">Nothing is waiting on you.</div>`;
+  for (const c of halted) {
+    const n = dependents(S.chunks, c.id).size;
+    h += `<div class="ask${view.focus === c.id ? ' focus' : ''}" data-id="${c.id}"><div class="top"><span class="cid">${c.id}</span><span class="ref">${c.refs.join(' ')} · ${c.runner}</span><span class="age">halted ${dur(S.now - c.haltAt)}</span></div>
+      <div class="tt">${esc(c.title)}</div><div class="why">${esc(c.reason)}</div>
+      <div class="meta">${n ? `<b>holds back ${n} upstream</b> · ` : ''}${bounces(c)} bounce${bounces(c) === 1 ? '' : 's'} · ${fmt$(c.cost, c.est)} · ${c.attempts} attempts</div>
+      <div class="acts"><span><span class="k">t</span>take over</span><span><span class="k">r</span>requeue</span><span><span class="k">o</span>${c.pr}</span></div></div>`;
+  }
+  $('#asks').innerHTML = h;
+}
+function renderInspector() {
+  const id = view.hover || view.focus; const c = id && S.chunks.get(id);
+  if (!c) { $('#insp').innerHTML = `<h3>Focus</h3><div class="dim">Hover or <span class="k">j</span><span class="k">k</span> through the fleet.</div>`; return; }
+  const st = c.kind === 'upstream' ? (unmet(S.chunks, c).length ? 'blocked' : c.status) : c.status.replace('_', ' ');
+  let h = `<h3>Focus <span class="r">${view.hover ? 'hover' : 'pinned'}</span></h3>`;
+  h += `<div class="insp-id"><span class="cid">C-${c.id}</span><span class="${c.status === 'needs_human' ? 'alarm' : c.kind === 'flight' ? 'live' : ''}">${st}</span>${c.kind === 'flight' ? `<span>· ${LANES[laneOf(c)].label.toLowerCase()} · ${dur(S.now - enteredAt(c))}</span>` : ''}</div>`;
+  h += `<div class="insp-t">${esc(c.title)}</div>`;
+  h += `<div class="insp-m">${c.refs.join(' ')}${c.pr ? ` · <b>${c.pr}</b>` : ''}${c.graph ? ` · ${c.graph}` : ''}${c.runner ? ` · xps/${c.runner}` : ''}</div>`;
+  if (c.kind === 'upstream') {
+    const u = unmet(S.chunks, c), dam = damOf(c), U = depthMap();
+    h += `<div class="insp-m" style="margin-top:8px">Waits on ${u.length ? u.map(b => `<b>${b}</b>`).join(', ') : 'nothing: ready for the next free slot'}.</div>`;
+    if (dam) h += `<div class="insp-m alarm" style="margin-top:4px">Dammed behind C-${dam}, which needs a human. ${U.get(c.id)} landings deep; earliest ~${(S.now + U.get(c.id) * medianCycle() * .55) >= 1440 ? 'tomorrow ' : ''}${hhmm(S.now + U.get(c.id) * medianCycle() * .55)} if it clears now.</div>`;
+    const blocks = dependents(S.chunks, c.id).size; if (blocks) h += `<div class="insp-m" style="margin-top:4px">Holds back ${blocks} more.</div>`;
+  } else {
+    const end = c.kind === 'done' ? c.doneAt : S.now; const maxD = Math.max(...c.path.map((p, i) => (i + 1 < c.path.length ? c.path[i + 1][1] : end) - p[1]), 1);
+    h += `<div class="hist">`;
+    c.path.forEach((p, i) => {
+      if (p[0] === 6) { h += `<div><span class="t">${hhmm(p[1])}</span><span class="n" style="color:var(--ink)">landed</span><span></span><span class="d"></span></div>`; return; }
+      const nx = i + 1 < c.path.length ? c.path[i + 1][1] : end; const isLast = i === c.path.length - 1 && c.kind === 'flight';
+      const bo = i > 0 && p[0] < c.path[i - 1][0];
+      const cls = isLast ? (c.status === 'needs_human' ? 'halt' : 'cur') : bo ? 'bo' : '';
+      if (bo && c.why && c.why[i]) h += `<div><span></span><span class="why">↺ ${c.why[i]}</span></div>`;
+      h += `<div class="${cls}"><span class="t">${hhmm(p[1])}</span><span class="n">${bo ? '↺ ' : ''}${LANES[p[0]].label.toLowerCase()}</span><span class="bar" style="width:${Math.max(2, (nx - p[1]) / maxD * 100)}%"></span><span class="d">${dur(nx - p[1])}</span></div>`;
+    });
+    h += `</div><div class="insp-cost"><span><b>${fmt$(c.cost, c.est)}</b></span><span>${c.tok || ''}${c.tok ? ' tok' : ''}</span><span>${bounces(c)} bounce${bounces(c) === 1 ? '' : 's'}</span>${c.kind === 'flight' && dependents(S.chunks, c.id).size ? `<span class="${c.status === 'needs_human' ? 'alarm' : ''}">blocks ${dependents(S.chunks, c.id).size}</span>` : ''}</div>`;
+  }
+  $('#insp').innerHTML = h;
+}
+function renderFeed() {
+  let h = `<h3>Live <span class="r">every state change</span></h3>`;
+  S.events.slice(0, 9).forEach((e, i) => { h += `<div class="ev ${e.kind}${lastEvCount >= 0 && i < S.events.length - lastEvCount && i < 3 ? ' new' : ''}"><span class="t">${hhmm(e.t)}</span><span class="i">${e.id.length > 4 ? '' : e.id}</span><span class="x">${e.id.length > 4 ? e.id + ' ' : ''}${esc(e.text)}</span></div>`; });
+  lastEvCount = S.events.length;
+  $('#feed').innerHTML = h;
+}
+function applyFocus() {
+  const id = view.hover || view.focus;
+  const set = new Set(id ? [id] : []);
+  if (id) { const c = S.chunks.get(id); if (c && c.kind === 'upstream') { const q = [id]; while (q.length) { const x = q.shift(); const k = S.chunks.get(x); if (!k) continue; for (const b of unmet(S.chunks, k)) if (!set.has(b)) { set.add(b); q.push(b); } } }
+    dependents(S.chunks, id).forEach(x => set.add(x)); }
+  const on = !!view.hover || (id && S.chunks.get(id) && S.chunks.get(id).kind !== 'flight');
+  document.body.classList.toggle('dimmed', !!on);
+  document.querySelectorAll('[data-id]').forEach(el => { el.classList.toggle('hl', set.has(el.dataset.id)); el.classList.toggle('focus', el.dataset.id === view.focus && el.classList.contains('chip')); });
+  document.querySelectorAll('.thr').forEach(el => { const hit = set.has(el.dataset.id) && set.has(el.dataset.b); el.classList.toggle('hl', hit); if (el.classList.contains('extra')) el.setAttribute('stroke-opacity', hit ? .5 : 0); });
+}
+
+// ---------------- interaction ----------------
+const tip = $('#tip');
+function showTip(e, id) {
+  const c = S.chunks.get(id); if (!c) return;
+  const st = c.kind === 'upstream' ? (unmet(S.chunks, c).length ? `waits on ${unmet(S.chunks, c).join(', ')}` : 'ready, unblocked') : c.kind === 'done' ? `landed ${hhmm(c.doneAt)} · ${fmt$(c.cost, c.est)}` : `${c.status.replace('_', ' ')} · ${LANES[laneOf(c)].label.toLowerCase()} · ${fmt$(c.cost, c.est)}`;
+  tip.innerHTML = `<span class="cid">C-${id}</span> ${c.refs[0]}<br>${esc(c.title)}<br><span class="s">${st}</span>`;
+  tip.style.display = 'block'; tip.style.left = Math.min(1290, e.clientX + 14) + 'px'; tip.style.top = (e.clientY + 14) + 'px';
+}
+document.addEventListener('mousemove', e => {
+  const el = e.target.closest('[data-id]');
+  const id = el ? el.dataset.id : null;
+  if (id !== view.hover) { view.hover = id && S.chunks.has(id) ? id : null; renderInspector(); applyFocus(); }
+  if (view.hover && !el.closest('#rail')) showTip(e, view.hover); else tip.style.display = 'none';
+});
+document.addEventListener('click', e => { const el = e.target.closest('[data-id]'); if (el && S.chunks.has(el.dataset.id)) { view.focus = el.dataset.id; render(); } });
+function navOrder() { const P = presentLayout(); return [...P.keys()].filter(k => !k.startsWith('more:')).sort((a, b) => P.get(a).y - P.get(b).y); }
+function moveFocus(d) { const o = navOrder(); let i = o.indexOf(view.focus); i = i < 0 ? 0 : (i + d + o.length) % o.length; view.focus = o[i]; view.hover = null; render(); }
+function nextAnomaly() { const a = flights().filter(c => anomalyOf(c)).sort((x, y) => (x.status === 'needs_human' ? 0 : 1) - (y.status === 'needs_human' ? 0 : 1)).map(c => c.id); if (!a.length) return; const i = a.indexOf(view.focus); view.focus = a[(i + 1) % a.length]; render(); }
+function walkUpstream() { const c = S.chunks.get(view.focus); if (!c) return; const deps = [...upstream()].filter(u => (u.blockedBy || []).includes(c.id)); if (deps.length) { view.focus = deps[0].id; render(); } }
+function toast(m) { const t = $('#toast'); t.textContent = m; t.classList.add('on'); clearTimeout(toast.h); toast.h = setTimeout(() => t.classList.remove('on'), 1600); }
+// command palette
+const pal = $('#pal'), palq = $('#palq'); let palSel = 0, palItems = [];
+function palCommands() {
+  const cmds = [];
+  for (const c of flights().filter(c => c.status === 'needs_human')) cmds.push({ cid: '→', tt: `Take over C-${c.id}`, s: c.takeover, run: () => toast('copied: ' + c.takeover) }, { cid: '↺', tt: `Requeue C-${c.id} to pre-push`, s: 'needs you', run: () => requeue(c.id) });
+  cmds.push({ cid: '‖', tt: 'Pause r-chatgpt', s: 'runner', run: () => toast('r-chatgpt paused (mock)') }, { cid: '→', tt: 'Go to fleet', s: 'g f', run: () => location.href = 'fleet-desktop.html' }, { cid: '↔', tt: 'Window: 24 hours', s: ']', run: () => { zoom = 3; render(); } }, { cid: '+', tt: 'Promote C-WN6J from backlog', s: 'backlog', run: () => toast('promoted C-WN6J (mock)') });
+  return cmds;
+}
+function palRender() {
+  const q = palq.value.trim().toLowerCase();
+  const chunks = [...S.chunks.values()].map(c => ({ cid: c.id, tt: c.title, s: c.kind === 'flight' ? c.status.replace('_', ' ') + ' · ' + LANES[laneOf(c)].label.toLowerCase() : c.kind === 'done' ? 'landed' : unmet(S.chunks, c).length ? 'blocked' : c.status, run: () => { view.focus = c.id; render(); }, key: (c.id + ' ' + c.refs.join(' ') + ' ' + c.title).toLowerCase() }));
+  const cmds = palCommands().map(c => ({ ...c, key: c.tt.toLowerCase() }));
+  palItems = [...cmds, ...chunks].filter(x => !q || q.split(/\s+/).every(w => x.key.includes(w))).slice(0, 12);
+  palSel = Math.min(palSel, Math.max(0, palItems.length - 1));
+  $('#palr').innerHTML = palItems.map((x, i) => `<div class="r${i === palSel ? ' sel' : ''}"><span class="cid">${x.cid}</span><span class="tt">${esc(x.tt)}</span><span class="s">${esc(x.s)}</span></div>`).join('');
+}
+function openPal() { pal.style.display = 'block'; palq.value = ''; palSel = 0; palRender(); palq.focus(); }
+function closePal() { pal.style.display = 'none'; palq.blur(); }
+palq.addEventListener('input', () => { palSel = 0; palRender(); });
+palq.addEventListener('keydown', e => {
+  if (e.key === 'ArrowDown') { palSel = Math.min(palItems.length - 1, palSel + 1); palRender(); e.preventDefault(); }
+  else if (e.key === 'ArrowUp') { palSel = Math.max(0, palSel - 1); palRender(); e.preventDefault(); }
+  else if (e.key === 'Enter') { const x = palItems[palSel]; closePal(); x && x.run(); }
+  else if (e.key === 'Escape') closePal();
+  e.stopPropagation();
+});
+const HELP = [['j k', 'next / previous in flight'], ['n', 'next anomaly'], ['u', 'walk upstream from focus'], ['t', 'take over focused'], ['r', 'requeue focused'], ['o', 'open PR'], ['[ ]', 'time window 1h … 48h'], ['space', 'pause the live stream'], ['x', 'preview at 80 in flight'], ['⌘K  /', 'palette'], ['g f', 'go to fleet'], ['esc', 'clear']];
+$('#help').innerHTML = '<h4>Keys</h4>' + HELP.map(([k, v]) => `<div><span>${v}</span><span>${k.split(' ').map(x => `<span class="k">${x}</span>`).join(' ')}</span></div>`).join('');
+$('#keys').innerHTML = [['j k', 'move'], ['n', 'next anomaly'], ['u', 'upstream'], ['t', 'take over'], ['r', 'requeue'], ['[ ]', 'window'], ['space', 'pause'], ['x', 'at 80'], ['\u2318K', 'palette']].map(([k, v]) => `<span>${k.split(' ').map(x => `<span class="k">${x}</span>`).join('')} ${v}</span>`).join('') + '<span style="margin-left:auto"><span class="k">?</span> all keys</span>';
+let gPending = false;
+document.addEventListener('keydown', e => {
+  if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === 'k' || e.key === '/') { e.preventDefault(); openPal(); return; }
+  if (pal.style.display === 'block') return;
+  const c = S.chunks.get(view.focus);
+  if (gPending) { gPending = false; if (e.key === 'f') location.href = 'fleet-desktop.html'; return; }
+  switch (e.key) {
+    case 'j': case 'ArrowDown': moveFocus(1); break;
+    case 'k': case 'ArrowUp': moveFocus(-1); break;
+    case 'n': nextAnomaly(); break;
+    case 'u': walkUpstream(); break;
+    case 't': if (c && c.takeover) toast('copied: ' + c.takeover); else if (c) toast('copied: blizzard runner takeover C-' + c.id); break;
+    case 'r': if (c && requeue(c.id)) toast('C-' + c.id + ' requeued to pre-push'); break;
+    case 'o': if (c && c.pr) toast('opening ' + c.pr); break;
+    case '[': zoom = Math.max(0, zoom - 1); render(); break;
+    case ']': zoom = Math.min(ZOOMS.length - 1, zoom + 1); render(); break;
+    case ' ': S.paused = !S.paused; render(); e.preventDefault(); break;
+    case 'x': toggleScale(); break;
+    case 'g': gPending = true; break;
+    case '?': $('#help').style.display = $('#help').style.display === 'block' ? 'none' : 'block'; break;
+    case 'Escape': $('#help').style.display = 'none'; view.hover = null; render(); break;
+  }
+});
+// 80-in-flight preview: synthetic chunks, so the shape at scale can be judged
+function toggleScale() {
+  view.scale = !view.scale;
+  if (view.scale) { const r = seeded(80); for (let i = 0; i < 70; i++) { const id = 'S' + String(i).padStart(3, '0'); const end = S.now; const p = synthPath(end + 30 + r() * 60, r() * 12, r); const cut = p.filter(x => x[1] < S.now && x[0] < 6); if (!cut.length) continue;
+      S.chunks.set(id, { id, refs: ['sim#' + i], title: 'Synthetic chunk ' + i, status: 'running', kind: 'flight', synthetic: true, path: cut, cost: r() * 8, est: true, ws: 'scale', runner: 'r-scale' }); } toast('preview: 80 in flight'); }
+  else { for (const k of [...S.chunks.keys()]) if (k.startsWith('S0')) S.chunks.delete(k); }
+  render();
+}
+S.listeners.push(render);
+hooks(render);
+if (!new URLSearchParams(location.hash.slice(1)).has('still')) startSim(2000);
+</script></body></html>

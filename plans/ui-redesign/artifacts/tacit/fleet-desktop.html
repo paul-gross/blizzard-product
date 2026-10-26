@@ -1,0 +1,322 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>tacit — purse &amp; hands</title>
+<style>
+/* Two inks. Graphite is the fleet's hand; vermilion is the operator's. Nothing else is coloured. */
+:root{
+  --ground:#ebe9e2; --sheet:#f4f3ee; --rule:#cdc9be; --rule2:#dedad0;
+  --fleet:#1c1c1a; --fleet2:#5f5c55; --fleet3:#9a968c;
+  --you:#cf3a1c; --you-wash:#f6dfd6;
+  --sans:"Noto Sans",sans-serif; --serif:"Noto Serif",serif; --mono:"Noto Sans Mono",monospace;
+}
+::selection{background:var(--you-wash);color:var(--you)}
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{width:1600px;height:1000px;overflow:hidden;background:var(--ground);color:var(--fleet);
+  font-family:var(--sans);font-stretch:87.5%;font-size:14px;line-height:1.38;-webkit-font-smoothing:antialiased}
+.id{font-family:var(--mono);font-size:13px;letter-spacing:-.02em}
+.ink{font-family:var(--serif);font-style:italic;color:var(--you)}
+.num{font-variant-numeric:tabular-nums}
+.k{font-family:var(--mono);font-size:11px;color:var(--fleet2)}
+.k kbd{font-family:var(--mono);border-bottom:1px solid var(--fleet3);padding:0 2px;color:var(--fleet);margin-right:2px}
+
+header{height:74px;display:grid;grid-template-columns:150px 1fr 430px;align-items:end;padding:0 0 12px;border-bottom:1px solid var(--fleet)}
+.mark{padding-left:22px;font-family:var(--serif);font-size:22px}
+.mark small{display:block;font-family:var(--sans);font-size:11.5px;color:var(--fleet2)}
+.posture{font-size:19px;line-height:1.3;padding-right:20px}
+.posture b{font-weight:600}
+.purse{padding-right:22px;text-align:right;font-size:13px;color:var(--fleet2)}
+.purse b{color:var(--fleet);font-weight:600}
+
+main{display:grid;grid-template-columns:1150px 450px;height:calc(1000px - 74px - 34px)}
+.left{overflow:hidden;border-right:1px solid var(--rule)}
+aside{overflow:hidden;padding:14px 22px 0;background:var(--sheet)}
+
+.sec{display:grid;grid-template-columns:150px 1fr 230px;padding:10px 0 5px;align-items:baseline}
+.sec h2{grid-column:2;font-size:13px;font-weight:600}
+.sec h2 span{font-weight:400;color:var(--fleet2)}
+.sec .mh{grid-column:3;font-size:12px;color:var(--fleet3);padding-left:14px}
+
+.row{display:grid;grid-template-columns:150px 1fr 230px;border-top:1px solid var(--rule2);min-height:30px;position:relative}
+.row:hover{background:#e4e1d8}
+.row.sel{background:var(--sheet);box-shadow:inset 3px 0 0 var(--fleet)}
+.lab{padding:7px 12px 0 22px;font-size:13px}
+.lab b{font-weight:600;font-size:14px}
+.lab small{display:block;color:var(--fleet2);font-size:12px}
+.body{padding:6px 16px 6px 0;min-width:0}
+.margin{min-width:0;padding:6px 14px 4px;border-left:1px solid var(--rule2);font-size:12.5px;color:var(--fleet3)}
+.margin .k{display:none}
+.row.sel .margin .k,.row:hover .margin .k{display:inline}
+.margin .ink{font-size:13.5px}
+
+/* the purse: a window is a row of 60 ticks. filled = drawn, open = left; the caret is time elapsed; your ceiling is a vermilion stroke */
+.gauge{display:flex;gap:2px;height:14px;align-items:flex-end;position:relative;margin:3px 0 4px}
+.gauge i{width:6px;height:12px;background:var(--fleet)}
+.gauge i.o{background:none;border:1px solid var(--fleet3);height:12px}
+.gauge i.el{position:absolute;top:-3px;width:2px;height:18px;background:var(--fleet);border:0}
+.gauge i.cap{position:absolute;top:-4px;width:3px;height:20px;background:var(--you);border:0}
+.say{font-size:14px}
+.say b{font-weight:600}
+.sub{font-size:12.5px;color:var(--fleet2)}
+.sub b{color:var(--fleet);font-weight:600}
+
+/* hands: one cell per environment slot */
+.hands{display:flex;gap:4px;flex-wrap:wrap;margin:5px 0 4px}
+.hand{width:118px;border-top:3px solid var(--fleet);padding:3px 0 2px;font-size:12px;cursor:pointer}
+.hand .id{font-size:12.5px}
+.hand .n{color:var(--fleet2)}
+.hand.need{border-top-color:var(--you)}
+.hand.need .n{color:var(--you);font-family:var(--serif);font-style:italic}
+.hand.free{border-top:1px dashed var(--fleet3);color:var(--fleet3)}
+.bind{font-size:12.5px;color:var(--fleet2);margin-top:2px}
+.bind b{color:var(--fleet);font-weight:600}
+.row.paused .say,.row.paused .hands{text-decoration:line-through;text-decoration-color:var(--you);text-decoration-thickness:2px}
+.row.paused .hand{border-top-color:var(--you)}
+.ticks{display:flex;gap:2px;height:10px;align-items:flex-end;margin-bottom:2px}
+.ticks i{width:2px;height:10px;background:var(--fleet)}
+.ticks i.y{background:var(--you)}
+.ft{font-size:12px;color:var(--fleet2)} .ft b{color:var(--fleet);font-weight:600}
+.row.auto .say{text-decoration:line-through;text-decoration-color:var(--you);text-decoration-thickness:2px}
+.row.auto{opacity:.85}
+.row.objected .say{text-decoration:line-through;text-decoration-color:var(--you);text-decoration-thickness:2px}
+.row.mine .say{font-family:var(--serif);font-style:italic;color:var(--you)}
+.row.mine.struck .say{text-decoration:line-through;color:var(--fleet3)}
+.evidence{grid-column:2/4;display:none;padding:0 16px 10px 0;font-size:12.5px;color:var(--fleet2)}
+.row.open .evidence{display:block}
+.facts{display:grid;grid-template-columns:repeat(6,auto);gap:2px 22px;justify-content:start}
+.facts dt{color:var(--fleet3)} .facts dd{color:var(--fleet)}
+
+aside h3{font-size:13px;font-weight:600;margin:0 0 6px;display:flex;justify-content:space-between;align-items:baseline}
+aside h3 span{font-weight:400;color:var(--fleet3);font-size:12px}
+aside section{margin-bottom:16px}
+.order{display:grid;grid-template-columns:24px 1fr 46px;padding:6px 0;border-top:1px solid var(--rule2);align-items:baseline;cursor:pointer}
+.order .n{font-family:var(--serif);color:var(--you);font-size:13px}
+.order .w{font-family:var(--serif);font-style:italic;color:var(--you);font-size:14px;line-height:1.3}
+.order .w u{text-decoration:none;border-bottom:1px solid var(--you)}
+.order .c{text-align:right;font-size:12px;color:var(--fleet2)}
+.order .c b{color:var(--fleet);font-weight:600}
+.order.off .w,.order.off .n{color:var(--fleet3);text-decoration:line-through}
+.order.new{background:var(--you-wash)}
+.fact{display:grid;grid-template-columns:110px 1fr;font-size:12.5px;padding:3px 0;border-top:1px solid var(--rule2)}
+.fact dt{color:var(--fleet3)}
+.l{display:grid;grid-template-columns:52px 1fr;gap:6px;padding:3px 0;border-top:1px solid var(--rule2);font-size:12.5px}
+.l .tm{color:var(--fleet3)}
+.l.y .w{font-family:var(--serif);font-style:italic;color:var(--you)}
+.l.fresh{background:var(--you-wash)}
+
+.tabled p{font-size:12.5px;color:var(--fleet2);line-height:1.45}
+.tabled p b{color:var(--fleet);font-weight:600}
+.tabled kbd,.verbs kbd{font-family:var(--mono);font-size:11px;color:var(--you);border-bottom:1px solid var(--you);padding:0 2px;margin-right:4px}
+.verbs{display:flex;gap:16px;margin-top:6px;font-size:12.5px;font-family:var(--serif);font-style:italic;color:var(--you)}
+footer{height:34px;border-top:1px solid var(--fleet);display:flex;align-items:center;gap:22px;padding:0 22px;font-size:12px;color:var(--fleet2)}
+footer kbd{font-family:var(--mono);font-size:11px;color:var(--fleet);border-bottom:1px solid var(--fleet3);padding:0 2px;margin-right:4px}
+footer .you kbd{color:var(--you);border-color:var(--you)}
+footer .sp{flex:1}
+footer .toast{font-family:var(--serif);font-style:italic;color:var(--you);font-size:13px}
+nav.views{display:flex;gap:14px}
+nav.views a{color:var(--fleet2);text-decoration:none}
+nav.views a.on{color:var(--fleet);border-bottom:1px solid var(--fleet)}
+</style>
+</head>
+<body>
+<header>
+  <div class="mark">tacit<small>blizzard · paul-gross</small></div>
+  <div class="posture" id="posture"></div>
+  <div class="purse"><div><span class="num" id="clock">13:10:00</span> Sunday · you last looked at <b>06:58</b></div>
+    <div>host <b>xps</b> reported <b class="num" id="seen">34s</b> ago · hub ok</div></div>
+</header>
+<main>
+  <section class="left" id="left"></section>
+  <aside>
+    <section>
+      <h3>Standing orders on the purse and the hands <span>click to lift</span></h3>
+      <div id="orders"></div>
+    </section>
+    <section>
+      <h3>Host xps <span>H-G1YK · evidence, not a call to act</span></h3>
+      <dl id="facts"></dl>
+    </section>
+    <section class="tabled">
+      <h3>Your own motions <span>they burn a fuse too</span></h3>
+      <p>Anything you do that cannot be taken back is tabled with a <b>30-second fuse</b> and appears among the hands’ motions in your ink. Strike it with <kbd>x</kbd> before it fires and nothing happened.</p>
+      <div class="verbs"><span><kbd>R</kbd>retire xps</span><span><kbd>T</kbd>revoke its token</span><span><kbd>E</kbd>enroll a host</span></div>
+    </section>
+    <section>
+      <h3>The record <span>since 06:58 · your marks in your ink</span></h3>
+      <div id="log"></div>
+    </section>
+  </aside>
+</main>
+<footer>
+  <nav class="views"><a href="board-desktop.html">docket</a><a class="on">purse &amp; hands</a></nav>
+  <span><kbd>j</kbd><kbd>k</kbd>move</span>
+  <span class="you"><kbd>p</kbd>stay a runner's hand</span>
+  <span class="you"><kbd>-</kbd><kbd>+</kbd>fewer / more hands</span>
+  <span class="you"><kbd>$</kbd>raise the allowance</span>
+  <span class="you"><kbd>x</kbd>object</span>
+  <span class="you"><kbd>R</kbd>retire host</span>
+  <span><kbd>enter</kbd>evidence</span>
+  <span><kbd>u</kbd>undo</span>
+  <span class="sp"></span><span class="toast" id="toast"></span>
+</footer>
+<script>
+const T0 = 13*3600+10*60; let now = T0, seen = 34;
+const fmtT = s => { s=((s%86400)+86400)%86400; return [Math.floor(s/3600),Math.floor(s%3600/60),s%60].map(v=>String(v).padStart(2,'0')).join(':') };
+const hm = s => fmtT(s).slice(0,5);
+
+// ---- the capacity picture at 13:10, from the baseline fleet capture ----
+const state = {
+  allowance:150, spent:114.44,
+  windows:[
+    {k:"anth5", name:"Anthropic", win:"5h", spent:12, elapsed:55, cap:null, rolls:"15:40", sampled:"1m",
+     say:`<b>12%</b> drawn with 55% of the window gone. Rolls at 15:40.`, sub:`r-claude spends this. Well under pace; nothing to slow.`},
+    {k:"anth7", name:"Anthropic", win:"7d", spent:9, elapsed:10, cap:10, rolls:"Sat 04:36", sampled:"1m",
+     say:`<b>9%</b> drawn with 10% of the week gone.`, sub:`Your §2 ceiling sits at pace; r-claude has a margin of <b>~1%</b> before it is slowed.`},
+    {k:"oai7", name:"OpenAI", win:"7d", spent:8, elapsed:7, cap:7, rolls:"Sat 03:10", sampled:"5m",
+     say:`<b>8%</b> drawn with 7% of the week gone. <b>Over pace.</b>`, sub:`§2 is holding r-chatgpt to its four current chunks until pace catches up at <b>14:41</b>.`},
+  ],
+  runners:[
+    {id:"R-FNE4", name:"r-claude", harness:"claude code", spends:"Anthropic", ver:"0.3.0.dev1002+f208eca7d", agents:3, seen:"21s", gates:"none", paused:false, cap:6,
+     binds:[["blizzard","blizzard-claude",6],["winter","winter",0]],
+     slots:[["WSCR","review","12m"],["BWA2","mutation","31m"],["QWYS","deliver","needs you"],["ZG7T","pre-push","8m"],["FC1D","build","22m"],["6J9H","deliver","needs you"]],
+     state:"working"},
+    {id:"R-NQ1B", name:"r-chatgpt", harness:"opencode", spends:"OpenAI", ver:"0.3.0.dev1002+f208eca7d", agents:3, seen:"17s", gates:"none", paused:false, cap:4,
+     binds:[["blizzard","blizzard-chatgpt",4],["winter","winter",0]],
+     slots:[["MFJE","build","40m"],["27A6","deliver","3m left"],["PTP2","deliver","2m left"],["2475","build","19m"]],
+     state:"declining — pace: 7d: 8% spent, 7% elapsed, until 14:41"},
+  ],
+  winter:4,
+};
+const motions = [
+  {id:"m1", who:"r-claude", fuse:540, say:`<b class="id">r-claude</b> will put its next free hand on <b class="id">C-1DTX</b> (hub:629).`, sub:`a slot frees when C-ZG7T leaves pre-push`},
+  {id:"m2", who:"r-chatgpt", fuse:5460, auto:2, say:`<b class="id">r-chatgpt</b> would take <b class="id">C-DF68</b> and <b class="id">C-0ACF</b> as its deliveries land.`, sub:`objected by §2 until 14:41, when OpenAI 7d pace catches up`},
+  {id:"m3", who:"winter", fuse:null, trig:"no work", say:`<b>winter</b>'s four slots stay empty: no ready winter chunk exists.`, sub:`both runners bind winter; neither has anything to take`},
+  {id:"m4", who:"purse", fuse:16200, say:`At this draw the <b>$150 allowance</b> runs dry at <b>17:40</b> and §6 stops every new claim until midnight.`, sub:`~$7.90/h over the last six hours · the night would carry ~14 chunks instead of ~23`},
+];
+const orders = [
+  {n:2, w:`Keep each subscription at or under its 7-day pace.`, fired:14, on:true},
+  {n:6, w:`Spend at most <u id="allow">$150</u> a day; past it, claim nothing new.`, fired:0, on:true},
+  {n:7, w:`Never bind winter to r-chatgpt.`, fired:0, on:true},
+  {n:3, w:`Ask me before any chunk spends past $25.`, fired:1, on:true},
+];
+const log = [
+  ["13:08","r-claude reported; Anthropic sampled"],
+  ["12:52","C-QWYS and C-6J9H stopped at deliver; they hold two hands"],
+  ["12:41","r-chatgpt began declining claims — §2, OpenAI 7d over pace"],
+  ["06:18","r-chatgpt: command failed, await worker identity; reaped C-R1D5, retried, recovered"],
+  ["01:27","r-chatgpt: same failure on C-PZD6; reaped, retried, recovered"],
+];
+let sel = 0, rows = [], undo = [];
+
+function gauge(w){
+  let h=''; const n=60, f=Math.round(w.spent/100*n);
+  for(let i=0;i<n;i++) h+=`<i class="${i<f?'':'o'}"></i>`;
+  const px = p => Math.round(p/100*n)*8;
+  h += `<i class="el" style="left:${px(w.elapsed)-1}px" title="time elapsed"></i>`;
+  if(w.cap!=null) h += `<i class="cap" style="left:${px(w.cap)+3}px" title="your ceiling"></i>`;
+  return `<div class="gauge">${h}</div>`;
+}
+function ticks(sec, you){
+  if(sec==null) return '';
+  const m=Math.ceil(sec/60), n=Math.min(m,30); return `<div class="ticks">${`<i class="${you?'y':''}"></i>`.repeat(n)}${m>30?`<span style="font-size:10px;color:var(--fleet3);margin-left:3px">+${m-30}</span>`:''}</div>`;
+}
+function fuseText(m){
+  if(m.fuse==null) return `<span class="ft"><b>${m.trig}</b></span>`;
+  const s=Math.max(0,m.fuse); return `<span class="ft"><b class="num">${Math.floor(s/60)}:${String(s%60).padStart(2,'0')}</b> · at ${hm(now+s)}</span>`;
+}
+function render(){
+  rows = [];
+  let h = `<div class="sec"><h2>The purse <span>· what the fleet may spend, and how fast</span></h2><div class="mh">your marks</div></div>`;
+  const left = state.allowance - state.spent;
+  const allowW = {spent:Math.min(100,state.spent/state.allowance*100), elapsed:Math.round((now/86400)*100), cap:null};
+  rows.push({kind:'allow'});
+  h += `<div class="row ${sel===rows.length-1?'sel':''}" data-r="${rows.length-1}"><div class="lab"><b>Allowance</b><small>today, by your §6</small></div>
+    <div class="body">${gauge(allowW)}<div class="say"><b class="num">$${state.spent.toFixed(2)}</b> of <span class="ink">$${state.allowance}</span> drawn, <b class="num">$${left.toFixed(2)}</b> left with 55% of the day gone. Yesterday drew $161.25.</div>
+    <div class="sub">185.5M tokens today · the caret is the hour, the fill is the money</div></div>
+    <div class="margin">${state.allowMark||'<span class="k"><kbd>$</kbd>raise · <kbd>-</kbd>lower</span>'}</div></div>`;
+  state.windows.forEach(w=>{ rows.push({kind:'win',w});
+    h += `<div class="row ${sel===rows.length-1?'sel':''}" data-r="${rows.length-1}"><div class="lab"><b>${w.name} ${w.win}</b><small>sampled ${w.sampled} ago</small></div>
+      <div class="body">${gauge(w)}<div class="say">${w.say}</div><div class="sub">${w.sub}</div></div>
+      <div class="margin">${w.cap!=null?`<span class="ink">ceiling at pace, §2</span>`:''}</div></div>`; });
+
+  h += `<div class="sec"><h2>The hands <span>· one cell per environment slot; a vermilion edge is a hand waiting on you</span></h2></div>`;
+  state.runners.forEach(r=>{ rows.push({kind:'runner',r});
+    const cells = r.slots.slice(0,r.cap).map(s=>`<div class="hand ${s[2]==='needs you'?'need':''}"><span class="id">C-${s[0]}</span> ${s[1]}<div class="n">${s[2]}</div></div>`).join('')
+      + r.slots.slice(r.cap).map(s=>`<div class="hand free" title="released when its chunk lands"><span class="id">C-${s[0]}</span> ${s[1]}<div>last, then let go</div></div>`).join('');
+    const busy = r.slots.length;
+    h += `<div class="row runner ${r.paused?'paused':''} ${sel===rows.length-1?'sel':''} ${r.open?'open':''}" data-r="${rows.length-1}">
+      <div class="lab"><b class="id" style="font-size:15px">${r.name}</b><small>${r.harness} · ${r.id}</small><small>reported ${r.seen} ago</small></div>
+      <div class="body"><div class="say">${r.paused?'Will take nothing new; finishes what it holds.':(r.state==='working'?`Working every hand it has: <b>${busy} of ${busy}</b> busy on blizzard-claude, spending ${r.spends}.`:`Declining new work — <b>OpenAI 7d over pace until 14:41</b>; ${busy} of ${busy} hands still busy.`)}</div>
+        <div class="hands">${cells}</div>
+        <div class="bind">binds ${r.binds.map(b=>`<b>${b[0]}</b> → ${b[1]} (${b[2]} working)`).join(' · ')} · ${r.agents} agents · gates ${r.gates}</div></div>
+      <div class="margin">${r.mark||`<span class="k"><kbd>p</kbd>stay · <kbd>-</kbd><kbd>+</kbd>hands · <kbd>enter</kbd>evidence</span>`}</div>
+      <div class="evidence"><dl class="facts"><dt>version</dt><dd class="id">${r.ver}</dd><dt>harness</dt><dd>${r.harness}</dd><dt>spends</dt><dd>${r.spends}</dd><dt>state</dt><dd>${r.state}</dd><dt>hands allowed</dt><dd>${r.cap}</dd><dt>gates</dt><dd>${r.gates}</dd></dl></div></div>`; });
+  rows.push({kind:'free'});
+  h += `<div class="row ${sel===rows.length-1?'sel':''}" data-r="${rows.length-1}"><div class="lab"><b>winter</b><small>workspace · 0 of ${state.winter}</small></div>
+    <div class="body"><div class="hands">${'<div class="hand free">free<div>no ready winter work</div></div>'.repeat(state.winter)}</div></div><div class="margin"></div></div>`;
+
+  h += `<div class="sec"><h2>What the hands will do unless you object <span>· soonest first</span></h2></div>`;
+  motions.filter(m=>!m.gone).sort((a,b)=>(a.fuse??1e9)-(b.fuse??1e9)).forEach(m=>{ rows.push({kind:'motion',m});
+    h += `<div class="row ${m.auto?'auto':''} ${m.state||''} ${m.mine?'mine':''} ${m.struck?'struck':''} ${sel===rows.length-1?'sel':''}" data-r="${rows.length-1}">
+      <div class="lab">${ticks(m.fuse, m.auto||m.mine)}${fuseText(m)}</div>
+      <div class="body"><div class="say">${m.say}</div><div class="sub">${m.sub}</div></div>
+      <div class="margin">${m.mark|| (m.auto?`<span class="ink">objected by your order §${m.auto}</span>`: m.mine?`<span class="ink">yours — strike it with <kbd style="font-style:normal">x</kbd> before it fires</span>`:`<span class="k"><kbd>x</kbd>object · <kbd>h</kbd>hold</span>`)}</div></div>`; });
+
+  document.getElementById('left').innerHTML = h;
+  document.querySelectorAll('.row[data-r]').forEach(e=>e.addEventListener('click',()=>{sel=+e.dataset.r; const R=rows[sel]; if(R.kind==='runner') R.r.open=!R.r.open; render();}));
+
+  const pausedN = state.runners.filter(r=>r.paused).length;
+  document.getElementById('posture').innerHTML = `10 of 14 hands busy, <b>2 of them waiting on you</b>. r-claude is working; r-chatgpt is slowed by your §2 until 14:41; winter has nothing to do. ${pausedN?`<span class="ink">You have stayed ${pausedN===1?'one runner':'both runners'}.</span> `:''}The purse, not the windows, ends tonight: <b>${state.allowance===150?'17:40':'past midnight'}</b>.`;
+  document.getElementById('orders').innerHTML = orders.map((o,i)=>`<div class="order ${o.on?'':'off'} ${o.new?'new':''}" data-o="${i}"><span class="n">§${o.n}</span><span class="w">${o.w.replace('$150','$'+state.allowance)}</span><span class="c">fired <b>${o.fired}</b></span></div>`).join('');
+  document.querySelectorAll('.order').forEach(e=>e.addEventListener('click',()=>{snap(); const o=orders[+e.dataset.o]; o.on=!o.on; toast(o.on?`§${o.n} stands again`:`§${o.n} lifted`); render();}));
+  document.getElementById('facts').innerHTML = [
+    ["last report",`2026/10/25 13:10:01 · <span class="num">${seen}s</span> ago`],["registered","2026/10/16 04:36:51"],["added","2026/10/16 04:36:09 by paul-gross"],
+    ["url",`<span class="id">http://127.0.0.1:8431</span>`],["token","enrolled"],["agents","6 declared across 2 runners · 10 environments held"],
+    ["workspaces","blizzard-claude 6/6 · blizzard-chatgpt 4/4 · winter 0/4"]].map(f=>`<div class="fact"><dt>${f[0]}</dt><dd>${f[1]}</dd></div>`).join('');
+  document.getElementById('log').innerHTML = log.map(l=>`<div class="l ${l.y?'y':''} ${l.fresh?'fresh':''}"><span class="tm num">${l[0]}</span><span class="w">${l[1]}</span></div>`).join('');
+}
+function toast(s){ const t=document.getElementById('toast'); t.textContent=s; clearTimeout(toast.h); toast.h=setTimeout(()=>t.textContent='',4000); }
+function snap(){ undo.push(JSON.stringify({state,motions,orders,log})); }
+function restore(){ const u=undo.pop(); if(!u) return toast('nothing to undo'); const o=JSON.parse(u);
+  Object.assign(state,o.state); motions.splice(0,motions.length,...o.motions); orders.splice(0,orders.length,...o.orders); log.splice(0,log.length,...o.log); toast('undone'); render(); }
+function yours(s){ const e=[hm(now),s]; e.y=true; e.fresh=true; log.unshift(e); }
+
+function act(k){
+  const R = rows[sel]; if(!R) return;
+  if(k==='$'){ snap(); state.allowance += 25; state.allowMark=`<span class="ink">raised to $${state.allowance} at ${hm(now)}</span>`;
+    const m=motions.find(m=>m.id==='m4'); m.fuse = Math.round((state.allowance-state.spent)/7.9*3600); m.say=`At this draw the <b>$${state.allowance} allowance</b> runs dry at <b>${hm(now+m.fuse)}</b> and §6 stops every new claim until midnight.`;
+    yours(`raised the allowance to $${state.allowance}`); toast(`§6 now reads $${state.allowance}`); }
+  else if(k==='p' && R.kind==='runner'){ snap(); const r=R.r; r.paused=!r.paused; r.mark=r.paused?`<span class="ink">stayed at ${hm(now)} — takes nothing new</span>`:''; yours(r.paused?`stayed ${r.name}`:`released ${r.name}`); toast(r.paused?`${r.name} will finish what it holds and take nothing new`:`${r.name} takes work again`); }
+  else if((k==='-'||k==='+') && R.kind==='runner'){ snap(); const r=R.r; r.cap=Math.max(0,Math.min(r.slots.length,r.cap+(k==='+'?1:-1))); r.mark=`<span class="ink">${r.cap} hands allowed</span>`; yours(`${r.name} held to ${r.cap} hands`); toast(`${r.name}: ${r.cap} hands; the rest let go as their chunks land`); }
+  else if(k==='-' && R.kind==='allow'){ snap(); state.allowance=Math.max(120,state.allowance-10); state.allowMark=`<span class="ink">lowered to $${state.allowance}</span>`; yours(`lowered the allowance to $${state.allowance}`); }
+  else if(k==='x' && R.kind==='motion'){ const m=R.m; snap();
+    if(m.mine){ m.struck=true; m.mark=`<span class="ink">struck before it fired</span>`; yours(`withdrew: ${m.plain}`); toast('withdrawn — nothing happened'); setTimeout(()=>{m.gone=true;render();},1200); }
+    else if(!m.auto){ m.state='objected'; m.mark=`<span class="ink">objected ${hm(now)}</span>`; yours(`objected: ${m.say.replace(/<[^>]+>/g,'').slice(0,60)}…`); toast('objected'); } }
+  else if(k==='h' && R.kind==='motion' && !R.m.auto){ snap(); R.m.state = R.m.state==='held'?'':'held'; R.m.mark = R.m.state?`<span class="ink">held</span>`:''; }
+  else if(k==='R'){ snap(); motions.push({id:'mine'+now, mine:true, fuse:30, plain:'retire host xps', say:`Retire host xps: revoke its token and release its 14 slots.`, sub:`your own motion — it fires when the fuse burns out; the 10 chunks it holds go back to ready`});
+    yours('tabled: retire host xps (30s fuse)'); toast('tabled with a 30s fuse — x strikes it'); }
+  else if(k==='T'){ snap(); motions.push({id:'mine'+now+'t', mine:true, fuse:30, plain:'revoke the token of xps', say:`Revoke host xps's token.`, sub:`your own motion — both runners lose the hub at the fuse; their chunks go back to ready`}); yours('tabled: revoke xps token (30s fuse)'); toast('tabled with a 30s fuse — x strikes it'); }
+  else if(k==='E'){ snap(); motions.push({id:'mine'+now+'e', mine:true, fuse:30, plain:'enroll a new host', say:`Enroll a new host and print its one-time token.`, sub:`your own motion — reversible, but tabled all the same`}); yours('tabled: enroll a host (30s fuse)'); toast('tabled with a 30s fuse'); }
+  else if(k==='Enter' && R.kind==='runner'){ R.r.open=!R.r.open; }
+  render();
+}
+document.addEventListener('keydown',e=>{
+  if(e.key==='j'||e.key==='ArrowDown'){ sel=Math.min(rows.length-1,sel+1); render(); }
+  else if(e.key==='k'||e.key==='ArrowUp'){ sel=Math.max(0,sel-1); render(); }
+  else if(e.key==='u') restore();
+  else if(['$','p','-','+','x','h','R','T','E','Enter'].includes(e.key)) act(e.key);
+});
+setInterval(()=>{
+  now++; seen = (seen+1)%45; document.getElementById('clock').textContent=fmtT(now); document.getElementById('seen').textContent=seen+'s';
+  if(now%9===0) state.spent += 0.02;
+  motions.forEach(m=>{ if(m.gone||m.fuse==null||m.state==='held'||m.state==='objected'||m.struck) return; m.fuse--;
+    if(m.fuse<=0 && m.mine){ m.gone=true; yours('fired: '+m.plain); toast('your motion fired'); } });
+  render();
+},1000);
+render();
+const km = location.hash.match(/keys=([^&]*)/);
+if(km) km[1].split(',').forEach(k=>document.dispatchEvent(new KeyboardEvent('keydown',{key:decodeURIComponent(k)})));
+</script>
+</body>
+</html>

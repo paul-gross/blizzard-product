@@ -1,0 +1,595 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Synop · legend</title>
+<style>
+:root{
+  --plot:"Nimbus Sans Narrow","Arial Narrow","Liberation Sans Narrow","Helvetica Neue",sans-serif;
+  --serif:"C059","Century Schoolbook","New Century Schoolbook",Georgia,serif;
+  --hand:"C059","Century Schoolbook",Georgia,serif;
+}
+html,body{margin:0;background:#f5f2e9;color:#1c1b18}
+body{width:1600px;padding:26px 40px;box-sizing:border-box}
+</style>
+</head>
+<body>
+<div id="legend"></div>
+<script>
+/* SYNOP — the fleet plotted as a surface weather chart.
+   Shared notation: station plots, barbs, oktas, present-weather glyphs,
+   tendency traces, fronts, coastlines. Every page inlines this file. */
+const NS = 'http://www.w3.org/2000/svg';
+const INK = '#1c1b18', PAPER = '#f5f2e9', LAND = '#e9e2cc', COAST = '#6d6352',
+  WATER = '#8fa7b6', RED = '#c4122f', BLUE = '#1d4f9c', GREEN = '#2f8a3a',
+  PENCIL = '#77736a', GREY = '#9a9486';
+const NODE_OKTA = { triage: 1, survey: 1, build: 2, review: 3, mutation: 4, 'pre-push': 5, deliver: 6 };
+const NODE_ABBR = { triage: 'tri', survey: 'srv', build: 'bld', review: 'rvw', mutation: 'mut', 'pre-push': 'pp', deliver: 'dlv', done: 'done' };
+const NODE_BY_OKTA = ['ready', 'triage', 'build', 'review', 'mutation', 'pre-push', 'deliver', 'delivering', 'done'];
+const RUNNER_BEARING = { 'r-claude': 340, 'r-chatgpt': 20 };
+
+function el(tag, attrs, parent) {
+  const e = document.createElementNS(NS, tag);
+  for (const k in attrs) if (attrs[k] !== undefined && attrs[k] !== null) e.setAttribute(k, attrs[k]);
+  if (parent) parent.appendChild(e);
+  return e;
+}
+function txt(parent, x, y, s, attrs) {
+  const t = el('text', Object.assign({ x, y }, attrs || {}), parent);
+  t.textContent = s;
+  return t;
+}
+
+/* Oktas of the circle: how far through its graph the chunk has walked. */
+function okta(c) {
+  if (c.status === 'done') return 8;
+  if (c.status === 'delivering') return 7;
+  if (c.status === 'ready' || c.status === 'backlog' || c.status === 'waiting') return 0;
+  return NODE_OKTA[c.node] || 1;
+}
+function drawOktas(g, n, r, ink) {
+  el('circle', { r, fill: PAPER, stroke: ink, 'stroke-width': 1.3 }, g);
+  if (n <= 0) return;
+  if (n >= 8) { el('circle', { r, fill: ink }, g); return; }
+  if (n === 7) {
+    el('circle', { r, fill: ink }, g);
+    el('line', { x1: 0, y1: -r, x2: 0, y2: r, stroke: PAPER, 'stroke-width': 1.4 }, g);
+    return;
+  }
+  const quarters = Math.floor(n / 2), line = n % 2 === 1;
+  if (quarters > 0) {
+    const a = quarters * Math.PI / 2;
+    const x = r * Math.sin(a), y = -r * Math.cos(a);
+    const d = `M0 0 L0 ${-r} A${r} ${r} 0 ${quarters > 2 ? 1 : 0} 1 ${x.toFixed(2)} ${y.toFixed(2)} Z`;
+    el('path', { d, fill: ink }, g);
+  }
+  if (line) el('line', { x1: 0, y1: -r, x2: 0, y2: r, stroke: ink, 'stroke-width': 1.3 }, g);
+}
+
+/* Wind barb: shaft bearing names the runner, feathers count dollars.
+   Pennant $10 · full feather $2 · half feather $1. */
+function feathers(dollars) {
+  let v = Math.round(dollars), p = Math.floor(v / 10); v -= p * 10;
+  let f = Math.floor(v / 2); v -= f * 2;
+  return { p, f, h: v };
+}
+function drawBarb(g, bearing, dollars, r, len, ink, scale) {
+  const s = scale || 1, a = bearing * Math.PI / 180;
+  const ux = Math.sin(a), uy = -Math.cos(a);
+  const nx = uy, ny = -ux; // feathers to the clockwise side
+  const x0 = ux * r, y0 = uy * r, x1 = ux * len, y1 = uy * len;
+  el('line', { x1: x0, y1: y0, x2: x1, y2: y1, stroke: ink, 'stroke-width': 1.1 * s }, g);
+  const { p, f, h } = feathers(dollars);
+  if (!p && !f && !h) {
+    el('circle', { cx: x1, cy: y1, r: 1.3 * s, fill: ink }, g); // under a dollar: a dot, not calm
+    return;
+  }
+  let at = len, step = 4.2 * s, fl = 9 * s;
+  const pt = (d, o) => [ux * d + nx * o, uy * d + ny * o];
+  for (let i = 0; i < p; i++) {
+    const [ax, ay] = pt(at, 0), [bx, by] = pt(at - step * 1.4, 0), [cx, cy] = pt(at - 0.2 * s, fl);
+    el('path', { d: `M${ax} ${ay} L${cx} ${cy} L${bx} ${by} Z`, fill: ink }, g);
+    at -= step * 1.7;
+  }
+  for (let i = 0; i < f; i++) {
+    const [ax, ay] = pt(at, 0), [bx, by] = pt(at + 2.4 * s, fl);
+    el('line', { x1: ax, y1: ay, x2: bx, y2: by, stroke: ink, 'stroke-width': 1.1 * s }, g);
+    at -= step;
+  }
+  if (h) {
+    if (!p && !f) at -= step; // a lone half feather sits in from the tip, as on a real barb
+    const [ax, ay] = pt(at, 0), [bx, by] = pt(at + 1.3 * s, fl * 0.55);
+    el('line', { x1: ax, y1: ay, x2: bx, y2: by, stroke: ink, 'stroke-width': 1.1 * s }, g);
+  }
+}
+
+/* Present weather: the state the chunk is in right now. */
+function drawWx(g, kind, x, y, s) {
+  s = s || 1;
+  const w = el('g', { transform: `translate(${x} ${y}) scale(${s})` }, g);
+  if (kind === 'rain') { // running
+    el('circle', { cx: -3, cy: 0, r: 1.7, fill: INK }, w);
+    el('circle', { cx: 3, cy: 0, r: 1.7, fill: INK }, w);
+  } else if (kind === 'shower') { // delivering: dropping onto master
+    el('path', { d: 'M-4 -1 L4 -1 L0 6 Z', fill: 'none', stroke: INK, 'stroke-width': 1.1 }, w);
+    el('circle', { cx: 0, cy: -4.5, r: 1.6, fill: INK }, w);
+  } else if (kind === 'thunder') { // needs a human
+    el('path', { d: 'M-4 -6 L-4 6 M-4 -6 L4 -6 L0.5 0.5 L4 0.5 L1 6.5', fill: 'none', stroke: RED, 'stroke-width': 1.6, 'stroke-linejoin': 'miter' }, w);
+    el('path', { d: 'M1 6.5 L-0.8 3.6 L2.9 4.4 Z', fill: RED }, w);
+  } else if (kind === 'fog') { // waiting / saturated
+    for (let i = -1; i <= 1; i++) el('line', { x1: -5, y1: i * 3, x2: 5, y2: i * 3, stroke: INK, 'stroke-width': 1.1 }, w);
+  } else if (kind === 'hold') { // operator hold
+    el('line', { x1: -1.6, y1: -5, x2: -1.6, y2: 5, stroke: INK, 'stroke-width': 1.5 }, w);
+    el('line', { x1: 1.6, y1: -5, x2: 1.6, y2: 5, stroke: INK, 'stroke-width': 1.5 }, w);
+  }
+  return w;
+}
+function wxOf(c) {
+  if (c.held) return 'hold';
+  return { running: 'rain', delivering: 'shower', needs_human: 'thunder', waiting: 'fog' }[c.status] || null;
+}
+
+/* Tendency: the barograph of the chunk's walk — node level over its last visits. */
+function drawTrace(g, trace, x, y, w, h, ink, sw) {
+  if (!trace || trace.length < 2) return;
+  const t = trace.slice(-8), n = t.length;
+  const pts = t.map((v, i) => [x + (i / (n - 1)) * w, y + h - (v / 7) * h]);
+  el('polyline', { points: pts.map(p => p.map(q => q.toFixed(1)).join(',')).join(' '), fill: 'none', stroke: ink, 'stroke-width': sw || 1.1, 'stroke-linejoin': 'round' }, g);
+  for (let i = 1; i < n; i++) if (t[i] < t[i - 1]) {
+    el('circle', { cx: pts[i][0], cy: pts[i][1], r: 1.3, fill: RED }, g);
+  }
+}
+function bounces(trace) {
+  let b = 0;
+  if (trace) for (let i = 1; i < trace.length; i++) if (trace[i] < trace[i - 1]) b++;
+  return b;
+}
+function money(v) {
+  if (v >= 10) return Math.round(v).toString();
+  if (v >= 1) return v.toFixed(1);
+  return v.toFixed(2).replace(/^0/, '');
+}
+function ageStr(min) {
+  if (min < 1) return Math.round(min * 60) + '"';
+  if (min < 60) return Math.floor(min) + "'";
+  return Math.floor(min / 60) + 'h';
+}
+function refShort(c) {
+  const r = c.refs[0] || '';
+  const s = r.startsWith('blizzard#') ? '#' + r.slice(9) : r;
+  const extra = c.refs.length - 1 + (c.more || 0);
+  return extra > 0 ? s + '+' + extra : s;
+}
+
+/* One station plot, drawn at the origin of g. Positions are fixed:
+     cost   UL │ UR call sign
+     wx  ◯ tendency
+     age    LL │ LR bounces
+           work ref                               */
+function drawStation(g, c, opt) {
+  opt = opt || {};
+  const s = opt.scale || 1;
+  const big = (c.status !== 'ready' && c.status !== 'backlog' && c.status !== 'done') || opt.full;
+  const P = el('g', { class: 'plot', transform: s !== 1 ? `scale(${s})` : null }, g);
+  const font = 'font-family:var(--plot);';
+  if (c.status === 'done') {
+    const old = !/^\d\d:\d\d$/.test(c.done || '');
+    el('circle', { r: 3.2, fill: old ? GREY : INK }, P);
+    txt(P, 5, -3, c.id, { style: font + `font-size:8.5px;fill:${old ? GREY : '#4b473e'}` });
+    return P;
+  }
+  if (c.status === 'backlog') {
+    el('rect', { x: -5, y: -5, width: 10, height: 10, fill: PAPER, stroke: INK, 'stroke-width': 1.3 }, P);
+  } else {
+    if (c.status === 'needs_human') el('circle', { r: 6.4, fill: 'none', stroke: RED, 'stroke-width': 2.2 }, P);
+    const okg = el('g', {}, P);
+    drawOktas(okg, okta(c), c.status === 'ready' ? 4.6 : 6, INK);
+  }
+  const R = c.status === 'ready' || c.status === 'backlog' ? 5 : 6;
+  if (big && c.runner) drawBarb(P, RUNNER_BEARING[c.runner] || 0, c.cost, R, 27, INK);
+  if (big && c.cost != null) txt(P, -9, -5, money(c.cost), { 'text-anchor': 'end', style: font + `font-size:11px;font-weight:600;${c.est ? 'font-style:italic;' : ''}fill:${INK}` });
+  txt(P, R + 3, big ? -5 : -3, c.id, { style: font + `font-size:${big ? 11 : 10}px;font-weight:${big ? 700 : 400};fill:${INK};letter-spacing:.2px` });
+  const wx = wxOf(c);
+  if (wx) drawWx(P, wx, -15, 0.5);
+  if (big) {
+    drawTrace(P, c.trace, R + 3, -2, 18, 8, INK);
+    txt(P, -9, 14, ageStr(c.age), { 'text-anchor': 'end', class: 'age', style: font + 'font-size:10px;fill:#4b473e' });
+    const b = bounces(c.trace);
+    if (b) txt(P, R + 3, 15, b.toString(), { style: font + `font-size:10.5px;font-weight:700;fill:${RED}` });
+  }
+  txt(P, 0, big ? 26 : 13, refShort(c), { 'text-anchor': 'middle', style: font + `font-size:${big ? 9.5 : 8.5}px;fill:${GREY}` });
+  return P;
+}
+
+/* Fronts: the line from a blocker to the chunk it holds.
+   Kind follows the blocker: running → warm (red, semicircles), ready → cold
+   (blue, triangles), stuck on a human → stationary (both, alternating).
+   Pips sit on the left as you walk from blocker to held. */
+function frontKind(blocker) {
+  if (!blocker) return null;
+  if (blocker.status === 'needs_human' || blocker.status === 'waiting') return 'stationary';
+  if (blocker.status === 'running' || blocker.status === 'delivering') return 'warm';
+  if (blocker.status === 'done') return null;
+  return 'cold';
+}
+function frontPath(a, b, bend) {
+  const mx = (a.x + b.x) / 2, my = (a.y + b.y) / 2, dx = b.x - a.x, dy = b.y - a.y;
+  const k = bend == null ? 0.18 : bend;
+  return `M${a.x} ${a.y} Q${mx - dy * k} ${my + dx * k} ${b.x} ${b.y}`;
+}
+function drawFront(g, a, b, kind, opt) {
+  opt = opt || {};
+  const pencil = opt.pencil, sz = opt.size || 4.2, gap = opt.gap || 17;
+  const fg = el('g', { class: 'front ' + kind + (pencil ? ' pencil' : '') }, g);
+  const d = frontPath(a, b, opt.bend);
+  const probe = el('path', { d, fill: 'none', stroke: 'none' }, fg);
+  const L = probe.getTotalLength();
+  const trim0 = opt.trim0 == null ? 9 : opt.trim0, trim1 = opt.trim1 == null ? 9 : opt.trim1;
+  if (L < trim0 + trim1 + 6) return fg;
+  const col = pencil ? PENCIL : (kind === 'warm' ? RED : kind === 'cold' ? BLUE : kind === 'stationary' ? RED : '#6a3d8f');
+  const W = opt.width || 1.5;
+  const pts = [];
+  for (let s = trim0; s <= L - trim1; s += 2) pts.push(probe.getPointAtLength(s));
+  if (kind === 'stationary' && !pencil) {
+    const seg = gap;
+    for (let s = trim0, i = 0; s < L - trim1; s += seg, i++) {
+      const sub = [];
+      for (let t = s; t <= Math.min(s + seg, L - trim1); t += 2) sub.push(probe.getPointAtLength(t));
+      el('polyline', { points: sub.map(p => `${p.x.toFixed(1)},${p.y.toFixed(1)}`).join(' '), fill: 'none', stroke: i % 2 ? BLUE : RED, 'stroke-width': W }, fg);
+    }
+  } else {
+    el('polyline', { points: pts.map(p => `${p.x.toFixed(1)},${p.y.toFixed(1)}`).join(' '), fill: 'none', stroke: col, 'stroke-width': W, 'stroke-dasharray': pencil ? '3 2' : null }, fg);
+  }
+  el('circle', { cx: pts[0].x, cy: pts[0].y, r: W * 1.3, fill: col }, fg);
+  for (let s = Math.max(trim0 + gap * 0.6, (opt.pipFrom || 0) * L), i = 0; s < L - trim1 - 4; s += gap, i++) {
+    const p = probe.getPointAtLength(s), q = probe.getPointAtLength(Math.min(L, s + 1));
+    let tx = q.x - p.x, ty = q.y - p.y; const m = Math.hypot(tx, ty) || 1; tx /= m; ty /= m;
+    const nx = ty, ny = -tx; // left of travel
+    let shape = kind === 'warm' ? 'semi' : kind === 'cold' ? 'tri' : (i % 2 ? 'tri' : 'semi');
+    let side = 1, c = col;
+    if (kind === 'stationary' && !pencil) { c = shape === 'tri' ? BLUE : RED; side = shape === 'tri' ? -1 : 1; }
+    const bx = p.x, by = p.y;
+    if (shape === 'tri') {
+      const a1 = [bx - tx * sz, by - ty * sz], a2 = [bx + tx * sz, by + ty * sz], tip = [bx + nx * sz * 1.5 * side, by + ny * sz * 1.5 * side];
+      el('path', { d: `M${a1} L${tip} L${a2} Z`, fill: c }, fg);
+    } else {
+      const a1 = [bx - tx * sz, by - ty * sz], a2 = [bx + tx * sz, by + ty * sz];
+      const sweep = side > 0 ? 0 : 1;
+      el('path', { d: `M${a1} A${sz} ${sz} 0 0 ${sweep} ${a2} Z`, fill: c }, fg);
+    }
+  }
+  if (opt.label) {
+    const p = probe.getPointAtLength(L * 0.5);
+    txt(fg, p.x + 4, p.y - 5, opt.label, { style: `font-family:var(--plot);font-size:9px;fill:${col}` });
+  }
+  return fg;
+}
+
+/* Coastlines: a region's landmass is the metaball of its stations, cut
+   by an SVG filter so the shore stays smooth at any count. */
+function landFilter(defs, id, blur) {
+  const f = el('filter', { id, x: '-30%', y: '-30%', width: '160%', height: '160%', 'color-interpolation-filters': 'sRGB' }, defs);
+  el('feGaussianBlur', { in: 'SourceAlpha', stdDeviation: blur || 13, result: 'b' }, f);
+  const ct = el('feComponentTransfer', { in: 'b', result: 'm' }, f);
+  el('feFuncA', { type: 'linear', slope: 28, intercept: -9 }, ct);
+  el('feFlood', { 'flood-color': LAND, result: 'lc' }, f);
+  el('feComposite', { in: 'lc', in2: 'm', operator: 'in', result: 'land' }, f);
+  el('feMorphology', { in: 'm', operator: 'dilate', radius: 1.1, result: 'd1' }, f);
+  el('feComposite', { in: 'd1', in2: 'm', operator: 'out', result: 'r1' }, f);
+  el('feFlood', { 'flood-color': COAST, result: 'cc' }, f);
+  el('feComposite', { in: 'cc', in2: 'r1', operator: 'in', result: 'coast' }, f);
+  const rings = [];
+  [5, 10, 16].forEach((rad, i) => {
+    el('feMorphology', { in: 'm', operator: 'dilate', radius: rad, result: 'wa' + i }, f);
+    el('feMorphology', { in: 'm', operator: 'dilate', radius: rad - 0.7, result: 'wb' + i }, f);
+    el('feComposite', { in: 'wa' + i, in2: 'wb' + i, operator: 'out', result: 'wr' + i }, f);
+    el('feFlood', { 'flood-color': WATER, 'flood-opacity': [0.55, 0.35, 0.18][i], result: 'wc' + i }, f);
+    el('feComposite', { in: 'wc' + i, in2: 'wr' + i, operator: 'in', result: 'w' + i }, f);
+    rings.push('w' + i);
+  });
+  const m = el('feMerge', {}, f);
+  rings.concat(['land', 'coast']).forEach(r => el('feMergeNode', { in: r }, m));
+}
+function drawLand(g, pts, filterId, rad) {
+  const lg = el('g', { filter: `url(#${filterId})` }, g);
+  pts.forEach(p => el('circle', { cx: p.x, cy: p.y, r: p.r || rad || 30, fill: '#000' }, lg));
+  return lg;
+}
+
+function stipple(defs, id, color, gap, r) {
+  const p = el('pattern', { id, width: gap, height: gap, patternUnits: 'userSpaceOnUse', patternTransform: 'rotate(30)' }, defs);
+  el('circle', { cx: gap / 2, cy: gap / 2, r, fill: color }, p);
+}
+function hatch(defs, id, color, gap, w) {
+  const p = el('pattern', { id, width: gap, height: gap, patternUnits: 'userSpaceOnUse', patternTransform: 'rotate(45)' }, defs);
+  el('line', { x1: 0, y1: 0, x2: 0, y2: gap, stroke: color, 'stroke-width': w }, p);
+}
+
+/* Isopleths of spend: a marching-squares contour of a cost field. */
+function contourSegments(f, x0, y0, x1, y1, step, level) {
+  const nx = Math.ceil((x1 - x0) / step), ny = Math.ceil((y1 - y0) / step);
+  const v = [];
+  for (let j = 0; j <= ny; j++) { v[j] = []; for (let i = 0; i <= nx; i++) v[j][i] = f(x0 + i * step, y0 + j * step); }
+  const segs = [];
+  const lerp = (a, b, va, vb) => a + (b - a) * ((level - va) / (vb - va));
+  for (let j = 0; j < ny; j++) for (let i = 0; i < nx; i++) {
+    const a = v[j][i], b = v[j][i + 1], c = v[j + 1][i + 1], d = v[j + 1][i];
+    const X = x0 + i * step, Y = y0 + j * step;
+    const idx = (a > level ? 8 : 0) | (b > level ? 4 : 0) | (c > level ? 2 : 0) | (d > level ? 1 : 0);
+    if (idx === 0 || idx === 15) continue;
+    const top = [lerp(X, X + step, a, b), Y], right = [X + step, lerp(Y, Y + step, b, c)],
+      bottom = [lerp(X, X + step, d, c), Y + step], left = [X, lerp(Y, Y + step, a, d)];
+    const T = {
+      1: [[left, bottom]], 2: [[bottom, right]], 3: [[left, right]], 4: [[top, right]],
+      5: [[left, top], [bottom, right]], 6: [[top, bottom]], 7: [[left, top]], 8: [[left, top]],
+      9: [[top, bottom]], 10: [[left, bottom], [top, right]], 11: [[top, right]], 12: [[left, right]],
+      13: [[bottom, right]], 14: [[left, bottom]]
+    }[idx];
+    T.forEach(s => segs.push(s));
+  }
+  return segs;
+}
+
+/* Pencil: the operator's own writing on the chart. It stays graphite until
+   the hub confirms, then inks. */
+function pencilNote(g, x, y, s, opt) {
+  opt = opt || {};
+  const t = txt(g, x, y, s, { class: 'pencil-note', style: `font-family:var(--hand);font-style:italic;font-size:${opt.size || 12}px;fill:${PENCIL}` });
+  return t;
+}
+function pencilRing(g, r, cls) {
+  let d = '';
+  const n = 26, j = [];
+  for (let i = 0; i <= n + 3; i++) {
+    const a = (i / n) * Math.PI * 2 - 0.4, rr = r + Math.sin(i * 2.3) * 1.2 + (i > n ? 2.5 : 0);
+    d += (i ? 'L' : 'M') + (Math.cos(a) * rr).toFixed(1) + ' ' + (Math.sin(a) * rr).toFixed(1);
+  }
+  return el('path', { d, fill: 'none', stroke: INK, 'stroke-width': 1.2, class: cls || 'ring', 'stroke-linejoin': 'round' }, g);
+}
+
+/* The shipping-forecast grammar: a station read aloud. */
+const WORDS = ['nought', 'one', 'two', 'three', 'four', 'five', 'six', 'seven', 'eight', 'nine', 'ten'];
+function sayNum(n) { return n <= 10 ? WORDS[n] : String(n); }
+function decode(c, byId) {
+  const parts = [];
+  const st = {
+    running: 'precipitating at ' + c.node, delivering: 'showers, landing at deliver',
+    needs_human: 'thunder at ' + c.node + ', wants a human', ready: c.blocker ? 'fair, held' : 'fair, claimable',
+    backlog: 'unplotted, backlog', done: 'settled', waiting: 'fog, waiting'
+  }[c.status];
+  parts.push(st);
+  if (c.status !== 'ready' && c.status !== 'backlog' && c.status !== 'done') parts.push(sayNum(okta(c)) + ' eighths');
+  if (c.cost) parts.push((c.est ? 'about ' : '') + '$' + c.cost.toFixed(2));
+  const b = bounces(c.trace);
+  if (b) parts.push('bounced ' + sayNum(b));
+  if (c.attempts) parts.push(c.attempts + ' attempts');
+  if (c.blocker && byId[c.blocker]) parts.push('behind ' + c.blocker + (c.blockN > 1 ? ' and ' + (c.blockN - 1) + ' more' : ''));
+  if (c.runner) parts.push('on xps/' + c.runner);
+  return c.id + ', ' + parts.join('; ') + '.';
+}
+
+/* Replays a key script from ?keys= so a static render can show a state the
+   keyboard reached: "g6J~t" types g,6,J then waits, then t. */
+function replayKeys() {
+  const ks = new URLSearchParams(location.search).get('keys');
+  if (!ks) return;
+  let t = 300;
+  for (const ch of ks) {
+    if (ch === '~') { t += 1800; continue; }
+    const key = { '<': 'ArrowLeft', '>': 'ArrowRight', '^': 'ArrowUp', '_': 'ArrowDown', '!': 'Enter', '|': 'Tab' }[ch] || ch;
+    setTimeout(() => document.dispatchEvent(new KeyboardEvent('keydown', { key, shiftKey: key.length === 1 && key !== key.toLowerCase() })), t);
+    t += 120;
+  }
+}
+
+/* The one-page primer: every mark the chart uses, drawn by the same code. */
+function buildLegend(root) {
+  root.innerHTML = '';
+  const css = document.createElement('style');
+  css.textContent = `
+  .lg{columns:3;column-gap:34px;font-family:var(--plot);font-size:12.5px;line-height:1.35;color:#1c1b18}
+  .lg h1{column-span:all;font-family:var(--serif);font-weight:400;font-size:26px;margin:0 0 2px}
+  .lg .sub{column-span:all;font-family:var(--serif);font-style:italic;color:#6b6556;margin-bottom:14px;font-size:14px}
+  .lg section{break-inside:avoid;margin:0 0 14px;border-top:1.5px solid #1c1b18;padding-top:4px}
+  .lg h3{font-family:var(--serif);font-weight:400;font-style:italic;font-size:15px;margin:0 0 4px}
+  .lg table{border-collapse:collapse;width:100%}
+  .lg td{padding:1px 4px;vertical-align:middle;border-bottom:1px dotted #cfc6ae}
+  .lg td:first-child{width:56px;text-align:center}
+  .lg p{margin:3px 0}
+  .lg kbd{font-family:var(--plot);font-size:11px;border:1px solid #1c1b18;border-bottom-width:2px;padding:0 3px;background:#fbf9f3}
+  .lg .k td:first-child{width:auto;text-align:left;white-space:nowrap}
+  `;
+  root.appendChild(css);
+  const lg = document.createElement('div'); lg.className = 'lg'; root.appendChild(lg);
+  const H = (h) => { const e = document.createElement('h1'); e.innerHTML = h; lg.appendChild(e); };
+  const sec = (title) => { const s = document.createElement('section'); s.innerHTML = `<h3>${title}</h3>`; lg.appendChild(s); return s; };
+  const mini = (w, h, vb, fn) => { const s = document.createElementNS(NS, 'svg'); s.setAttribute('width', w); s.setAttribute('height', h); s.setAttribute('viewBox', vb); fn(s); return s; };
+  const rows = (s, list) => {
+    const t = document.createElement('table');
+    list.forEach(([draw, text]) => { const tr = t.insertRow(); const a = tr.insertCell(); a.appendChild(draw); tr.insertCell().innerHTML = text; });
+    s.appendChild(t);
+  };
+  H('Synop <span style="font-size:15px;font-style:italic;color:#6b6556">— reading the fleet as a weather chart</span>');
+  const sub = document.createElement('div'); sub.className = 'sub';
+  sub.textContent = 'Every chunk is a station. Every station is plotted the same way, in fixed positions, so the eye learns where to look instead of what to read. Learn this page once.';
+  lg.appendChild(sub);
+
+  const A = sec('1 · The station plot');
+  const ex = { id: '6J9H', status: 'needs_human', node: 'deliver', cost: 8.2, est: false, age: 20, trace: [1, 2, 3, 2, 3, 5, 6, 5, 6, 5, 6, 5, 6, 5, 6, 5, 6], runner: 'r-claude', refs: ['blizzard#1365'], more: 0 };
+  A.appendChild(mini(440, 170, '-200 -82 440 170', s => {
+    drawStation(s, ex, { scale: 2.4 });
+    const lab = (x, y, t, a) => txt(s, x, y, t, { 'text-anchor': a || 'start', style: 'font-family:var(--serif);font-style:italic;font-size:11.5px;fill:#6b6556' });
+    lab(-62, -24, 'cost, dollars', 'end'); lab(-62, -11, 'italic = estimate', 'end');
+    lab(108, -20, 'call sign'); lab(108, 6, 'barograph');
+    lab(-62, 12, 'state', 'end'); lab(-62, 38, 'minutes in node', 'end');
+    lab(108, 38, 'bounces'); lab(24, -70, 'shaft bearing = runner, feathers = $'); lab(40, 76, 'work item');
+    el('line', { x1: -60, y1: -15, x2: -50, y2: -15, stroke: '#b9b19d' }, s);
+  }));
+  const p = document.createElement('p'); p.innerHTML = 'Fair stations (ready) plot only circle, call sign and work item. Settled stations are a dot: black if settled today, grey if older. A square is a backlog item not yet in the network.'; A.appendChild(p);
+
+  const B = sec('2 · Circle — how far it has walked');
+  const ok = document.createElement('div'); ok.style.display = 'flex'; ok.style.gap = '4px';
+  ['ready', 'triage', 'build', 'review', 'mutation', 'pre-push', 'deliver', 'landing', 'done'].forEach((n, i) => {
+    const s = mini(38, 46, '-19 -12 38 46', s => { const g = el('g', {}, s); drawOktas(g, i, 7, INK); txt(s, 0, 21, n, { 'text-anchor': 'middle', style: 'font-family:var(--plot);font-size:8.5px' }); txt(s, 0, 31, i + '/8', { 'text-anchor': 'middle', style: 'font-family:var(--plot);font-size:8.5px;fill:#8c8676' }); });
+    ok.appendChild(s);
+  });
+  B.appendChild(ok);
+  const p2 = document.createElement('p'); p2.innerHTML = 'Eighths of the graph walked, drawn like cloud cover. A red ring round the circle: it wants you.'; B.appendChild(p2);
+
+  const C = sec('3 · State — the weather now');
+  rows(C, [
+    [mini(40, 22, '-20 -11 40 22', s => drawWx(s, 'rain', 0, 0, 1.4)), '<b>rain</b> — running; green stipple around it is the radar, wider as it costs more'],
+    [mini(40, 22, '-20 -11 40 22', s => drawWx(s, 'shower', 0, 0, 1.4)), '<b>shower</b> — landing; its pull request is going onto master'],
+    [mini(40, 24, '-20 -12 40 24', s => drawWx(s, 'thunder', 0, 0, 1.4)), '<b style="color:#c4122f">thunder</b> — needs a human: an ask, a gate, a bounce cap. Red hatching marks the cell'],
+    [mini(40, 22, '-20 -11 40 22', s => drawWx(s, 'fog', 0, 0, 1.4)), '<b>fog</b> — waiting; on the fleet chart, a saturated window'],
+    [mini(40, 22, '-20 -11 40 22', s => drawWx(s, 'hold', 0, 0, 1.4)), '<b>hold</b> — the operator paused it'],
+    [mini(40, 22, '-20 -11 40 22', s => { }), 'nothing — fair: ready, idle'],
+  ]);
+
+  const D = sec('4 · Barb — who runs it, what it cost');
+  const bb = document.createElement('div'); bb.style.display = 'flex'; bb.style.gap = '6px';
+  [[0.27, '$0.27'], [1, '$1'], [3.49, '$3.49'], [8.2, '$8.20'], [12, '$12'], [40.11, '$40.11']].forEach(([v, t]) => {
+    bb.appendChild(mini(46, 58, '-23 -40 46 58', s => { el('circle', { r: 4, fill: PAPER, stroke: INK }, s); drawBarb(s, 0, v, 4, 30, INK); txt(s, 0, 15, t, { 'text-anchor': 'middle', style: 'font-family:var(--plot);font-size:9.5px' }); }));
+  });
+  D.appendChild(bb);
+  const p3 = document.createElement('p'); p3.innerHTML = 'Half feather $1 · full feather $2 · pennant $10 · a dot under $1. The shaft\'s bearing names the runner: <b>r-claude</b> north-north-west, <b>r-chatgpt</b> north-north-east. No shaft: nobody holds it.'; D.appendChild(p3);
+
+  const E = sec('5 · Barograph — the shape of the walk');
+  rows(E, [
+    [mini(50, 22, '0 0 50 22', s => drawTrace(s, [1, 2, 3, 4, 5, 6], 4, 3, 42, 16, INK, 1.3)), 'clean climb'],
+    [mini(50, 22, '0 0 50 22', s => drawTrace(s, [1, 2, 3, 2, 3, 4], 4, 3, 42, 16, INK, 1.3)), 'one bounce (red dot), recovered'],
+    [mini(50, 22, '0 0 50 22', s => drawTrace(s, [5, 6, 5, 6, 5, 6, 5, 6], 4, 3, 42, 16, INK, 1.3)), 'saw-tooth: ping-pong between two nodes — look now'],
+    [mini(50, 22, '0 0 50 22', s => drawTrace(s, [3, 5, 6, 5, 6, 5, 2, 3], 4, 3, 42, 16, INK, 1.3)), 'cliff: thrown far back'],
+  ]);
+  const p4 = document.createElement('p'); p4.textContent = 'The last eight node visits, triage at the bottom, deliver at the top. The number below it counts every bounce.'; E.appendChild(p4);
+
+  const F = sec('6 · Fronts — what holds what');
+  rows(F, [
+    [mini(56, 20, '0 0 56 20', s => drawFront(s, { x: 2, y: 12 }, { x: 54, y: 12 }, 'warm', { bend: 0, trim0: 0, trim1: 0, size: 3.4, gap: 14 })), '<b style="color:#c4122f">warm</b> — the blocker is running; this will move soon'],
+    [mini(56, 20, '0 0 56 20', s => drawFront(s, { x: 2, y: 12 }, { x: 54, y: 12 }, 'cold', { bend: 0, trim0: 0, trim1: 0, size: 3.4, gap: 14 })), '<b style="color:#1d4f9c">cold</b> — the blocker is only ready; nothing moves until it is claimed'],
+    [mini(56, 20, '0 0 56 20', s => drawFront(s, { x: 2, y: 10 }, { x: 54, y: 10 }, 'stationary', { bend: 0, trim0: 0, trim1: 0, size: 3.4, gap: 14 })), '<b>stationary</b> — the blocker is stuck on a human; the whole chain behind it is frozen'],
+    [mini(56, 20, '0 0 56 20', s => drawFront(s, { x: 2, y: 12 }, { x: 54, y: 12 }, 'cold', { bend: 0, trim0: 0, trim1: 0, size: 3.4, gap: 14, pencil: true })), '<b style="color:#77736a">pencil</b> — a front you drew, not yet confirmed by the hub'],
+  ]);
+  const p5 = document.createElement('p'); p5.innerHTML = 'A front starts at the blocker (the dot) and runs to the chunk it holds; pips sit on the left as you walk it. A chunk held by several draws its first blocker; the plot slip names the rest.'; F.appendChild(p5);
+
+  const G = sec('7 · The ground');
+  const p6 = document.createElement('p'); p6.innerHTML = 'Each <b>land</b> is an epic, lettered and numbered; chunks with no epic are ships <b>at sea</b>. Settled lands drift to the <b>west</b> margin, what is still to come lies <b>east</b>; inside a land, blockers sit west of what they hold. Places do not move while you are away — you learn the map. Brown <b>isopleths</b> ring where today\'s money went: $1, 2, 4, 8, 16 within reach.'; G.appendChild(p6);
+
+  const W = sec('8 · Writing on the chart');
+  const p7 = document.createElement('p'); p7.innerHTML = 'Everything you do is written in <span style="font-family:var(--hand);font-style:italic;color:#77736a">pencil</span> beside the station, initialled and timed, and inks when the hub confirms. What you asked for and what happened are never confused.'; W.appendChild(p7);
+  const kt = document.createElement('table'); kt.className = 'k';
+  [['<kbd>g</kbd> 6J', 'go to a call sign — two characters usually suffice'], ['<kbd>h j k l</kbd> / arrows', 'walk to the nearest station that way'], ['<kbd>n</kbd> <kbd>N</kbd>', 'next / previous storm'], ['<kbd>.</kbd> <kbd>,</kbd>', 'next / previous precipitation'], ['<kbd>[</kbd> <kbd>]</kbd>', 'walk a front up to its blocker / down to what it holds'], ['<kbd>1</kbd>–<kbd>9</kbd>', 'jump to a land by number'], ['<kbd>t</kbd>', 'take over a storm'], ['<kbd>q</kbd>', 'requeue'], ['<kbd>p</kbd>', 'hold / release'], ['<kbd>P</kbd>', 'promote a backlog square'], ['<kbd>d</kbd> … <kbd>⏎</kbd>', 'draw a front: from here, walk to the held one, commit (or shift-drag)'], ['<kbd>o</kbd>', 'open the pull request'], ['<kbd>u</kbd>', 'rub out the last pencil'], ['<kbd>=</kbd> <kbd>-</kbd> <kbd>0</kbd>', 'zoom in, out, whole chart'], ['<kbd>F</kbd>', 'upper-air chart (the fleet)']].forEach(([a, b]) => { const tr = kt.insertRow(); tr.insertCell().innerHTML = a; tr.insertCell().innerHTML = b; });
+  W.appendChild(kt);
+
+  const U = sec('9 · Upper air — the fleet');
+  const rp = { id: 'r-chatgpt', okta: 4, burn: 4.2, bearing: 20, T: 7, Td: 8, wx: 'fog', ver: '1002', ageS: 17, trace: [4, 4, 5, 5, 6, 6, 6, 6] };
+  U.appendChild(mini(440, 130, '-200 -66 440 130', s => {
+    drawRunnerPlot(s, rp, 1.6);
+    const lab = (x, y, t, a) => txt(s, x, y, t, { 'text-anchor': a || 'start', style: 'font-family:var(--serif);font-style:italic;font-size:11.5px;fill:#6b6556' });
+    lab(-50, -14, 'T  window elapsed %', 'end'); lab(-50, 32, 'Td  window spent %', 'end'); lab(-50, 8, 'state', 'end');
+    lab(76, -14, 'build'); lab(76, 8, 'busy, last hour'); lab(76, 32, 'last report'); lab(30, -54, 'barb: $ an hour, toward its subscription');
+  }));
+  const p8 = document.createElement('p'); p8.innerHTML = 'A runner plots like a station aloft. Circle: slots busy in eighths. Barb: burn in dollars an hour, bearing toward the subscription it spends. <b>T</b> is how much of the tightest window has elapsed, <b>Td</b> how much of it is spent. When spent meets elapsed the air is <b>saturated</b>: fog, and the runner declines work. The spread T−Td is your headroom.'; U.appendChild(p8);
+
+  const S = sec('10 · On the phone — the forecast');
+  const p9 = document.createElement('p'); p9.innerHTML = 'Away from the desk the chart is read aloud, in the fixed order of the lands, like a shipping forecast: <i>gale warnings</i> first (storms that want you), a one-sentence <i>general synopsis</i>, then each land: <i>“Strict. Thunder at QWYS. Rain, one. Fair ten, cold behind Policies. Settled three.”</i> A strip of tiny circles beside each land is every chunk in it, in order. Tap a land to see its chart.'; S.appendChild(p9);
+}
+
+/* Runner plot for the upper-air chart, shared so the legend draws the real thing. */
+function drawRunnerPlot(g, r, s) {
+  const P = el('g', { transform: `scale(${s || 1})` }, g);
+  const R = 9;
+  drawBarb(P, r.bearing, r.burn, R, 34, INK);
+  drawOktas(el('g', {}, P), r.okta, R, INK);
+  const f = 'font-family:var(--plot);';
+  txt(P, -13, -8, String(r.T), { 'text-anchor': 'end', style: f + 'font-size:12px;font-weight:700;fill:' + RED });
+  txt(P, -13, 19, String(r.Td), { 'text-anchor': 'end', style: f + 'font-size:12px;font-weight:700;fill:' + GREEN });
+  txt(P, 13, -8, r.ver, { style: f + 'font-size:11px;fill:#4b473e' });
+  drawTrace(P, r.trace, 13, -3, 20, 8, INK);
+  txt(P, 13, 19, r.ageS + 's', { style: f + 'font-size:11px;fill:#4b473e', class: 'rage' });
+  if (r.wx) drawWx(P, r.wx, -21, 1, 1.05);
+  return P;
+}
+
+/* Regions are the epics, lettered like seas and lands. West is settled,
+   east is still to come; inside a region blockers sit west of what they hold. */
+const REGIONS = [
+  { k: 'PLAYWRIGHT', name: 'Playwright', x: 52, y: 150, rows: 4, dcols: 2 },
+  { k: 'ACTIONS', name: 'Actions', x: 52, y: 330, rows: 2 },
+  { k: 'NOTES', name: 'Notes', x: 52, y: 452, rows: 2 },
+  { k: 'FLAGS', name: 'Flags', x: 52, y: 568, rows: 1 },
+  { k: 'LINES', name: 'Lines', x: 52, y: 654, rows: 1 },
+  { k: 'RELEASE', name: 'Release', x: 52, y: 740, rows: 1 },
+  { k: 'HUB', name: 'Hub shoals', x: 238, y: 150, rows: 3, cw: 84, ch: 66, dcols: 3 },
+  { k: 'FORGES', name: 'Forges', x: 610, y: 150, rows: 1, cw: 92 },
+  { k: 'FLOWS', name: 'Flows', x: 820, y: 296, rows: 1, cw: 74 },
+  { k: 'POLICIES', name: 'Policies', x: 770, y: 430, rows: 1, cw: 74 },
+  { k: 'STRICT', name: 'Strict', x: 252, y: 470, rows: 5, cw: 84, ch: 54, dcols: 1 },
+  { k: 'PW-HUBTIER', name: 'Hub-tier Playwright', x: 236, y: 770, rows: 4, cw: 80, ch: 52, dcols: 1 },
+  { k: 'SURVEY', name: 'Survey bank', x: 1010, y: 70, rows: 5, cw: 66, ch: 40, dcols: 1 },
+  { k: 'BREAK', name: 'Break', x: 1110, y: 640, rows: 1 },
+  { k: 'SEA', name: null, x: 0, y: 0, rows: 1 },
+];
+const SEA_POS = { WSCR: [700, 640], HBRY: [930, 640] };
+
+function layout() {
+  const byId = {}; CHUNKS.forEach(c => byId[c.id] = c);
+  REGIONS.forEach((R, ri) => {
+    R.n = ri + 1;
+    const mem = CHUNKS.filter(c => c.region === R.k);
+    if (R.k === 'SEA') { mem.forEach(c => { c.x = SEA_POS[c.id][0]; c.y = SEA_POS[c.id][1]; }); return; }
+    const done = mem.filter(c => c.status === 'done');
+    const live = mem.filter(c => c.status !== 'done');
+    const dcw = 50, dch = 24, drows = Math.max(R.rows * 2, 2);
+    const dcols = R.dcols || Math.ceil(done.length / drows);
+    done.forEach((c, i) => {
+      c.x = R.x + Math.floor(i / Math.ceil(done.length / dcols)) * dcw;
+      c.y = R.y + (i % Math.ceil(done.length / dcols)) * dch;
+    });
+    let x = R.x + (done.length ? dcols * dcw + 22 : 0);
+    const depth = c => {
+      const b = c.blocker && byId[c.blocker];
+      if (!b || b.region !== R.k || b.status === 'done') return 0;
+      return 1 + depth(b);
+    };
+    const cols = [];
+    live.forEach(c => { const d = depth(c); (cols[d] = cols[d] || []).push(c); });
+    const rank = c => ({ needs_human: 0, running: 1, delivering: 1, ready: 2, backlog: 3 }[c.status]);
+    const cw = R.cw || 72, ch = R.ch || 46;
+    cols.forEach(col => {
+      col.sort((a, b) => rank(a) - rank(b));
+      col.forEach((c, i) => {
+        const sub = Math.floor(i / R.rows), row = i % R.rows;
+        c.x = x + sub * cw + 14; c.y = R.y + row * ch + (row % 2 && R.rows > 1 ? 0 : 0);
+      });
+      x += Math.ceil(col.length / R.rows) * cw;
+    });
+    const xs = mem.map(c => c.x), ys = mem.map(c => c.y);
+    R.box = [Math.min(...xs), Math.min(...ys), Math.max(...xs), Math.max(...ys)];
+  });
+}
+
+function regionName(c) { const R = REGIONS.find(r => r.k === c.region); return R && R.name ? R.name : 'at sea'; }
+
+/* A region's coast: each station's own circle plus satellites fixed by its call sign. */
+function regionBlobs(mem) {
+  const blobs = [];
+  mem.forEach(c => {
+    const d = c.status === 'done';
+    blobs.push({ x: c.x + (d ? 8 : 4), y: c.y + (d ? -2 : 4), r: d ? 21 : 31 });
+    // satellites give each coast its own bays and headlands, fixed by call sign
+    let h = 0; for (const ch of c.id) h = (h * 31 + ch.charCodeAt(0)) >>> 0;
+    for (let i = 0; i < 3; i++) {
+      h = (h * 1103515245 + 12345) >>> 0; const a = (h % 628) / 100;
+      h = (h * 1103515245 + 12345) >>> 0; const dist = (d ? 14 : 24) + (h % 18);
+      h = (h * 1103515245 + 12345) >>> 0; const r = (d ? 8 : 11) + (h % 10);
+      blobs.push({ x: c.x + Math.cos(a) * dist, y: c.y + Math.sin(a) * dist, r });
+    }
+  });
+  return blobs;
+}
+
+buildLegend(document.getElementById('legend'));
+</script>
+</body>
+</html>

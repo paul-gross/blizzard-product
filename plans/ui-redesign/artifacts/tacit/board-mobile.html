@@ -1,0 +1,157 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=390, initial-scale=1">
+<title>tacit — do you need me?</title>
+<style>
+/* Two inks. Graphite is the fleet's hand; vermilion is the operator's. Nothing else is coloured. */
+:root{
+  --ground:#ebe9e2; --sheet:#f4f3ee; --rule:#cdc9be; --rule2:#dedad0;
+  --fleet:#1c1c1a; --fleet2:#5f5c55; --fleet3:#9a968c;
+  --you:#cf3a1c; --you-wash:#f6dfd6;
+  --sans:"Noto Sans",sans-serif; --serif:"Noto Serif",serif; --mono:"Noto Sans Mono",monospace;
+}
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
+html,body{width:390px;height:844px;overflow:hidden;background:var(--ground);color:var(--fleet);
+  font-family:var(--sans);font-stretch:87.5%;font-size:15px;line-height:1.38;-webkit-font-smoothing:antialiased}
+.id{font-family:var(--mono);font-size:14px;letter-spacing:-.02em}
+.ink{font-family:var(--serif);font-style:italic;color:var(--you)}
+.num{font-variant-numeric:tabular-nums}
+
+.top{padding:14px 18px 10px;border-bottom:1px solid var(--fleet)}
+.top .meta{display:flex;justify-content:space-between;font-size:12px;color:var(--fleet2)}
+.answer{font-size:30px;line-height:1.1;font-weight:600;margin-top:8px;letter-spacing:-.01em}
+.answer .ink{font-weight:400}
+.until{font-size:14.5px;color:var(--fleet2);margin-top:5px}
+.until b{color:var(--fleet);font-weight:600}
+
+.page{padding:14px 18px 0;position:relative}
+.count{display:flex;justify-content:space-between;font-size:12.5px;color:var(--fleet2);margin-bottom:6px}
+.count .dots i{display:inline-block;width:18px;height:3px;background:var(--fleet3);margin-left:3px;vertical-align:middle}
+.count .dots i.on{background:var(--you)}
+.blank .say{font-size:21px;line-height:1.3}
+.blank .say b{font-weight:600}
+.hole{display:inline-block;min-width:120px;border-bottom:2px solid var(--you);color:var(--you);font-family:var(--serif);font-style:italic;height:1.1em}
+.blank .t{font-size:13px;color:var(--fleet2);margin-top:6px}
+.blank .stake{font-size:13.5px;margin-top:8px;color:var(--fleet2)}
+.blank .stake b{color:var(--fleet);font-weight:600}
+.opts{margin-top:12px;border-top:1px solid var(--fleet)}
+.opt{display:flex;align-items:center;justify-content:space-between;min-height:50px;border-bottom:1px solid var(--rule);font-family:var(--serif);font-style:italic;font-size:18px;color:var(--you);cursor:pointer;padding:0 2px}
+.opt:active,.opt.picked{background:var(--you-wash)}
+.opt small{font-family:var(--sans);font-style:normal;font-size:12px;color:var(--fleet3)}
+.side{display:flex;gap:0;margin-top:0}
+.side span{flex:1;min-height:44px;display:flex;align-items:center;justify-content:center;font-size:13.5px;color:var(--fleet);border-bottom:1px solid var(--rule);border-right:1px solid var(--rule);cursor:pointer}
+.side span:last-child{border-right:0}
+.filled .say{opacity:.9}
+
+.lapse{margin-top:16px;border-top:1px solid var(--fleet);padding-top:8px}
+.lapse h3{font-size:13.5px;font-weight:600;display:flex;justify-content:space-between}
+.lapse h3 span{font-weight:400;color:var(--fleet3);font-size:12px}
+.m{position:relative;overflow:hidden;border-bottom:1px solid var(--rule2)}
+.m .under{position:absolute;inset:0;display:flex;align-items:center;justify-content:flex-end;padding-right:14px;background:var(--you-wash);font-family:var(--serif);font-style:italic;color:var(--you);font-size:15px}
+.m .over{position:relative;background:var(--ground);display:grid;grid-template-columns:62px 1fr;padding:8px 0;touch-action:pan-y;transition:transform .2s}
+.m .fz{font-size:12.5px;color:var(--fleet2)}
+.m .fz b{color:var(--fleet);font-weight:600;font-size:14px;display:block}
+.m .s{font-size:14px;line-height:1.3}
+.m .s b{font-weight:600}
+.m.objected .s{text-decoration:line-through;text-decoration-color:var(--you);text-decoration-thickness:2px}
+.m.auto .s{text-decoration:line-through;text-decoration-color:var(--you);text-decoration-thickness:2px;color:var(--fleet2)}
+.m .why{font-size:12px;color:var(--fleet3)}
+.m.objected .why,.m.auto .why{font-family:var(--serif);font-style:italic;color:var(--you)}
+
+.foot{position:absolute;left:0;right:0;bottom:0;border-top:1px solid var(--fleet);background:var(--ground);padding:9px 18px 12px;font-size:13px;color:var(--fleet2)}
+.foot b{color:var(--fleet);font-weight:600}
+.foot .row{display:flex;justify-content:space-between;align-items:baseline;margin-top:4px}
+.foot a{color:var(--fleet);text-decoration:none;border-bottom:1px solid var(--fleet)}
+.toast{position:absolute;left:18px;right:18px;bottom:76px;background:var(--fleet);color:var(--ground);padding:9px 12px;font-size:13.5px;opacity:0;transition:opacity .2s;pointer-events:none}
+.toast.on{opacity:1}
+.toast .ink{color:#ffb39f}
+</style>
+</head>
+<body>
+<div class="top">
+  <div class="meta"><span>tacit · blizzard</span><span><span class="num" id="clock">13:10</span> · last looked 06:58</span></div>
+  <div class="answer" id="answer"></div>
+  <div class="until" id="until"></div>
+</div>
+<div class="page" id="page"></div>
+<div class="toast" id="toast"></div>
+<div class="foot">
+  <div>While you were away: <b>8 landed</b> for <b>$41.05</b>; 2 reaps recovered on their own; your orders objected <b>24</b> times.</div>
+  <div class="row"><span>drawn <b class="num" id="spent">$114.44</b> of <span class="ink">$150</span></span><a href="fleet-mobile.html">purse &amp; brakes</a></div>
+</div>
+<script>
+let now = 13*3600+10*60;
+const hm = s => [Math.floor(s/3600)%24,Math.floor(s%3600/60)].map(v=>String(v).padStart(2,'0')).join(':');
+const blanks = [
+  {id:"6J9H", holds:23, say:`<b class="id">C-6J9H</b> could not land <b>PR #1498</b> after 25 attempts. Shall I <span class="hole"></span>?`,
+   t:"blizzard#1365 [FORGES] Report every record the forge migration would refuse",
+   stake:`Waiting since 12:48 · $8.20 spent · holds <b>23 chunks</b> behind it.`,
+   opts:["land it by hand","send it back to build","park it, free the slot"], cons:["frees 23 at once","~$3 more, ~40 min","23 stay idle"]},
+  {id:"QWYS", holds:0, say:`<b class="id">C-QWYS</b> stopped at resolve on <b>PR #1501</b>. Shall I <span class="hole"></span>?`,
+   t:"blizzard#1449 [STRICT] Type the hub auth repositories",
+   stake:`Waiting since 12:52 · $4.03 spent · holds <b>nothing</b>. It can wait for the desk.`,
+   opts:["rebase and retry the land","send it back to build","hand the session to me"], cons:["~$0.40","~$2 more","at your desk"]},
+];
+const motions = [
+  {id:"PTP2", fuse:100, s:`<b class="id">C-PTP2</b> lands PR #1492`, why:"pre-push clean · ~$3.49"},
+  {id:"27A6", fuse:190, s:`<b class="id">C-27A6</b> lands PR #121 into blizzard-mock`, why:"pre-push clean · ~$1.47"},
+  {id:"WSCR", fuse:null, trig:"on pass", s:`<b class="id">C-WSCR</b> tries PR #1500 a third time`, why:"failed twice the same way — swipe to object"},
+  {id:"ZG7T", fuse:370, s:`<b class="id">C-ZG7T</b> opens a PR for hub:626, hub:627`, why:"pre-push running · $0.70"},
+  {id:"1DTX", fuse:540, s:`<b class="id">r-claude</b> takes C-1DTX (hub:629)`, why:"next unblocked in the queue"},
+  {id:"DF68", fuse:5460, auto:2, s:`<b class="id">r-chatgpt</b> would take C-DF68, C-0ACF`, why:"objected by your §2 until 14:41"},
+];
+let cur = 0, spent = 114.44, dragging = false;
+
+function render(){
+  const open = blanks.filter(b=>!b.done);
+  const a = document.getElementById('answer'), u = document.getElementById('until');
+  if(open.length){
+    a.innerHTML = open.length===2 ? `Yes, twice.` : `Yes, once more.`;
+    u.innerHTML = open.some(b=>b.holds) ? `Answer ${open.length===2?'these':'this'} and nothing needs you before <b>17:40</b>.` : `This one holds nothing. <b>Leave it for the desk</b> and put the phone away.`;
+  } else { a.innerHTML = `No. <span class="ink">Put it away.</span>`; u.innerHTML = `Nothing needs you before <b>17:40</b>, when your allowance runs dry.`; }
+
+  let h = '';
+  const b = open[0];
+  if(b){
+    const i = blanks.indexOf(b);
+    h += `<div class="count"><span>${open.length} blank${open.length>1?'s':''}, heaviest first</span><span class="dots">${blanks.map(x=>`<i class="${x.done?'':'on'}"></i>`).join('')}</span></div>
+      <div class="blank ${b.fill?'filled':''}"><div class="say">${b.say.replace('<span class="hole"></span>',`<span class="hole">${b.fill||''}</span>`)}</div>
+      <div class="t">${b.t}</div><div class="stake">${b.stake}</div>
+      <div class="opts">${b.opts.map((o,j)=>`<div class="opt ${b.fill===o?'picked':''}" data-b="${i}" data-o="${j}">${o}<small>${b.cons[j]}</small></div>`).join('')}</div>
+      <div class="side"><span data-act="desk" data-b="${i}">leave for the desk</span><span data-act="take" data-b="${i}">send takeover to my desk</span></div></div>`;
+  }
+  const soon = motions.filter(m=>!m.gone);
+  h += `<div class="lapse"><h3>Lapsing without you <span>swipe left to object</span></h3>${soon.slice(0, b?4:7).map(m=>`
+    <div class="m ${m.auto?'auto':''} ${m.obj?'objected':''}" data-m="${m.id}"><div class="under">object</div>
+    <div class="over"><div class="fz">${m.fuse==null?`<b>${m.trig}</b>`:`<b class="num">${Math.floor(m.fuse/60)}:${String(m.fuse%60).padStart(2,'0')}</b>${hm(now+m.fuse)}`}</div>
+    <div><div class="s">${m.s}</div><div class="why">${m.obj?`objected ${hm(now)} — it waits`:m.why}</div></div></div></div>`).join('')}
+    ${soon.length>(b?4:7)?`<div class="m"><div class="over" style="grid-template-columns:1fr"><div class="why">+ ${soon.length-(b?4:7)} more, and 44 beyond the hour</div></div></div>`:''}</div>`;
+  document.getElementById('page').innerHTML = h;
+
+  document.querySelectorAll('.opt').forEach(e=>e.onclick=()=>{ const bl=blanks[+e.dataset.b]; bl.fill=bl.opts[+e.dataset.o]; render(); toast(`<span class="ink">C-${bl.id}: ${bl.fill}</span>`); setTimeout(()=>{bl.done=true; render();},900); });
+  document.querySelectorAll('.side span').forEach(e=>e.onclick=()=>{ const bl=blanks[+e.dataset.b];
+    if(e.dataset.act==='desk'){ bl.done=true; toast(`C-${bl.id} waits on your desk docket, held`); }
+    else toast(`<span class="ink">resume command for C-${bl.id} sent to your desk</span>`); render(); });
+  document.querySelectorAll('.m[data-m]').forEach(swipe);
+}
+function swipe(el){
+  const over = el.querySelector('.over'); let x0=null, dx=0;
+  over.addEventListener('pointerdown',e=>{dragging=true; x0=e.clientX; dx=0; over.style.transition='none'; over.setPointerCapture(e.pointerId);});
+  over.addEventListener('pointermove',e=>{ if(x0==null) return; dx=Math.min(0,e.clientX-x0); over.style.transform=`translateX(${dx}px)`; });
+  over.addEventListener('pointerup',()=>{ dragging=false; over.style.transition=''; over.style.transform=''; const m=motions.find(m=>m.id===el.dataset.m);
+    if(dx<-80 && m && !m.auto){ m.obj=!m.obj; toast(m.obj?`<span class="ink">objected: C-${m.id} waits</span>`:`objection lifted`); render(); } x0=null; });
+}
+function toast(s){ const t=document.getElementById('toast'); t.innerHTML=s; t.classList.add('on'); clearTimeout(toast.h); toast.h=setTimeout(()=>t.classList.remove('on'),2600); }
+setInterval(()=>{ now++; document.getElementById('clock').textContent=hm(now);
+  motions.forEach(m=>{ if(m.gone||m.fuse==null||m.obj||m.auto) return; m.fuse--; if(m.fuse<=0){ m.gone=true; toast(`C-${m.id} went ahead`);} });
+  if(now%9===0){ spent+=0.03; document.getElementById('spent').textContent='$'+spent.toFixed(2); }
+  if(!dragging) render(); },1000);
+render();
+// #demo=fill | #demo=object : show a mid-interaction state for screenshots
+if(location.hash==='#demo=object'){ motions[2].obj=true; render(); }
+if(location.hash==='#demo=fill'){ blanks[0].done=true; render(); }
+</script>
+</body>
+</html>

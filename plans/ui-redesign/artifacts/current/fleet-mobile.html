@@ -1,0 +1,420 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>blizzard · fleet</title>
+<style>
+:root {
+  --ground: #12110e; --ground-2: #181612; --ground-3: #201d18; --now: #1b1914;
+  --rule: #2a2721; --rule-2: #3b372f;
+  --ink: #ede7da; --ink-2: #aaa293; --ink-3: #6f695e; --ink-4: #47423a;
+  --live: #c6f03c; --alarm: #ff5a35; --alarm-dim: #7a2a18; --loop: #ee82d4; --loop-dim: #6a3360;
+  --sans: "Noto Sans", sans-serif; --mono: "Noto Sans Mono", monospace; --serif: "Noto Serif", serif;
+}
+* { box-sizing: border-box; }
+html, body { margin: 0; background: var(--ground); color: var(--ink); }
+body { font: 400 13px/1.35 var(--sans); font-stretch: 87.5%; -webkit-font-smoothing: antialiased; overflow: hidden; }
+.mono { font-family: var(--mono); font-variant-numeric: tabular-nums; font-stretch: 87.5%; }
+.serif { font-family: var(--serif); font-style: italic; font-stretch: 100%; }
+.k { display: inline-block; min-width: 15px; padding: 0 3px; border: 1px solid var(--rule-2); border-bottom-width: 2px; border-radius: 3px; font: 500 10px/13px var(--mono); color: var(--ink-2); text-align: center; }
+.alarm { color: var(--alarm); } .live { color: var(--live); } .loop { color: var(--loop); } .dim { color: var(--ink-3); } .mid { color: var(--ink-2); }
+button { font: inherit; color: inherit; background: none; border: 0; padding: 0; cursor: pointer; }
+@keyframes flash { 0% { box-shadow: 0 0 0 0 rgba(237,231,218,.55); background-color: rgba(237,231,218,.14); } 100% { box-shadow: 0 0 0 8px rgba(237,231,218,0); } }
+@keyframes alarmring { 0% { box-shadow: 0 0 0 0 rgba(255,90,53,.7); } 100% { box-shadow: 0 0 0 10px rgba(255,90,53,0); } }
+@keyframes svgflash { 0% { stroke-opacity: 1; stroke-width: 9; } 100% { stroke-opacity: 0; stroke-width: 1; } }
+.toast { position: fixed; left: 50%; bottom: 22px; transform: translateX(-50%); background: var(--ink); color: var(--ground); padding: 7px 12px; border-radius: 4px; font: 500 12px var(--mono); opacity: 0; transition: opacity .15s; pointer-events: none; z-index: 50; }
+.toast.on { opacity: 1; }
+
+body { width: 390px; height: 844px; position: relative; font-size: 14px; }
+.top { height: 46px; display: flex; align-items: center; padding: 0 16px; gap: 10px; border-bottom: 1px solid var(--rule); }
+.top .mark { font: italic 500 21px var(--serif); }
+.top .live { margin-left: auto; font: 12px var(--mono); color: var(--ink-3); display: flex; gap: 6px; align-items: center; }
+.top .live i { width: 7px; height: 7px; background: var(--live); }
+.top .host { font-size: 12.5px; color: var(--ink-3); } .top .host b { color: var(--ink-2); font-weight: 500; }
+#scroll { position: absolute; top: 46px; bottom: 58px; left: 0; right: 0; overflow-y: auto; }
+.verdict { padding: 14px 16px 6px; }
+.verdict .say { font: italic 400 27px/1.12 var(--serif); }
+.verdict .sub { margin-top: 7px; color: var(--ink-2); font-size: 13.5px; line-height: 1.4; } .verdict .sub .alarm { color: var(--alarm); }
+.sech { display: flex; align-items: baseline; gap: 8px; padding: 16px 16px 6px; font-weight: 600; font-size: 14px; }
+.sech .r { margin-left: auto; font-weight: 400; font-size: 12px; color: var(--ink-3); }
+.win { padding: 7px 16px 7px; border-top: 1px solid var(--rule); }
+.win .r1 { display: flex; align-items: baseline; gap: 8px; font-size: 14px; }
+.win .r1 .who { color: var(--ink-3); font-size: 12px; } .win .r1 .v { margin-left: auto; font: 12.5px var(--mono); color: var(--ink-2); }
+.win .track { position: relative; height: 16px; margin: 4px 0 1px; }
+.win .track .base { position: absolute; left: 0; right: 0; top: 7px; height: 2px; background: var(--rule-2); }
+.win .track .over { position: absolute; left: 50%; right: 0; top: 7px; height: 2px; background: repeating-linear-gradient(90deg, var(--alarm-dim) 0 3px, transparent 3px 5px); }
+.win .track .mid { position: absolute; left: 50%; top: 1px; width: 1px; height: 14px; background: var(--ink-3); }
+.win .track .mk { position: absolute; top: 2px; width: 4px; height: 12px; margin-left: -2px; background: var(--ink); }
+.win .track .mk.alarm { background: var(--alarm); }
+.win .note { font-size: 12.5px; color: var(--ink-3); display: flex; } .win .note .r { margin-left: auto; }
+.win .note.alarm { color: var(--alarm); }
+.runner { margin: 0 12px 10px; padding: 12px; background: var(--ground-2); }
+.runner .r1 { display: flex; align-items: baseline; gap: 8px; }
+.runner .r1 b { font-size: 16px; font-weight: 600; } .runner .r1 .st { font-size: 13px; } .runner .r1 .seen { margin-left: auto; font: 12px var(--mono); color: var(--ink-3); }
+.runner .r2 { color: var(--ink-3); font-size: 12.5px; margin-top: 2px; }
+.runner .note { margin-top: 8px; font-size: 13px; color: var(--alarm); }
+.envs { display: grid; grid-template-columns: repeat(3, 1fr); gap: 4px; margin-top: 10px; }
+.env { height: 46px; padding: 5px 7px; background: var(--ground); border-left: 2px solid var(--live); display: flex; flex-direction: column; justify-content: space-between; }
+.env .cid { font: 500 12px var(--mono); } .env .n { font-size: 12px; color: var(--ink-2); display: flex; } .env .n span:last-child { margin-left: auto; font: 11px var(--mono); color: var(--ink-3); }
+.env.h { border-left-color: var(--alarm); background: rgba(255,90,53,.1); } .env.h .cid, .env.h .n span:last-child { color: var(--alarm); }
+.env.free { border-left-color: var(--rule-2); color: var(--ink-3); font-size: 12px; justify-content: center; }
+.env.free.held { border-left-color: var(--alarm-dim); background: repeating-linear-gradient(45deg, transparent 0 5px, rgba(255,90,53,.12) 5px 6px); color: var(--alarm); }
+.env.flash { animation: flash .9s ease-out 1; }
+.runner .acts { display: flex; gap: 8px; margin-top: 10px; }
+.runner .acts button { flex: 1; height: 40px; border: 1px solid var(--rule-2); border-radius: 4px; font-size: 14px; }
+.runner .acts button.on { background: var(--ink); color: var(--ground); border-color: var(--ink); font-weight: 600; }
+.idle { margin: 0 12px 16px; padding: 12px; border: 1px dashed var(--rule-2); color: var(--ink-3); font-size: 13px; display: flex; }
+.idle b { color: var(--ink-2); font-weight: 500; margin-right: 6px; }
+.tabs { position: absolute; bottom: 0; left: 0; right: 0; height: 58px; display: flex; border-top: 1px solid var(--rule); background: var(--ground); }
+.tabs a { flex: 1; text-align: center; padding-top: 10px; color: var(--ink-3); text-decoration: none; font-size: 13px; position: relative; }
+.tabs a.on { color: var(--ink); } .tabs a.on::before { content: ''; position: absolute; top: -1px; left: 30%; right: 30%; height: 2px; background: var(--ink); }
+.tabs a .badge { font: 600 11px var(--mono); color: var(--alarm); margin-left: 4px; }
+</style></head>
+<body>
+<div class="top"><span class="mark">blizzard</span><span class="host"><b>xps</b> online · 34s</span><span class="live" id="live"></span></div>
+<div id="scroll">
+  <div class="verdict" id="verdict"></div>
+  <div class="sech">Windows <span class="r">pace: spent ÷ elapsed</span></div>
+  <div id="wins"></div>
+  <div class="sech">Runners <span class="r">tap an environment</span></div>
+  <div id="runners"></div>
+</div>
+<nav class="tabs"><a href="board-mobile.html">Flow<span class="badge" id="badge"></span></a><a class="on" href="#">Fleet</a><a href="#">Events</a></nav>
+<div class="toast" id="toast"></div>
+<script>
+// ---- Current: shared data model (real chunk data from the baseline capture, 2026-10-25 13:10) ----
+const T = s => { const neg = s.startsWith('-'); const [h, m] = s.replace('-', '').split(':').map(Number); return neg ? (h * 60 + m) - 1440 : h * 60 + m; };
+const LANES = [
+  { key: 'intake', label: 'Triage', sub: 'triage · survey' },
+  { key: 'build', label: 'Build' },
+  { key: 'review', label: 'Review' },
+  { key: 'mutation', label: 'Mutation' },
+  { key: 'pre-push', label: 'Pre-push' },
+  { key: 'deliver', label: 'Deliver' },
+  { key: 'landed', label: 'Landed' },
+];
+const NOW0 = T('13:10');
+
+// In flight: running, delivering and needs-human. Paths are [lane, enteredAt].
+const INFLIGHT = [
+  { id: 'WSCR', refs: ['blizzard#1497'], title: 'Add an Anthropic credential renewer that refreshes via a haiku one-shot', status: 'running', runner: 'r-claude', ws: 'blizzard-claude', cost: 1.58, est: false, pr: 'PR #1500', graph: 'bas-dwf', tok: '3.9M',
+    path: [[0,'12:22'],[1,'12:27'],[2,'12:33'],[1,'12:35'],[2,'12:37'],[4,'12:39'],[5,'12:40'],[4,'12:51'],[5,'12:54'],[4,'12:55'],[1,'12:56'],[2,'13:08']],
+    why: { 3: 'review fail', 7: 'land answered failure', 9: 'land answered failure', 10: 'pre-push: significant' } },
+  { id: '6J9H', refs: ['blizzard#1365'], title: '[FORGES] Report every record the forge migration would refuse', status: 'needs_human', runner: 'r-claude', ws: 'blizzard-claude', cost: 8.20, est: false, pr: 'PR #1498', graph: 'adv-dwf', tok: '20.3M', attempts: 25,
+    path: [[0,'09:40'],[1,'09:52'],[2,'10:30'],[1,'10:41'],[2,'11:02'],[3,'11:09'],[4,'11:20'],[5,'11:31'],[4,'11:44'],[5,'11:52'],[4,'12:03'],[5,'12:10'],[4,'12:19'],[5,'12:25'],[4,'12:31'],[5,'12:38'],[4,'12:41'],[5,'12:44']],
+    haltAt: '12:48', reason: 'Bounce cap crossed: 6 deliver failures. No composed command for this escalation.', takeover: 'blizzard runner takeover C-6J9H' },
+  { id: 'QWYS', refs: ['blizzard#1449'], title: '[STRICT] Type the hub auth repositories', status: 'needs_human', runner: 'r-claude', ws: 'blizzard-claude', cost: 4.03, est: false, pr: 'PR #1501', graph: 'adv-dwf', tok: '9.6M', attempts: 11,
+    path: [[0,'10:55'],[1,'11:02'],[2,'11:40'],[3,'11:52'],[4,'12:15'],[5,'12:26'],[4,'12:36'],[5,'12:44']],
+    haltAt: '13:01', reason: 'Gate at deliver: land refused twice on a conflicting head. Decide: rebase or park.', takeover: 'blizzard runner takeover C-QWYS' },
+  { id: 'BWA2', refs: ['blizzard#1461'], title: '[PW-HUBTIER] Let an event-stream client join from the latest event', status: 'running', runner: 'r-claude', ws: 'blizzard-claude', cost: 2.26, est: true, graph: 'adv-dwf', tok: '5.1M',
+    path: [[0,'11:48'],[1,'11:55'],[2,'12:31'],[3,'12:47']] },
+  { id: 'ZG7T', refs: ['hub:626', 'hub:627'], title: 'Land a gate resolution’s artifacts once when its landing consult fires', status: 'running', runner: 'r-claude', ws: 'blizzard-claude', cost: 0.70, est: false, graph: 'bas-hwf', tok: '1.8M',
+    path: [[0,'12:10'],[1,'12:14'],[2,'12:44'],[4,'13:08']] },
+  { id: 'FC1D', refs: ['hub:620', 'hub:628', '+3'], title: 'Bring the work domain’s docs up to four rules the code enforces deliberately', status: 'running', runner: 'r-claude', ws: 'blizzard-claude', cost: 1.12, est: true, graph: 'bas-hwf', tok: '2.7M',
+    path: [[0,'11:30'],[1,'11:38'],[2,'12:20'],[1,'12:29'],[2,'12:58']], why: { 3: 'review fail' } },
+  { id: 'MFJE', refs: ['blizzard#1465'], title: '[PW-HUBTIER] Give the harness a mock runner it can drive and runners that serve projects', status: 'running', runner: 'r-chatgpt', ws: 'blizzard-chatgpt', cost: 0.10, est: true, graph: 'adv-dwf-opencode', tok: '0.3M',
+    path: [[0,'12:49'],[1,'12:55']] },
+  { id: '27A6', refs: ['blizzard#1463'], title: '[PW-HUBTIER] Choose the stub IdP’s identity by login_hint', status: 'delivering', runner: 'r-chatgpt', ws: 'blizzard-chatgpt', cost: 1.47, est: true, pr: 'mock PR #121', graph: 'adv-dwf-opencode', tok: '4.0M',
+    path: [[0,'10:12'],[1,'10:20'],[2,'11:16'],[1,'11:24'],[2,'11:58'],[3,'12:06'],[4,'12:31'],[5,'13:08']], why: { 3: 'review fail' } },
+  { id: 'PTP2', refs: ['blizzard#1459'], title: '[PW-HUBTIER] Tag every per-tenant sweep line with its tenant', status: 'delivering', runner: 'r-chatgpt', ws: 'blizzard-chatgpt', cost: 3.49, est: true, pr: 'PR #1492', graph: 'adv-dwf-opencode', tok: '8.4M',
+    path: [[0,'09:58'],[1,'10:05'],[2,'10:51'],[3,'11:03'],[4,'11:40'],[5,'12:20'],[4,'12:41'],[5,'13:08']], why: { 6: 'land answered failure' } },
+  { id: '2475', refs: ['blizzard#1446'], title: '[STRICT] Type the runner store adapters’ row mapping', status: 'running', runner: 'r-chatgpt', ws: 'blizzard-chatgpt', cost: 2.06, est: true, graph: 'adv-dwf-opencode', tok: '5.0M',
+    path: [[0,'12:30'],[1,'12:36']] },
+];
+
+// Landed in the last 48h: [id, refs, title, completedAt, cost, est]
+const DONE = [
+  ['VA7X', ['hub:602', 'hub:613', '+2'], 'Make a gate’s resolving transition name a decision from the current visit', '12:24', 17.03, true],
+  ['AFTK', ['blizzard#1447'], '[STRICT] Type the runner harness adapters’ parsed output', '12:03', 7.36],
+  ['R1D5', ['hub:624', 'hub:622', 'hub:623'], 'Settle one owner for the statement guards and the lane rosters', '11:25', 3.69, true],
+  ['BB9E', ['blizzard#1445'], '[STRICT] Type the compat OpenAPI classifier', '10:19', 1.95],
+  ['TX56', ['blizzard#1175'], '[NOTES] Cross-check a release’s notes against its compat breaks', '09:31', 7.00],
+  ['F5V9', ['blizzard#1462'], '[PW-HUBTIER] Make the hub’s login throttle configurable', '08:56', 1.49],
+  ['RWE7', ['blizzard#1190'], '[FLAGS] Write the flag procedure and the operator’s flags guide', '08:46', 1.65],
+  ['2R1E', ['blizzard#1443'], '[STRICT] Delete the inert type-ignores in shipping code and add a strict report', '08:03', 0.88],
+  ['QRP5', ['blizzard#1174'], '[NOTES] Fail a pull request that owes a change note', '06:59', 5.32],
+  ['ZWE9', ['blizzard#1364'], '[FORGES] Port land and the commit check onto one forge seam', '06:29', 40.11],
+  ['1BF8', ['blizzard#1189'], '[FLAGS] Hold flag tombstones, flips, and cuts to the release rules', '05:07', 4.74],
+  ['PZD6', ['hub:603'], 'Rewrite inventory-style hub rows as read-triggers', '04:48', 12.56, true],
+  ['RNZD', ['blizzard#1181'], '[LINES] Write the patch rule and the release promise', '00:14', 3.89],
+  ['E7DE', ['blizzard#1173'], '[NOTES] Publish release notes from change notes and require them', '-22:39', 7.06],
+  ['TNFF', ['hub:609', 'hub:604', '+3'], 'Bring findings-and-proposals.md up to the refusals and settlement the code already has', '-21:46', 9.42],
+  ['CRTC', ['blizzard#1361'], '[ACTIONS] Remove the hub’s process runner, step environment, and marker token', '-15:21', 24.86, true],
+  ['66JE', ['hub:619', 'hub:618'], 'Bring the command-failed and hub-migrated definitions in line with what is recorded', '-14:56', 5.41],
+  ['8Z96', ['hub:615', 'hub:617'], 'Make the pause, resume and detach messages describe the actual state', '-14:50', 2.18],
+  ['JJPG', ['blizzard#1160'], '[RELEASE] Open the hub’s pin change when blizzard publishes a release', '-12:07', 4.38],
+  ['R4EH', ['hub:612', 'hub:607'], 'Count retries per visit, not per node across the whole chunk', '-12:04', 7.09],
+  ['H48F', ['hub:601', 'hub:600', 'hub:614'], 'Filter a project’s runner pauses before the activity feed caps them', '-11:52', 7.26],
+  ['8YFS', ['blizzard#1180'], '[LINES] Hold release tags to their line and promote by borrowed proof', '-11:50', 5.36],
+  ['5EVY', ['hub:621', 'hub:625'], 'Keep a chunk’s work items in one project at ingest', '-11:06', 1.79, true],
+  ['BCN9', ['blizzard#1360'], '[ACTIONS] Retire run: and carry every stored graph onto actions', '-09:27', 46.52],
+];
+
+// Upstream: ready (and one backlog) chunks with their blocking threads.
+const READY = [
+  ['ZEVE', 'blizzard#1366', '[FORGES] Carry every forge address over into a forge record', ['6J9H']],
+  ['MG3R', 'blizzard#1367', '[FORGES] Configure forges through the API, CLI, document, and board', ['ZEVE']],
+  ['4J2W', 'blizzard#1368', '[FORGES] Document the forge record and the landing seam', ['MG3R']],
+  ['4HAX', 'blizzard#1371', '[FLOWS] Keep each branch’s flow record in the shadow of the slot', ['4J2W']],
+  ['50RX', 'blizzard#1372', '[FLOWS] Take hub steps as turns on their branches’ flows', ['4HAX', 'ZEVE', 'MG3R']],
+  ['FC1E', 'blizzard#1373', '[FLOWS] Retire the slot’s code and keep its deprecated table', ['50RX']],
+  ['CG21', 'blizzard#1374', '[FLOWS] Show flows on the API, CLI, live channel, and board', ['FC1E']],
+  ['MAET', 'blizzard#1378', '[POLICIES] Grow the landing seam and make a landing pass cheap', ['CG21']],
+  ['N96M', 'blizzard#1379', '[POLICIES] Share one rate budget per forge key, slowing before refusal', ['MAET', 'MG3R']],
+  ['S990', 'blizzard#1380', '[POLICIES] Run each repository’s landing policy, in its project’s order', ['N96M']],
+  ['S93M', 'blizzard#1381', '[POLICIES] Add the fast-forward and park landing policies', ['S990']],
+  ['KTD7', 'blizzard#1382', '[POLICIES] Show policies, landing order, and awaiting-merge on the board', ['S93M']],
+  ['N1JR', 'hub:579', 'Let the work-source and forge seams own labels, branch links and the annotating set', ['6J9H', 'ZEVE']],
+  ['B6HS', 'blizzard#1444', '[STRICT] Type the hub store adapters’ SQL helpers and rows', ['S93M']],
+  ['DFGP', 'blizzard#1448', '[STRICT] Type the hub domain models’ untyped edges', ['B6HS', '2475', 'QWYS']],
+  ['6P31', 'blizzard#1450', '[STRICT] Type the hub delivery land actions', ['FC1E']],
+  ['AKMG', 'blizzard#1451', '[STRICT] Type the hub and runner CLIs', ['S990']],
+  ['STGQ', 'blizzard#1452', '[STRICT] Give every bare generic in shipping code its type arguments', ['B6HS', 'DFGP', '6P31', 'AKMG', 'QWYS', '2475']],
+  ['QG6Y', 'blizzard#1453', '[STRICT] Declare shipping code’s context managers as generators', ['B6HS', 'DFGP', '6P31', 'AKMG', 'QWYS', '2475']],
+  ['W9G8', 'blizzard#1454', '[STRICT] Replace the _conforms_* functions with annotated assignments', ['B6HS', 'DFGP', '6P31', 'AKMG', 'QWYS', '2475']],
+  ['ZMVH', 'blizzard#1455', '[STRICT] Stop shipping code reaching into other modules’ private names', ['B6HS', 'DFGP', '6P31', 'AKMG', 'QWYS', '2475']],
+  ['6Q69', 'blizzard#1456', '[STRICT] Sweep the remaining strict errors out of shipping code', ['STGQ', 'QG6Y', 'W9G8', 'ZMVH']],
+  ['00N1', 'blizzard#1457', '[STRICT] Spike: re-investigate typing across every project, tests first', ['6Q69']],
+  ['HBRY', 'blizzard#1499', 'Declare each runner’s supported models and match them at hub eligibility', ['B6HS']],
+  ['DF68', 'blizzard#1468', '[PW-HUBTIER] Move the helpers other test files import out of the files the hub tier ports', []],
+  ['0ACF', 'blizzard#1485', '[PW-HUBTIER] Move the service-sized tenant teardown test to the component tier', []],
+  ['JME3', 'blizzard#1460', '[PW-HUBTIER] Run the hub’s sweeps on request, per tenant or hub-wide', ['PTP2']],
+  ['P79Q', 'blizzard#1464', '[PW-HUBTIER] Give the harness the CLI, a configurable fresh hub, and an OTLP sink', ['MFJE']],
+  ['WWXN', 'blizzard#1466', '[PW-HUBTIER] Step every harness sweep and give the event reader a join from now and a barrier', ['JME3', 'P79Q', 'BWA2']],
+  ['RE86', 'blizzard#1467', '[PW-HUBTIER] Sign people in through the stub IdP on an auth profile in the harness', ['27A6', 'P79Q', 'DF68']],
+  ['GWDV', 'blizzard#1469', '[PW-HUBTIER] Port the hub service tests and add the two enforcement profiles', ['P79Q', 'WWXN', 'RE86', 'DF68']],
+  ['W60F', 'blizzard#1470', '[PW-HUBTIER] Port the finding-exits service tests, stepping the close drain', ['P79Q', 'WWXN', 'GWDV', 'DF68']],
+  ['WKFH', 'blizzard#1471', '[PW-HUBTIER] Port the event-log service tests, reading hub events over HTTP', ['P79Q', 'WWXN', 'GWDV', 'DF68']],
+  ['Q5CS', 'blizzard#1472', '[PW-HUBTIER] Port the runner served-projects service tests to Playwright', ['P79Q', 'WWXN', 'MFJE', 'DF68']],
+  ['YZVG', 'blizzard#1473', '[PW-HUBTIER] Port the real-hub transcript-segment service tests to Playwright', ['P79Q', 'GWDV']],
+  ['64RN', 'blizzard#1474', '[PW-HUBTIER] Port the projects ingest and delivery service tests to Playwright', ['P79Q', 'GWDV', 'DF68']],
+  ['6RRX', 'blizzard#1475', '[PW-HUBTIER] Port the routine baselines service tests to Playwright', ['P79Q', 'WWXN', 'GWDV', 'DF68']],
+  ['260B', 'blizzard#1476', '[PW-HUBTIER] Port the forge-status service tests onto a stepped sweep', ['P79Q', 'JME3']],
+  ['5MXB', 'blizzard#1479', '[PW-HUBTIER] Port the two live-hub usage service tests', ['P79Q', 'GWDV', 'DF68']],
+  ['1A1R', 'blizzard#1480', '[PW-HUBTIER] Port the two hub-only platform-tracing service tests', ['P79Q', 'GWDV']],
+  ['N0SD', 'blizzard#1482', '[PW-HUBTIER] Port the OAuth login service tests onto the auth profile', ['P79Q', 'RE86', 'GWDV', 'DF68']],
+  ['MMVM', 'blizzard#1483', '[PW-HUBTIER] Port the CLI login exchange service tests onto the auth profile', ['P79Q', 'RE86', 'GWDV', 'DF68']],
+  ['1DTX', 'hub:629', 'Recheck the holder inside the route-token rekey, and document that a per-chunk pause outranks a restart’s fence', []],
+  ['DB49', 'hub:632', 'Order runner-store bind, park and requeue facts by append sequence, not timestamp', ['2475']],
+  ['SXBD', 'hub:639', 'performance run (full)', []],
+  ['5Q4G', 'hub:640', 'performance run (full)', []],
+  ['NH8N', 'hub:642', 'performance run (full)', []],
+  ['GMVT', 'hub:641', 'performance run (full)', []],
+  ['WTGG', 'hub:634', 'comments run (full)', []],
+  ['85FD', 'hub:638', 'comments run (full)', []],
+  ['F05Q', 'hub:635', 'comments run (full)', []],
+  ['YWK5', 'hub:636', 'comments run (full)', []],
+  ['6RTR', 'hub:637', 'comments run (full)', []],
+  ['WN6J', 'blizzard#1312', '(BREAK) Retire per-binding agents from runner bindings', [], 'backlog'],
+];
+
+// Subscription windows: spent and elapsed fractions now; pace history is synthesised from them.
+const WINDOWS = [
+  { key: 'a5h', provider: 'Anthropic', span: '5h', spent: 0.12, elapsed: 0.58, sampled: '44s' },
+  { key: 'a7d', provider: 'Anthropic', span: '7d', spent: 0.09, elapsed: 0.10, sampled: '44s' },
+  { key: 'o7d', provider: 'OpenAI', span: '7d', spent: 0.08, elapsed: 0.07, sampled: '4m', declineUntil: '14:41' },
+];
+
+const HOST = { name: 'xps', id: 'H-G1YK', state: 'online', lastReport: '34s', registered: '2026/10/16 04:36', addedBy: 'paul-gross', url: 'http://127.0.0.1:8431', token: 'enrolled' };
+const RUNNERS = [
+  { name: 'r-claude', id: 'R-FNE4', harness: 'claude code', spends: 'Anthropic', windows: ['a5h', 'a7d'], agents: 3, version: '0.3.0.dev1002+f208eca7d', gates: 'none', state: 'working', seen: '21s',
+    binds: [['blizzard', 'blizzard-claude', 6], ['winter', 'winter', 4]] },
+  { name: 'r-chatgpt', id: 'R-NQ1B', harness: 'opencode', spends: 'OpenAI', windows: ['o7d'], agents: 3, version: '0.3.0.dev1002+f208eca7d', gates: 'none', state: 'declining', seen: '17s',
+    stateNote: 'Ahead of pace on OpenAI 7d: 8% spent at 7% elapsed. Takes no new work until 14:41.',
+    binds: [['blizzard', 'blizzard-chatgpt', 4], ['winter', 'winter', 4]] },
+];
+const SPEND = { today: 114.44, yesterday: 161.25, tokToday: '185.5M' };
+
+// ---- derived model ----
+function seeded(seed) { let s = seed >>> 0; return () => { s = (s * 1664525 + 1013904223) >>> 0; return s / 4294967296; }; }
+function synthPath(end, cost, rnd) {
+  // walk backwards from landing: deliver <- pre-push <- (mutation) <- review <- build <- intake
+  const scale = Math.min(3.2, 0.7 + Math.sqrt(cost) / 2.2);
+  const seq = [[0, 6 + rnd() * 8], [1, 18 + rnd() * 30], [2, 6 + rnd() * 12]];
+  if (rnd() < 0.35 || cost > 10) seq.push([1, 10 + rnd() * 20], [2, 5 + rnd() * 8]);
+  if (cost > 30) seq.push([1, 25], [2, 9]);
+  if (rnd() < 0.5) seq.push([3, 10 + rnd() * 18]);
+  seq.push([4, 8 + rnd() * 16], [5, 6 + rnd() * 10]);
+  if (rnd() < 0.3 || cost > 15) seq.push([4, 7 + rnd() * 8], [5, 5 + rnd() * 6]);
+  const total = seq.reduce((a, s) => a + s[1] * scale, 0);
+  let t = end - total; const path = [];
+  for (const [lane, d] of seq) { path.push([lane, t]); t += d * scale; }
+  path.push([6, end]);
+  return path;
+}
+function buildModel() {
+  const rnd = seeded(1497);
+  const chunks = new Map();
+  for (const c of INFLIGHT) {
+    chunks.set(c.id, { ...c, path: c.path.map(([l, s]) => [l, T(s)]), haltAt: c.haltAt ? T(c.haltAt) : null, kind: 'flight', costAt: [] });
+  }
+  for (const [id, refs, title, at, cost, est] of DONE) {
+    const end = T(at);
+    chunks.set(id, { id, refs, title, status: 'done', cost, est: !!est, path: synthPath(end, cost, rnd), doneAt: end, kind: 'done' });
+  }
+  for (const [id, ref, title, blockedBy, status] of READY) {
+    chunks.set(id, { id, refs: [ref], title, status: status || 'ready', blockedBy, cost: 0, kind: 'upstream' });
+  }
+  return chunks;
+}
+function epicOf(c) { const m = /^\[([A-Z-]+)\]/.exec(c.title || ''); return m ? m[1] : (c.refs[0] || '').startsWith('hub:') ? 'hub' : c.status === 'backlog' ? 'BREAK' : 'misc'; }
+function fmt$(v, est) { return (est ? '~' : '') + '$' + v.toFixed(2); }
+function hhmm(t) { const d = ((Math.round(t) % 1440) + 1440) % 1440; return String(Math.floor(d / 60)).padStart(2, '0') + ':' + String(d % 60).padStart(2, '0'); }
+function dur(m) { m = Math.max(0, Math.round(m)); return m < 60 ? m + 'm' : Math.floor(m / 60) + 'h' + String(m % 60).padStart(2, '0'); }
+function laneOf(c) { return c.path[c.path.length - 1][0]; }
+function enteredAt(c) { return c.path[c.path.length - 1][1]; }
+function bounces(c) { let n = 0; for (let i = 1; i < c.path.length; i++) if (c.path[i][0] < c.path[i - 1][0]) n++; return n; }
+// Everything transitively waiting on a chunk (its downstream blast radius).
+function dependents(chunks, id) {
+  const out = new Set(); const q = [id];
+  while (q.length) { const x = q.shift(); for (const c of chunks.values()) if (c.kind === 'upstream' && c.blockedBy && c.blockedBy.includes(x) && !out.has(c.id)) { out.add(c.id); q.push(c.id); } }
+  return out;
+}
+function unmet(chunks, c) { return (c.blockedBy || []).filter(b => { const p = chunks.get(b); return p && p.status !== 'done'; }); }
+
+// ---- Current: simulated live events over the real chunk data ----
+const SLOTS = { 'blizzard-claude': { runner: 'r-claude', n: 6 }, 'blizzard-chatgpt': { runner: 'r-chatgpt', n: 4 }, 'winter': { runner: null, n: 4 } };
+const S = {
+  now: NOW0, chunks: buildModel(), events: [], spend: SPEND.today, flash: new Map(), paused: false,
+  declineUntil: T('14:41'), paused_runners: new Set(), listeners: [], rnd: seeded(20261025),
+};
+function flights() { return [...S.chunks.values()].filter(c => c.kind === 'flight'); }
+function upstream() { return [...S.chunks.values()].filter(c => c.kind === 'upstream'); }
+function landed() { return [...S.chunks.values()].filter(c => c.kind === 'done'); }
+function declining(runner) { return runner === 'r-chatgpt' && S.now < S.declineUntil; }
+function log(id, text, kind) { const ev = { t: S.now, id, text, kind }; S.events.unshift(ev); S.events.length = Math.min(S.events.length, 40); S.flash.set(id, kind); }
+function nextLane(c) {
+  const l = laneOf(c);
+  if (l === 2) return (c.graph || '').startsWith('adv') && !c.path.some(p => p[0] === 3) ? 3 : 4;
+  return Math.min(6, l + 1);
+}
+// Seed the log with the real tail of the activity feed.
+[['12:48', '6J9H', 'needs a human: bounce cap crossed after 6 bounces', 'alarm'], ['13:01', 'QWYS', 'needs a human: land refused on a conflicting head', 'alarm'],
+ ['13:08', 'ZG7T', 'review → pre-push', 'step'], ['13:08', 'WSCR', 'build → review', 'step'], ['13:08', '27A6', 'pre-push → deliver', 'step'], ['13:08', 'PTP2', 'pre-push → deliver', 'step']]
+  .forEach(([t, id, text, kind]) => S.events.unshift({ t: T(t), id, text, kind }));
+
+function admit() {
+  for (const [ws, slot] of Object.entries(SLOTS)) {
+    if (!slot.runner || S.paused_runners.has(slot.runner)) continue;
+    const held = flights().filter(c => c.ws === ws).length;
+    if (held >= slot.n) continue;
+    if (declining(slot.runner)) continue;
+    const next = upstream().find(c => c.status === 'ready' && unmet(S.chunks, c).length === 0);
+    if (!next) return;
+    Object.assign(next, { kind: 'flight', status: 'running', runner: slot.runner, ws, path: [[0, S.now]], cost: 0, est: true, tok: '0.0M',
+      graph: next.refs[0].startsWith('hub:') ? 'bas-hwf' : 'adv-dwf' });
+    log(next.id, 'claimed by ' + slot.runner + ', entering triage', 'admit');
+  }
+}
+function simTick() {
+  S.now += 1;
+  const rnd = S.rnd;
+  for (const c of flights()) {
+    if (c.status === 'needs_human' || S.paused_runners.has(c.runner)) continue;
+    const inc = 0.004 + rnd() * 0.035; c.cost += inc; S.spend += inc;
+  }
+  if (S.now === S.declineUntil) log('r-chatgpt', 'back under pace on OpenAI 7d; accepting work', 'admit');
+  const movers = flights().filter(c => c.status !== 'needs_human' && !S.paused_runners.has(c.runner) && S.now - enteredAt(c) >= 3);
+  if (movers.length && rnd() < 0.55) {
+    const c = movers[Math.floor(rnd() * movers.length)];
+    const l = laneOf(c), to = nextLane(c), from = LANES[l].label.toLowerCase();
+    if (l === 2 && rnd() < 0.22) { c.path.push([1, S.now]); log(c.id, 'review fail ↺ build', 'bounce'); }
+    else if (l === 5 && rnd() < 0.2) { c.path.push([4, S.now]); log(c.id, 'land answered failure ↺ pre-push', 'bounce'); }
+    else if (to === 6) {
+      c.path.push([6, S.now]); Object.assign(c, { kind: 'done', status: 'done', doneAt: S.now });
+      log(c.id, 'landed ' + fmt$(c.cost, c.est), 'land');
+      for (const u of upstream()) if ((u.blockedBy || []).includes(c.id) && unmet(S.chunks, u).length === 0) log(u.id, 'unblocked by C-' + c.id, 'unblock');
+    } else { c.path.push([to, S.now]); if (to === 5) c.status = 'delivering'; log(c.id, from + ' → ' + LANES[to].label.toLowerCase(), 'step'); }
+  }
+  admit();
+  S.listeners.forEach(f => f());
+}
+function requeue(id) {
+  const c = S.chunks.get(id); if (!c || c.status !== 'needs_human') return false;
+  c.status = 'running'; c.haltAt = null; c.path.push([4, S.now]); log(id, 'requeued by paul-gross ↺ pre-push', 'bounce'); S.listeners.forEach(f => f()); return true;
+}
+let simTimer = null;
+function startSim(ms) { simTimer = setInterval(() => { if (!S.paused) simTick(); }, ms); }
+function medianDwell(lane) {
+  const ds = [];
+  for (const c of S.chunks.values()) if (c.path) for (let i = 0; i < c.path.length - 1; i++) if (c.path[i][0] === lane) ds.push(c.path[i + 1][1] - c.path[i][1]);
+  ds.sort((a, b) => a - b); return ds.length ? ds[Math.floor(ds.length / 2)] : 0;
+}
+function anomalyOf(c) {
+  if (c.status === 'needs_human') return 'halted';
+  const l = laneOf(c), med = medianDwell(l);
+  if (l > 0 && med && S.now - enteredAt(c) > Math.max(25, 2.5 * med)) return 'slow';
+  if (bounces(c) >= 3) return 'looping';
+  return null;
+}
+// Depth of an upstream chunk: how many sequential landings stand between it and a slot.
+function depthMap() {
+  const memo = new Map();
+  const d = id => {
+    if (memo.has(id)) return memo.get(id);
+    const c = S.chunks.get(id); if (!c || c.kind !== 'upstream') return 0;
+    memo.set(id, 1);
+    const v = 1 + Math.max(0, ...unmet(S.chunks, c).map(d));
+    memo.set(id, v); return v;
+  };
+  for (const c of upstream()) d(c.id);
+  return memo;
+}
+function criticalBlocker(c, depth) {
+  const u = unmet(S.chunks, c); if (!u.length) return null;
+  return u.reduce((a, b) => ((depth.get(b) || 0) > (depth.get(a) || 0) ? b : a));
+}
+function damOf(c) { // the halted in-flight chunk an upstream chunk ultimately waits on
+  const seen = new Set(); const q = [c.id];
+  while (q.length) { const x = q.shift(); const k = S.chunks.get(x); if (!k || seen.has(x)) continue; seen.add(x);
+    if (k.kind === 'flight' && k.status === 'needs_human') return x; if (k.kind === 'upstream') q.push(...unmet(S.chunks, k)); }
+  return null;
+}
+function medianCycle() {
+  const ds = landed().map(c => c.doneAt - c.path[0][1]).sort((a, b) => a - b); return ds[Math.floor(ds.length / 2)] || 120;
+}
+// Test hooks: #t=<ticks>&keys=a,b&hover=<id> drive the mock headlessly.
+function hooks(render) {
+  const H = new URLSearchParams(location.hash.slice(1));
+  const n = +H.get('t') || 0; const ls = S.listeners; S.listeners = []; for (let i = 0; i < n; i++) simTick(); S.listeners = ls;
+  render();
+  (H.get('keys') || '').split(',').filter(Boolean).forEach(k => document.dispatchEvent(new KeyboardEvent('keydown', { key: k === 'space' ? ' ' : k, metaKey: k === 'K', bubbles: true })));
+  const hv = H.get('hover'); if (hv) { const el = document.querySelector(`[data-id="${hv}"]`); if (el) { const r = el.getBoundingClientRect(); el.dispatchEvent(new MouseEvent('mousemove', { clientX: r.x + r.width / 2, clientY: r.y + r.height / 2, bubbles: true })); } }
+  return H;
+}
+
+const $ = s => document.querySelector(s);
+const pos = p => 50 + Math.max(-1, Math.min(1, Math.log2(p) / 2.4)) * 50;
+function render() {
+  const fl = flights(), halted = fl.filter(c => c.status === 'needs_human');
+  $('#live').innerHTML = `<i style="${S.paused ? 'background:var(--ink-3)' : ''}"></i>${hhmm(S.now)}`;
+  $('#badge').textContent = halted.length || '';
+  const dec = declining('r-chatgpt');
+  $('#verdict').innerHTML = `<div class="say">${fl.length >= 10 ? 'Capacity-bound.' : (10 - fl.length) + ' slots free.'}</div><div class="sub">${fl.length} of 10 blizzard environments held${halted.length ? `, <span class="alarm">${halted.length} by halted chunks</span>` : ''}.${dec ? ` <span class="alarm" style="white-space:nowrap">r-chatgpt</span> declines work until 14:41.` : ''} winter idle.</div>`;
+  $('#wins').innerHTML = WINDOWS.map(w => { const p = w.spent / w.elapsed; const over = p > 1 && w.declineUntil && dec; const r = RUNNERS.find(r => r.windows.includes(w.key));
+    const note = w.declineUntil ? (dec ? `ahead of pace · declining until ${w.declineUntil}` : `back on pace since ${w.declineUntil}`) : p < .5 ? 'deep headroom' : 'on pace';
+    const span = w.span === '5h' ? 300 : 10080, roll = S.now + span * (1 - w.elapsed);
+    return `<div class="win"><div class="r1"><span>${w.provider} ${w.span}</span><span class="who">${r.name} · ${w.sampled}</span><span class="v">${Math.round(w.spent * 100)}% / ${Math.round(w.elapsed * 100)}%</span></div>
+      <div class="track"><div class="base"></div><div class="over"></div><div class="mid"></div><div class="mk${over ? ' alarm' : ''}" style="left:${pos(p)}%"></div></div>
+      <div class="note${over ? ' alarm' : ''}"><span>${note}</span><span class="r">${w.span === '5h' ? 'rolls ' + hhmm(roll) : 'rolls in ' + Math.round(7 * (1 - w.elapsed)) + 'd'}</span></div></div>`; }).join('');
+  let h = '';
+  for (const r of RUNNERS) {
+    const ws = r.binds[0][1], n = SLOTS[ws].n, held = fl.filter(c => c.ws === ws); const paused = S.paused_runners.has(r.name); const d = declining(r.name);
+    h += `<div class="runner"><div class="r1"><b>${r.name}</b><span class="st ${paused || d ? 'alarm' : 'live'}">${paused ? 'paused' : d ? 'declining' : 'working'}</span><span class="seen">${r.seen}</span></div>
+      <div class="r2">${r.harness} · spends ${r.spends} · ${ws} ${held.length}/${n}</div>${d && !paused ? `<div class="note">Takes no new work until 14:41.</div>` : ''}<div class="envs">`;
+    for (let i = 0; i < n; i++) { const c = held[i];
+      if (c) { const hh = c.status === 'needs_human'; h += `<div class="env${hh ? ' h' : ''}${S.flash.has(c.id) ? ' flash' : ''}" data-id="${c.id}"><span class="cid">${c.id}</span><span class="n"><span>${LANES[laneOf(c)].label.toLowerCase()}</span><span>${hh ? dur(S.now - c.haltAt) : dur(S.now - enteredAt(c))}</span></span></div>`; }
+      else h += `<div class="env free${d || paused ? ' held' : ''}">${paused ? 'paused' : d ? 'held: decline' : 'free'}</div>`; }
+    h += `</div><div class="acts"><button data-pause="${r.name}" class="${paused ? 'on' : ''}">${paused ? 'Resume' : 'Pause'}</button><button data-drain="${r.name}">Drain</button></div></div>`;
+  }
+  h += `<div class="idle"><b>winter</b> 4 environments idle, nothing queued</div>`;
+  $('#runners').innerHTML = h;
+  S.flash.clear();
+}
+function toast(m) { const t = $('#toast'); t.textContent = m; t.classList.add('on'); clearTimeout(toast.h); toast.h = setTimeout(() => t.classList.remove('on'), 1600); }
+document.addEventListener('click', e => {
+  const p = e.target.closest('[data-pause]'); if (p) { const n = p.dataset.pause; if (S.paused_runners.has(n)) S.paused_runners.delete(n); else S.paused_runners.add(n); log(n, S.paused_runners.has(n) ? 'paused' : 'resumed', 'admit'); render(); return; }
+  const d = e.target.closest('[data-drain]'); if (d) { toast(d.dataset.drain + ' draining (mock)'); return; }
+  const c = e.target.closest('[data-id]'); if (c) { const k = S.chunks.get(c.dataset.id); toast(`C-${k.id} · ${k.refs[0]} · ${fmt$(k.cost, k.est)}`); }
+});
+S.listeners.push(render);
+const H = hooks(render);
+if (!H.has('still')) startSim(2000);
+</script></body></html>

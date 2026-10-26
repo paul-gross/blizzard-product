@@ -1,0 +1,836 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>blizzard · coastal reports</title>
+<style>
+:root{
+  --plot:"Nimbus Sans Narrow","Arial Narrow","Liberation Sans Narrow","Helvetica Neue",sans-serif;
+  --serif:"C059","Century Schoolbook","New Century Schoolbook",Georgia,serif;
+  --hand:"C059","Century Schoolbook",Georgia,serif;
+  --ink:#1c1b18;--paper:#f5f2e9;--rule:#b9b19d;--grey:#8c8676;--red:#c4122f;--blue:#1d4f9c;--green:#2f8a3a;--pencil:#77736a;
+}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{margin:0;background:var(--paper);color:var(--ink)}
+body{font-family:var(--plot);font-size:15px;max-width:390px;min-height:844px;padding:0 0 64px}
+header{padding:14px 16px 8px;border-bottom:1.5px solid var(--ink);position:sticky;top:0;background:var(--paper);z-index:3}
+header h1{font-family:var(--serif);font-weight:400;font-size:23px;margin:0;display:flex;justify-content:space-between;align-items:baseline}
+header h1 i{font-size:14px;color:var(--grey)}
+header .iss{font-size:13px;margin-top:2px}
+header .iss b{font-weight:700}
+section{padding:0 16px}
+h2{font-family:var(--serif);font-weight:400;font-style:italic;font-size:17px;margin:14px 0 4px;border-bottom:1px solid var(--rule);display:flex;justify-content:space-between;align-items:baseline}
+h2 small{font-family:var(--plot);font-style:normal;font-size:12px;color:var(--grey)}
+.gale{display:grid;grid-template-columns:88px 1fr;gap:4px 10px;padding:8px 0 10px;border-bottom:1px dotted var(--rule)}
+.gale .say{font-size:15px;line-height:1.3}
+.gale .say b{color:var(--red)}
+.gale .do{grid-column:1 / -1;display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px}
+button{font-family:var(--plot);font-size:15px;background:var(--paper);color:var(--ink);border:1.5px solid var(--ink);border-bottom-width:3px;height:44px;padding:0 6px;cursor:pointer}
+button.main{background:var(--ink);color:var(--paper)}
+button:active{transform:translateY(1px);border-bottom-width:2px}
+.folded{display:none}
+h2[data-fold]{cursor:pointer}
+.syn{font-family:var(--serif);font-size:15.5px;line-height:1.42;margin:2px 0 4px}
+.area{border-bottom:1px dotted var(--rule);padding:9px 0 8px;cursor:pointer}
+.area .hd{display:flex;align-items:baseline;gap:8px}
+.area .no{font-weight:700;font-size:12px;width:16px;color:#5e5545}
+.area .nm{font-family:var(--serif);font-variant:small-caps;letter-spacing:1.6px;font-size:16px;color:#3f382c}
+.area .tot{margin-left:auto;font-size:12.5px;color:var(--grey)}
+.area .say{font-size:14.5px;line-height:1.3;margin:2px 0 0 24px}
+.area .say .r{color:var(--red);font-weight:700}
+.area .strip{margin:4px 0 0 22px;display:block}
+.area .chart{margin:6px -16px 0;display:none;border-top:1px solid var(--rule);border-bottom:1px solid var(--rule);background:#f1ede1}
+.area.open .chart{display:block;overflow-x:auto;overflow-y:hidden}
+.chart svg{display:block}
+.snd{padding:6px 0 8px;border-bottom:1px dotted var(--rule)}
+.snd .nm{font-family:var(--serif);font-size:17px}
+.snd .nm i{font-size:12.5px;color:var(--grey)}
+.rep{display:grid;grid-template-columns:120px 1fr;gap:4px 10px;padding:10px 0;border-bottom:1px dotted var(--rule)}
+.rep .who{font-family:var(--serif);font-size:18px;line-height:1.1}
+.rep .who i{display:block;font-size:12.5px;color:var(--grey);margin-top:2px}
+.rep .say{font-size:14.5px;line-height:1.32;grid-column:1 / -1}
+.rep .held{grid-column:1 / -1;display:flex;flex-wrap:nowrap;overflow-x:auto;gap:0}
+.rep .do{grid-column:1 / -1;display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.lake{display:flex;align-items:center;gap:8px;padding:7px 0;border-bottom:1px dotted var(--rule);font-size:14.5px}
+.lake .nm{font-family:var(--serif);font-style:italic;color:#3f6580;width:132px}
+.lake .n{margin-left:auto;color:var(--grey);font-size:13px}
+#host .say{font-size:14.5px;line-height:1.38;margin:6px 0 8px}
+#host .do{display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px}
+.settled{font-size:14px;color:#5e5545;padding:9px 0;line-height:1.35}
+nav{position:fixed;bottom:0;left:0;width:390px;height:58px;border-top:1.5px solid var(--ink);background:var(--paper);display:grid;grid-template-columns:1fr 1fr 56px;z-index:4}
+nav a{display:flex;align-items:center;justify-content:center;font-family:var(--serif);font-size:16px;color:var(--ink);text-decoration:none}
+nav a.on{font-style:italic;text-decoration:underline;text-underline-offset:5px;text-decoration-thickness:1.5px}
+nav a + a{border-left:1px solid var(--rule)}
+#sheet{position:fixed;left:0;bottom:0;width:390px;background:var(--paper);border-top:2px solid var(--ink);padding:10px 16px 16px;transform:translateY(105%);transition:transform .2s;z-index:5;box-shadow:0 -8px 0 rgba(28,27,24,.06)}
+#sheet.on{transform:none}
+#sheet .title{font-family:var(--serif);font-size:16px;line-height:1.3;margin:2px 0}
+#sheet .say{font-size:14px;line-height:1.35;margin:4px 0 10px}
+#sheet .do{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+#sheet .grab{width:44px;height:4px;background:var(--rule);margin:0 auto 8px}
+.pencil{font-family:var(--hand);font-style:italic;color:var(--pencil)}
+.inked{color:var(--ink)}
+#legend{position:fixed;inset:0;background:var(--paper);display:none;padding:16px;overflow:auto;z-index:9}
+#legend.on{display:block}
+#legend .lg{columns:1 !important}
+</style>
+</head>
+<body>
+<header>
+  <h1>blizzard <i>coastal reports</i></h1>
+  <div class="iss">issued <b id="clock">13:08:30</b> · <span id="census"></span></div>
+</header>
+<section>
+  <h2 data-fold="aloft">Aloft <small>subscriptions · T elapsed · Td spent</small></h2>
+  <div id="aloft"></div>
+  <h2 data-fold="runners">Stations aloft <small>runners</small></h2>
+  <div id="runners"></div>
+  <h2 data-fold="lakes">Lakes <small>workspaces · slots</small></h2>
+  <div id="lakes"></div>
+  <h2 data-fold="host">Host <small>xps · H-G1YK</small></h2>
+  <div id="host"></div>
+</section>
+<nav><a href="board-mobile.html">Forecast</a><a class="on" href="fleet-mobile.html">Coastal reports</a><a href="#" id="lg">?</a></nav>
+<div id="sheet"></div>
+<div id="legend"></div>
+<script>
+/* SYNOP — the fleet plotted as a surface weather chart.
+   Shared notation: station plots, barbs, oktas, present-weather glyphs,
+   tendency traces, fronts, coastlines. Every page inlines this file. */
+const NS = 'http://www.w3.org/2000/svg';
+const INK = '#1c1b18', PAPER = '#f5f2e9', LAND = '#e9e2cc', COAST = '#6d6352',
+  WATER = '#8fa7b6', RED = '#c4122f', BLUE = '#1d4f9c', GREEN = '#2f8a3a',
+  PENCIL = '#77736a', GREY = '#9a9486';
+const NODE_OKTA = { triage: 1, survey: 1, build: 2, review: 3, mutation: 4, 'pre-push': 5, deliver: 6 };
+const NODE_ABBR = { triage: 'tri', survey: 'srv', build: 'bld', review: 'rvw', mutation: 'mut', 'pre-push': 'pp', deliver: 'dlv', done: 'done' };
+const NODE_BY_OKTA = ['ready', 'triage', 'build', 'review', 'mutation', 'pre-push', 'deliver', 'delivering', 'done'];
+const RUNNER_BEARING = { 'r-claude': 340, 'r-chatgpt': 20 };
+
+function el(tag, attrs, parent) {
+  const e = document.createElementNS(NS, tag);
+  for (const k in attrs) if (attrs[k] !== undefined && attrs[k] !== null) e.setAttribute(k, attrs[k]);
+  if (parent) parent.appendChild(e);
+  return e;
+}
+function txt(parent, x, y, s, attrs) {
+  const t = el('text', Object.assign({ x, y }, attrs || {}), parent);
+  t.textContent = s;
+  return t;
+}
+
+/* Oktas of the circle: how far through its graph the chunk has walked. */
+function okta(c) {
+  if (c.status === 'done') return 8;
+  if (c.status === 'delivering') return 7;
+  if (c.status === 'ready' || c.status === 'backlog' || c.status === 'waiting') return 0;
+  return NODE_OKTA[c.node] || 1;
+}
+function drawOktas(g, n, r, ink) {
+  el('circle', { r, fill: PAPER, stroke: ink, 'stroke-width': 1.3 }, g);
+  if (n <= 0) return;
+  if (n >= 8) { el('circle', { r, fill: ink }, g); return; }
+  if (n === 7) {
+    el('circle', { r, fill: ink }, g);
+    el('line', { x1: 0, y1: -r, x2: 0, y2: r, stroke: PAPER, 'stroke-width': 1.4 }, g);
+    return;
+  }
+  const quarters = Math.floor(n / 2), line = n % 2 === 1;
+  if (quarters > 0) {
+    const a = quarters * Math.PI / 2;
+    const x = r * Math.sin(a), y = -r * Math.cos(a);
+    const d = `M0 0 L0 ${-r} A${r} ${r} 0 ${quarters > 2 ? 1 : 0} 1 ${x.toFixed(2)} ${y.toFixed(2)} Z`;
+    el('path', { d, fill: ink }, g);
+  }
+  if (line) el('line', { x1: 0, y1: -r, x2: 0, y2: r, stroke: ink, 'stroke-width': 1.3 }, g);
+}
+
+/* Wind barb: shaft bearing names the runner, feathers count dollars.
+   Pennant $10 · full feather $2 · half feather $1. */
+function feathers(dollars) {
+  let v = Math.round(dollars), p = Math.floor(v / 10); v -= p * 10;
+  let f = Math.floor(v / 2); v -= f * 2;
+  return { p, f, h: v };
+}
+function drawBarb(g, bearing, dollars, r, len, ink, scale) {
+  const s = scale || 1, a = bearing * Math.PI / 180;
+  const ux = Math.sin(a), uy = -Math.cos(a);
+  const nx = uy, ny = -ux; // feathers to the clockwise side
+  const x0 = ux * r, y0 = uy * r, x1 = ux * len, y1 = uy * len;
+  el('line', { x1: x0, y1: y0, x2: x1, y2: y1, stroke: ink, 'stroke-width': 1.1 * s }, g);
+  const { p, f, h } = feathers(dollars);
+  if (!p && !f && !h) {
+    el('circle', { cx: x1, cy: y1, r: 1.3 * s, fill: ink }, g); // under a dollar: a dot, not calm
+    return;
+  }
+  let at = len, step = 4.2 * s, fl = 9 * s;
+  const pt = (d, o) => [ux * d + nx * o, uy * d + ny * o];
+  for (let i = 0; i < p; i++) {
+    const [ax, ay] = pt(at, 0), [bx, by] = pt(at - step * 1.4, 0), [cx, cy] = pt(at - 0.2 * s, fl);
+    el('path', { d: `M${ax} ${ay} L${cx} ${cy} L${bx} ${by} Z`, fill: ink }, g);
+    at -= step * 1.7;
+  }
+  for (let i = 0; i < f; i++) {
+    const [ax, ay] = pt(at, 0), [bx, by] = pt(at + 2.4 * s, fl);
+    el('line', { x1: ax, y1: ay, x2: bx, y2: by, stroke: ink, 'stroke-width': 1.1 * s }, g);
+    at -= step;
+  }
+  if (h) {
+    if (!p && !f) at -= step; // a lone half feather sits in from the tip, as on a real barb
+    const [ax, ay] = pt(at, 0), [bx, by] = pt(at + 1.3 * s, fl * 0.55);
+    el('line', { x1: ax, y1: ay, x2: bx, y2: by, stroke: ink, 'stroke-width': 1.1 * s }, g);
+  }
+}
+
+/* Present weather: the state the chunk is in right now. */
+function drawWx(g, kind, x, y, s) {
+  s = s || 1;
+  const w = el('g', { transform: `translate(${x} ${y}) scale(${s})` }, g);
+  if (kind === 'rain') { // running
+    el('circle', { cx: -3, cy: 0, r: 1.7, fill: INK }, w);
+    el('circle', { cx: 3, cy: 0, r: 1.7, fill: INK }, w);
+  } else if (kind === 'shower') { // delivering: dropping onto master
+    el('path', { d: 'M-4 -1 L4 -1 L0 6 Z', fill: 'none', stroke: INK, 'stroke-width': 1.1 }, w);
+    el('circle', { cx: 0, cy: -4.5, r: 1.6, fill: INK }, w);
+  } else if (kind === 'thunder') { // needs a human
+    el('path', { d: 'M-4 -6 L-4 6 M-4 -6 L4 -6 L0.5 0.5 L4 0.5 L1 6.5', fill: 'none', stroke: RED, 'stroke-width': 1.6, 'stroke-linejoin': 'miter' }, w);
+    el('path', { d: 'M1 6.5 L-0.8 3.6 L2.9 4.4 Z', fill: RED }, w);
+  } else if (kind === 'fog') { // waiting / saturated
+    for (let i = -1; i <= 1; i++) el('line', { x1: -5, y1: i * 3, x2: 5, y2: i * 3, stroke: INK, 'stroke-width': 1.1 }, w);
+  } else if (kind === 'hold') { // operator hold
+    el('line', { x1: -1.6, y1: -5, x2: -1.6, y2: 5, stroke: INK, 'stroke-width': 1.5 }, w);
+    el('line', { x1: 1.6, y1: -5, x2: 1.6, y2: 5, stroke: INK, 'stroke-width': 1.5 }, w);
+  }
+  return w;
+}
+function wxOf(c) {
+  if (c.held) return 'hold';
+  return { running: 'rain', delivering: 'shower', needs_human: 'thunder', waiting: 'fog' }[c.status] || null;
+}
+
+/* Tendency: the barograph of the chunk's walk — node level over its last visits. */
+function drawTrace(g, trace, x, y, w, h, ink, sw) {
+  if (!trace || trace.length < 2) return;
+  const t = trace.slice(-8), n = t.length;
+  const pts = t.map((v, i) => [x + (i / (n - 1)) * w, y + h - (v / 7) * h]);
+  el('polyline', { points: pts.map(p => p.map(q => q.toFixed(1)).join(',')).join(' '), fill: 'none', stroke: ink, 'stroke-width': sw || 1.1, 'stroke-linejoin': 'round' }, g);
+  for (let i = 1; i < n; i++) if (t[i] < t[i - 1]) {
+    el('circle', { cx: pts[i][0], cy: pts[i][1], r: 1.3, fill: RED }, g);
+  }
+}
+function bounces(trace) {
+  let b = 0;
+  if (trace) for (let i = 1; i < trace.length; i++) if (trace[i] < trace[i - 1]) b++;
+  return b;
+}
+function money(v) {
+  if (v >= 10) return Math.round(v).toString();
+  if (v >= 1) return v.toFixed(1);
+  return v.toFixed(2).replace(/^0/, '');
+}
+function ageStr(min) {
+  if (min < 1) return Math.round(min * 60) + '"';
+  if (min < 60) return Math.floor(min) + "'";
+  return Math.floor(min / 60) + 'h';
+}
+function refShort(c) {
+  const r = c.refs[0] || '';
+  const s = r.startsWith('blizzard#') ? '#' + r.slice(9) : r;
+  const extra = c.refs.length - 1 + (c.more || 0);
+  return extra > 0 ? s + '+' + extra : s;
+}
+
+/* One station plot, drawn at the origin of g. Positions are fixed:
+     cost   UL │ UR call sign
+     wx  ◯ tendency
+     age    LL │ LR bounces
+           work ref                               */
+function drawStation(g, c, opt) {
+  opt = opt || {};
+  const s = opt.scale || 1;
+  const big = (c.status !== 'ready' && c.status !== 'backlog' && c.status !== 'done') || opt.full;
+  const P = el('g', { class: 'plot', transform: s !== 1 ? `scale(${s})` : null }, g);
+  const font = 'font-family:var(--plot);';
+  if (c.status === 'done') {
+    const old = !/^\d\d:\d\d$/.test(c.done || '');
+    el('circle', { r: 3.2, fill: old ? GREY : INK }, P);
+    txt(P, 5, -3, c.id, { style: font + `font-size:8.5px;fill:${old ? GREY : '#4b473e'}` });
+    return P;
+  }
+  if (c.status === 'backlog') {
+    el('rect', { x: -5, y: -5, width: 10, height: 10, fill: PAPER, stroke: INK, 'stroke-width': 1.3 }, P);
+  } else {
+    if (c.status === 'needs_human') el('circle', { r: 6.4, fill: 'none', stroke: RED, 'stroke-width': 2.2 }, P);
+    const okg = el('g', {}, P);
+    drawOktas(okg, okta(c), c.status === 'ready' ? 4.6 : 6, INK);
+  }
+  const R = c.status === 'ready' || c.status === 'backlog' ? 5 : 6;
+  if (big && c.runner) drawBarb(P, RUNNER_BEARING[c.runner] || 0, c.cost, R, 27, INK);
+  if (big && c.cost != null) txt(P, -9, -5, money(c.cost), { 'text-anchor': 'end', style: font + `font-size:11px;font-weight:600;${c.est ? 'font-style:italic;' : ''}fill:${INK}` });
+  txt(P, R + 3, big ? -5 : -3, c.id, { style: font + `font-size:${big ? 11 : 10}px;font-weight:${big ? 700 : 400};fill:${INK};letter-spacing:.2px` });
+  const wx = wxOf(c);
+  if (wx) drawWx(P, wx, -15, 0.5);
+  if (big) {
+    drawTrace(P, c.trace, R + 3, -2, 18, 8, INK);
+    txt(P, -9, 14, ageStr(c.age), { 'text-anchor': 'end', class: 'age', style: font + 'font-size:10px;fill:#4b473e' });
+    const b = bounces(c.trace);
+    if (b) txt(P, R + 3, 15, b.toString(), { style: font + `font-size:10.5px;font-weight:700;fill:${RED}` });
+  }
+  txt(P, 0, big ? 26 : 13, refShort(c), { 'text-anchor': 'middle', style: font + `font-size:${big ? 9.5 : 8.5}px;fill:${GREY}` });
+  return P;
+}
+
+/* Fronts: the line from a blocker to the chunk it holds.
+   Kind follows the blocker: running → warm (red, semicircles), ready → cold
+   (blue, triangles), stuck on a human → stationary (both, alternating).
+   Pips sit on the left as you walk from blocker to held. */
+function frontKind(blocker) {
+  if (!blocker) return null;
+  if (blocker.status === 'needs_human' || blocker.status === 'waiting') return 'stationary';
+  if (blocker.status === 'running' || blocker.status === 'delivering') return 'warm';
+  if (blocker.status === 'done') return null;
+  return 'cold';
+}
+function frontPath(a, b, bend) {
+  const mx = (a.x + b.x) / 2, my = (a.y + b.y) / 2, dx = b.x - a.x, dy = b.y - a.y;
+  const k = bend == null ? 0.18 : bend;
+  return `M${a.x} ${a.y} Q${mx - dy * k} ${my + dx * k} ${b.x} ${b.y}`;
+}
+function drawFront(g, a, b, kind, opt) {
+  opt = opt || {};
+  const pencil = opt.pencil, sz = opt.size || 4.2, gap = opt.gap || 17;
+  const fg = el('g', { class: 'front ' + kind + (pencil ? ' pencil' : '') }, g);
+  const d = frontPath(a, b, opt.bend);
+  const probe = el('path', { d, fill: 'none', stroke: 'none' }, fg);
+  const L = probe.getTotalLength();
+  const trim0 = opt.trim0 == null ? 9 : opt.trim0, trim1 = opt.trim1 == null ? 9 : opt.trim1;
+  if (L < trim0 + trim1 + 6) return fg;
+  const col = pencil ? PENCIL : (kind === 'warm' ? RED : kind === 'cold' ? BLUE : kind === 'stationary' ? RED : '#6a3d8f');
+  const W = opt.width || 1.5;
+  const pts = [];
+  for (let s = trim0; s <= L - trim1; s += 2) pts.push(probe.getPointAtLength(s));
+  if (kind === 'stationary' && !pencil) {
+    const seg = gap;
+    for (let s = trim0, i = 0; s < L - trim1; s += seg, i++) {
+      const sub = [];
+      for (let t = s; t <= Math.min(s + seg, L - trim1); t += 2) sub.push(probe.getPointAtLength(t));
+      el('polyline', { points: sub.map(p => `${p.x.toFixed(1)},${p.y.toFixed(1)}`).join(' '), fill: 'none', stroke: i % 2 ? BLUE : RED, 'stroke-width': W }, fg);
+    }
+  } else {
+    el('polyline', { points: pts.map(p => `${p.x.toFixed(1)},${p.y.toFixed(1)}`).join(' '), fill: 'none', stroke: col, 'stroke-width': W, 'stroke-dasharray': pencil ? '3 2' : null }, fg);
+  }
+  el('circle', { cx: pts[0].x, cy: pts[0].y, r: W * 1.3, fill: col }, fg);
+  for (let s = Math.max(trim0 + gap * 0.6, (opt.pipFrom || 0) * L), i = 0; s < L - trim1 - 4; s += gap, i++) {
+    const p = probe.getPointAtLength(s), q = probe.getPointAtLength(Math.min(L, s + 1));
+    let tx = q.x - p.x, ty = q.y - p.y; const m = Math.hypot(tx, ty) || 1; tx /= m; ty /= m;
+    const nx = ty, ny = -tx; // left of travel
+    let shape = kind === 'warm' ? 'semi' : kind === 'cold' ? 'tri' : (i % 2 ? 'tri' : 'semi');
+    let side = 1, c = col;
+    if (kind === 'stationary' && !pencil) { c = shape === 'tri' ? BLUE : RED; side = shape === 'tri' ? -1 : 1; }
+    const bx = p.x, by = p.y;
+    if (shape === 'tri') {
+      const a1 = [bx - tx * sz, by - ty * sz], a2 = [bx + tx * sz, by + ty * sz], tip = [bx + nx * sz * 1.5 * side, by + ny * sz * 1.5 * side];
+      el('path', { d: `M${a1} L${tip} L${a2} Z`, fill: c }, fg);
+    } else {
+      const a1 = [bx - tx * sz, by - ty * sz], a2 = [bx + tx * sz, by + ty * sz];
+      const sweep = side > 0 ? 0 : 1;
+      el('path', { d: `M${a1} A${sz} ${sz} 0 0 ${sweep} ${a2} Z`, fill: c }, fg);
+    }
+  }
+  if (opt.label) {
+    const p = probe.getPointAtLength(L * 0.5);
+    txt(fg, p.x + 4, p.y - 5, opt.label, { style: `font-family:var(--plot);font-size:9px;fill:${col}` });
+  }
+  return fg;
+}
+
+/* Coastlines: a region's landmass is the metaball of its stations, cut
+   by an SVG filter so the shore stays smooth at any count. */
+function landFilter(defs, id, blur) {
+  const f = el('filter', { id, x: '-30%', y: '-30%', width: '160%', height: '160%', 'color-interpolation-filters': 'sRGB' }, defs);
+  el('feGaussianBlur', { in: 'SourceAlpha', stdDeviation: blur || 13, result: 'b' }, f);
+  const ct = el('feComponentTransfer', { in: 'b', result: 'm' }, f);
+  el('feFuncA', { type: 'linear', slope: 28, intercept: -9 }, ct);
+  el('feFlood', { 'flood-color': LAND, result: 'lc' }, f);
+  el('feComposite', { in: 'lc', in2: 'm', operator: 'in', result: 'land' }, f);
+  el('feMorphology', { in: 'm', operator: 'dilate', radius: 1.1, result: 'd1' }, f);
+  el('feComposite', { in: 'd1', in2: 'm', operator: 'out', result: 'r1' }, f);
+  el('feFlood', { 'flood-color': COAST, result: 'cc' }, f);
+  el('feComposite', { in: 'cc', in2: 'r1', operator: 'in', result: 'coast' }, f);
+  const rings = [];
+  [5, 10, 16].forEach((rad, i) => {
+    el('feMorphology', { in: 'm', operator: 'dilate', radius: rad, result: 'wa' + i }, f);
+    el('feMorphology', { in: 'm', operator: 'dilate', radius: rad - 0.7, result: 'wb' + i }, f);
+    el('feComposite', { in: 'wa' + i, in2: 'wb' + i, operator: 'out', result: 'wr' + i }, f);
+    el('feFlood', { 'flood-color': WATER, 'flood-opacity': [0.55, 0.35, 0.18][i], result: 'wc' + i }, f);
+    el('feComposite', { in: 'wc' + i, in2: 'wr' + i, operator: 'in', result: 'w' + i }, f);
+    rings.push('w' + i);
+  });
+  const m = el('feMerge', {}, f);
+  rings.concat(['land', 'coast']).forEach(r => el('feMergeNode', { in: r }, m));
+}
+function drawLand(g, pts, filterId, rad) {
+  const lg = el('g', { filter: `url(#${filterId})` }, g);
+  pts.forEach(p => el('circle', { cx: p.x, cy: p.y, r: p.r || rad || 30, fill: '#000' }, lg));
+  return lg;
+}
+
+function stipple(defs, id, color, gap, r) {
+  const p = el('pattern', { id, width: gap, height: gap, patternUnits: 'userSpaceOnUse', patternTransform: 'rotate(30)' }, defs);
+  el('circle', { cx: gap / 2, cy: gap / 2, r, fill: color }, p);
+}
+function hatch(defs, id, color, gap, w) {
+  const p = el('pattern', { id, width: gap, height: gap, patternUnits: 'userSpaceOnUse', patternTransform: 'rotate(45)' }, defs);
+  el('line', { x1: 0, y1: 0, x2: 0, y2: gap, stroke: color, 'stroke-width': w }, p);
+}
+
+/* Isopleths of spend: a marching-squares contour of a cost field. */
+function contourSegments(f, x0, y0, x1, y1, step, level) {
+  const nx = Math.ceil((x1 - x0) / step), ny = Math.ceil((y1 - y0) / step);
+  const v = [];
+  for (let j = 0; j <= ny; j++) { v[j] = []; for (let i = 0; i <= nx; i++) v[j][i] = f(x0 + i * step, y0 + j * step); }
+  const segs = [];
+  const lerp = (a, b, va, vb) => a + (b - a) * ((level - va) / (vb - va));
+  for (let j = 0; j < ny; j++) for (let i = 0; i < nx; i++) {
+    const a = v[j][i], b = v[j][i + 1], c = v[j + 1][i + 1], d = v[j + 1][i];
+    const X = x0 + i * step, Y = y0 + j * step;
+    const idx = (a > level ? 8 : 0) | (b > level ? 4 : 0) | (c > level ? 2 : 0) | (d > level ? 1 : 0);
+    if (idx === 0 || idx === 15) continue;
+    const top = [lerp(X, X + step, a, b), Y], right = [X + step, lerp(Y, Y + step, b, c)],
+      bottom = [lerp(X, X + step, d, c), Y + step], left = [X, lerp(Y, Y + step, a, d)];
+    const T = {
+      1: [[left, bottom]], 2: [[bottom, right]], 3: [[left, right]], 4: [[top, right]],
+      5: [[left, top], [bottom, right]], 6: [[top, bottom]], 7: [[left, top]], 8: [[left, top]],
+      9: [[top, bottom]], 10: [[left, bottom], [top, right]], 11: [[top, right]], 12: [[left, right]],
+      13: [[bottom, right]], 14: [[left, bottom]]
+    }[idx];
+    T.forEach(s => segs.push(s));
+  }
+  return segs;
+}
+
+/* Pencil: the operator's own writing on the chart. It stays graphite until
+   the hub confirms, then inks. */
+function pencilNote(g, x, y, s, opt) {
+  opt = opt || {};
+  const t = txt(g, x, y, s, { class: 'pencil-note', style: `font-family:var(--hand);font-style:italic;font-size:${opt.size || 12}px;fill:${PENCIL}` });
+  return t;
+}
+function pencilRing(g, r, cls) {
+  let d = '';
+  const n = 26, j = [];
+  for (let i = 0; i <= n + 3; i++) {
+    const a = (i / n) * Math.PI * 2 - 0.4, rr = r + Math.sin(i * 2.3) * 1.2 + (i > n ? 2.5 : 0);
+    d += (i ? 'L' : 'M') + (Math.cos(a) * rr).toFixed(1) + ' ' + (Math.sin(a) * rr).toFixed(1);
+  }
+  return el('path', { d, fill: 'none', stroke: INK, 'stroke-width': 1.2, class: cls || 'ring', 'stroke-linejoin': 'round' }, g);
+}
+
+/* The shipping-forecast grammar: a station read aloud. */
+const WORDS = ['nought', 'one', 'two', 'three', 'four', 'five', 'six', 'seven', 'eight', 'nine', 'ten'];
+function sayNum(n) { return n <= 10 ? WORDS[n] : String(n); }
+function decode(c, byId) {
+  const parts = [];
+  const st = {
+    running: 'precipitating at ' + c.node, delivering: 'showers, landing at deliver',
+    needs_human: 'thunder at ' + c.node + ', wants a human', ready: c.blocker ? 'fair, held' : 'fair, claimable',
+    backlog: 'unplotted, backlog', done: 'settled', waiting: 'fog, waiting'
+  }[c.status];
+  parts.push(st);
+  if (c.status !== 'ready' && c.status !== 'backlog' && c.status !== 'done') parts.push(sayNum(okta(c)) + ' eighths');
+  if (c.cost) parts.push((c.est ? 'about ' : '') + '$' + c.cost.toFixed(2));
+  const b = bounces(c.trace);
+  if (b) parts.push('bounced ' + sayNum(b));
+  if (c.attempts) parts.push(c.attempts + ' attempts');
+  if (c.blocker && byId[c.blocker]) parts.push('behind ' + c.blocker + (c.blockN > 1 ? ' and ' + (c.blockN - 1) + ' more' : ''));
+  if (c.runner) parts.push('on xps/' + c.runner);
+  return c.id + ', ' + parts.join('; ') + '.';
+}
+
+/* Replays a key script from ?keys= so a static render can show a state the
+   keyboard reached: "g6J~t" types g,6,J then waits, then t. */
+function replayKeys() {
+  const ks = new URLSearchParams(location.search).get('keys');
+  if (!ks) return;
+  let t = 300;
+  for (const ch of ks) {
+    if (ch === '~') { t += 1800; continue; }
+    const key = { '<': 'ArrowLeft', '>': 'ArrowRight', '^': 'ArrowUp', '_': 'ArrowDown', '!': 'Enter', '|': 'Tab' }[ch] || ch;
+    setTimeout(() => document.dispatchEvent(new KeyboardEvent('keydown', { key, shiftKey: key.length === 1 && key !== key.toLowerCase() })), t);
+    t += 120;
+  }
+}
+
+/* The one-page primer: every mark the chart uses, drawn by the same code. */
+function buildLegend(root) {
+  root.innerHTML = '';
+  const css = document.createElement('style');
+  css.textContent = `
+  .lg{columns:3;column-gap:34px;font-family:var(--plot);font-size:12.5px;line-height:1.35;color:#1c1b18}
+  .lg h1{column-span:all;font-family:var(--serif);font-weight:400;font-size:26px;margin:0 0 2px}
+  .lg .sub{column-span:all;font-family:var(--serif);font-style:italic;color:#6b6556;margin-bottom:14px;font-size:14px}
+  .lg section{break-inside:avoid;margin:0 0 14px;border-top:1.5px solid #1c1b18;padding-top:4px}
+  .lg h3{font-family:var(--serif);font-weight:400;font-style:italic;font-size:15px;margin:0 0 4px}
+  .lg table{border-collapse:collapse;width:100%}
+  .lg td{padding:1px 4px;vertical-align:middle;border-bottom:1px dotted #cfc6ae}
+  .lg td:first-child{width:56px;text-align:center}
+  .lg p{margin:3px 0}
+  .lg kbd{font-family:var(--plot);font-size:11px;border:1px solid #1c1b18;border-bottom-width:2px;padding:0 3px;background:#fbf9f3}
+  .lg .k td:first-child{width:auto;text-align:left;white-space:nowrap}
+  `;
+  root.appendChild(css);
+  const lg = document.createElement('div'); lg.className = 'lg'; root.appendChild(lg);
+  const H = (h) => { const e = document.createElement('h1'); e.innerHTML = h; lg.appendChild(e); };
+  const sec = (title) => { const s = document.createElement('section'); s.innerHTML = `<h3>${title}</h3>`; lg.appendChild(s); return s; };
+  const mini = (w, h, vb, fn) => { const s = document.createElementNS(NS, 'svg'); s.setAttribute('width', w); s.setAttribute('height', h); s.setAttribute('viewBox', vb); fn(s); return s; };
+  const rows = (s, list) => {
+    const t = document.createElement('table');
+    list.forEach(([draw, text]) => { const tr = t.insertRow(); const a = tr.insertCell(); a.appendChild(draw); tr.insertCell().innerHTML = text; });
+    s.appendChild(t);
+  };
+  H('Synop <span style="font-size:15px;font-style:italic;color:#6b6556">— reading the fleet as a weather chart</span>');
+  const sub = document.createElement('div'); sub.className = 'sub';
+  sub.textContent = 'Every chunk is a station. Every station is plotted the same way, in fixed positions, so the eye learns where to look instead of what to read. Learn this page once.';
+  lg.appendChild(sub);
+
+  const A = sec('1 · The station plot');
+  const ex = { id: '6J9H', status: 'needs_human', node: 'deliver', cost: 8.2, est: false, age: 20, trace: [1, 2, 3, 2, 3, 5, 6, 5, 6, 5, 6, 5, 6, 5, 6, 5, 6], runner: 'r-claude', refs: ['blizzard#1365'], more: 0 };
+  A.appendChild(mini(440, 170, '-200 -82 440 170', s => {
+    drawStation(s, ex, { scale: 2.4 });
+    const lab = (x, y, t, a) => txt(s, x, y, t, { 'text-anchor': a || 'start', style: 'font-family:var(--serif);font-style:italic;font-size:11.5px;fill:#6b6556' });
+    lab(-62, -24, 'cost, dollars', 'end'); lab(-62, -11, 'italic = estimate', 'end');
+    lab(108, -20, 'call sign'); lab(108, 6, 'barograph');
+    lab(-62, 12, 'state', 'end'); lab(-62, 38, 'minutes in node', 'end');
+    lab(108, 38, 'bounces'); lab(24, -70, 'shaft bearing = runner, feathers = $'); lab(40, 76, 'work item');
+    el('line', { x1: -60, y1: -15, x2: -50, y2: -15, stroke: '#b9b19d' }, s);
+  }));
+  const p = document.createElement('p'); p.innerHTML = 'Fair stations (ready) plot only circle, call sign and work item. Settled stations are a dot: black if settled today, grey if older. A square is a backlog item not yet in the network.'; A.appendChild(p);
+
+  const B = sec('2 · Circle — how far it has walked');
+  const ok = document.createElement('div'); ok.style.display = 'flex'; ok.style.gap = '4px';
+  ['ready', 'triage', 'build', 'review', 'mutation', 'pre-push', 'deliver', 'landing', 'done'].forEach((n, i) => {
+    const s = mini(38, 46, '-19 -12 38 46', s => { const g = el('g', {}, s); drawOktas(g, i, 7, INK); txt(s, 0, 21, n, { 'text-anchor': 'middle', style: 'font-family:var(--plot);font-size:8.5px' }); txt(s, 0, 31, i + '/8', { 'text-anchor': 'middle', style: 'font-family:var(--plot);font-size:8.5px;fill:#8c8676' }); });
+    ok.appendChild(s);
+  });
+  B.appendChild(ok);
+  const p2 = document.createElement('p'); p2.innerHTML = 'Eighths of the graph walked, drawn like cloud cover. A red ring round the circle: it wants you.'; B.appendChild(p2);
+
+  const C = sec('3 · State — the weather now');
+  rows(C, [
+    [mini(40, 22, '-20 -11 40 22', s => drawWx(s, 'rain', 0, 0, 1.4)), '<b>rain</b> — running; green stipple around it is the radar, wider as it costs more'],
+    [mini(40, 22, '-20 -11 40 22', s => drawWx(s, 'shower', 0, 0, 1.4)), '<b>shower</b> — landing; its pull request is going onto master'],
+    [mini(40, 24, '-20 -12 40 24', s => drawWx(s, 'thunder', 0, 0, 1.4)), '<b style="color:#c4122f">thunder</b> — needs a human: an ask, a gate, a bounce cap. Red hatching marks the cell'],
+    [mini(40, 22, '-20 -11 40 22', s => drawWx(s, 'fog', 0, 0, 1.4)), '<b>fog</b> — waiting; on the fleet chart, a saturated window'],
+    [mini(40, 22, '-20 -11 40 22', s => drawWx(s, 'hold', 0, 0, 1.4)), '<b>hold</b> — the operator paused it'],
+    [mini(40, 22, '-20 -11 40 22', s => { }), 'nothing — fair: ready, idle'],
+  ]);
+
+  const D = sec('4 · Barb — who runs it, what it cost');
+  const bb = document.createElement('div'); bb.style.display = 'flex'; bb.style.gap = '6px';
+  [[0.27, '$0.27'], [1, '$1'], [3.49, '$3.49'], [8.2, '$8.20'], [12, '$12'], [40.11, '$40.11']].forEach(([v, t]) => {
+    bb.appendChild(mini(46, 58, '-23 -40 46 58', s => { el('circle', { r: 4, fill: PAPER, stroke: INK }, s); drawBarb(s, 0, v, 4, 30, INK); txt(s, 0, 15, t, { 'text-anchor': 'middle', style: 'font-family:var(--plot);font-size:9.5px' }); }));
+  });
+  D.appendChild(bb);
+  const p3 = document.createElement('p'); p3.innerHTML = 'Half feather $1 · full feather $2 · pennant $10 · a dot under $1. The shaft\'s bearing names the runner: <b>r-claude</b> north-north-west, <b>r-chatgpt</b> north-north-east. No shaft: nobody holds it.'; D.appendChild(p3);
+
+  const E = sec('5 · Barograph — the shape of the walk');
+  rows(E, [
+    [mini(50, 22, '0 0 50 22', s => drawTrace(s, [1, 2, 3, 4, 5, 6], 4, 3, 42, 16, INK, 1.3)), 'clean climb'],
+    [mini(50, 22, '0 0 50 22', s => drawTrace(s, [1, 2, 3, 2, 3, 4], 4, 3, 42, 16, INK, 1.3)), 'one bounce (red dot), recovered'],
+    [mini(50, 22, '0 0 50 22', s => drawTrace(s, [5, 6, 5, 6, 5, 6, 5, 6], 4, 3, 42, 16, INK, 1.3)), 'saw-tooth: ping-pong between two nodes — look now'],
+    [mini(50, 22, '0 0 50 22', s => drawTrace(s, [3, 5, 6, 5, 6, 5, 2, 3], 4, 3, 42, 16, INK, 1.3)), 'cliff: thrown far back'],
+  ]);
+  const p4 = document.createElement('p'); p4.textContent = 'The last eight node visits, triage at the bottom, deliver at the top. The number below it counts every bounce.'; E.appendChild(p4);
+
+  const F = sec('6 · Fronts — what holds what');
+  rows(F, [
+    [mini(56, 20, '0 0 56 20', s => drawFront(s, { x: 2, y: 12 }, { x: 54, y: 12 }, 'warm', { bend: 0, trim0: 0, trim1: 0, size: 3.4, gap: 14 })), '<b style="color:#c4122f">warm</b> — the blocker is running; this will move soon'],
+    [mini(56, 20, '0 0 56 20', s => drawFront(s, { x: 2, y: 12 }, { x: 54, y: 12 }, 'cold', { bend: 0, trim0: 0, trim1: 0, size: 3.4, gap: 14 })), '<b style="color:#1d4f9c">cold</b> — the blocker is only ready; nothing moves until it is claimed'],
+    [mini(56, 20, '0 0 56 20', s => drawFront(s, { x: 2, y: 10 }, { x: 54, y: 10 }, 'stationary', { bend: 0, trim0: 0, trim1: 0, size: 3.4, gap: 14 })), '<b>stationary</b> — the blocker is stuck on a human; the whole chain behind it is frozen'],
+    [mini(56, 20, '0 0 56 20', s => drawFront(s, { x: 2, y: 12 }, { x: 54, y: 12 }, 'cold', { bend: 0, trim0: 0, trim1: 0, size: 3.4, gap: 14, pencil: true })), '<b style="color:#77736a">pencil</b> — a front you drew, not yet confirmed by the hub'],
+  ]);
+  const p5 = document.createElement('p'); p5.innerHTML = 'A front starts at the blocker (the dot) and runs to the chunk it holds; pips sit on the left as you walk it. A chunk held by several draws its first blocker; the plot slip names the rest.'; F.appendChild(p5);
+
+  const G = sec('7 · The ground');
+  const p6 = document.createElement('p'); p6.innerHTML = 'Each <b>land</b> is an epic, lettered and numbered; chunks with no epic are ships <b>at sea</b>. Settled lands drift to the <b>west</b> margin, what is still to come lies <b>east</b>; inside a land, blockers sit west of what they hold. Places do not move while you are away — you learn the map. Brown <b>isopleths</b> ring where today\'s money went: $1, 2, 4, 8, 16 within reach.'; G.appendChild(p6);
+
+  const W = sec('8 · Writing on the chart');
+  const p7 = document.createElement('p'); p7.innerHTML = 'Everything you do is written in <span style="font-family:var(--hand);font-style:italic;color:#77736a">pencil</span> beside the station, initialled and timed, and inks when the hub confirms. What you asked for and what happened are never confused.'; W.appendChild(p7);
+  const kt = document.createElement('table'); kt.className = 'k';
+  [['<kbd>g</kbd> 6J', 'go to a call sign — two characters usually suffice'], ['<kbd>h j k l</kbd> / arrows', 'walk to the nearest station that way'], ['<kbd>n</kbd> <kbd>N</kbd>', 'next / previous storm'], ['<kbd>.</kbd> <kbd>,</kbd>', 'next / previous precipitation'], ['<kbd>[</kbd> <kbd>]</kbd>', 'walk a front up to its blocker / down to what it holds'], ['<kbd>1</kbd>–<kbd>9</kbd>', 'jump to a land by number'], ['<kbd>t</kbd>', 'take over a storm'], ['<kbd>q</kbd>', 'requeue'], ['<kbd>p</kbd>', 'hold / release'], ['<kbd>P</kbd>', 'promote a backlog square'], ['<kbd>d</kbd> … <kbd>⏎</kbd>', 'draw a front: from here, walk to the held one, commit (or shift-drag)'], ['<kbd>o</kbd>', 'open the pull request'], ['<kbd>u</kbd>', 'rub out the last pencil'], ['<kbd>=</kbd> <kbd>-</kbd> <kbd>0</kbd>', 'zoom in, out, whole chart'], ['<kbd>F</kbd>', 'upper-air chart (the fleet)']].forEach(([a, b]) => { const tr = kt.insertRow(); tr.insertCell().innerHTML = a; tr.insertCell().innerHTML = b; });
+  W.appendChild(kt);
+
+  const U = sec('9 · Upper air — the fleet');
+  const rp = { id: 'r-chatgpt', okta: 4, burn: 4.2, bearing: 20, T: 7, Td: 8, wx: 'fog', ver: '1002', ageS: 17, trace: [4, 4, 5, 5, 6, 6, 6, 6] };
+  U.appendChild(mini(440, 130, '-200 -66 440 130', s => {
+    drawRunnerPlot(s, rp, 1.6);
+    const lab = (x, y, t, a) => txt(s, x, y, t, { 'text-anchor': a || 'start', style: 'font-family:var(--serif);font-style:italic;font-size:11.5px;fill:#6b6556' });
+    lab(-50, -14, 'T  window elapsed %', 'end'); lab(-50, 32, 'Td  window spent %', 'end'); lab(-50, 8, 'state', 'end');
+    lab(76, -14, 'build'); lab(76, 8, 'busy, last hour'); lab(76, 32, 'last report'); lab(30, -54, 'barb: $ an hour, toward its subscription');
+  }));
+  const p8 = document.createElement('p'); p8.innerHTML = 'A runner plots like a station aloft. Circle: slots busy in eighths. Barb: burn in dollars an hour, bearing toward the subscription it spends. <b>T</b> is how much of the tightest window has elapsed, <b>Td</b> how much of it is spent. When spent meets elapsed the air is <b>saturated</b>: fog, and the runner declines work. The spread T−Td is your headroom.'; U.appendChild(p8);
+
+  const S = sec('10 · On the phone — the forecast');
+  const p9 = document.createElement('p'); p9.innerHTML = 'Away from the desk the chart is read aloud, in the fixed order of the lands, like a shipping forecast: <i>gale warnings</i> first (storms that want you), a one-sentence <i>general synopsis</i>, then each land: <i>“Strict. Thunder at QWYS. Rain, one. Fair ten, cold behind Policies. Settled three.”</i> A strip of tiny circles beside each land is every chunk in it, in order. Tap a land to see its chart.'; S.appendChild(p9);
+}
+
+/* Runner plot for the upper-air chart, shared so the legend draws the real thing. */
+function drawRunnerPlot(g, r, s) {
+  const P = el('g', { transform: `scale(${s || 1})` }, g);
+  const R = 9;
+  drawBarb(P, r.bearing, r.burn, R, 34, INK);
+  drawOktas(el('g', {}, P), r.okta, R, INK);
+  const f = 'font-family:var(--plot);';
+  txt(P, -13, -8, String(r.T), { 'text-anchor': 'end', style: f + 'font-size:12px;font-weight:700;fill:' + RED });
+  txt(P, -13, 19, String(r.Td), { 'text-anchor': 'end', style: f + 'font-size:12px;font-weight:700;fill:' + GREEN });
+  txt(P, 13, -8, r.ver, { style: f + 'font-size:11px;fill:#4b473e' });
+  drawTrace(P, r.trace, 13, -3, 20, 8, INK);
+  txt(P, 13, 19, r.ageS + 's', { style: f + 'font-size:11px;fill:#4b473e', class: 'rage' });
+  if (r.wx) drawWx(P, r.wx, -21, 1, 1.05);
+  return P;
+}
+
+/* Regions are the epics, lettered like seas and lands. West is settled,
+   east is still to come; inside a region blockers sit west of what they hold. */
+const REGIONS = [
+  { k: 'PLAYWRIGHT', name: 'Playwright', x: 52, y: 150, rows: 4, dcols: 2 },
+  { k: 'ACTIONS', name: 'Actions', x: 52, y: 330, rows: 2 },
+  { k: 'NOTES', name: 'Notes', x: 52, y: 452, rows: 2 },
+  { k: 'FLAGS', name: 'Flags', x: 52, y: 568, rows: 1 },
+  { k: 'LINES', name: 'Lines', x: 52, y: 654, rows: 1 },
+  { k: 'RELEASE', name: 'Release', x: 52, y: 740, rows: 1 },
+  { k: 'HUB', name: 'Hub shoals', x: 238, y: 150, rows: 3, cw: 84, ch: 66, dcols: 3 },
+  { k: 'FORGES', name: 'Forges', x: 610, y: 150, rows: 1, cw: 92 },
+  { k: 'FLOWS', name: 'Flows', x: 820, y: 296, rows: 1, cw: 74 },
+  { k: 'POLICIES', name: 'Policies', x: 770, y: 430, rows: 1, cw: 74 },
+  { k: 'STRICT', name: 'Strict', x: 252, y: 470, rows: 5, cw: 84, ch: 54, dcols: 1 },
+  { k: 'PW-HUBTIER', name: 'Hub-tier Playwright', x: 236, y: 770, rows: 4, cw: 80, ch: 52, dcols: 1 },
+  { k: 'SURVEY', name: 'Survey bank', x: 1010, y: 70, rows: 5, cw: 66, ch: 40, dcols: 1 },
+  { k: 'BREAK', name: 'Break', x: 1110, y: 640, rows: 1 },
+  { k: 'SEA', name: null, x: 0, y: 0, rows: 1 },
+];
+const SEA_POS = { WSCR: [700, 640], HBRY: [930, 640] };
+
+function layout() {
+  const byId = {}; CHUNKS.forEach(c => byId[c.id] = c);
+  REGIONS.forEach((R, ri) => {
+    R.n = ri + 1;
+    const mem = CHUNKS.filter(c => c.region === R.k);
+    if (R.k === 'SEA') { mem.forEach(c => { c.x = SEA_POS[c.id][0]; c.y = SEA_POS[c.id][1]; }); return; }
+    const done = mem.filter(c => c.status === 'done');
+    const live = mem.filter(c => c.status !== 'done');
+    const dcw = 50, dch = 24, drows = Math.max(R.rows * 2, 2);
+    const dcols = R.dcols || Math.ceil(done.length / drows);
+    done.forEach((c, i) => {
+      c.x = R.x + Math.floor(i / Math.ceil(done.length / dcols)) * dcw;
+      c.y = R.y + (i % Math.ceil(done.length / dcols)) * dch;
+    });
+    let x = R.x + (done.length ? dcols * dcw + 22 : 0);
+    const depth = c => {
+      const b = c.blocker && byId[c.blocker];
+      if (!b || b.region !== R.k || b.status === 'done') return 0;
+      return 1 + depth(b);
+    };
+    const cols = [];
+    live.forEach(c => { const d = depth(c); (cols[d] = cols[d] || []).push(c); });
+    const rank = c => ({ needs_human: 0, running: 1, delivering: 1, ready: 2, backlog: 3 }[c.status]);
+    const cw = R.cw || 72, ch = R.ch || 46;
+    cols.forEach(col => {
+      col.sort((a, b) => rank(a) - rank(b));
+      col.forEach((c, i) => {
+        const sub = Math.floor(i / R.rows), row = i % R.rows;
+        c.x = x + sub * cw + 14; c.y = R.y + row * ch + (row % 2 && R.rows > 1 ? 0 : 0);
+      });
+      x += Math.ceil(col.length / R.rows) * cw;
+    });
+    const xs = mem.map(c => c.x), ys = mem.map(c => c.y);
+    R.box = [Math.min(...xs), Math.min(...ys), Math.max(...xs), Math.max(...ys)];
+  });
+}
+
+function regionName(c) { const R = REGIONS.find(r => r.k === c.region); return R && R.name ? R.name : 'at sea'; }
+
+/* A region's coast: each station's own circle plus satellites fixed by its call sign. */
+function regionBlobs(mem) {
+  const blobs = [];
+  mem.forEach(c => {
+    const d = c.status === 'done';
+    blobs.push({ x: c.x + (d ? 8 : 4), y: c.y + (d ? -2 : 4), r: d ? 21 : 31 });
+    // satellites give each coast its own bays and headlands, fixed by call sign
+    let h = 0; for (const ch of c.id) h = (h * 31 + ch.charCodeAt(0)) >>> 0;
+    for (let i = 0; i < 3; i++) {
+      h = (h * 1103515245 + 12345) >>> 0; const a = (h % 628) / 100;
+      h = (h * 1103515245 + 12345) >>> 0; const dist = (d ? 14 : 24) + (h % 18);
+      h = (h * 1103515245 + 12345) >>> 0; const r = (d ? 8 : 11) + (h % 10);
+      blobs.push({ x: c.x + Math.cos(a) * dist, y: c.y + Math.sin(a) * dist, r });
+    }
+  });
+  return blobs;
+}
+
+const CHUNKS = [{"id": "WN6J", "refs": ["blizzard#1312"], "title": "Retire per-binding agents from runner bindings", "titles": ["Retire per-binding agents from runner bindings"], "more": 0, "region": "BREAK", "status": "backlog", "node": "triage", "cost": 0}, {"id": "ZEVE", "refs": ["blizzard#1366"], "title": "Carry every forge address over into a forge record", "titles": ["Carry every forge address over into a forge record"], "more": 0, "region": "FORGES", "status": "ready", "node": "triage", "cost": 0, "blocker": "6J9H", "blockN": 1}, {"id": "MG3R", "refs": ["blizzard#1367"], "title": "Configure forges through the API, CLI, document, and board", "titles": ["Configure forges through the API, CLI, document, and board"], "more": 0, "region": "FORGES", "status": "ready", "node": "triage", "cost": 0, "blocker": "ZEVE", "blockN": 1}, {"id": "4J2W", "refs": ["blizzard#1368"], "title": "Document the forge record and the landing seam", "titles": ["Document the forge record and the landing seam"], "more": 0, "region": "FORGES", "status": "ready", "node": "triage", "cost": 0, "blocker": "MG3R", "blockN": 1}, {"id": "4HAX", "refs": ["blizzard#1371"], "title": "Keep each branch's flow record in the shadow of the slot", "titles": ["Keep each branch's flow record in the shadow of the slot"], "more": 0, "region": "FLOWS", "status": "ready", "node": "triage", "cost": 0, "blocker": "4J2W", "blockN": 1}, {"id": "50RX", "refs": ["blizzard#1372"], "title": "Take hub steps as turns on their branches' flows", "titles": ["Take hub steps as turns on their branches' flows"], "more": 0, "region": "FLOWS", "status": "ready", "node": "triage", "cost": 0, "blocker": "4HAX", "blockN": 3}, {"id": "FC1E", "refs": ["blizzard#1373"], "title": "Retire the slot's code and keep its deprecated table", "titles": ["Retire the slot's code and keep its deprecated table"], "more": 0, "region": "FLOWS", "status": "ready", "node": "triage", "cost": 0, "blocker": "50RX", "blockN": 1}, {"id": "CG21", "refs": ["blizzard#1374"], "title": "Show flows on the API, CLI, live channel, and board", "titles": ["Show flows on the API, CLI, live channel, and board"], "more": 0, "region": "FLOWS", "status": "ready", "node": "triage", "cost": 0, "blocker": "FC1E", "blockN": 1}, {"id": "MAET", "refs": ["blizzard#1378"], "title": "Grow the landing seam and make a landing pass cheap", "titles": ["Grow the landing seam and make a landing pass cheap"], "more": 0, "region": "POLICIES", "status": "ready", "node": "triage", "cost": 0, "blocker": "CG21", "blockN": 1}, {"id": "N96M", "refs": ["blizzard#1379"], "title": "Share one rate budget per forge key, slowing before refusal", "titles": ["Share one rate budget per forge key, slowing before refusal"], "more": 0, "region": "POLICIES", "status": "ready", "node": "triage", "cost": 0, "blocker": "MAET", "blockN": 2}, {"id": "S990", "refs": ["blizzard#1380"], "title": "Run each repository's landing policy, in its project's order", "titles": ["Run each repository's landing policy, in its project's order"], "more": 0, "region": "POLICIES", "status": "ready", "node": "triage", "cost": 0, "blocker": "N96M", "blockN": 1}, {"id": "S93M", "refs": ["blizzard#1381"], "title": "Add the fast-forward and park landing policies", "titles": ["Add the fast-forward and park landing policies"], "more": 0, "region": "POLICIES", "status": "ready", "node": "triage", "cost": 0, "blocker": "S990", "blockN": 1}, {"id": "KTD7", "refs": ["blizzard#1382"], "title": "Show policies, landing order, and awaiting-merge on the board", "titles": ["Show policies, landing order, and awaiting-merge on the board"], "more": 0, "region": "POLICIES", "status": "ready", "node": "triage", "cost": 0, "blocker": "S93M", "blockN": 1}, {"id": "N1JR", "refs": ["hub:579"], "title": "Let the work-source and forge seams own labels, branch links and the annotating set", "titles": ["Let the work-source and forge seams own labels, branch links and the annotating set"], "more": 0, "region": "HUB", "status": "ready", "node": "triage", "cost": 0, "blocker": "ZEVE", "blockN": 2}, {"id": "B6HS", "refs": ["blizzard#1444"], "title": "Type the hub store adapters' SQL helpers and rows", "titles": ["Type the hub store adapters' SQL helpers and rows"], "more": 0, "region": "STRICT", "status": "ready", "node": "triage", "cost": 0, "blocker": "S93M", "blockN": 1}, {"id": "DFGP", "refs": ["blizzard#1448"], "title": "Type the hub domain models' untyped edges", "titles": ["Type the hub domain models' untyped edges"], "more": 0, "region": "STRICT", "status": "ready", "node": "triage", "cost": 0, "blocker": "B6HS", "blockN": 3}, {"id": "6P31", "refs": ["blizzard#1450"], "title": "Type the hub delivery land actions", "titles": ["Type the hub delivery land actions"], "more": 0, "region": "STRICT", "status": "ready", "node": "triage", "cost": 0, "blocker": "FC1E", "blockN": 1}, {"id": "AKMG", "refs": ["blizzard#1451"], "title": "Type the hub and runner CLIs", "titles": ["Type the hub and runner CLIs"], "more": 0, "region": "STRICT", "status": "ready", "node": "triage", "cost": 0, "blocker": "S990", "blockN": 1}, {"id": "STGQ", "refs": ["blizzard#1452"], "title": "Give every bare generic in shipping code its type arguments", "titles": ["Give every bare generic in shipping code its type arguments"], "more": 0, "region": "STRICT", "status": "ready", "node": "triage", "cost": 0, "blocker": "B6HS", "blockN": 6}, {"id": "QG6Y", "refs": ["blizzard#1453"], "title": "Declare shipping code's context managers as generators", "titles": ["Declare shipping code's context managers as generators"], "more": 0, "region": "STRICT", "status": "ready", "node": "triage", "cost": 0, "blocker": "B6HS", "blockN": 6}, {"id": "W9G8", "refs": ["blizzard#1454"], "title": "Replace the _conforms_* functions with annotated assignments", "titles": ["Replace the _conforms_* functions with annotated assignments"], "more": 0, "region": "STRICT", "status": "ready", "node": "triage", "cost": 0, "blocker": "B6HS", "blockN": 6}, {"id": "ZMVH", "refs": ["blizzard#1455"], "title": "Stop shipping code reaching into other modules' private names", "titles": ["Stop shipping code reaching into other modules' private names"], "more": 0, "region": "STRICT", "status": "ready", "node": "triage", "cost": 0, "blocker": "B6HS", "blockN": 6}, {"id": "6Q69", "refs": ["blizzard#1456"], "title": "Sweep the remaining strict errors out of shipping code", "titles": ["Sweep the remaining strict errors out of shipping code"], "more": 0, "region": "STRICT", "status": "ready", "node": "triage", "cost": 0, "blocker": "STGQ", "blockN": 4}, {"id": "00N1", "refs": ["blizzard#1457"], "title": "Spike: re-investigate typing across every project, tests first", "titles": ["Spike: re-investigate typing across every project, tests first"], "more": 0, "region": "STRICT", "status": "ready", "node": "triage", "cost": 0, "blocker": "6Q69", "blockN": 1}, {"id": "MFJE", "refs": ["blizzard#1465"], "title": "Give the harness a mock runner it can drive and runners that serve projects", "titles": ["Give the harness a mock runner it can drive and runners that serve projects"], "more": 0, "region": "PW-HUBTIER", "status": "running", "node": "build", "cost": 0.1, "est": true, "age": 9, "trace": [1, 2], "runner": "r-chatgpt", "pr": null, "attempts": 2}, {"id": "DF68", "refs": ["blizzard#1468"], "title": "Move the helpers other test files import out of the files the hub tier ports", "titles": ["Move the helpers other test files import out of the files the hub tier ports"], "more": 0, "region": "PW-HUBTIER", "status": "ready", "node": "triage", "cost": 0}, {"id": "0ACF", "refs": ["blizzard#1485"], "title": "Move the service-sized tenant teardown test to the component tier", "titles": ["Move the service-sized tenant teardown test to the component tier"], "more": 0, "region": "PW-HUBTIER", "status": "ready", "node": "triage", "cost": 0}, {"id": "JME3", "refs": ["blizzard#1460"], "title": "Run the hub's sweeps on request, per tenant or hub-wide", "titles": ["Run the hub's sweeps on request, per tenant or hub-wide"], "more": 0, "region": "PW-HUBTIER", "status": "ready", "node": "triage", "cost": 0, "blocker": "PTP2", "blockN": 1}, {"id": "P79Q", "refs": ["blizzard#1464"], "title": "Give the harness the CLI, a configurable fresh hub, and an OTLP sink", "titles": ["Give the harness the CLI, a configurable fresh hub, and an OTLP sink"], "more": 0, "region": "PW-HUBTIER", "status": "ready", "node": "triage", "cost": 0, "blocker": "MFJE", "blockN": 1}, {"id": "WWXN", "refs": ["blizzard#1466"], "title": "Step every harness sweep and give the event reader a join from now and a barrier", "titles": ["Step every harness sweep and give the event reader a join from now and a barrier"], "more": 0, "region": "PW-HUBTIER", "status": "ready", "node": "triage", "cost": 0, "blocker": "JME3", "blockN": 3}, {"id": "RE86", "refs": ["blizzard#1467"], "title": "Sign people in through the stub IdP on an auth profile in the harness", "titles": ["Sign people in through the stub IdP on an auth profile in the harness"], "more": 0, "region": "PW-HUBTIER", "status": "ready", "node": "triage", "cost": 0, "blocker": "27A6", "blockN": 3}, {"id": "GWDV", "refs": ["blizzard#1469"], "title": "Port the hub service tests and add the two enforcement profiles", "titles": ["Port the hub service tests and add the two enforcement profiles"], "more": 0, "region": "PW-HUBTIER", "status": "ready", "node": "triage", "cost": 0, "blocker": "P79Q", "blockN": 4}, {"id": "W60F", "refs": ["blizzard#1470"], "title": "Port the finding-exits service tests, stepping the close drain", "titles": ["Port the finding-exits service tests, stepping the close drain"], "more": 0, "region": "PW-HUBTIER", "status": "ready", "node": "triage", "cost": 0, "blocker": "P79Q", "blockN": 4}, {"id": "WKFH", "refs": ["blizzard#1471"], "title": "Port the event-log service tests, reading hub events over HTTP", "titles": ["Port the event-log service tests, reading hub events over HTTP"], "more": 0, "region": "PW-HUBTIER", "status": "ready", "node": "triage", "cost": 0, "blocker": "P79Q", "blockN": 4}, {"id": "Q5CS", "refs": ["blizzard#1472", "blizzard#1477", "blizzard#1481"], "title": "Port the runner served-projects service tests to Playwright", "titles": ["Port the runner served-projects service tests to Playwright", "Port the runner declining service test and move its parse case down", "Port the real-hub runner token refusal test to Playwright"], "more": 0, "region": "PW-HUBTIER", "status": "ready", "node": "triage", "cost": 0, "blocker": "P79Q", "blockN": 4}, {"id": "YZVG", "refs": ["blizzard#1473"], "title": "Port the real-hub transcript-segment service tests to Playwright", "titles": ["Port the real-hub transcript-segment service tests to Playwright"], "more": 0, "region": "PW-HUBTIER", "status": "ready", "node": "triage", "cost": 0, "blocker": "P79Q", "blockN": 2}, {"id": "64RN", "refs": ["blizzard#1474"], "title": "Port the projects ingest and delivery service tests to Playwright", "titles": ["Port the projects ingest and delivery service tests to Playwright"], "more": 0, "region": "PW-HUBTIER", "status": "ready", "node": "triage", "cost": 0, "blocker": "P79Q", "blockN": 3}, {"id": "6RRX", "refs": ["blizzard#1475"], "title": "Port the routine baselines service tests to Playwright", "titles": ["Port the routine baselines service tests to Playwright"], "more": 0, "region": "PW-HUBTIER", "status": "ready", "node": "triage", "cost": 0, "blocker": "P79Q", "blockN": 4}, {"id": "260B", "refs": ["blizzard#1476", "blizzard#1478"], "title": "Port the forge-status service tests onto a stepped sweep", "titles": ["Port the forge-status service tests onto a stepped sweep", "Port the work-source records service tests to Playwright"], "more": 0, "region": "PW-HUBTIER", "status": "ready", "node": "triage", "cost": 0, "blocker": "P79Q", "blockN": 2}, {"id": "5MXB", "refs": ["blizzard#1479"], "title": "Port the two live-hub usage service tests", "titles": ["Port the two live-hub usage service tests"], "more": 0, "region": "PW-HUBTIER", "status": "ready", "node": "triage", "cost": 0, "blocker": "P79Q", "blockN": 3}, {"id": "1A1R", "refs": ["blizzard#1480"], "title": "Port the two hub-only platform-tracing service tests", "titles": ["Port the two hub-only platform-tracing service tests"], "more": 0, "region": "PW-HUBTIER", "status": "ready", "node": "triage", "cost": 0, "blocker": "P79Q", "blockN": 2}, {"id": "N0SD", "refs": ["blizzard#1482"], "title": "Port the OAuth login service tests onto the auth profile", "titles": ["Port the OAuth login service tests onto the auth profile"], "more": 0, "region": "PW-HUBTIER", "status": "ready", "node": "triage", "cost": 0, "blocker": "P79Q", "blockN": 4}, {"id": "MMVM", "refs": ["blizzard#1483", "blizzard#1484"], "title": "Port the CLI login exchange service tests onto the auth profile", "titles": ["Port the CLI login exchange service tests onto the auth profile", "Port the event-stream revocation service test onto the auth profile"], "more": 0, "region": "PW-HUBTIER", "status": "ready", "node": "triage", "cost": 0, "blocker": "P79Q", "blockN": 4}, {"id": "1DTX", "refs": ["hub:629"], "title": "Recheck the holder inside the route-token rekey, and document that a per-chunk pause outranks a restart's fence", "titles": ["Recheck the holder inside the route-token rekey, and document that a per-chunk pause outranks a restart's fence"], "more": 0, "region": "HUB", "status": "ready", "node": "triage", "cost": 0}, {"id": "HBRY", "refs": ["blizzard#1499"], "title": "Declare each runner's supported models and match them at hub eligibility", "titles": ["Declare each runner's supported models and match them at hub eligibility"], "more": 0, "region": "SEA", "status": "ready", "node": "triage", "cost": 0, "blocker": "B6HS", "blockN": 1}, {"id": "DB49", "refs": ["hub:632", "hub:633"], "title": "Order runner-store bind, park and requeue facts by append sequence, not timestamp", "titles": ["Order runner-store bind, park and requeue facts by append sequence, not timestamp", "Make a repeated runner requeue change nothing at persistence"], "more": 0, "region": "HUB", "status": "ready", "node": "triage", "cost": 0, "blocker": "2475", "blockN": 1}, {"id": "SXBD", "refs": ["hub:639"], "title": "performance run (full)", "titles": ["performance run (full)"], "more": 0, "region": "SURVEY", "status": "ready", "node": "survey", "cost": 0}, {"id": "5Q4G", "refs": ["hub:640"], "title": "performance run (full)", "titles": ["performance run (full)"], "more": 0, "region": "SURVEY", "status": "ready", "node": "survey", "cost": 0}, {"id": "NH8N", "refs": ["hub:642"], "title": "performance run (full)", "titles": ["performance run (full)"], "more": 0, "region": "SURVEY", "status": "ready", "node": "survey", "cost": 0}, {"id": "GMVT", "refs": ["hub:641"], "title": "performance run (full)", "titles": ["performance run (full)"], "more": 0, "region": "SURVEY", "status": "ready", "node": "survey", "cost": 0}, {"id": "WTGG", "refs": ["hub:634"], "title": "comments run (full)", "titles": ["comments run (full)"], "more": 0, "region": "SURVEY", "status": "ready", "node": "survey", "cost": 0}, {"id": "85FD", "refs": ["hub:638"], "title": "comments run (full)", "titles": ["comments run (full)"], "more": 0, "region": "SURVEY", "status": "ready", "node": "survey", "cost": 0}, {"id": "F05Q", "refs": ["hub:635"], "title": "comments run (full)", "titles": ["comments run (full)"], "more": 0, "region": "SURVEY", "status": "ready", "node": "survey", "cost": 0}, {"id": "YWK5", "refs": ["hub:636"], "title": "comments run (full)", "titles": ["comments run (full)"], "more": 0, "region": "SURVEY", "status": "ready", "node": "survey", "cost": 0}, {"id": "6RTR", "refs": ["hub:637"], "title": "comments run (full)", "titles": ["comments run (full)"], "more": 0, "region": "SURVEY", "status": "ready", "node": "survey", "cost": 0}, {"id": "6J9H", "refs": ["blizzard#1365"], "title": "Report every record the forge migration would refuse", "titles": ["Report every record the forge migration would refuse"], "more": 0, "region": "FORGES", "status": "needs_human", "node": "deliver", "cost": 8.2, "est": false, "age": 20.5, "trace": [1, 2, 3, 2, 3, 5, 6, 5, 6, 5, 6, 5, 6, 5, 6, 5, 6], "runner": "r-claude", "pr": "paul-gross/blizzard PR #1498", "attempts": 25}, {"id": "WSCR", "refs": ["blizzard#1497"], "title": "Add an Anthropic credential renewer that refreshes via a haiku one-shot", "titles": ["Add an Anthropic credential renewer that refreshes via a haiku one-shot"], "more": 0, "region": "SEA", "status": "running", "node": "review", "cost": 1.58, "est": false, "age": 0.4, "trace": [1, 2, 3, 2, 3, 5, 6, 5, 6, 5, 2, 3], "runner": "r-claude", "pr": "paul-gross/blizzard PR #1500", "attempts": 12}, {"id": "27A6", "refs": ["blizzard#1463"], "title": "Choose the stub IdP's identity by login_hint", "titles": ["Choose the stub IdP's identity by login_hint"], "more": 0, "region": "PW-HUBTIER", "status": "delivering", "node": "deliver", "cost": 1.47, "est": true, "age": 0.1, "trace": [1, 2, 3, 4, 5, 6], "runner": "r-chatgpt", "pr": "paul-gross/blizzard-mock PR #121", "attempts": 6}, {"id": "BWA2", "refs": ["blizzard#1461"], "title": "Let an event-stream client join from the latest event", "titles": ["Let an event-stream client join from the latest event"], "more": 0, "region": "PW-HUBTIER", "status": "running", "node": "mutation", "cost": 2.26, "est": true, "age": 23, "trace": [1, 2, 3, 2, 3, 4], "runner": "r-claude", "pr": null, "attempts": 6}, {"id": "PTP2", "refs": ["blizzard#1459"], "title": "Tag every per-tenant sweep line with its tenant", "titles": ["Tag every per-tenant sweep line with its tenant"], "more": 0, "region": "PW-HUBTIER", "status": "delivering", "node": "deliver", "cost": 3.49, "est": true, "age": 0.2, "trace": [1, 2, 3, 4, 5, 6], "runner": "r-chatgpt", "pr": "paul-gross/blizzard PR #1492", "attempts": 6}, {"id": "QWYS", "refs": ["blizzard#1449"], "title": "Type the hub auth repositories", "titles": ["Type the hub auth repositories"], "more": 0, "region": "STRICT", "status": "needs_human", "node": "deliver", "cost": 4.03, "est": false, "age": 6, "trace": [1, 2, 3, 5, 6, 5, 6, 5, 6], "runner": "r-claude", "pr": "paul-gross/blizzard PR #1501", "attempts": 9}, {"id": "2475", "refs": ["blizzard#1446"], "title": "Type the runner store adapters' row mapping", "titles": ["Type the runner store adapters' row mapping"], "more": 0, "region": "STRICT", "status": "running", "node": "build", "cost": 2.06, "est": true, "age": 31, "trace": [1, 2, 3, 2], "runner": "r-chatgpt", "pr": null, "attempts": 4}, {"id": "ZG7T", "refs": ["hub:626", "hub:627"], "title": "Land a gate resolution's artifacts once when its landing consult fires", "titles": ["Land a gate resolution's artifacts once when its landing consult fires", "Pin two unguarded humans invariants: a bounce-cap escalation's empty raw command, and the unavailable-owner takeover refusal"], "more": 0, "region": "HUB", "status": "running", "node": "pre-push", "cost": 0.88, "est": false, "age": 0.1, "trace": [1, 2, 3, 5], "runner": "r-claude", "pr": null, "attempts": 4}, {"id": "FC1D", "refs": ["hub:620", "hub:628", "hub:616", "hub:630", "hub:631"], "title": "Bring the work domain's docs up to four rules the code enforces deliberately", "titles": ["Bring the work domain's docs up to four rules the code enforces deliberately", "Correct six stale or overbroad claims in domain/humans", "Document the budget lever and the per-tick claim gate in throttling.md", "State what transcripts actually carry, and who may read them, in never-code.md", "State in hosts.md that a binding to an undeclared workspace or subscription halts the runner"], "more": 0, "region": "HUB", "status": "running", "node": "build", "cost": 0.27, "est": false, "age": 12, "trace": [1, 2], "runner": "r-claude", "pr": null, "attempts": 2}, {"id": "VA7X", "refs": ["hub:602", "hub:613"], "title": "Make a gate's resolving transition name a decision from the current visit", "titles": ["Make a gate's resolving transition name a decision from the current visit", "Open a graph gate's decision on every arrival at a human-judged node, not only on a transition"], "more": 2, "region": "HUB", "status": "done", "node": "done", "cost": 17.03, "est": true, "done": "12:24"}, {"id": "AFTK", "refs": ["blizzard#1447"], "title": "Type the runner harness adapters' parsed output", "titles": ["Type the runner harness adapters' parsed output"], "more": 0, "region": "STRICT", "status": "done", "node": "done", "cost": 7.36, "est": false, "done": "12:03"}, {"id": "R1D5", "refs": ["hub:624", "hub:622", "hub:623"], "title": "Settle one owner for the statement guards and the lane rosters", "titles": ["Settle one owner for the statement guards and the lane rosters", "Give blizzard-context's change-history Vale rule the blizzard repo's tokens", "Fix ten rule-slot shape defects: overlong Whys, stray paragraphs, a missing Don't"], "more": 0, "region": "HUB", "status": "done", "node": "done", "cost": 3.69, "est": true, "done": "11:25"}, {"id": "BB9E", "refs": ["blizzard#1445"], "title": "Type the compat OpenAPI classifier", "titles": ["Type the compat OpenAPI classifier"], "more": 0, "region": "STRICT", "status": "done", "node": "done", "cost": 1.95, "est": false, "done": "10:19"}, {"id": "TX56", "refs": ["blizzard#1175"], "title": "Cross-check a release's notes against its compat breaks", "titles": ["Cross-check a release's notes against its compat breaks"], "more": 0, "region": "NOTES", "status": "done", "node": "done", "cost": 7.0, "est": false, "done": "09:31"}, {"id": "F5V9", "refs": ["blizzard#1462"], "title": "Make the hub's login throttle configurable", "titles": ["Make the hub's login throttle configurable"], "more": 0, "region": "PW-HUBTIER", "status": "done", "node": "done", "cost": 1.49, "est": false, "done": "08:56"}, {"id": "RWE7", "refs": ["blizzard#1190"], "title": "Write the flag procedure and the operator's flags guide", "titles": ["Write the flag procedure and the operator's flags guide"], "more": 0, "region": "FLAGS", "status": "done", "node": "done", "cost": 1.65, "est": false, "done": "08:46"}, {"id": "2R1E", "refs": ["blizzard#1443"], "title": "Delete the inert type-ignores in shipping code and add a strict report", "titles": ["Delete the inert type-ignores in shipping code and add a strict report"], "more": 0, "region": "STRICT", "status": "done", "node": "done", "cost": 0.88, "est": false, "done": "08:03"}, {"id": "QRP5", "refs": ["blizzard#1174"], "title": "Fail a pull request that owes a change note", "titles": ["Fail a pull request that owes a change note"], "more": 0, "region": "NOTES", "status": "done", "node": "done", "cost": 5.32, "est": false, "done": "06:59"}, {"id": "ZWE9", "refs": ["blizzard#1364"], "title": "Port land and the commit check onto one forge seam", "titles": ["Port land and the commit check onto one forge seam"], "more": 0, "region": "FORGES", "status": "done", "node": "done", "cost": 40.11, "est": false, "done": "06:29"}, {"id": "1BF8", "refs": ["blizzard#1189"], "title": "Hold flag tombstones, flips, and cuts to the release rules", "titles": ["Hold flag tombstones, flips, and cuts to the release rules"], "more": 0, "region": "FLAGS", "status": "done", "node": "done", "cost": 4.74, "est": false, "done": "05:07"}, {"id": "PZD6", "refs": ["hub:603"], "title": "Rewrite inventory-style hub rows as read-triggers", "titles": ["Rewrite inventory-style hub rows as read-triggers"], "more": 0, "region": "HUB", "status": "done", "node": "done", "cost": 12.56, "est": true, "done": "04:48"}, {"id": "RNZD", "refs": ["blizzard#1181"], "title": "Write the patch rule and the release promise", "titles": ["Write the patch rule and the release promise"], "more": 0, "region": "LINES", "status": "done", "node": "done", "cost": 3.89, "est": false, "done": "00:14"}, {"id": "E7DE", "refs": ["blizzard#1173"], "title": "Publish release notes from change notes and require them", "titles": ["Publish release notes from change notes and require them"], "more": 0, "region": "NOTES", "status": "done", "node": "done", "cost": 7.06, "est": false, "done": "Yesterday 22:39"}, {"id": "TNFF", "refs": ["hub:609", "hub:604"], "title": "Bring findings-and-proposals.md up to the refusals and settlement the code already has", "titles": ["Bring findings-and-proposals.md up to the refusals and settlement the code already has", "Collapse the restatements of domain/projects.md to pointers"], "more": 3, "region": "HUB", "status": "done", "node": "done", "cost": 9.42, "est": false, "done": "Yesterday 21:46"}, {"id": "CRTC", "refs": ["blizzard#1361"], "title": "Remove the hub's process runner, step environment, and marker token", "titles": ["Remove the hub's process runner, step environment, and marker token"], "more": 0, "region": "ACTIONS", "status": "done", "node": "done", "cost": 24.86, "est": true, "done": "Yesterday 15:21"}, {"id": "66JE", "refs": ["hub:619", "hub:618"], "title": "Bring the command-failed and hub-migrated definitions in line with what is recorded", "titles": ["Bring the command-failed and hub-migrated definitions in line with what is recorded", "Say closure and transcript announcements are best-effort across a crash"], "more": 0, "region": "HUB", "status": "done", "node": "done", "cost": 5.41, "est": false, "done": "Yesterday 14:56"}, {"id": "8Z96", "refs": ["hub:615", "hub:617"], "title": "Make the pause, resume and detach messages describe the actual state", "titles": ["Make the pause, resume and detach messages describe the actual state", "Show a chunk's runner and environments in `chunk show` only while it holds its claim"], "more": 0, "region": "HUB", "status": "done", "node": "done", "cost": 2.18, "est": false, "done": "Yesterday 14:50"}, {"id": "JJPG", "refs": ["blizzard#1160"], "title": "Open the hub's pin change when blizzard publishes a release", "titles": ["Open the hub's pin change when blizzard publishes a release"], "more": 0, "region": "RELEASE", "status": "done", "node": "done", "cost": 4.38, "est": false, "done": "Yesterday 12:07"}, {"id": "R4EH", "refs": ["hub:612", "hub:607"], "title": "Count retries per visit, not per node across the whole chunk", "titles": ["Count retries per visit, not per node across the whole chunk", "Close the runner's artifact window at the point the completion is buffered, and pin the post-exit window"], "more": 0, "region": "HUB", "status": "done", "node": "done", "cost": 7.09, "est": false, "done": "Yesterday 12:04"}, {"id": "H48F", "refs": ["hub:601", "hub:600", "hub:614"], "title": "Filter a project's runner pauses before the activity feed caps them", "titles": ["Filter a project's runner pauses before the activity feed caps them", "Have the trace-replay and egress-backfill CLIs refuse a window in the order the domain declares", "Show a restart-superseded answer as superseded on the board, not 'Delivering to the agent\u2026'"], "more": 0, "region": "HUB", "status": "done", "node": "done", "cost": 7.26, "est": false, "done": "Yesterday 11:52"}, {"id": "8YFS", "refs": ["blizzard#1180"], "title": "Hold release tags to their line and promote by borrowed proof", "titles": ["Hold release tags to their line and promote by borrowed proof"], "more": 0, "region": "LINES", "status": "done", "node": "done", "cost": 5.36, "est": false, "done": "Yesterday 11:50"}, {"id": "5EVY", "refs": ["hub:621", "hub:625"], "title": "Keep a chunk's work items in one project at ingest", "titles": ["Keep a chunk's work items in one project at ingest", "Pin the retired-scope and blank-description mint behaviors with tests that run the mint"], "more": 0, "region": "HUB", "status": "done", "node": "done", "cost": 1.79, "est": true, "done": "Yesterday 11:06"}, {"id": "BCN9", "refs": ["blizzard#1360"], "title": "Retire run: and carry every stored graph onto actions", "titles": ["Retire run: and carry every stored graph onto actions"], "more": 0, "region": "ACTIONS", "status": "done", "node": "done", "cost": 46.52, "est": false, "done": "Yesterday 09:27"}, {"id": "49G4", "refs": ["hub:606"], "title": "Gate an already-merged PR's head before counting it as this chunk's landing", "titles": ["Gate an already-merged PR's head before counting it as this chunk's landing"], "more": 0, "region": "HUB", "status": "done", "node": "done", "cost": 1.16, "est": false, "done": "Yesterday 07:41"}, {"id": "4RS8", "refs": ["blizzard#1413"], "title": "Run the isolation cross-check weekly and before releases", "titles": ["Run the isolation cross-check weekly and before releases"], "more": 0, "region": "PLAYWRIGHT", "status": "done", "node": "done", "cost": 1.46, "est": false, "done": "Yesterday 07:05"}, {"id": "NET9", "refs": ["blizzard#1412"], "title": "Port the analytics service tests and measure the shared hub", "titles": ["Port the analytics service tests and measure the shared hub"], "more": 0, "region": "PLAYWRIGHT", "status": "done", "node": "done", "cost": 7.17, "est": true, "done": "Yesterday 05:42"}, {"id": "T4FK", "refs": ["blizzard#1359"], "title": "Move the packaged graphs onto actions", "titles": ["Move the packaged graphs onto actions"], "more": 0, "region": "ACTIONS", "status": "done", "node": "done", "cost": 30.82, "est": false, "done": "Yesterday 02:19"}, {"id": "Z1V5", "refs": ["blizzard#1411"], "title": "Write the Playwright tier's rulebook into blizzard-context", "titles": ["Write the Playwright tier's rulebook into blizzard-context"], "more": 0, "region": "PLAYWRIGHT", "status": "done", "node": "done", "cost": 6.75, "est": true, "done": "Yesterday 01:39"}, {"id": "G769", "refs": ["hub:586"], "title": "Pin three runner survivors, and let `--fresh` delta mutation runs work unaided", "titles": ["Pin three runner survivors, and let `--fresh` delta mutation runs work unaided"], "more": 0, "region": "HUB", "status": "done", "node": "done", "cost": 7.49, "est": false, "done": "Yesterday 00:34"}, {"id": "MNG0", "refs": ["blizzard#1410"], "title": "Run the Playwright half in the service-tier CI jobs", "titles": ["Run the Playwright half in the service-tier CI jobs"], "more": 0, "region": "PLAYWRIGHT", "status": "done", "node": "done", "cost": 1.08, "est": false, "done": "2026/10/23"}, {"id": "XTP8", "refs": ["blizzard#1409"], "title": "Build the Playwright package and its shared-hub harness", "titles": ["Build the Playwright package and its shared-hub harness"], "more": 0, "region": "PLAYWRIGHT", "status": "done", "node": "done", "cost": 9.6, "est": false, "done": "2026/10/23"}, {"id": "0H9B", "refs": ["hub:591"], "title": "domain-conformance run (full)", "titles": ["domain-conformance run (full)"], "more": 0, "region": "SURVEY", "status": "done", "node": "done", "cost": 6.7, "est": true, "done": "2026/10/23"}, {"id": "FWK6", "refs": ["blizzard#1358"], "title": "Take a hub node's action in a pass beside run: steps", "titles": ["Take a hub node's action in a pass beside run: steps"], "more": 0, "region": "ACTIONS", "status": "done", "node": "done", "cost": 47.71, "est": false, "done": "2026/10/23"}, {"id": "7P8C", "refs": ["blizzard#1408"], "title": "Gather the daemons' test environment into one contract", "titles": ["Gather the daemons' test environment into one contract"], "more": 0, "region": "PLAYWRIGHT", "status": "done", "node": "done", "cost": 1.29, "est": false, "done": "2026/10/23"}, {"id": "TWJS", "refs": ["hub:585"], "title": "Pin the runner lifecycle's wiring arguments against surviving mutants", "titles": ["Pin the runner lifecycle's wiring arguments against surviving mutants"], "more": 0, "region": "HUB", "status": "done", "node": "done", "cost": 4.61, "est": false, "done": "2026/10/23"}, {"id": "1KHP", "refs": ["blizzard#1407"], "title": "Log unhandled request errors as JSON tagged with their tenant", "titles": ["Log unhandled request errors as JSON tagged with their tenant"], "more": 0, "region": "PLAYWRIGHT", "status": "done", "node": "done", "cost": 1.71, "est": false, "done": "2026/10/23"}, {"id": "69GA", "refs": ["blizzard#1406"], "title": "Read the hub CLI's tenant from BZ_HUB_TENANT", "titles": ["Read the hub CLI's tenant from BZ_HUB_TENANT"], "more": 0, "region": "PLAYWRIGHT", "status": "done", "node": "done", "cost": 1.61, "est": false, "done": "2026/10/23"}];
+const FLEET = {
+ "host": {"name":"xps","id":"H-G1YK","state":"online","lastReport":"2026/10/25 13:08:30","ageS":34,"registered":"2026/10/16 04:36:51","added":"2026/10/16 04:36:09","addedBy":"paul-gross","url":"http://127.0.0.1:8431","token":"enrolled","agents":"10 / 6 busy across 2 runners","envs":"10 / 14 in use"},
+ "subs": [
+  {"k":"Anthropic","sampled":"1m","windows":[{"w":"5h","T":58,"Td":10,"until":"15:40"},{"w":"7d","T":14,"Td":12,"until":"Sat 04:40"}]},
+  {"k":"OpenAI","sampled":"5m","windows":[{"w":"7d","T":7,"Td":8,"until":"14:41"}]}
+ ],
+ "workspaces": [
+  {"k":"blizzard-claude","slots":["WSCR","BWA2","QWYS","ZG7T","FC1D","6J9H"]},
+  {"k":"winter","slots":[null,null,null,null]},
+  {"k":"blizzard-chatgpt","slots":["MFJE","27A6","PTP2","2475"]}
+ ],
+ "runners": [
+  {"id":"r-claude","rid":"R-FNE4","harness":"claude code","agents":3,"busy":6,"ageS":21,"spends":"Anthropic","gates":"none","version":"0.3.0.dev1002+f208eca7d","state":"working","binds":[["blizzard","blizzard-claude",6],["winter","winter",0]],"burn":9.8,"trace":[5,5,6,6,6,7,6,6]},
+  {"id":"r-chatgpt","rid":"R-NQ1B","harness":"opencode","agents":3,"busy":4,"ageS":17,"spends":"OpenAI","gates":"none","version":"0.3.0.dev1002+f208eca7d","state":"declining","pace":"declining — pace: 7d: 8% spent, 7% elapsed, until 14:41","binds":[["blizzard","blizzard-chatgpt",4],["winter","winter",0]],"burn":4.2,"trace":[3,4,4,5,5,6,6,6]}
+ ]
+}
+;
+
+/* Coastal reports: each runner read as a station report, each subscription
+   as a one-line sounding. The question is "can the fleet keep working?" */
+const byId = {};
+CHUNKS.forEach(c => byId[c.id] = c);
+const F = FLEET;
+let NOW = new Date('2026-10-25T13:08:30');
+(() => {
+  const sv = document.createElementNS(NS, 'svg'); sv.setAttribute('width', 0); sv.setAttribute('height', 0); sv.style.position = 'absolute';
+  const defs = el('defs', {}, sv); stipple(defs, 'rain', GREEN, 5, 1.05); hatch(defs, 'storm', RED, 5, 1.1); hatch(defs, 'fogh', '#8c8676', 4, 0.8);
+  document.body.appendChild(sv);
+})();
+function runnerModel(r) {
+  const sub = F.subs.find(s => s.k === r.spends);
+  const w = sub.windows.reduce((a, v) => (v.T - v.Td < a.T - a.Td ? v : a));
+  const bound = r.binds.reduce((a, b) => a + F.workspaces.find(x => x.k === b[1]).slots.length, 0);
+  const used = r.binds.reduce((a, b) => a + F.workspaces.find(x => x.k === b[1]).slots.filter(Boolean).length, 0);
+  return { id: r.id, okta: Math.round(used / bound * 8), burn: r.paused ? 0 : r.burn, bearing: RUNNER_BEARING[r.id], T: w.T, Td: w.Td,
+    wx: r.paused ? 'hold' : w.Td >= w.T ? 'fog' : 'rain', ver: r.version.match(/dev(\d+)/)[1], ageS: r.ageS, trace: r.trace, w, used, bound };
+}
+function census() {
+  const burn = F.runners.filter(r => !r.paused).reduce((a, r) => a + r.burn, 0);
+  document.getElementById('census').innerHTML = `<b>2</b> aloft · <b>10</b>/14 slots wet · <b>$${burn.toFixed(1)}</b> an hour`;
+}
+/* One window as a horizontal sounding: elapsed (red) against spent (green). */
+function soundingRow(win) {
+  const W = 358, sv = document.createElementNS(NS, 'svg');
+  sv.setAttribute('width', W); sv.setAttribute('height', 42);
+  const x0 = 34, x1 = W - 92, X = p => x0 + (p / 100) * (x1 - x0), Y = 18;
+  txt(sv, 0, Y + 5, win.w, { style: 'font-family:var(--plot);font-size:15px;font-weight:700' });
+  el('line', { x1: x0, y1: Y, x2: x1, y2: Y, stroke: '#b9b19d', 'stroke-width': 1 }, sv);
+  for (let p = 0; p <= 100; p += 25) {
+    el('line', { x1: X(p), y1: Y - 4, x2: X(p), y2: Y + 4, stroke: '#b9b19d' }, sv);
+    txt(sv, X(p), Y + 17, p, { 'text-anchor': 'middle', style: 'font-family:var(--plot);font-size:9.5px;fill:#9a9486' });
+  }
+  const sat = win.Td >= win.T;
+  el('rect', { x: Math.min(X(win.T), X(win.Td)), y: Y - 6, width: Math.max(3, Math.abs(X(win.T) - X(win.Td))), height: 12, fill: sat ? 'url(#fogh)' : '#dfe9d6' }, sv);
+  el('circle', { cx: X(win.T), cy: Y, r: 5.5, fill: RED }, sv);
+  el('circle', { cx: X(win.Td), cy: Y, r: 5.5, fill: GREEN }, sv);
+  const sp = win.T - win.Td;
+  if (sat) { drawWx(sv, 'fog', x1 + 16, Y, 1.3); txt(sv, x1 + 28, Y + 5, 'saturated', { style: 'font-family:var(--plot);font-size:14px;font-weight:700;fill:' + RED }); }
+  else txt(sv, x1 + 10, Y + 5, 'spread ' + sp, { style: `font-family:var(--plot);font-size:14px;font-weight:700;fill:${sp <= 3 ? RED : INK}` });
+  txt(sv, x1 + 10, Y + 19, 'until ' + win.until, { style: 'font-family:var(--plot);font-size:10.5px;fill:#8c8676' });
+  return sv;
+}
+function aloft() {
+  const box = document.getElementById('aloft'); box.innerHTML = '';
+  F.subs.forEach(s => {
+    const d = document.createElement('div'); d.className = 'snd';
+    d.innerHTML = `<div class="nm">${s.k} <i>sampled ${s.sampled} ago · spent by ${F.runners.filter(r => r.spends === s.k).map(r => r.id).join(', ')}</i></div>`;
+    s.windows.forEach(w => d.appendChild(soundingRow(w)));
+    box.appendChild(d);
+  });
+}
+function runners() {
+  const box = document.getElementById('runners'); box.innerHTML = '';
+  // the runner that cannot work leads, as a gale would
+  const order = F.runners.slice().sort((a, b) => (runnerModel(b).wx === 'fog') - (runnerModel(a).wx === 'fog'));
+  order.forEach(r => {
+    const m = runnerModel(r);
+    const d = document.createElement('div'); d.className = 'rep';
+    const sv = document.createElementNS(NS, 'svg'); sv.setAttribute('width', 120); sv.setAttribute('height', 104);
+    const g = el('g', { transform: 'translate(62 62)' }, sv);
+    if (m.wx === 'fog') el('circle', { r: 34, fill: 'url(#fogh)', opacity: 0.6 }, g);
+    if (m.wx === 'rain') el('circle', { r: 34, fill: 'url(#rain)', opacity: 0.6 }, g);
+    drawRunnerPlot(g, m, 1.45);
+    d.appendChild(sv);
+    const who = document.createElement('div'); who.className = 'who';
+    who.innerHTML = `${r.id}<i>${r.harness} · ${r.rid} · xps</i><i>${r.agents} agents · ${r.busy} busy · v${m.ver}</i>`;
+    d.appendChild(who);
+    const say = document.createElement('div'); say.className = 'say';
+    const state = m.wx === 'fog' ? `<b style="color:#c4122f">Fog, saturated</b>; declining work until ${m.w.until}` : m.wx === 'hold' ? '<b>Held</b> by the operator' : 'Rain, working';
+    say.innerHTML = `${state}. ${sayNum(m.okta).replace(/^./, c => c.toUpperCase())} eighths busy, ${m.used} of ${m.bound} slots. Burning $${r.burn.toFixed(1)} an hour on ${r.spends}; ${m.w.w} elapsed ${m.T}, spent ${m.Td}${m.wx === 'fog' ? '' : ', spread ' + (m.T - m.Td)}. Binds ${r.binds.map(b => `${b[1]} (${b[2]} working)`).join(', ')}. Reported <span class="rage" data-r="${r.id}">${r.ageS}</span> s ago.<div class="pn" id="pn-${r.id}"></div>`;
+    d.appendChild(say);
+    const held = document.createElement('div'); held.className = 'held';
+    F.workspaces.filter(w => r.binds.some(b => b[1] === w.k)).forEach(w => w.slots.filter(Boolean).forEach(id => {
+      const hs = document.createElementNS(NS, 'svg'); hs.setAttribute('width', 70); hs.setAttribute('height', 60); hs.setAttribute('viewBox', '-28 -30 66 58');
+      const c = byId[id];
+      if (c.status === 'needs_human') el('circle', { r: 24, fill: 'url(#storm)', opacity: 0.5 }, hs);
+      drawStation(hs, c);
+      hs.onclick = () => location.href = 'board-mobile.html?sheet=' + id + '&open=' + c.region + '&fold=gales,syn';
+      held.appendChild(hs);
+    }));
+    d.appendChild(held);
+    const act = document.createElement('div'); act.className = 'do';
+    act.innerHTML = `<button class="main">${r.paused ? 'Resume' : 'Pause'} ${r.id}</button><button>Held on the forecast</button>`;
+    act.children[0].onclick = () => write(r.id, r.paused ? 'resume' : 'pause', () => { r.paused = !r.paused; r.state = r.paused ? 'paused' : 'working'; });
+    act.children[1].onclick = () => location.href = 'board-mobile.html';
+    d.appendChild(act);
+    box.appendChild(d);
+  });
+}
+function write(id, word, after) {
+  const pn = document.getElementById('pn-' + id), t = NOW.toTimeString().slice(0, 5);
+  if (pn) pn.innerHTML = `<span class="pencil">pg ${t} ${word} — awaiting hub</span>`;
+  setTimeout(() => {
+    if (after) after();
+    render();
+    const p2 = document.getElementById('pn-' + id);
+    if (p2) p2.innerHTML = `<span class="pencil inked">pg ${t} ${word} ✓ hub confirms</span>`;
+  }, 1300);
+}
+function lakes() {
+  const box = document.getElementById('lakes'); box.innerHTML = '';
+  F.workspaces.forEach(w => {
+    const d = document.createElement('div'); d.className = 'lake';
+    const nm = document.createElement('span'); nm.className = 'nm'; nm.textContent = w.k; d.appendChild(nm);
+    const sv = document.createElementNS(NS, 'svg'); sv.setAttribute('width', w.slots.length * 16 + 6); sv.setAttribute('height', 18);
+    w.slots.forEach((id, i) => {
+      const g = el('g', { transform: `translate(${9 + i * 16} 9)` }, sv);
+      if (!id) { el('circle', { r: 4.6, fill: PAPER, stroke: '#9a9486', 'stroke-dasharray': '2 1.6' }, g); return; }
+      const c = byId[id];
+      if (c.status === 'needs_human') el('circle', { r: 6.4, fill: 'none', stroke: RED, 'stroke-width': 1.8 }, g);
+      drawOktas(g, okta(c), 4.6, INK);
+    });
+    d.appendChild(sv);
+    const n = document.createElement('span'); n.className = 'n';
+    const used = w.slots.filter(Boolean).length;
+    n.textContent = used ? `${used} of ${w.slots.length}` : `dry · 0 of ${w.slots.length}`;
+    d.appendChild(n);
+    box.appendChild(d);
+  });
+}
+function host() {
+  const h = F.host, box = document.getElementById('host');
+  box.innerHTML = `<div class="say"><b>xps</b>, H-G1YK. ${h.state[0].toUpperCase() + h.state.slice(1)}, reported <span id="hage">${h.ageS}</span> s ago. ${h.envs}; agents ${h.agents}. Token ${h.token}. Registered ${h.registered}, added ${h.added} by ${h.addedBy}. ${h.url}.<div class="pn" id="pn-xps"></div></div>
+  <div class="do"><button>Enroll</button><button>Revoke token</button><button style="color:#c4122f;border-color:#c4122f">Retire</button></div>`;
+  const bs = box.querySelectorAll('button');
+  bs[0].onclick = () => write('xps', 'enroll');
+  bs[1].onclick = () => write('xps', 'revoke token');
+  bs[2].onclick = () => write('xps', 'retire? tap again to confirm');
+}
+function render() { census(); aloft(); runners(); lakes(); host(); }
+document.querySelectorAll('h2[data-fold]').forEach(h => h.onclick = () => document.getElementById(h.dataset.fold).classList.toggle('folded'));
+document.getElementById('lg').onclick = e => { e.preventDefault(); const lg = document.getElementById('legend'); if (!lg.innerHTML) { buildLegend(lg); lg.onclick = () => lg.classList.remove('on'); } lg.classList.add('on'); };
+render();
+const q = new URLSearchParams(location.search);
+(q.get('fold') || '').split(',').filter(Boolean).forEach(id => document.getElementById(id).classList.add('folded'));
+if (!/static/.test(location.search)) setInterval(() => {
+  NOW = new Date(NOW.getTime() + 1000);
+  document.getElementById('clock').textContent = NOW.toTimeString().slice(0, 8);
+  F.runners.forEach(r => r.ageS = (r.ageS + 1) % 60); F.host.ageS = (F.host.ageS + 1) % 60;
+  document.querySelectorAll('.rage').forEach(s => s.textContent = F.runners.find(r => r.id === s.dataset.r).ageS);
+  const ha = document.getElementById('hage'); if (ha) ha.textContent = F.host.ageS;
+}, 1000);
+
+</script>
+</body>
+</html>

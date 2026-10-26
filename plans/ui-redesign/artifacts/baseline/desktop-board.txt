@@ -1,0 +1,1199 @@
+BLIZZARD
+PAUL-GROSS
+CHUNKS
+990
+BACKLOG
+1
+READY
+54
+WAITING
+0
+NEEDS HUMAN
+1
+RUNNING
+8
+DONE
+926
+TODAY
+~$106.68
+YESTERDAY
+~$161.25
+HUB
+ok
+BOARD
+FLEET
+GRAPHS
+EVENTS
+GARDENING
+ADMIN
+PROJECT LENS
+All
+blizzard
+winter
+CHUNK BOARD
+Board
+List
+BACKLOG
+1
+blizzard#1312
+(BREAK) Retire per-binding agents from runner bindings
+TRIAGE
+C-WN6J
+PROMOTE
+READY
+54
+blizzard#1366
+[FORGES] Carry every forge address over into a forge record
+BLOCKED BY C-6J9H (NEEDS_HUMAN)
+TRIAGE
+C-ZEVE
+blizzard#1367
+[FORGES] Configure forges through the API, CLI, document, and board
+BLOCKED BY C-ZEVE (READY)
+TRIAGE
+C-MG3R
+blizzard#1368
+[FORGES] Document the forge record and the landing seam
+BLOCKED BY C-MG3R (READY)
+TRIAGE
+C-4J2W
+blizzard#1371
+[FLOWS] Keep each branch's flow record in the shadow of the slot
+BLOCKED BY C-4J2W (READY)
+TRIAGE
+C-4HAX
+blizzard#1372
+[FLOWS] Take hub steps as turns on their branches' flows
+BLOCKED BY 3 CHUNKS
+TRIAGE
+C-50RX
+blizzard#1373
+[FLOWS] Retire the slot's code and keep its deprecated table
+BLOCKED BY C-50RX (READY)
+TRIAGE
+C-FC1E
+blizzard#1374
+[FLOWS] Show flows on the API, CLI, live channel, and board
+BLOCKED BY C-FC1E (READY)
+TRIAGE
+C-CG21
+blizzard#1378
+[POLICIES] Grow the landing seam and make a landing pass cheap
+BLOCKED BY C-CG21 (READY)
+TRIAGE
+C-MAET
+blizzard#1379
+[POLICIES] Share one rate budget per forge key, slowing before refusal
+BLOCKED BY 2 CHUNKS
+TRIAGE
+C-N96M
+blizzard#1380
+[POLICIES] Run each repository's landing policy, in its project's order
+BLOCKED BY C-N96M (READY)
+TRIAGE
+C-S990
+blizzard#1381
+[POLICIES] Add the fast-forward and park landing policies
+BLOCKED BY C-S990 (READY)
+TRIAGE
+C-S93M
+blizzard#1382
+[POLICIES] Show policies, landing order, and awaiting-merge on the board
+BLOCKED BY C-S93M (READY)
+TRIAGE
+C-KTD7
+hub:579
+Let the work-source and forge seams own labels, branch links and the annotating set
+BLOCKED BY 2 CHUNKS
+TRIAGE
+C-N1JR
+blizzard#1444
+[STRICT] Type the hub store adapters' SQL helpers and rows
+BLOCKED BY C-S93M (READY)
+TRIAGE
+C-B6HS
+blizzard#1448
+[STRICT] Type the hub domain models' untyped edges
+BLOCKED BY 3 CHUNKS
+TRIAGE
+C-DFGP
+blizzard#1450
+[STRICT] Type the hub delivery land actions
+BLOCKED BY C-FC1E (READY)
+TRIAGE
+C-6P31
+blizzard#1451
+[STRICT] Type the hub and runner CLIs
+BLOCKED BY C-S990 (READY)
+TRIAGE
+C-AKMG
+blizzard#1452
+[STRICT] Give every bare generic in shipping code its type arguments
+BLOCKED BY 6 CHUNKS
+TRIAGE
+C-STGQ
+blizzard#1453
+[STRICT] Declare shipping code's context managers as generators
+BLOCKED BY 6 CHUNKS
+TRIAGE
+C-QG6Y
+blizzard#1454
+[STRICT] Replace the _conforms_* functions with annotated assignments
+BLOCKED BY 6 CHUNKS
+TRIAGE
+C-W9G8
+blizzard#1455
+[STRICT] Stop shipping code reaching into other modules' private names
+BLOCKED BY 6 CHUNKS
+TRIAGE
+C-ZMVH
+blizzard#1456
+[STRICT] Sweep the remaining strict errors out of shipping code
+BLOCKED BY 4 CHUNKS
+TRIAGE
+C-6Q69
+blizzard#1457
+[STRICT] Spike: re-investigate typing across every project, tests first
+BLOCKED BY C-6Q69 (READY)
+TRIAGE
+C-00N1
+blizzard#1465
+[PW-HUBTIER] Give the harness a mock runner it can drive and runners that serve projects
+TRIAGE
+C-MFJE
+blizzard#1468
+[PW-HUBTIER] Move the helpers other test files import out of the files the hub tier ports
+TRIAGE
+C-DF68
+blizzard#1485
+[PW-HUBTIER] Move the service-sized tenant teardown test to the component tier
+TRIAGE
+C-0ACF
+blizzard#1460
+[PW-HUBTIER] Run the hub's sweeps on request, per tenant or hub-wide
+BLOCKED BY C-PTP2 (RUNNING)
+TRIAGE
+C-JME3
+blizzard#1464
+[PW-HUBTIER] Give the harness the CLI, a configurable fresh hub, and an OTLP sink
+BLOCKED BY C-MFJE (READY)
+TRIAGE
+C-P79Q
+blizzard#1466
+[PW-HUBTIER] Step every harness sweep and give the event reader a join from now and a barrier
+BLOCKED BY 3 CHUNKS
+TRIAGE
+C-WWXN
+blizzard#1467
+[PW-HUBTIER] Sign people in through the stub IdP on an auth profile in the harness
+BLOCKED BY 3 CHUNKS
+TRIAGE
+C-RE86
+blizzard#1469
+[PW-HUBTIER] Port the hub service tests and add the two enforcement profiles
+BLOCKED BY 4 CHUNKS
+TRIAGE
+C-GWDV
+blizzard#1470
+[PW-HUBTIER] Port the finding-exits service tests, stepping the close drain
+BLOCKED BY 4 CHUNKS
+TRIAGE
+C-W60F
+blizzard#1471
+[PW-HUBTIER] Port the event-log service tests, reading hub events over HTTP
+BLOCKED BY 4 CHUNKS
+TRIAGE
+C-WKFH
+blizzard#1472
+[PW-HUBTIER] Port the runner served-projects service tests to Playwright
+blizzard#1477
+[PW-HUBTIER] Port the runner declining service test and move its parse case down
+blizzard#1481
+[PW-HUBTIER] Port the real-hub runner token refusal test to Playwright
+BLOCKED BY 4 CHUNKS
+TRIAGE
+C-Q5CS
+blizzard#1473
+[PW-HUBTIER] Port the real-hub transcript-segment service tests to Playwright
+BLOCKED BY 2 CHUNKS
+TRIAGE
+C-YZVG
+blizzard#1474
+[PW-HUBTIER] Port the projects ingest and delivery service tests to Playwright
+BLOCKED BY 3 CHUNKS
+TRIAGE
+C-64RN
+blizzard#1475
+[PW-HUBTIER] Port the routine baselines service tests to Playwright
+BLOCKED BY 4 CHUNKS
+TRIAGE
+C-6RRX
+blizzard#1476
+[PW-HUBTIER] Port the forge-status service tests onto a stepped sweep
+blizzard#1478
+[PW-HUBTIER] Port the work-source records service tests to Playwright
+BLOCKED BY 2 CHUNKS
+TRIAGE
+C-260B
+blizzard#1479
+[PW-HUBTIER] Port the two live-hub usage service tests
+BLOCKED BY 3 CHUNKS
+TRIAGE
+C-5MXB
+blizzard#1480
+[PW-HUBTIER] Port the two hub-only platform-tracing service tests
+BLOCKED BY 2 CHUNKS
+TRIAGE
+C-1A1R
+blizzard#1482
+[PW-HUBTIER] Port the OAuth login service tests onto the auth profile
+BLOCKED BY 4 CHUNKS
+TRIAGE
+C-N0SD
+blizzard#1483
+[PW-HUBTIER] Port the CLI login exchange service tests onto the auth profile
+blizzard#1484
+[PW-HUBTIER] Port the event-stream revocation service test onto the auth profile
+BLOCKED BY 4 CHUNKS
+TRIAGE
+C-MMVM
+hub:629
+Recheck the holder inside the route-token rekey, and document that a per-chunk pause outranks a restart's fence
+TRIAGE
+C-1DTX
+blizzard#1499
+Declare each runner's supported models and match them at hub eligibility
+BLOCKED BY C-B6HS (READY)
+TRIAGE
+C-HBRY
+hub:632
+Order runner-store bind, park and requeue facts by append sequence, not timestamp
+hub:633
+Make a repeated runner requeue change nothing at persistence
+BLOCKED BY C-2475 (RUNNING)
+TRIAGE
+C-DB49
+hub:639
+performance run (full)
+SURVEY
+C-SXBD
+hub:640
+performance run (full)
+SURVEY
+C-5Q4G
+hub:642
+performance run (full)
+SURVEY
+C-NH8N
+hub:641
+performance run (full)
+SURVEY
+C-GMVT
+hub:634
+comments run (full)
+SURVEY
+C-WTGG
+hub:638
+comments run (full)
+SURVEY
+C-85FD
+hub:635
+comments run (full)
+SURVEY
+C-F05Q
+hub:636
+comments run (full)
+SURVEY
+C-YWK5
+hub:637
+comments run (full)
+SURVEY
+C-6RTR
+WAIT/HUMAN
+0
+NEEDS HUMAN
+1
+blizzard#1365
+[FORGES] Report every record the forge migration would refuse
+paul-gross/blizzard PR #1498
+$8.20
+DELIVER
+C-6J9H
+RUNNING
+8
+blizzard#1497
+Add an Anthropic credential renewer that refreshes via a haiku one-shot
+paul-gross/blizzard PR #1500
+$1.34
+PRE-PUSH
+C-WSCR
+blizzard#1463
+[PW-HUBTIER] Choose the stub IdP's identity by login_hint
+~$0.81
+REVIEW
+C-27A6
+blizzard#1461
+[PW-HUBTIER] Let an event-stream client join from the latest event
+~$2.26
+MUTATION
+C-BWA2
+blizzard#1459
+[PW-HUBTIER] Tag every per-tenant sweep line with its tenant
+paul-gross/blizzard PR #1492
+~$3.27
+PRE-PUSH
+C-PTP2
+blizzard#1449
+[STRICT] Type the hub auth repositories
+paul-gross/blizzard PR #1501
+$3.77
+DELIVER
+C-QWYS
+blizzard#1446
+[STRICT] Type the runner store adapters' row mapping
+~$2.06
+BUILD
+C-2475
+hub:626
+Land a gate resolution's artifacts once when its landing consult fires
+hub:627
+Pin two unguarded humans invariants: a bounce-cap escalation's empty raw command, and the unavailable-owner takeover refusal
+$0.70
+REVIEW
+C-ZG7T
+hub:620
+Bring the work domain's docs up to four rules the code enforces deliberately
+hub:628
+Correct six stale or overbroad claims in domain/humans
++3 more
+TRIAGE
+C-FC1D
+DONE MAX(48H, 10)
+38
+hub:602
+Make a gate's resolving transition name a decision from the current visit
+hub:613
+Open a graph gate's decision on every arrival at a human-judged node, not only on a transition
++2 more
+12:24
+~$17.03
+DONE
+C-VA7X
+blizzard#1447
+[STRICT] Type the runner harness adapters' parsed output
+12:03
+$7.36
+DONE
+C-AFTK
+hub:624
+Settle one owner for the statement guards and the lane rosters
+hub:622
+Give blizzard-context's change-history Vale rule the blizzard repo's tokens
+hub:623
+Fix ten rule-slot shape defects: overlong Whys, stray paragraphs, a missing Don't
+11:25
+~$3.69
+DONE
+C-R1D5
+blizzard#1445
+[STRICT] Type the compat OpenAPI classifier
+10:19
+$1.95
+DONE
+C-BB9E
+blizzard#1175
+[NOTES] Cross-check a release's notes against its compat breaks
+09:31
+$7.00
+DONE
+C-TX56
+blizzard#1462
+[PW-HUBTIER] Make the hub's login throttle configurable
+08:56
+$1.49
+DONE
+C-F5V9
+blizzard#1190
+[FLAGS] Write the flag procedure and the operator's flags guide
+08:46
+$1.65
+DONE
+C-RWE7
+blizzard#1443
+[STRICT] Delete the inert type-ignores in shipping code and add a strict report
+08:03
+$0.88
+DONE
+C-2R1E
+blizzard#1174
+[NOTES] Fail a pull request that owes a change note
+06:59
+$5.32
+DONE
+C-QRP5
+blizzard#1364
+[FORGES] Port land and the commit check onto one forge seam
+06:29
+$40.11
+DONE
+C-ZWE9
+blizzard#1189
+[FLAGS] Hold flag tombstones, flips, and cuts to the release rules
+05:07
+$4.74
+DONE
+C-1BF8
+hub:603
+Rewrite inventory-style hub rows as read-triggers
+04:48
+~$12.56
+DONE
+C-PZD6
+blizzard#1181
+[LINES] Write the patch rule and the release promise
+00:14
+$3.89
+DONE
+C-RNZD
+blizzard#1173
+[NOTES] Publish release notes from change notes and require them
+Yesterday 22:39
+$7.06
+DONE
+C-E7DE
+hub:609
+Bring findings-and-proposals.md up to the refusals and settlement the code already has
+hub:604
+Collapse the restatements of domain/projects.md to pointers
++3 more
+Yesterday 21:46
+$9.42
+DONE
+C-TNFF
+blizzard#1361
+[ACTIONS] Remove the hub's process runner, step environment, and marker token
+Yesterday 15:21
+~$24.86
+DONE
+C-CRTC
+hub:619
+Bring the command-failed and hub-migrated definitions in line with what is recorded
+hub:618
+Say closure and transcript announcements are best-effort across a crash
+Yesterday 14:56
+$5.41
+DONE
+C-66JE
+hub:615
+Make the pause, resume and detach messages describe the actual state
+hub:617
+Show a chunk's runner and environments in `chunk show` only while it holds its claim
+Yesterday 14:50
+$2.18
+DONE
+C-8Z96
+blizzard#1160
+[RELEASE] Open the hub's pin change when blizzard publishes a release
+Yesterday 12:07
+$4.38
+DONE
+C-JJPG
+hub:612
+Count retries per visit, not per node across the whole chunk
+hub:607
+Close the runner's artifact window at the point the completion is buffered, and pin the post-exit window
+Yesterday 12:04
+$7.09
+DONE
+C-R4EH
+hub:601
+Filter a project's runner pauses before the activity feed caps them
+hub:600
+Have the trace-replay and egress-backfill CLIs refuse a window in the order the domain declares
+hub:614
+Show a restart-superseded answer as superseded on the board, not 'Delivering to the agent…'
+Yesterday 11:52
+$7.26
+DONE
+C-H48F
+blizzard#1180
+[LINES] Hold release tags to their line and promote by borrowed proof
+Yesterday 11:50
+$5.36
+DONE
+C-8YFS
+hub:621
+Keep a chunk's work items in one project at ingest
+hub:625
+Pin the retired-scope and blank-description mint behaviors with tests that run the mint
+Yesterday 11:06
+~$1.79
+DONE
+C-5EVY
+blizzard#1360
+[ACTIONS] Retire run: and carry every stored graph onto actions
+Yesterday 09:27
+$46.52
+DONE
+C-BCN9
+hub:606
+Gate an already-merged PR's head before counting it as this chunk's landing
+Yesterday 07:41
+$1.16
+DONE
+C-49G4
+blizzard#1413
+[PLAYWRIGHT] Run the isolation cross-check weekly and before releases
+Yesterday 07:05
+$1.46
+DONE
+C-4RS8
+blizzard#1412
+[PLAYWRIGHT] Port the analytics service tests and measure the shared hub
+Yesterday 05:42
+~$7.17
+DONE
+C-NET9
+blizzard#1359
+[ACTIONS] Move the packaged graphs onto actions
+Yesterday 02:19
+$30.82
+DONE
+C-T4FK
+blizzard#1411
+[PLAYWRIGHT] Write the Playwright tier's rulebook into blizzard-context
+Yesterday 01:39
+~$6.75
+DONE
+C-Z1V5
+hub:586
+Pin three runner survivors, and let `--fresh` delta mutation runs work unaided
+Yesterday 00:34
+$7.49+
+DONE
+C-G769
+blizzard#1410
+[PLAYWRIGHT] Run the Playwright half in the service-tier CI jobs
+2026/10/23
+$1.08
+DONE
+C-MNG0
+blizzard#1409
+[PLAYWRIGHT] Build the Playwright package and its shared-hub harness
+2026/10/23
+$9.60
+DONE
+C-XTP8
+hub:591
+domain-conformance run (full)
+2026/10/23
+~$6.70
+DONE
+C-0H9B
+blizzard#1358
+[ACTIONS] Take a hub node's action in a pass beside run: steps
+2026/10/23
+$47.71
+DONE
+C-FWK6
+blizzard#1408
+[PLAYWRIGHT] Gather the daemons' test environment into one contract
+2026/10/23
+$1.29
+DONE
+C-7P8C
+hub:585
+Pin the runner lifecycle's wiring arguments against surviving mutants
+2026/10/23
+$4.61
+DONE
+C-TWJS
+blizzard#1407
+[PLAYWRIGHT] Log unhandled request errors as JSON tagged with their tenant
+2026/10/23
+$1.71
+DONE
+C-1KHP
+blizzard#1406
+[PLAYWRIGHT] Read the hub CLI's tenant from BZ_HUB_TENANT
+2026/10/23
+$1.61
+DONE
+C-69GA
+RUNNERS · FLEET REGISTRY
+2
+Anthropic
+[5m]
+5h
+7d
+OpenAI
+[3m]
+7d
+r-chatgpt
+xps
+[57s]
+agents
+r-claude
+xps
+[1m]
+agents
+blizzard-claude
+winter
+blizzard-chatgpt
+OPEN QUESTIONS · AGENT ASKS
+
+NO OPEN QUESTIONS
+
+OPEN GATES · AWAITING DECISION
+
+NO OPEN GATES
+
+ACTIVITY FEED
+12:52:29
+C-QWYS pre-push → delivering → deliver
+xps/r-claude
+12:52:15
+C-QWYS pre-push → delivering → deliver
+xps/r-claude
+12:52:15
+C-WSCR pre-push → delivering → deliver
+xps/r-claude
+12:52:15
+C-WSCR pre-push → delivering → deliver
+xps/r-claude
+12:52:15
+C-WSCR pre-push → delivering → deliver
+xps/r-claude
+12:52:15
+C-WSCR pre-push → delivering → deliver
+xps/r-claude
+12:52:15
+C-WSCR pre-push → delivering → deliver
+xps/r-claude
+12:52:15
+C-WSCR pre-push → delivering → deliver
+xps/r-claude
+12:52:15
+C-WSCR pre-push → delivering → deliver
+xps/r-claude
+12:52:15
+C-WSCR pre-push → delivering → deliver
+xps/r-claude
+12:52:15
+C-WSCR pre-push → delivering → deliver
+xps/r-claude
+12:52:15
+C-WSCR pre-push → delivering → deliver
+xps/r-claude
+12:52:15
+C-WSCR pre-push → delivering → deliver
+xps/r-claude
+12:52:15
+C-WSCR pre-push → delivering → deliver
+xps/r-claude
+12:52:15
+C-WSCR pre-push → delivering → deliver
+xps/r-claude
+12:52:15
+C-WSCR pre-push → delivering → deliver
+xps/r-claude
+12:52:15
+C-WSCR pre-push → delivering → deliver
+xps/r-claude
+12:52:15
+C-WSCR pre-push → delivering → deliver
+xps/r-claude
+12:52:15
+C-WSCR pre-push → delivering → deliver
+xps/r-claude
+12:52:15
+C-WSCR pre-push → delivering → deliver
+xps/r-claude
+12:52:15
+C-6J9H pre-push → delivering → deliver
+xps/r-claude
+12:52:15
+C-6J9H pre-push → delivering → deliver
+xps/r-claude
+12:52:15
+C-6J9H pre-push → delivering → deliver
+xps/r-claude
+12:52:15
+C-6J9H pre-push → delivering → deliver
+xps/r-claude
+12:52:15
+C-6J9H pre-push → delivering → deliver
+xps/r-claude
+12:52:15
+C-6J9H pre-push → delivering → deliver
+xps/r-claude
+12:52:15
+C-6J9H pre-push → delivering → deliver
+xps/r-claude
+12:52:15
+C-6J9H pre-push → delivering → deliver
+xps/r-claude
+12:52:15
+C-6J9H pre-push → delivering → deliver
+xps/r-claude
+12:52:15
+C-6J9H pre-push → delivering → deliver
+xps/r-claude
+12:52:15
+C-6J9H pre-push → delivering → deliver
+xps/r-claude
+12:52:15
+C-6J9H pre-push → delivering → deliver
+xps/r-claude
+12:52:15
+C-6J9H pre-push → delivering → deliver
+xps/r-claude
+12:52:15
+C-6J9H pre-push → delivering → deliver
+xps/r-claude
+12:52:15
+C-6J9H pre-push → delivering → deliver
+xps/r-claude
+12:52:15
+C-6J9H pre-push → delivering → deliver
+xps/r-claude
+12:52:15
+C-6J9H pre-push → delivering → deliver
+xps/r-claude
+12:52:15
+C-6J9H pre-push → delivering → deliver
+xps/r-claude
+12:52:15
+C-6J9H pre-push → delivering → deliver
+xps/r-claude
+12:52:15
+C-6J9H pre-push → delivering → deliver
+xps/r-claude
+12:52:15
+C-6J9H pre-push → delivering → deliver
+xps/r-claude
+12:52:15
+C-6J9H pre-push → delivering → deliver
+xps/r-claude
+12:52:15
+C-6J9H pre-push → delivering → deliver
+xps/r-claude
+12:52:15
+C-6J9H pre-push → delivering → deliver
+xps/r-claude
+12:52:15
+C-6J9H pre-push → delivering → deliver
+xps/r-claude
+12:52:15
+C-6J9H pre-push → delivering → deliver
+xps/r-claude
+12:52:15
+C-VA7X pre-push → delivering → deliver
+xps/r-claude
+12:52:15
+C-VA7X pre-push → delivering → deliver
+xps/r-claude
+12:52:15
+C-VA7X pre-push → delivering → deliver
+xps/r-claude
+12:52:15
+C-VA7X pre-push → delivering → deliver
+xps/r-claude
+12:52:15
+C-VA7X pre-push → delivering → deliver
+xps/r-claude
+12:52:15
+C-VA7X pre-push → delivering → deliver
+xps/r-claude
+12:52:15
+C-VA7X pre-push → delivering → deliver
+xps/r-claude
+12:52:15
+C-VA7X pre-push → delivering → deliver
+xps/r-claude
+12:52:15
+C-VA7X pre-push → delivering → deliver
+xps/r-claude
+12:51:55
+C-WSCR deliver → running → pre-push
+xps/r-claude
+12:51:53
+C-FC1D claimed
+xps/r-claude
+12:51:43
+C-QWYS pre-push → delivering → deliver
+xps/r-claude
+12:51:43
+C-ZG7T build → running → review
+xps/r-claude
+12:49:28
+C-QWYS review → running → pre-push
+xps/r-claude
+12:48:22
+C-6J9H
+12:48:19
+C-6J9H resolve → needs_human → deliver
+xps/r-claude
+12:47:45
+C-QWYS mutation → running → review
+xps/r-claude
+12:46:36
+C-6J9H
+hub
+12:46:34
+C-6J9H deliver → running → resolve
+xps/r-claude
+12:46:00
+C-QWYS verify → running → mutation
+xps/r-claude
+12:44:51
+C-ZG7T claimed
+xps/r-claude
+12:44:44
+C-6J9H
+hub
+12:44:42
+C-6J9H deliver → running → resolve
+xps/r-claude
+12:44:41
+C-ZG7T → ready → build
+12:44:41
+C-ZG7T
+12:44:05
+C-6RTR → ready → survey
+12:44:03
+C-YWK5 → ready → survey
+12:44:02
+C-F05Q → ready → survey
+12:44:00
+C-85FD → ready → survey
+12:43:59
+C-WTGG → ready → survey
+12:43:58
+C-GMVT → ready → survey
+12:43:55
+C-NH8N → ready → survey
+12:43:53
+C-5Q4G → ready → survey
+12:43:52
+C-SXBD → ready → survey
+12:42:56
+C-ZG7T claimed
+xps/r-claude
+12:42:49
+C-6J9H
+hub
+12:42:46
+C-NH8N → not_ready → survey
+12:42:45
+C-6J9H deliver → running → resolve
+xps/r-claude
+12:42:45
+C-GMVT → not_ready → survey
+12:42:43
+C-5Q4G → not_ready → survey
+12:42:41
+C-QWYS build → running → verify
+xps/r-claude
+12:42:41
+C-SXBD → not_ready → survey
+12:42:39
+C-85FD → not_ready → survey
+12:42:38
+C-6RTR → not_ready → survey
+12:42:37
+C-YWK5 → not_ready → survey
+12:42:36
+C-F05Q → not_ready → survey
+12:42:35
+C-WTGG → not_ready → survey
+12:40:56
+C-WSCR pre-push → delivering → deliver
+xps/r-claude
+12:40:24
+C-6J9H
+hub
+12:40:22
+C-6J9H deliver → running → resolve
+xps/r-claude
+12:39:17
+C-WSCR review → running → pre-push
+xps/r-claude
+12:39:16
+C-QWYS review → running → build
+xps/r-claude
+12:38:54
+C-DB49 → ready → triage
+12:38:33
+C-DB49 → not_ready → triage
+12:38:33
+C-SPE4 → not_ready → triage
+12:38:15
+C-DB49 → not_ready → triage
+12:37:43
+C-6J9H deliver → running → resolve
+xps/r-claude
+12:37:40
+C-WSCR build → running → review
+xps/r-claude
+12:37:39
+C-QWYS mutation → running → review
+xps/r-claude
+12:36:46
+C-FC1D → ready → triage
+12:36:39
+C-3BYJ → not_ready → triage
+12:35:58
+C-WSCR review → running → build
+xps/r-claude
+12:35:57
+C-BWA2 verify → running → mutation
+xps/r-claude
+12:34:17
+C-HBRY → ready → triage
+12:33:59
+C-HBRY → not_ready → triage
+12:33:45
+C-WSCR build → running → review
+xps/r-claude
+12:27:11
+C-WSCR claimed
+xps/r-claude
+12:27:04
+C-WSCR → ready → build
+12:27:04
+C-WSCR
+12:24:52
+C-WSCR claimed
+xps/r-claude
+12:24:44
+C-VA7X retrospective → done
+xps/r-claude
+12:23:04
+C-6J9H pre-push → delivering → deliver
+xps/r-claude
+12:20:57
+C-6J9H review → running → pre-push
+xps/r-claude
+12:19:24
+C-6J9H mutation → running → review
+xps/r-claude
+12:12:53
+C-27A6 build → running → review
+xps/r-chatgpt
+12:05:33
+C-QWYS verify → running → mutation
+xps/r-claude
+12:05:20
+C-VA7X · info work-item-closed
+12:05:19
+C-VA7X · info work-item-closed
+12:05:19
+C-VA7X · info work-item-closed
+12:05:19
+C-VA7X · info work-item-closed
+12:05:02
+C-VA7X record-findings → running → retrospective
+xps/r-claude
+12:04:30
+C-VA7X deliver → delivering → record-findings
+xps/r-claude
+12:03:49
+C-AFTK retrospective → done
+xps/r-claude
+11:41:42
+C-AFTK
+hub
+11:41:17
+C-AFTK · info work-item-closed
+11:41:09
+C-AFTK
+hub
+11:38:56
+C-WSCR
+11:38:15
+C-WSCR
+11:36:53
+C-6J9H
+xps/r-claude
+11:35:42
+C-BWA2
+xps/r-claude
+11:32:08
+C-QWYS
+xps/r-claude
+11:30:19
+C-6J9H
+xps/r-claude
+11:30:07
+C-PTP2
+xps/r-chatgpt
+11:29:35
+C-BWA2
+xps/r-claude
+11:29:31
+C-2475
+xps/r-chatgpt
+11:27:44
+C-BWA2
+xps/r-claude
+11:27:41
+C-PTP2
+xps/r-chatgpt
+11:26:33
+C-6J9H
+xps/r-claude
+11:26:26
+C-2475
+xps/r-chatgpt
+11:25:56
+C-QWYS
+xps/r-claude
+11:25:47
+C-27A6 claimed
+xps/r-chatgpt
+11:25:40
+C-R1D5
+xps/r-chatgpt
+11:24:08
+C-BWA2 claimed
+xps/r-claude
+11:24:02
+C-27A6
+11:24:02
+C-27A6
+11:23:59
+C-X20Y
+11:23:55
+C-PTP2 claimed
+xps/r-chatgpt
+11:23:48
+C-X20Y
+11:23:46
+C-PTP2
+11:23:46
+C-PTP2
+11:23:25
+C-QWYS
+xps/r-claude
+11:23:09
+C-2475 claimed
+xps/r-chatgpt
+11:23:01
+C-BWA2
+11:23:01
+C-BWA2
+11:22:59
+C-2475
+11:22:59
+C-2475
+11:22:13
+C-27A6 claimed
+xps/r-claude
+11:22:02
+C-VA7X
+xps/r-claude
+11:20:26
+C-BWA2 claimed
+xps/r-chatgpt
+11:20:20
+C-6J9H
+xps/r-claude
+11:18:07
+C-6J9H
+xps/r-claude
+11:17:00
+C-QWYS claimed
+xps/r-claude
+11:16:53
+C-QWYS
+11:16:53
+C-QWYS
+11:16:53
+C-VA7X
+xps/r-claude
+11:15:46
+C-6J9H
+xps/r-claude
+11:14:41
+C-QWYS claimed
+xps/r-claude
+11:14:31
+C-AFTK
+xps/r-claude
+11:14:31
+C-VA7X
+xps/r-claude
+11:08:51
+C-AFTK
+xps/r-claude
+11:07:18
+C-AFTK
+xps/r-claude
+10:42:50
+C-VA7X
+xps/r-claude
+10:35:10
+C-AFTK
+xps/r-claude
+10:30:33
+C-AFTK
+xps/r-claude
+10:20:15
+C-AFTK
+xps/r-claude
+10:19:13
+C-BB9E
+xps/r-claude
+10:18:11
+C-AFTK
+xps/r-claude
+10:12:31
+C-6J9H
+xps/r-claude
+10:08:14
+C-BB9E · info work-item-closed
+10:07:54
+C-BB9E
+hub
+10:07:22
+C-BB9E
+hub
+09:54:49
+C-VA7X
+xps/r-claude
+09:53:06
+C-VA7X
+xps/r-claude
+09:49:17
+C-VA7X
+xps/r-claude
+09:47:35
+C-VA7X
+xps/r-claude
+09:45:55
+C-AFTK
+xps/r-claude
+09:39:56
+C-BB9E
+xps/r-claude
+09:38:21
+C-AFTK
+xps/r-claude
+09:37:48
+C-BB9E
+xps/r-claude
+09:35:43
+C-BB9E
+xps/r-claude
+09:31:34
+C-TX56
+xps/r-claude
+09:28:27
+C-BB9E
+hub
+09:28:12
+C-TX56 · info work-item-closed
+09:27:55
+C-TX56
+hub

@@ -1,0 +1,1154 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>blizzard — altitude · fleet · mobile</title>
+<style>/* Altitude — one continuous space, seen at five fidelities. */
+:root{
+  --paper:#ECEAE2; --sheet:#F6F5F0; --ink:#121110; --ink2:#4F4C45; --ink3:#8C887D; --ink4:#B9B5A9;
+  --rule:#D5D1C5; --rule2:#E2DFD5;
+  --hum:#E03A12; --hum-bg:#FBE4DA; --live:#1F3DFF; --live-bg:#E3E7FF; --ok:#1B7F4B;
+  --sans:"Noto Sans",sans-serif; --mono:"Noto Sans Mono",monospace; --serif:"STIX Two Text",serif;
+  --hatch:repeating-linear-gradient(135deg,transparent 0 3px,rgba(18,17,16,.13) 3px 4px);
+}
+body.night{
+  --paper:#0F0E0C; --sheet:#171613; --ink:#EDE9DD; --ink2:#B4AFA2; --ink3:#7A766C; --ink4:#4A4740;
+  --rule:#2B2924; --rule2:#211F1B; --hum:#FF5B33; --hum-bg:#3A1A10; --live:#8C9DFF; --live-bg:#1B1F3D; --ok:#5BC48A;
+  --hatch:repeating-linear-gradient(135deg,transparent 0 3px,rgba(237,233,221,.12) 3px 4px);
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{height:100%}
+body{background:var(--paper);color:var(--ink);font:400 13px/1.35 var(--sans);font-stretch:87.5%;overflow:hidden;
+  -webkit-font-smoothing:antialiased;font-feature-settings:"tnum" 1}
+.mono{font-family:var(--mono);font-stretch:100%}
+button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
+::selection{background:var(--live);color:#fff}
+
+/* ---------- frame ---------- */
+#app{display:grid;grid-template-rows:auto auto 1fr 26px;height:100vh}
+.top{display:grid;grid-template-columns:auto 1fr auto;align-items:center;gap:18px;padding:10px 18px 8px;border-bottom:1px solid var(--ink)}
+.mark{font-weight:800;font-stretch:62.5%;font-size:22px;letter-spacing:-.01em;line-height:1}
+.mark small{display:block;font-weight:400;font-size:11px;color:var(--ink3);font-stretch:87.5%;letter-spacing:0;margin-top:2px}
+
+/* the query line */
+.ql{position:relative;display:flex;align-items:center;height:38px;border:1.5px solid var(--ink);background:var(--sheet);border-radius:3px;padding:0 10px 0 0}
+.ql .pr{font:700 15px var(--mono);padding:0 10px;color:var(--ink3);align-self:stretch;display:flex;align-items:center;border-right:1px solid var(--rule)}
+.ql.on{box-shadow:0 0 0 3px var(--live-bg);border-color:var(--live)}
+.ql.on .pr{color:var(--live)}
+.qwrap{position:relative;flex:1;height:100%}
+.qwrap input,.qwrap .hl{position:absolute;inset:0;font:500 14.5px/36px var(--mono);padding:0 12px;white-space:pre;border:0;background:transparent;letter-spacing:0}
+.qwrap input{color:transparent;caret-color:var(--live);outline:none;width:100%}
+.qwrap .hl{pointer-events:none;overflow:hidden;color:var(--ink)}
+.qwrap .ph{color:var(--ink3);font-weight:400}
+.t-key{color:var(--ink2)} .t-val{color:var(--ink);font-weight:700}
+.t-cmp{color:var(--live);font-weight:700} .t-pipe{color:var(--ink3);font-weight:700} .t-op{color:var(--live);font-weight:700}
+.t-act{color:var(--hum);font-weight:800} .t-view{color:var(--live);font-weight:700;text-decoration:underline;text-underline-offset:3px} .t-txt{color:var(--ink)} .t-err{color:var(--hum);text-decoration:wavy underline}
+.qmeta{font:500 12px var(--mono);color:var(--ink3);white-space:nowrap;padding-left:8px}
+.qmeta b{color:var(--ink)}
+.sugg{position:absolute;left:-1.5px;right:-1.5px;top:38px;background:var(--sheet);border:1.5px solid var(--live);border-top:1px solid var(--rule);z-index:30;display:none;max-height:380px;overflow:auto;border-radius:0 0 3px 3px}
+.ql.on .sugg.show{display:block}
+.sg{display:grid;grid-template-columns:110px 1fr auto;gap:12px;padding:6px 12px;align-items:baseline;cursor:pointer}
+.sg .a{font:700 13px var(--mono);color:var(--live)} .sg .b{font:400 13px var(--mono);color:var(--ink2)} .sg .c{color:var(--ink3);font-size:12px}
+.sg.cur{background:var(--live-bg)}
+.sghd{padding:7px 12px 3px;color:var(--ink3);font-size:11.5px;font-stretch:75%;border-top:1px solid var(--rule2)}
+.sghd:first-child{border-top:0}
+
+/* instrument readout: text first, never tiles */
+.inst{display:flex;align-items:center;gap:20px;white-space:nowrap}
+.spend{font:600 22px/1 var(--sans);font-stretch:62.5%;letter-spacing:-.01em}
+.spend small{font-weight:400;font-size:12px;color:var(--ink3);font-stretch:87.5%;margin-left:4px}
+.win{display:grid;grid-template-columns:auto 76px;column-gap:6px;row-gap:3px;align-items:center;font-size:11px;color:var(--ink2)}
+.win .lbl{font-stretch:75%;text-align:right}
+.trk{position:relative;height:5px;background:var(--rule2);outline:1px solid var(--rule)}
+.trk i{position:absolute;left:0;top:0;bottom:0;background:var(--ink)}
+.trk i.hot{background:var(--hum)}
+.trk u{position:absolute;top:-3px;bottom:-3px;width:2px;background:var(--live)}
+.hub{font-size:12px;color:var(--ink2)}
+.hub b{display:inline-block;width:7px;height:7px;border-radius:50%;background:var(--ok);margin-right:5px;vertical-align:1px;animation:beat 2s infinite}
+@keyframes beat{50%{opacity:.35}}
+
+/* zoom strip: breadcrumb is the zoom path */
+.zs{display:grid;grid-template-columns:1fr auto auto;align-items:center;gap:22px;padding:7px 18px;border-bottom:1px solid var(--rule);font-size:12.5px}
+.crumb{display:flex;align-items:center;gap:0;white-space:nowrap;overflow:hidden}
+.crumb span{color:var(--ink3);padding:0 2px}
+.crumb span.lit{color:var(--ink);font-weight:600}
+.crumb em{font-style:normal;color:var(--ink4);padding:0 6px}
+.ladder{display:flex;align-items:center;gap:0}
+.ladder button{display:flex;align-items:center;gap:5px;padding:2px 9px;color:var(--ink3);position:relative}
+.ladder button kbd{font:600 10.5px var(--mono);color:var(--ink3)}
+.ladder button.cur{color:var(--ink);font-weight:700}
+.ladder button.cur::after{content:"";position:absolute;left:9px;right:9px;bottom:-8px;height:2px;background:var(--ink)}
+.ladder .sz{display:inline-block;background:currentColor}
+.proj{display:flex;gap:2px;font-size:12.5px}
+.proj button{padding:2px 9px;color:var(--ink3)}
+.proj button.cur{color:var(--paper);background:var(--ink);border-radius:2px}
+.proj kbd,.k{font:600 10.5px var(--mono);color:var(--ink3);margin-left:6px}
+
+/* body */
+.main{display:grid;grid-template-columns:1fr 410px;min-height:0}
+.main.deep{grid-template-columns:290px 1fr}
+.cv{overflow:auto;min-height:0;padding:14px 18px 40px;scrollbar-width:thin;position:relative}
+.cv.zooming{animation:zin .26s cubic-bezier(.2,.7,.2,1)}
+.cv.zoomout{animation:zout .26s cubic-bezier(.2,.7,.2,1)}
+@keyframes zin{from{transform:scale(.965);opacity:.4}}
+@keyframes zout{from{transform:scale(1.035);opacity:.4}}
+.peek{border-left:1px solid var(--ink);overflow:auto;min-height:0;background:var(--sheet);scrollbar-width:thin}
+.rail{border-right:1px solid var(--ink);overflow:auto;min-height:0;padding:12px 12px 40px;background:var(--sheet);scrollbar-width:thin}
+
+/* ---------- sections ---------- */
+.sec{margin-bottom:22px}
+.sh{display:flex;align-items:baseline;gap:10px;margin-bottom:8px;padding-bottom:5px;border-bottom:1px solid var(--rule)}
+.sh .n{font:800 30px/0.9 var(--sans);font-stretch:62.5%;letter-spacing:-.02em}
+.sh .l{font:600 17px/1 var(--sans);font-stretch:75%}
+.sh .s{color:var(--ink3);font-size:12.5px;margin-left:4px}
+.sh .r{margin-left:auto;color:var(--ink3);font-size:12px}
+.sec.hum .sh{border-bottom:2px solid var(--hum)}
+.sec.hum .sh .n,.sec.hum .sh .l{color:var(--hum)}
+.sec.hum .sh .n{font-size:44px}
+.sec.hum .sh .l{font-size:22px}
+.sec.live .sh .n,.sec.live .sh .l{color:var(--live)}
+.sec.quiet .sh .n,.sec.quiet .sh .l{color:var(--ink3)}
+.sec.quiet .sh .n{font-size:22px}
+.sec.quiet .sh .l{font-size:14px}
+.sub{color:var(--ink3);font-size:12px;margin:10px 0 4px;display:flex;gap:8px;align-items:baseline}
+.sub b{color:var(--ink2);font-weight:600}
+
+/* ---------- fidelity 1: pixel ---------- */
+.px{display:inline-block;width:8px;height:8px;margin:0 2px 2px 0;background:var(--ink3);vertical-align:top}
+.px.s-needs_human{background:var(--hum)} .px.s-running{background:var(--live)} .px.s-ready{background:var(--ink2)}
+.px.blk{background:var(--hatch),var(--rule)} .px.s-done{background:var(--ink4)} .px.hist{background:var(--rule)} .px.s-backlog{background:transparent;outline:1px solid var(--ink3);outline-offset:-1px}
+.px.free{background:transparent;outline:1px dashed var(--ink3);outline-offset:-1px}
+.px.f{outline:2px solid var(--ink);outline-offset:1px}
+.px.dim{opacity:.35}
+.field .px{width:11px;height:11px;margin:0 3px 3px 0}
+.field .sec.hum .px{width:30px;height:30px}
+.field .sec.live .px{width:18px;height:18px}
+.pxs{line-height:0}
+.dimrun{line-height:0;display:inline}
+
+/* ---------- fidelity 2: glyph ---------- */
+.gl{display:inline-flex;flex-direction:column;justify-content:space-between;width:62px;height:38px;margin:0 4px 4px 0;padding:3px 5px 3px;background:var(--sheet);border:1px solid var(--rule);vertical-align:top;cursor:pointer;position:relative}
+.gl .i{font:700 12px/1 var(--mono)}
+.gl .m{display:flex;justify-content:space-between;font-size:10px;line-height:1;padding-bottom:2px;color:var(--ink3);font-stretch:75%}
+.gl.s-needs_human{background:var(--hum);border-color:var(--hum);color:#fff}.gl.s-needs_human .m{color:#fff}
+.gl.s-running{border-color:var(--live);box-shadow:inset 0 -3px 0 var(--live)}
+.gl.s-running .i{color:var(--live)}
+.gl.blk{background:var(--hatch),var(--sheet)}
+.gl.s-done{background:transparent;border-color:var(--rule2);color:var(--ink3)}
+.gl.f{outline:2px solid var(--ink);outline-offset:1px;z-index:2}
+.gl .cb{position:absolute;left:0;bottom:-1px;height:2px;background:var(--ink)}
+
+/* chains (ready at row zoom = glyph fidelity, grouped by what holds them) */
+.ch{display:grid;grid-template-columns:118px 1fr;gap:10px;align-items:start;padding:5px 0;border-top:1px solid var(--rule2)}
+.ch .h{font-weight:600;font-stretch:75%;font-size:13.5px;padding-top:2px}
+.ch .h small{display:block;font-weight:400;color:var(--ink3);font-size:11.5px}
+.ch .seq{display:flex;flex-wrap:wrap;align-items:center;row-gap:2px}
+.ch .ar{color:var(--ink4);margin:0 3px 4px -1px;font-size:11px}
+.ch .head{font:700 11px var(--mono);padding:2px 5px;margin:0 4px 4px 0;align-self:center;color:var(--ink2);border:1px dashed var(--ink3)}
+.ch .head.h-needs_human{color:#fff;background:var(--hum);border:1px solid var(--hum)}
+.ch .head.h-running{color:var(--live);border:1px solid var(--live)}
+.ch .gl{width:52px;height:30px}
+
+/* ---------- fidelity 3: row ---------- */
+.rw{display:grid;grid-template-columns:4px 50px 96px minmax(0,1fr) 128px 74px 46px 58px;align-items:center;column-gap:10px;height:28px;cursor:pointer;border-bottom:1px solid var(--rule2);position:relative}
+.rw:hover{background:var(--sheet)}
+.rw .st{align-self:stretch;margin:4px 0;background:var(--ink4)}
+.rw .i{font:700 12px var(--mono)}
+.rw .ref{font:500 12px var(--mono);color:var(--ink2);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.rw .ti{white-space:nowrap;overflow:hidden;text-overflow:ellipsis;font-size:13.5px}
+.rw .ti .ep{font-weight:700;font-stretch:62.5%;color:var(--ink2);margin-right:5px;font-size:12.5px}
+.rw .ti .more{color:var(--ink3);font-size:12px;margin-left:6px}
+.rw .ru{font-size:12px;color:var(--ink2);font-stretch:75%}
+.rw .ag{font:500 11.5px var(--mono);color:var(--ink3);text-align:right}
+.rw .co{font:600 12.5px var(--mono);text-align:right}
+.rw .co.est{color:var(--ink2);font-weight:400}
+.rw.s-running .st{background:var(--live)}
+.rw.s-running .i{color:var(--live)}
+.rw.f{background:var(--sheet);box-shadow:inset 0 0 0 1.5px var(--ink)}
+.rw.sel .i::before{content:"✓";color:var(--live);position:absolute;left:-14px}
+.rw.s-done{height:21px;color:var(--ink3);border-bottom-color:transparent}
+.rw.s-done .ti{font-size:12.5px;font-stretch:75%;font-weight:300;color:var(--ink2)}
+.rw.s-done .i,.rw.s-done .ref,.rw.s-done .co{font-size:11px;color:var(--ink3);font-weight:400}
+.rw.s-done .st{background:transparent}
+.rw.s-ready .st,.rw.s-backlog .st{background:var(--ink3)}
+
+/* node track: where in the graph, at a glance */
+.nt{display:grid;grid-template-columns:repeat(6,1fr);gap:2px;align-items:center;position:relative;height:14px}
+.nt i{height:4px;background:var(--rule)}
+.nt i.p{background:var(--ink2)}
+.nt i.c{height:10px;background:var(--live);position:relative;overflow:hidden}
+.nt i.c::after{content:"";position:absolute;inset:0;background:linear-gradient(90deg,transparent,rgba(255,255,255,.75),transparent);animation:sweep 1.6s linear infinite;transform:translateX(-100%)}
+.nt i.h{height:10px;background:var(--hum)}
+@keyframes sweep{to{transform:translateX(100%)}}
+.nt b{position:absolute;top:-6px;font:700 9.5px var(--mono);color:var(--hum)}
+.nt .nl{position:absolute;right:0;top:-10px;font-size:10px;color:var(--ink3)}
+
+/* needs-you rows render one fidelity higher than their peers */
+.hx{display:grid;grid-template-columns:4px 1fr 250px;column-gap:14px;padding:10px 14px 12px 0;border-bottom:1px solid var(--rule);cursor:pointer;position:relative}
+.hx .st{background:var(--hum)}
+.hx .l1{display:flex;align-items:baseline;gap:10px}
+.hx .i{font:800 14px var(--mono);color:var(--hum)}
+.hx .ref{font:500 12.5px var(--mono);color:var(--ink2)}
+.hx .kind{font-size:12px;font-weight:700;color:var(--hum);font-stretch:75%}
+.hx .ti{font:600 18px/1.25 var(--sans);font-stretch:75%;margin:3px 0 4px;letter-spacing:-.005em}
+.hx .why{font:italic 14px/1.35 var(--serif);color:var(--ink2);max-width:760px}
+.hx .acts{display:flex;gap:16px;margin-top:8px;font-size:12.5px}
+.hx .acts span{color:var(--ink2)} .hx .acts kbd{font:800 12px var(--mono);color:var(--hum);margin-right:4px}
+.hx .rt{display:grid;grid-template-columns:auto 1fr auto 1fr;column-gap:8px;row-gap:4px;font-size:12px;color:var(--ink2);align-content:start;align-items:baseline}
+.hx .rt .hd{grid-column:1/5;display:flex;align-items:baseline;gap:8px;margin-bottom:4px}
+.hx .rt b{font:700 12px var(--mono);color:var(--ink)}
+.hx .rt .big{font:800 34px/0.9 var(--sans);font-stretch:62.5%;color:var(--hum)}
+.hx.f{background:var(--hum-bg);box-shadow:inset 0 0 0 1.5px var(--hum)}
+
+/* ---------- place projection ---------- */
+.host{display:flex;align-items:baseline;gap:14px;margin-bottom:12px;padding-bottom:6px;border-bottom:1px solid var(--ink)}
+.host .nm{font:800 34px/0.9 var(--sans);font-stretch:62.5%}
+.host .meta{color:var(--ink2);font-size:12.5px}
+.host .meta .mono{font-size:12px}
+.rn{margin-bottom:18px}
+.rnh{display:grid;grid-template-columns:auto 1fr auto;column-gap:16px;align-items:center;padding:6px 8px 6px 0;cursor:pointer;border-bottom:1px solid var(--rule)}
+.rnh .nm{font:700 20px/1 var(--sans);font-stretch:75%}
+.rnh .nm .dot{display:inline-block;width:8px;height:8px;background:var(--ok);margin-right:7px;vertical-align:3px}
+.rnh .d{color:var(--ink2);font-size:12.5px}
+.rnh .d .mono{font-size:11.5px;color:var(--ink3)}
+.rnh .w{display:flex;gap:16px;align-items:center;font-size:11.5px;color:var(--ink2)}
+.rnh .w .trk{width:110px}
+.rnh .win{grid-template-columns:auto 110px}
+.rnh .w .pace{font-stretch:75%}
+.rnh.f{background:var(--sheet);box-shadow:inset 0 0 0 1.5px var(--ink)}
+.wsl{display:grid;grid-template-columns:118px 1fr;column-gap:10px;align-items:start}
+.wsl .wn{font-size:12px;color:var(--ink2);padding-top:7px;font-stretch:75%}
+.wsl .wn b{display:block;color:var(--ink);font-weight:600;font-size:13px}
+.sock{display:flex;align-items:center;gap:8px;height:28px;color:var(--ink3);font-size:12.5px;border-bottom:1px solid var(--rule2)}
+.sock i{display:inline-block;width:46px;height:14px;border:1px dashed var(--ink3)}
+.rn .rw{grid-template-columns:4px 50px 96px minmax(0,1fr) 128px 46px 58px}
+.rn .rw .ru{display:none}
+
+/* ---------- peek ---------- */
+.pk{padding:16px 18px 30px}
+.pk .lab{color:var(--ink3);font-size:11.5px;margin-bottom:6px;display:flex;justify-content:space-between}
+.pk .i{font:800 15px var(--mono)}
+.pk h2{font:600 21px/1.2 var(--sans);font-stretch:75%;margin:4px 0 8px;letter-spacing:-.01em}
+.pk .why{font:italic 14.5px/1.4 var(--serif);color:var(--ink2);margin:6px 0 12px;padding-left:10px;border-left:2px solid var(--hum)}
+.pk .why.lv{border-left-color:var(--live)}
+.pk dl{display:grid;grid-template-columns:96px 1fr;row-gap:4px;font-size:12.5px;margin:10px 0 14px}
+.pk dt{color:var(--ink3)} .pk dd{font-family:var(--mono);font-size:12px}
+.pk .acts{display:grid;grid-template-columns:1fr 1fr;gap:4px;margin:12px 0}
+.pk .acts button{display:flex;justify-content:space-between;align-items:center;padding:7px 9px;border:1px solid var(--rule);text-align:left;background:var(--paper);font-size:12.5px}
+.pk .acts button:hover{border-color:var(--ink)}
+.pk .acts button kbd{font:700 11px var(--mono);color:var(--ink3)}
+.pk .acts button.pri{background:var(--ink);color:var(--paper);border-color:var(--ink)} .pk .acts button.pri kbd{color:var(--ink4)}
+.pk .acts button.hum{background:var(--hum);color:#fff;border-color:var(--hum)} .pk .acts button.hum kbd{color:#fff;opacity:.75}
+.pk .nt{height:22px;margin:4px 0 2px} .pk .nt i{height:6px} .pk .nt i.c,.pk .nt i.h{height:16px}
+.ntl{display:grid;grid-template-columns:repeat(6,1fr);gap:2px;font-size:10.5px;color:var(--ink3);font-stretch:75%}
+.ntl .c{color:var(--ink);font-weight:700}
+.mini{width:100%;margin:6px 0 4px}
+.sl{font-size:12px}
+.sl div{display:grid;grid-template-columns:22px 92px 1fr 52px 50px;gap:6px;padding:3px 0;border-bottom:1px solid var(--rule2);align-items:baseline}
+.sl .v-fail,.sl .v-bounce,.sl .v-failure,.sl .v-significant{color:var(--hum);font-weight:700}
+.sl .v-pass,.sl .v-clean{color:var(--ink);font-weight:600}
+.sl .v-run{color:var(--live);font-weight:700}
+.sl .mono{font-size:11.5px;color:var(--ink2)} .sl .r{text-align:right}
+.pk .hint{margin-top:16px;color:var(--ink3);font-size:12px;line-height:1.6}
+.pk .hint kbd{font:700 11px var(--mono);color:var(--ink);border-bottom:1px solid var(--ink3)}
+
+/* ---------- fidelity 4: panel ---------- */
+.pnl{max-width:1220px}
+.pnl .top1{display:flex;gap:14px;align-items:baseline}
+.pnl .i{font:800 18px var(--mono)}
+.pnl .sta{font-weight:700;font-stretch:75%;font-size:14px}
+.pnl h1{font:600 34px/1.1 var(--sans);font-stretch:75%;letter-spacing:-.015em;margin:6px 0 6px;max-width:1000px}
+.pnl .refs{font:500 12.5px var(--mono);color:var(--ink2);display:flex;gap:14px;flex-wrap:wrap}
+.pnl .why{font:italic 16px/1.4 var(--serif);color:var(--ink2);margin:12px 0;padding-left:12px;border-left:3px solid var(--hum);max-width:900px}
+.pgrid{display:grid;grid-template-columns:1fr 300px;gap:28px;margin-top:16px}
+.blk h3{font:700 14px var(--sans);font-stretch:75%;margin:0 0 6px;display:flex;justify-content:space-between;color:var(--ink)}
+.blk h3 span{font-weight:400;color:var(--ink3);font-size:12px}
+.subway{width:100%;display:block;background:var(--sheet);border:1px solid var(--rule)}
+.subway text{font-family:var(--sans);font-stretch:75%}
+.stab{width:100%;border-collapse:collapse;font-size:12.5px;margin-top:10px}
+.stab td{padding:4px 6px;border-bottom:1px solid var(--rule2)}
+.stab tr{cursor:pointer}
+.stab tr.f td{background:var(--live-bg)}
+.stab td.n{font:600 11.5px var(--mono);color:var(--ink3);width:26px}
+.stab td.mono{font-size:11.5px}
+.stab td.r{text-align:right}
+.side dl{display:grid;grid-template-columns:100px 1fr;row-gap:5px;font-size:12.5px}
+.side dt{color:var(--ink3)} .side dd{font:12px var(--mono)}
+.side .lnk{display:flex;flex-wrap:wrap;gap:4px;margin:4px 0 12px}
+.side .issue{font-size:12.5px;line-height:1.5;color:var(--ink2);margin-top:12px;border-top:1px solid var(--rule);padding-top:8px}
+.side .issue p{margin-bottom:6px}
+.side .issue code{font:11.5px var(--mono);color:var(--ink)}
+
+/* ---------- fidelity 5: transcript line ---------- */
+.tx{font:12.5px/1.55 var(--mono);margin-top:12px;border-top:1px solid var(--ink)}
+.tl{display:grid;grid-template-columns:62px 56px 1fr;gap:10px;padding:1px 6px;cursor:pointer}
+.tl:hover{background:var(--sheet)}
+.tl .t{color:var(--ink3)} .tl .k{color:var(--ink3);font-stretch:75%}
+.tl.k-tool .k{color:var(--live)} .tl.k-tool .x{color:var(--ink)}
+.tl.k-think .x{font:italic 14px/1.45 var(--serif);color:var(--ink2)}
+.tl.k-out .x{color:var(--ink2);white-space:pre-wrap}
+.tl.k-res .x{color:var(--ok);font-weight:600}
+.tl.k-err .x,.tl.k-err .k{color:var(--hum);font-weight:600}
+.tl.f{background:var(--live-bg);box-shadow:inset 3px 0 0 var(--live)}
+.tl.new{animation:fresh 1.2s}
+@keyframes fresh{from{background:var(--live-bg)}}
+.cursor{display:inline-block;width:8px;height:14px;background:var(--live);vertical-align:-2px;animation:beat 1s steps(2) infinite}
+
+/* ---------- ticker ---------- */
+.tick{display:flex;align-items:center;gap:0;border-top:1px solid var(--ink);font:12px var(--mono);white-space:nowrap;overflow:hidden;background:var(--sheet)}
+.tick .lb{padding:0 12px;color:var(--ink3);font-family:var(--sans);font-stretch:75%;border-right:1px solid var(--rule);height:100%;display:flex;align-items:center}
+.tick .ev{padding:0 14px;color:var(--ink2);border-right:1px solid var(--rule2)}
+.tick .ev b{color:var(--ink)} .tick .ev .x{color:var(--ink3)} .tick .ev.h b{color:var(--hum)}
+.tick .ev:first-of-type{animation:fresh 2s}
+.tick .ev:first-of-type b{color:var(--live)}
+
+/* ---------- overlays ---------- */
+.toast{position:fixed;left:50%;bottom:44px;transform:translateX(-50%);background:var(--ink);color:var(--paper);padding:9px 16px;font-size:13px;border-radius:2px;z-index:50;display:none;max-width:680px}
+.toast .mono{color:var(--ink4);font-size:12px;display:block;margin-top:2px}
+.confirm{display:none;align-items:center;gap:14px;padding:6px 18px;background:var(--hum);color:#fff;font-size:13px}
+.confirm.show{display:flex}
+.confirm b{font-family:var(--mono)} .confirm kbd{font:700 12px var(--mono);padding:0 5px;border:1px solid rgba(255,255,255,.6);border-radius:2px}
+.help{position:fixed;inset:0;background:rgba(18,17,16,.45);display:none;z-index:60;align-items:center;justify-content:center}
+.help.show{display:flex}
+.help .bx{background:var(--sheet);border:1.5px solid var(--ink);padding:22px 26px;width:760px;columns:2;column-gap:30px;font-size:13px}
+.help h4{font:700 15px var(--sans);font-stretch:75%;margin:0 0 6px;break-after:avoid}
+.help p{display:flex;justify-content:space-between;padding:2px 0;border-bottom:1px solid var(--rule2);break-inside:avoid}
+.help kbd{font:700 12px var(--mono)}
+.help .g{margin-bottom:14px;break-inside:avoid}
+
+/* ---------- mobile ---------- */
+body.m{font-size:14px}
+body.m #app{grid-template-rows:auto 1fr auto;width:100vw}
+body.m .main{grid-template-columns:1fr}
+body.m .mtop{display:flex;align-items:baseline;gap:14px;padding:12px 16px 9px;border-bottom:1px solid var(--ink)}
+body.m .mtop .hn{font:800 34px/0.85 var(--sans);font-stretch:62.5%;color:var(--hum)}
+body.m .mtop .hn small{font-size:17px;font-weight:600;font-stretch:75%;margin-left:4px}
+body.m .mtop .lv{font:700 17px var(--sans);font-stretch:75%;color:var(--live)}
+body.m .mtop .sp{margin-left:auto;text-align:right;font:600 17px/1 var(--sans);font-stretch:62.5%}
+body.m .mtop .sp small{display:block;font-size:11px;color:var(--ink3);font-weight:400;font-stretch:87.5%;margin-top:3px}
+body.m .cv{padding:10px 14px 30px}
+body.m .sh .n{font-size:26px} body.m .sec.hum .sh .n{font-size:36px} body.m .sec.hum .sh .l{font-size:19px}
+body.m .hx{grid-template-columns:4px 1fr;padding:10px 0 0}
+body.m .hx .rt{display:none}
+body.m .hx .ti{font-size:17px}
+body.m .hx .why{font-size:14px}
+body.m .hx .macts{display:grid;grid-template-columns:1.3fr 1fr 1fr;gap:6px;margin:10px 0 12px}
+body.m .hx .macts button{height:42px;border:1.5px solid var(--ink);font-weight:600;font-size:14px;background:var(--sheet)}
+body.m .hx .macts button.p{background:var(--hum);border-color:var(--hum);color:#fff}
+body.m .rw{grid-template-columns:4px 1fr 64px;grid-template-rows:auto auto;height:auto;padding:7px 0 7px;row-gap:3px}
+body.m .rw .st{grid-row:1/3}
+body.m .rw .l1{display:flex;gap:8px;align-items:baseline;min-width:0}
+body.m .rw .l1 .ref{font-size:11.5px}
+body.m .rw .ti{grid-column:2/4;grid-row:2;font-size:14px}
+body.m .rw .co{grid-column:3;grid-row:1}
+body.m .rw .nt{display:none}
+body.m .rw .mnt{display:flex;gap:6px;align-items:center;font-size:11.5px;color:var(--ink2);font-stretch:75%}
+body.m .rw .mnt .nt{display:grid;width:72px;height:10px}
+body.m .rw.s-done{padding:4px 0;row-gap:0}
+body.m .rw.s-done .ti{font-size:13px}
+body.m .ch{grid-template-columns:1fr;gap:4px}
+body.m .ch .h small{display:inline;margin-left:6px}
+body.m .bar{border-top:1.5px solid var(--ink);background:var(--sheet);padding:8px 12px 10px}
+body.m .ql{height:44px}
+body.m .ql .pr{font-size:17px}
+body.m .qwrap input,body.m .qwrap .hl{font-size:15px;line-height:42px}
+body.m .sugg{top:auto;bottom:44px;border-top:1.5px solid var(--live);border-bottom:1px solid var(--rule)}
+body.m .zl{display:flex;justify-content:space-between;align-items:center;margin-top:8px;font-size:12.5px;color:var(--ink3)}
+body.m .zl .dots{display:flex;gap:4px;align-items:center}
+body.m .zl .dots i{display:block;height:4px;width:22px;background:var(--rule)}
+body.m .zl .dots i.on{background:var(--ink)}
+body.m .zl b{color:var(--ink);font-weight:700}
+body.m .zl .pj{display:flex;gap:2px}
+body.m .zl .pj button{padding:4px 10px;font-size:13px;color:var(--ink3)}
+body.m .zl .pj button.cur{background:var(--ink);color:var(--paper);border-radius:2px}
+body.m .host .nm{font-size:28px}
+body.m .rnh{grid-template-columns:1fr auto;row-gap:6px}
+body.m .rnh .w{grid-column:1/3;flex-wrap:wrap;gap:6px 14px}
+body.m .rnh .w .trk{width:80px}
+body.m .wsl{grid-template-columns:1fr}
+body.m .wsl .wn{padding-top:6px}
+body.m .wsl .wn b{display:inline;margin-right:6px}
+body.m .rn .rw{grid-template-columns:4px 1fr 64px}
+body.m .pnl h1{font-size:25px}
+body.m .pgrid{grid-template-columns:1fr}
+body.m .tl{grid-template-columns:44px 1fr;gap:6px;font-size:11.5px}
+body.m .tl .k{display:none}
+body.m .gest{position:absolute;right:14px;top:8px;font-size:11.5px;color:var(--ink3);text-align:right}
+body.m .gl{width:56px}
+body.m .field .px{width:9px;height:9px;margin:0 2px 2px 0}
+body.m .field .sec.hum .px{width:26px;height:26px}
+body.m .field .sec.live .px{width:16px;height:16px}
+body.m .vsub{display:grid;grid-template-columns:1fr;gap:0}
+body.m .vsub div{display:grid;grid-template-columns:24px 1fr auto;gap:8px;padding:9px 0;border-bottom:1px solid var(--rule2);align-items:baseline}
+body.m .msheet{position:fixed;left:0;right:0;bottom:0;background:var(--sheet);border-top:1.5px solid var(--ink);padding:14px 16px 22px;transform:translateY(100%);transition:transform .2s;z-index:40}
+body.m .msheet.show{transform:none}
+
+.rl{display:grid;grid-template-columns:44px 64px 1fr auto;gap:8px;font-size:12px;padding:4px 0;border-bottom:1px solid var(--rule2)}
+.rl .mono{font-size:11.5px}
+/* field: the whole space at a glance, one column per region */
+.field{display:grid;grid-template-columns:150px 170px 260px 1fr 70px;column-gap:26px;align-items:start}
+.field .sec{margin:0}
+.field .sh{flex-direction:column;align-items:flex-start;gap:2px;border-bottom:0}
+.field .sh .s{margin-left:0;font-size:11.5px}
+.field .sh .r{display:none}
+.field .sub{display:none}
+.field .host{grid-column:1/-1}
+.field.place{grid-template-columns:1fr 1fr 130px 1fr 1fr}
+.field.place .rn{margin:0}
+.field.place .wsl{grid-template-columns:1fr}
+.field.place .rnh{grid-template-columns:1fr;row-gap:6px;border-bottom:0}
+.field.place .rnh .w{flex-direction:column;align-items:flex-start;gap:4px}
+.field.place .px{width:22px;height:22px}
+.field.place .px.hist,.field.place .sec.quiet .px{width:9px;height:9px;margin:0 2px 2px 0}
+.field.place .sec .px.s-ready{width:11px;height:11px}
+body.m .field{grid-template-columns:1fr 1fr;row-gap:16px}
+body.m .field .sec.quiet:first-of-type{grid-column:1/-1}
+body.m .field.place{grid-template-columns:1fr}
+
+body.m .mtop{align-items:center}
+body.m .mtop .mk{font:800 21px/1 var(--sans);font-stretch:62.5%}
+body.m .mtop .fs{font-size:12.5px;color:var(--ink2)}
+body.m .mtop .fs b{display:inline-block;width:7px;height:7px;border-radius:50%;background:var(--ok);margin-right:5px;vertical-align:1px;animation:beat 2s infinite}
+body.m .rnh{grid-template-columns:1fr}
+body.m .rnh .nm{white-space:nowrap}
+body.m .rw .ti{white-space:normal;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical}
+body.m .ch .seq .gl{width:50px}
+
+.subway{height:auto!important}
+body.m .stab td:nth-child(4),body.m .stab td:nth-child(5){display:none}
+body.m .stab td{white-space:nowrap}
+body.m .host .meta .mono{display:none}
+
+.rnh{padding-left:8px;margin-left:-8px}
+.hx.hx-c{padding:6px 14px 6px 0}
+.hx.hx-c .why,.hx.hx-c .acts,.hx.hx-c .rt .hd ~ *{display:none}
+.hx.hx-c .ti{font-size:15px;margin:1px 0 0}
+.hx.hx-c .rt .hd{margin:0}
+.hx.hx-c .rt .big{font-size:22px}
+</style></head>
+<body><div id="app"></div>
+<script>window.BZ_CFG={"device": "mobile", "group": "place"};</script>
+<script>window.BZ_DATA=[{"id":"WN6J","status":"backlog","node":"triage","refs":[["blizzard#1312","(BREAK) Retire per-binding agents from runner bindings"]],"more":0,"epic":"BREAK","cost":0,"est":false,"pr":null,"runner":null,"ws":null,"attempts":0,"started":null,"when":null,"blockers":[],"reason":null,"kind":null,"project":"blizzard"},{"id":"ZEVE","status":"ready","node":"triage","refs":[["blizzard#1366","[FORGES] Carry every forge address over into a forge record"]],"more":0,"epic":"FORGES","cost":0,"est":false,"pr":null,"runner":null,"ws":null,"attempts":0,"started":null,"when":null,"blockers":["6J9H"],"reason":null,"kind":null,"project":"blizzard"},{"id":"MG3R","status":"ready","node":"triage","refs":[["blizzard#1367","[FORGES] Configure forges through the API, CLI, document, and board"]],"more":0,"epic":"FORGES","cost":0,"est":false,"pr":null,"runner":null,"ws":null,"attempts":0,"started":null,"when":null,"blockers":["ZEVE"],"reason":null,"kind":null,"project":"blizzard"},{"id":"4J2W","status":"ready","node":"triage","refs":[["blizzard#1368","[FORGES] Document the forge record and the landing seam"]],"more":0,"epic":"FORGES","cost":0,"est":false,"pr":null,"runner":null,"ws":null,"attempts":0,"started":null,"when":null,"blockers":["MG3R"],"reason":null,"kind":null,"project":"blizzard"},{"id":"4HAX","status":"ready","node":"triage","refs":[["blizzard#1371","[FLOWS] Keep each branch's flow record in the shadow of the slot"]],"more":0,"epic":"FLOWS","cost":0,"est":false,"pr":null,"runner":null,"ws":null,"attempts":0,"started":null,"when":null,"blockers":["4J2W"],"reason":null,"kind":null,"project":"blizzard"},{"id":"50RX","status":"ready","node":"triage","refs":[["blizzard#1372","[FLOWS] Take hub steps as turns on their branches' flows"]],"more":0,"epic":"FLOWS","cost":0,"est":false,"pr":null,"runner":null,"ws":null,"attempts":0,"started":null,"when":null,"blockers":["MG3R","4J2W","4HAX"],"reason":null,"kind":null,"project":"blizzard"},{"id":"FC1E","status":"ready","node":"triage","refs":[["blizzard#1373","[FLOWS] Retire the slot's code and keep its deprecated table"]],"more":0,"epic":"FLOWS","cost":0,"est":false,"pr":null,"runner":null,"ws":null,"attempts":0,"started":null,"when":null,"blockers":["50RX"],"reason":null,"kind":null,"project":"blizzard"},{"id":"CG21","status":"ready","node":"triage","refs":[["blizzard#1374","[FLOWS] Show flows on the API, CLI, live channel, and board"]],"more":0,"epic":"FLOWS","cost":0,"est":false,"pr":null,"runner":null,"ws":null,"attempts":0,"started":null,"when":null,"blockers":["FC1E"],"reason":null,"kind":null,"project":"blizzard"},{"id":"MAET","status":"ready","node":"triage","refs":[["blizzard#1378","[POLICIES] Grow the landing seam and make a landing pass cheap"]],"more":0,"epic":"POLICIES","cost":0,"est":false,"pr":null,"runner":null,"ws":null,"attempts":0,"started":null,"when":null,"blockers":["CG21"],"reason":null,"kind":null,"project":"blizzard"},{"id":"N96M","status":"ready","node":"triage","refs":[["blizzard#1379","[POLICIES] Share one rate budget per forge key, slowing before refusal"]],"more":0,"epic":"POLICIES","cost":0,"est":false,"pr":null,"runner":null,"ws":null,"attempts":0,"started":null,"when":null,"blockers":["CG21","MAET"],"reason":null,"kind":null,"project":"blizzard"},{"id":"S990","status":"ready","node":"triage","refs":[["blizzard#1380","[POLICIES] Run each repository's landing policy, in its project's order"]],"more":0,"epic":"POLICIES","cost":0,"est":false,"pr":null,"runner":null,"ws":null,"attempts":0,"started":null,"when":null,"blockers":["N96M"],"reason":null,"kind":null,"project":"blizzard"},{"id":"S93M","status":"ready","node":"triage","refs":[["blizzard#1381","[POLICIES] Add the fast-forward and park landing policies"]],"more":0,"epic":"POLICIES","cost":0,"est":false,"pr":null,"runner":null,"ws":null,"attempts":0,"started":null,"when":null,"blockers":["S990"],"reason":null,"kind":null,"project":"blizzard"},{"id":"KTD7","status":"ready","node":"triage","refs":[["blizzard#1382","[POLICIES] Show policies, landing order, and awaiting-merge on the board"]],"more":0,"epic":"POLICIES","cost":0,"est":false,"pr":null,"runner":null,"ws":null,"attempts":0,"started":null,"when":null,"blockers":["S93M"],"reason":null,"kind":null,"project":"blizzard"},{"id":"N1JR","status":"ready","node":"triage","refs":[["hub:579","Let the work-source and forge seams own labels, branch links and the annotating set"]],"more":0,"epic":"hub","cost":0,"est":false,"pr":null,"runner":null,"ws":null,"attempts":0,"started":null,"when":null,"blockers":["S93M","KTD7"],"reason":null,"kind":null,"project":"blizzard"},{"id":"B6HS","status":"ready","node":"triage","refs":[["blizzard#1444","[STRICT] Type the hub store adapters' SQL helpers and rows"]],"more":0,"epic":"STRICT","cost":0,"est":false,"pr":null,"runner":null,"ws":null,"attempts":0,"started":null,"when":null,"blockers":["S93M"],"reason":null,"kind":null,"project":"blizzard"},{"id":"DFGP","status":"ready","node":"triage","refs":[["blizzard#1448","[STRICT] Type the hub domain models' untyped edges"]],"more":0,"epic":"STRICT","cost":0,"est":false,"pr":null,"runner":null,"ws":null,"attempts":0,"started":null,"when":null,"blockers":["KTD7","N1JR","B6HS"],"reason":null,"kind":null,"project":"blizzard"},{"id":"6P31","status":"ready","node":"triage","refs":[["blizzard#1450","[STRICT] Type the hub delivery land actions"]],"more":0,"epic":"STRICT","cost":0,"est":false,"pr":null,"runner":null,"ws":null,"attempts":0,"started":null,"when":null,"blockers":["FC1E"],"reason":null,"kind":null,"project":"blizzard"},{"id":"AKMG","status":"ready","node":"triage","refs":[["blizzard#1451","[STRICT] Type the hub and runner CLIs"]],"more":0,"epic":"STRICT","cost":0,"est":false,"pr":null,"runner":null,"ws":null,"attempts":0,"started":null,"when":null,"blockers":["S990"],"reason":null,"kind":null,"project":"blizzard"},{"id":"STGQ","status":"ready","node":"triage","refs":[["blizzard#1452","[STRICT] Give every bare generic in shipping code its type arguments"]],"more":0,"epic":"STRICT","cost":0,"est":false,"pr":null,"runner":null,"ws":null,"attempts":0,"started":null,"when":null,"blockers":["KTD7","N1JR","B6HS","DFGP","6P31","AKMG"],"reason":null,"kind":null,"project":"blizzard"},{"id":"QG6Y","status":"ready","node":"triage","refs":[["blizzard#1453","[STRICT] Declare shipping code's context managers as generators"]],"more":0,"epic":"STRICT","cost":0,"est":false,"pr":null,"runner":null,"ws":null,"attempts":0,"started":null,"when":null,"blockers":["N1JR","B6HS","DFGP","6P31","AKMG","STGQ"],"reason":null,"kind":null,"project":"blizzard"},{"id":"W9G8","status":"ready","node":"triage","refs":[["blizzard#1454","[STRICT] Replace the _conforms_* functions with annotated assignments"]],"more":0,"epic":"STRICT","cost":0,"est":false,"pr":null,"runner":null,"ws":null,"attempts":0,"started":null,"when":null,"blockers":["B6HS","DFGP","6P31","AKMG","STGQ","QG6Y"],"reason":null,"kind":null,"project":"blizzard"},{"id":"ZMVH","status":"ready","node":"triage","refs":[["blizzard#1455","[STRICT] Stop shipping code reaching into other modules' private names"]],"more":0,"epic":"STRICT","cost":0,"est":false,"pr":null,"runner":null,"ws":null,"attempts":0,"started":null,"when":null,"blockers":["DFGP","6P31","AKMG","STGQ","QG6Y","W9G8"],"reason":null,"kind":null,"project":"blizzard"},{"id":"6Q69","status":"ready","node":"triage","refs":[["blizzard#1456","[STRICT] Sweep the remaining strict errors out of shipping code"]],"more":0,"epic":"STRICT","cost":0,"est":false,"pr":null,"runner":null,"ws":null,"attempts":0,"started":null,"when":null,"blockers":["STGQ","QG6Y","W9G8","ZMVH"],"reason":null,"kind":null,"project":"blizzard"},{"id":"00N1","status":"ready","node":"triage","refs":[["blizzard#1457","[STRICT] Spike: re-investigate typing across every project, tests first"]],"more":0,"epic":"STRICT","cost":0,"est":false,"pr":null,"runner":null,"ws":null,"attempts":0,"started":null,"when":null,"blockers":["6Q69"],"reason":null,"kind":null,"project":"blizzard"},{"id":"MFJE","status":"running","node":"build","refs":[["blizzard#1465","[PW-HUBTIER] Give the harness a mock runner it can drive and runners that serve projects"]],"more":0,"epic":"PW-HUBTIER","cost":0.1,"est":true,"pr":null,"runner":"r-chatgpt","ws":"blizzard-chatgpt","attempts":1,"started":3,"when":null,"blockers":[],"reason":null,"kind":null,"project":"blizzard"},{"id":"DF68","status":"ready","node":"triage","refs":[["blizzard#1468","[PW-HUBTIER] Move the helpers other test files import out of the files the hub tier ports"]],"more":0,"epic":"PW-HUBTIER","cost":0,"est":false,"pr":null,"runner":null,"ws":null,"attempts":0,"started":null,"when":null,"blockers":[],"reason":null,"kind":null,"project":"blizzard"},{"id":"0ACF","status":"ready","node":"triage","refs":[["blizzard#1485","[PW-HUBTIER] Move the service-sized tenant teardown test to the component tier"]],"more":0,"epic":"PW-HUBTIER","cost":0,"est":false,"pr":null,"runner":null,"ws":null,"attempts":0,"started":null,"when":null,"blockers":[],"reason":null,"kind":null,"project":"blizzard"},{"id":"JME3","status":"ready","node":"triage","refs":[["blizzard#1460","[PW-HUBTIER] Run the hub's sweeps on request, per tenant or hub-wide"]],"more":0,"epic":"PW-HUBTIER","cost":0,"est":false,"pr":null,"runner":null,"ws":null,"attempts":0,"started":null,"when":null,"blockers":["PTP2"],"reason":null,"kind":null,"project":"blizzard"},{"id":"P79Q","status":"ready","node":"triage","refs":[["blizzard#1464","[PW-HUBTIER] Give the harness the CLI, a configurable fresh hub, and an OTLP sink"]],"more":0,"epic":"PW-HUBTIER","cost":0,"est":false,"pr":null,"runner":null,"ws":null,"attempts":0,"started":null,"when":null,"blockers":["MFJE"],"reason":null,"kind":null,"project":"blizzard"},{"id":"WWXN","status":"ready","node":"triage","refs":[["blizzard#1466","[PW-HUBTIER] Step every harness sweep and give the event reader a join from now and a barrier"]],"more":0,"epic":"PW-HUBTIER","cost":0,"est":false,"pr":null,"runner":null,"ws":null,"attempts":0,"started":null,"when":null,"blockers":["0ACF","JME3","P79Q"],"reason":null,"kind":null,"project":"blizzard"},{"id":"RE86","status":"ready","node":"triage","refs":[["blizzard#1467","[PW-HUBTIER] Sign people in through the stub IdP on an auth profile in the harness"]],"more":0,"epic":"PW-HUBTIER","cost":0,"est":false,"pr":null,"runner":null,"ws":null,"attempts":0,"started":null,"when":null,"blockers":["JME3","P79Q","WWXN"],"reason":null,"kind":null,"project":"blizzard"},{"id":"GWDV","status":"ready","node":"triage","refs":[["blizzard#1469","[PW-HUBTIER] Port the hub service tests and add the two enforcement profiles"]],"more":0,"epic":"PW-HUBTIER","cost":0,"est":false,"pr":null,"runner":null,"ws":null,"attempts":0,"started":null,"when":null,"blockers":["JME3","P79Q","WWXN","RE86"],"reason":null,"kind":null,"project":"blizzard"},{"id":"W60F","status":"ready","node":"triage","refs":[["blizzard#1470","[PW-HUBTIER] Port the finding-exits service tests, stepping the close drain"]],"more":0,"epic":"PW-HUBTIER","cost":0,"est":false,"pr":null,"runner":null,"ws":null,"attempts":0,"started":null,"when":null,"blockers":["P79Q","WWXN","RE86","GWDV"],"reason":null,"kind":null,"project":"blizzard"},{"id":"WKFH","status":"ready","node":"triage","refs":[["blizzard#1471","[PW-HUBTIER] Port the event-log service tests, reading hub events over HTTP"]],"more":0,"epic":"PW-HUBTIER","cost":0,"est":false,"pr":null,"runner":null,"ws":null,"attempts":0,"started":null,"when":null,"blockers":["WWXN","RE86","GWDV","W60F"],"reason":null,"kind":null,"project":"blizzard"},{"id":"Q5CS","status":"ready","node":"triage","refs":[["blizzard#1472","[PW-HUBTIER] Port the runner served-projects service tests to Playwright"],["blizzard#1477","[PW-HUBTIER] Port the runner declining service test and move its parse case down"],["blizzard#1481","[PW-HUBTIER] Port the real-hub runner token refusal test to Playwright"]],"more":0,"epic":"PW-HUBTIER","cost":0,"est":false,"pr":null,"runner":null,"ws":null,"attempts":0,"started":null,"when":null,"blockers":["RE86","GWDV","W60F","WKFH"],"reason":null,"kind":null,"project":"blizzard"},{"id":"YZVG","status":"ready","node":"triage","refs":[["blizzard#1473","[PW-HUBTIER] Port the real-hub transcript-segment service tests to Playwright"]],"more":0,"epic":"PW-HUBTIER","cost":0,"est":false,"pr":null,"runner":null,"ws":null,"attempts":0,"started":null,"when":null,"blockers":["WKFH","Q5CS"],"reason":null,"kind":null,"project":"blizzard"},{"id":"64RN","status":"ready","node":"triage","refs":[["blizzard#1474","[PW-HUBTIER] Port the projects ingest and delivery service tests to Playwright"]],"more":0,"epic":"PW-HUBTIER","cost":0,"est":false,"pr":null,"runner":null,"ws":null,"attempts":0,"started":null,"when":null,"blockers":["WKFH","Q5CS","YZVG"],"reason":null,"kind":null,"project":"blizzard"},{"id":"6RRX","status":"ready","node":"triage","refs":[["blizzard#1475","[PW-HUBTIER] Port the routine baselines service tests to Playwright"]],"more":0,"epic":"PW-HUBTIER","cost":0,"est":false,"pr":null,"runner":null,"ws":null,"attempts":0,"started":null,"when":null,"blockers":["WKFH","Q5CS","YZVG","64RN"],"reason":null,"kind":null,"project":"blizzard"},{"id":"260B","status":"ready","node":"triage","refs":[["blizzard#1476","[PW-HUBTIER] Port the forge-status service tests onto a stepped sweep"],["blizzard#1478","[PW-HUBTIER] Port the work-source records service tests to Playwright"]],"more":0,"epic":"PW-HUBTIER","cost":0,"est":false,"pr":null,"runner":null,"ws":null,"attempts":0,"started":null,"when":null,"blockers":["64RN","6RRX"],"reason":null,"kind":null,"project":"blizzard"},{"id":"5MXB","status":"ready","node":"triage","refs":[["blizzard#1479","[PW-HUBTIER] Port the two live-hub usage service tests"]],"more":0,"epic":"PW-HUBTIER","cost":0,"est":false,"pr":null,"runner":null,"ws":null,"attempts":0,"started":null,"when":null,"blockers":["64RN","6RRX","260B"],"reason":null,"kind":null,"project":"blizzard"},{"id":"1A1R","status":"ready","node":"triage","refs":[["blizzard#1480","[PW-HUBTIER] Port the two hub-only platform-tracing service tests"]],"more":0,"epic":"PW-HUBTIER","cost":0,"est":false,"pr":null,"runner":null,"ws":null,"attempts":0,"started":null,"when":null,"blockers":["260B","5MXB"],"reason":null,"kind":null,"project":"blizzard"},{"id":"N0SD","status":"ready","node":"triage","refs":[["blizzard#1482","[PW-HUBTIER] Port the OAuth login service tests onto the auth profile"]],"more":0,"epic":"PW-HUBTIER","cost":0,"est":false,"pr":null,"runner":null,"ws":null,"attempts":0,"started":null,"when":null,"blockers":["6RRX","260B","5MXB","1A1R"],"reason":null,"kind":null,"project":"blizzard"},{"id":"MMVM","status":"ready","node":"triage","refs":[["blizzard#1483","[PW-HUBTIER] Port the CLI login exchange service tests onto the auth profile"],["blizzard#1484","[PW-HUBTIER] Port the event-stream revocation service test onto the auth profile"]],"more":0,"epic":"PW-HUBTIER","cost":0,"est":false,"pr":null,"runner":null,"ws":null,"attempts":0,"started":null,"when":null,"blockers":["260B","5MXB","1A1R","N0SD"],"reason":null,"kind":null,"project":"blizzard"},{"id":"1DTX","status":"ready","node":"triage","refs":[["hub:629","Recheck the holder inside the route-token rekey, and document that a per-chunk pause outranks a restart's fence"]],"more":0,"epic":"hub","cost":0,"est":false,"pr":null,"runner":null,"ws":null,"attempts":0,"started":null,"when":null,"blockers":[],"reason":null,"kind":null,"project":"blizzard"},{"id":"HBRY","status":"ready","node":"triage","refs":[["blizzard#1499","Declare each runner's supported models and match them at hub eligibility"]],"more":0,"epic":"\u2014","cost":0,"est":false,"pr":null,"runner":null,"ws":null,"attempts":0,"started":null,"when":null,"blockers":["B6HS"],"reason":null,"kind":null,"project":"blizzard"},{"id":"DB49","status":"ready","node":"triage","refs":[["hub:632","Order runner-store bind, park and requeue facts by append sequence, not timestamp"],["hub:633","Make a repeated runner requeue change nothing at persistence"]],"more":0,"epic":"hub","cost":0,"est":false,"pr":null,"runner":null,"ws":null,"attempts":0,"started":null,"when":null,"blockers":["2475"],"reason":null,"kind":null,"project":"blizzard"},{"id":"SXBD","status":"ready","node":"survey","refs":[["hub:639","performance run (full)"]],"more":0,"epic":"hub","cost":0,"est":false,"pr":null,"runner":null,"ws":null,"attempts":0,"started":null,"when":"SURVEY","blockers":[],"reason":null,"kind":null,"project":"blizzard"},{"id":"5Q4G","status":"ready","node":"survey","refs":[["hub:640","performance run (full)"]],"more":0,"epic":"hub","cost":0,"est":false,"pr":null,"runner":null,"ws":null,"attempts":0,"started":null,"when":"SURVEY","blockers":[],"reason":null,"kind":null,"project":"blizzard"},{"id":"NH8N","status":"ready","node":"survey","refs":[["hub:642","performance run (full)"]],"more":0,"epic":"hub","cost":0,"est":false,"pr":null,"runner":null,"ws":null,"attempts":0,"started":null,"when":"SURVEY","blockers":[],"reason":null,"kind":null,"project":"blizzard"},{"id":"GMVT","status":"ready","node":"survey","refs":[["hub:641","performance run (full)"]],"more":0,"epic":"hub","cost":0,"est":false,"pr":null,"runner":null,"ws":null,"attempts":0,"started":null,"when":"SURVEY","blockers":[],"reason":null,"kind":null,"project":"blizzard"},{"id":"WTGG","status":"ready","node":"survey","refs":[["hub:634","comments run (full)"]],"more":0,"epic":"hub","cost":0,"est":false,"pr":null,"runner":null,"ws":null,"attempts":0,"started":null,"when":"SURVEY","blockers":[],"reason":null,"kind":null,"project":"blizzard"},{"id":"85FD","status":"ready","node":"survey","refs":[["hub:638","comments run (full)"]],"more":0,"epic":"hub","cost":0,"est":false,"pr":null,"runner":null,"ws":null,"attempts":0,"started":null,"when":"SURVEY","blockers":[],"reason":null,"kind":null,"project":"blizzard"},{"id":"F05Q","status":"ready","node":"survey","refs":[["hub:635","comments run (full)"]],"more":0,"epic":"hub","cost":0,"est":false,"pr":null,"runner":null,"ws":null,"attempts":0,"started":null,"when":"SURVEY","blockers":[],"reason":null,"kind":null,"project":"blizzard"},{"id":"YWK5","status":"ready","node":"survey","refs":[["hub:636","comments run (full)"]],"more":0,"epic":"hub","cost":0,"est":false,"pr":null,"runner":null,"ws":null,"attempts":0,"started":null,"when":"SURVEY","blockers":[],"reason":null,"kind":null,"project":"blizzard"},{"id":"6RTR","status":"ready","node":"survey","refs":[["hub:637","comments run (full)"]],"more":0,"epic":"hub","cost":0,"est":false,"pr":null,"runner":null,"ws":null,"attempts":0,"started":null,"when":"SURVEY","blockers":[],"reason":null,"kind":null,"project":"blizzard"},{"id":"6J9H","status":"needs_human","node":"deliver","refs":[["blizzard#1365","[FORGES] Report every record the forge migration would refuse"]],"more":0,"epic":"FORGES","cost":8.2,"est":false,"pr":"paul-gross/blizzard#1498","runner":"r-claude","ws":"blizzard-claude","attempts":25,"started":null,"when":null,"blockers":[],"reason":"Bounce cap crossed after 6 bounces: PR #1498 did not land (land answered failure). No composed command; take over the parked session or requeue.","kind":"takeover","project":"blizzard"},{"id":"WSCR","status":"running","node":"review","refs":[["blizzard#1497","Add an Anthropic credential renewer that refreshes via a haiku one-shot"]],"more":0,"epic":"\u2014","cost":1.58,"est":false,"pr":"paul-gross/blizzard#1500","runner":"r-claude","ws":"blizzard-claude","attempts":12,"started":41,"when":null,"blockers":[],"reason":null,"kind":null,"project":"blizzard"},{"id":"27A6","status":"running","node":"deliver","refs":[["blizzard#1463","[PW-HUBTIER] Choose the stub IdP's identity by login_hint"]],"more":0,"epic":"PW-HUBTIER","cost":1.47,"est":true,"pr":"paul-gross/blizzard-mock#121","runner":"r-chatgpt","ws":"blizzard-chatgpt","attempts":7,"started":58,"when":null,"blockers":[],"reason":null,"kind":null,"project":"blizzard"},{"id":"BWA2","status":"running","node":"mutation","refs":[["blizzard#1461","[PW-HUBTIER] Let an event-stream client join from the latest event"]],"more":0,"epic":"PW-HUBTIER","cost":2.26,"est":true,"pr":null,"runner":"r-claude","ws":"blizzard-claude","attempts":6,"started":33,"when":null,"blockers":[],"reason":null,"kind":null,"project":"blizzard"},{"id":"PTP2","status":"running","node":"deliver","refs":[["blizzard#1459","[PW-HUBTIER] Tag every per-tenant sweep line with its tenant"]],"more":0,"epic":"PW-HUBTIER","cost":3.49,"est":true,"pr":"paul-gross/blizzard#1492","runner":"r-chatgpt","ws":"blizzard-chatgpt","attempts":8,"started":72,"when":null,"blockers":[],"reason":null,"kind":null,"project":"blizzard"},{"id":"QWYS","status":"needs_human","node":"deliver","refs":[["blizzard#1449","[STRICT] Type the hub auth repositories"]],"more":0,"epic":"STRICT","cost":4.03,"est":false,"pr":"paul-gross/blizzard#1501","runner":"r-claude","ws":"blizzard-claude","attempts":9,"started":null,"when":null,"blockers":[],"reason":"Agent asks: keep lookup_by_subject returning Optional[Account], or raise AccountMissing? Two callers in hub/auth branch on None.","kind":"ask","project":"blizzard"},{"id":"2475","status":"running","node":"build","refs":[["blizzard#1446","[STRICT] Type the runner store adapters' row mapping"]],"more":0,"epic":"STRICT","cost":2.06,"est":true,"pr":null,"runner":"r-chatgpt","ws":"blizzard-chatgpt","attempts":2,"started":24,"when":null,"blockers":[],"reason":null,"kind":null,"project":"blizzard"},{"id":"ZG7T","status":"running","node":"pre-push","refs":[["hub:626","Land a gate resolution's artifacts once when its landing consult fires"],["hub:627","Pin two unguarded humans invariants: a bounce-cap escalation's empty raw command, and the unavailable-owner takeover refusal"]],"more":0,"epic":"hub","cost":0.7,"est":false,"pr":null,"runner":"r-claude","ws":"blizzard-claude","attempts":5,"started":19,"when":null,"blockers":[],"reason":null,"kind":null,"project":"blizzard"},{"id":"FC1D","status":"running","node":"review","refs":[["hub:620","Bring the work domain's docs up to four rules the code enforces deliberately"],["hub:628","Correct six stale or overbroad claims in domain/humans"],["hub:616","Document the budget lever and the per-tick claim gate in throttling.md"],["hub:630","State what transcripts actually carry, and who may read them, in never-code.md"],["hub:631","State in hosts.md that a binding to an undeclared workspace or subscription halts the runner"]],"more":3,"epic":"hub","cost":0.27,"est":false,"pr":null,"runner":"r-claude","ws":"blizzard-claude","attempts":3,"started":11,"when":null,"blockers":[],"reason":null,"kind":null,"project":"blizzard"},{"id":"VA7X","status":"done","node":"done","refs":[["hub:602","Make a gate's resolving transition name a decision from the current visit"],["hub:613","Open a graph gate's decision on every arrival at a human-judged node, not only on a transition"]],"more":2,"epic":"hub","cost":17.03,"est":true,"pr":null,"runner":null,"ws":null,"attempts":0,"started":null,"when":"12:24","blockers":[],"reason":null,"kind":null,"project":"blizzard"},{"id":"AFTK","status":"done","node":"done","refs":[["blizzard#1447","[STRICT] Type the runner harness adapters' parsed output"]],"more":0,"epic":"STRICT","cost":7.36,"est":false,"pr":null,"runner":null,"ws":null,"attempts":0,"started":null,"when":"12:03","blockers":[],"reason":null,"kind":null,"project":"blizzard"},{"id":"R1D5","status":"done","node":"done","refs":[["hub:624","Settle one owner for the statement guards and the lane rosters"],["hub:622","Give blizzard-context's change-history Vale rule the blizzard repo's tokens"],["hub:623","Fix ten rule-slot shape defects: overlong Whys, stray paragraphs, a missing Don't"]],"more":0,"epic":"hub","cost":3.69,"est":true,"pr":null,"runner":null,"ws":null,"attempts":0,"started":null,"when":"11:25","blockers":[],"reason":null,"kind":null,"project":"blizzard"},{"id":"BB9E","status":"done","node":"done","refs":[["blizzard#1445","[STRICT] Type the compat OpenAPI classifier"]],"more":0,"epic":"STRICT","cost":1.95,"est":false,"pr":null,"runner":null,"ws":null,"attempts":0,"started":null,"when":"10:19","blockers":[],"reason":null,"kind":null,"project":"blizzard"},{"id":"TX56","status":"done","node":"done","refs":[["blizzard#1175","[NOTES] Cross-check a release's notes against its compat breaks"]],"more":0,"epic":"NOTES","cost":7.0,"est":false,"pr":null,"runner":null,"ws":null,"attempts":0,"started":null,"when":"09:31","blockers":[],"reason":null,"kind":null,"project":"blizzard"},{"id":"F5V9","status":"done","node":"done","refs":[["blizzard#1462","[PW-HUBTIER] Make the hub's login throttle configurable"]],"more":0,"epic":"PW-HUBTIER","cost":1.49,"est":false,"pr":null,"runner":null,"ws":null,"attempts":0,"started":null,"when":"08:56","blockers":[],"reason":null,"kind":null,"project":"blizzard"},{"id":"RWE7","status":"done","node":"done","refs":[["blizzard#1190","[FLAGS] Write the flag procedure and the operator's flags guide"]],"more":0,"epic":"FLAGS","cost":1.65,"est":false,"pr":null,"runner":null,"ws":null,"attempts":0,"started":null,"when":"08:46","blockers":[],"reason":null,"kind":null,"project":"blizzard"},{"id":"2R1E","status":"done","node":"done","refs":[["blizzard#1443","[STRICT] Delete the inert type-ignores in shipping code and add a strict report"]],"more":0,"epic":"STRICT","cost":0.88,"est":false,"pr":null,"runner":null,"ws":null,"attempts":0,"started":null,"when":"08:03","blockers":[],"reason":null,"kind":null,"project":"blizzard"},{"id":"QRP5","status":"done","node":"done","refs":[["blizzard#1174","[NOTES] Fail a pull request that owes a change note"]],"more":0,"epic":"NOTES","cost":5.32,"est":false,"pr":null,"runner":null,"ws":null,"attempts":0,"started":null,"when":"06:59","blockers":[],"reason":null,"kind":null,"project":"blizzard"},{"id":"ZWE9","status":"done","node":"done","refs":[["blizzard#1364","[FORGES] Port land and the commit check onto one forge seam"]],"more":0,"epic":"FORGES","cost":40.11,"est":false,"pr":null,"runner":null,"ws":null,"attempts":0,"started":null,"when":"06:29","blockers":[],"reason":null,"kind":null,"project":"blizzard"},{"id":"1BF8","status":"done","node":"done","refs":[["blizzard#1189","[FLAGS] Hold flag tombstones, flips, and cuts to the release rules"]],"more":0,"epic":"FLAGS","cost":4.74,"est":false,"pr":null,"runner":null,"ws":null,"attempts":0,"started":null,"when":"05:07","blockers":[],"reason":null,"kind":null,"project":"blizzard"},{"id":"PZD6","status":"done","node":"done","refs":[["hub:603","Rewrite inventory-style hub rows as read-triggers"]],"more":0,"epic":"hub","cost":12.56,"est":true,"pr":null,"runner":null,"ws":null,"attempts":0,"started":null,"when":"04:48","blockers":[],"reason":null,"kind":null,"project":"blizzard"},{"id":"RNZD","status":"done","node":"done","refs":[["blizzard#1181","[LINES] Write the patch rule and the release promise"]],"more":0,"epic":"LINES","cost":3.89,"est":false,"pr":null,"runner":null,"ws":null,"attempts":0,"started":null,"when":"00:14","blockers":[],"reason":null,"kind":null,"project":"blizzard"},{"id":"E7DE","status":"done","node":"done","refs":[["blizzard#1173","[NOTES] Publish release notes from change notes and require them"]],"more":0,"epic":"NOTES","cost":7.06,"est":false,"pr":null,"runner":null,"ws":null,"attempts":0,"started":null,"when":"Yesterday 22:39","blockers":[],"reason":null,"kind":null,"project":"blizzard"},{"id":"TNFF","status":"done","node":"done","refs":[["hub:609","Bring findings-and-proposals.md up to the refusals and settlement the code already has"],["hub:604","Collapse the restatements of domain/projects.md to pointers"]],"more":3,"epic":"hub","cost":9.42,"est":false,"pr":null,"runner":null,"ws":null,"attempts":0,"started":null,"when":"Yesterday 21:46","blockers":[],"reason":null,"kind":null,"project":"blizzard"},{"id":"CRTC","status":"done","node":"done","refs":[["blizzard#1361","[ACTIONS] Remove the hub's process runner, step environment, and marker token"]],"more":0,"epic":"ACTIONS","cost":24.86,"est":true,"pr":null,"runner":null,"ws":null,"attempts":0,"started":null,"when":"Yesterday 15:21","blockers":[],"reason":null,"kind":null,"project":"blizzard"},{"id":"66JE","status":"done","node":"done","refs":[["hub:619","Bring the command-failed and hub-migrated definitions in line with what is recorded"],["hub:618","Say closure and transcript announcements are best-effort across a crash"]],"more":0,"epic":"hub","cost":5.41,"est":false,"pr":null,"runner":null,"ws":null,"attempts":0,"started":null,"when":"Yesterday 14:56","blockers":[],"reason":null,"kind":null,"project":"blizzard"},{"id":"8Z96","status":"done","node":"done","refs":[["hub:615","Make the pause, resume and detach messages describe the actual state"],["hub:617","Show a chunk's runner and environments in `chunk show` only while it holds its claim"]],"more":0,"epic":"hub","cost":2.18,"est":false,"pr":null,"runner":null,"ws":null,"attempts":0,"started":null,"when":"Yesterday 14:50","blockers":[],"reason":null,"kind":null,"project":"blizzard"},{"id":"JJPG","status":"done","node":"done","refs":[["blizzard#1160","[RELEASE] Open the hub's pin change when blizzard publishes a release"]],"more":0,"epic":"RELEASE","cost":4.38,"est":false,"pr":null,"runner":null,"ws":null,"attempts":0,"started":null,"when":"Yesterday 12:07","blockers":[],"reason":null,"kind":null,"project":"blizzard"},{"id":"R4EH","status":"done","node":"done","refs":[["hub:612","Count retries per visit, not per node across the whole chunk"],["hub:607","Close the runner's artifact window at the point the completion is buffered, and pin the post-exit window"]],"more":0,"epic":"hub","cost":7.09,"est":false,"pr":null,"runner":null,"ws":null,"attempts":0,"started":null,"when":"Yesterday 12:04","blockers":[],"reason":null,"kind":null,"project":"blizzard"},{"id":"H48F","status":"done","node":"done","refs":[["hub:601","Filter a project's runner pauses before the activity feed caps them"],["hub:600","Have the trace-replay and egress-backfill CLIs refuse a window in the order the domain declares"],["hub:614","Show a restart-superseded answer as superseded on the board, not 'Delivering to the agent\u2026'"]],"more":0,"epic":"hub","cost":7.26,"est":false,"pr":null,"runner":null,"ws":null,"attempts":0,"started":null,"when":"Yesterday 11:52","blockers":[],"reason":null,"kind":null,"project":"blizzard"},{"id":"8YFS","status":"done","node":"done","refs":[["blizzard#1180","[LINES] Hold release tags to their line and promote by borrowed proof"]],"more":0,"epic":"LINES","cost":5.36,"est":false,"pr":null,"runner":null,"ws":null,"attempts":0,"started":null,"when":"Yesterday 11:50","blockers":[],"reason":null,"kind":null,"project":"blizzard"},{"id":"5EVY","status":"done","node":"done","refs":[["hub:621","Keep a chunk's work items in one project at ingest"],["hub:625","Pin the retired-scope and blank-description mint behaviors with tests that run the mint"]],"more":0,"epic":"hub","cost":1.79,"est":true,"pr":null,"runner":null,"ws":null,"attempts":0,"started":null,"when":"Yesterday 11:06","blockers":[],"reason":null,"kind":null,"project":"blizzard"},{"id":"BCN9","status":"done","node":"done","refs":[["blizzard#1360","[ACTIONS] Retire run: and carry every stored graph onto actions"]],"more":0,"epic":"ACTIONS","cost":46.52,"est":false,"pr":null,"runner":null,"ws":null,"attempts":0,"started":null,"when":"Yesterday 09:27","blockers":[],"reason":null,"kind":null,"project":"blizzard"},{"id":"49G4","status":"done","node":"done","refs":[["hub:606","Gate an already-merged PR's head before counting it as this chunk's landing"]],"more":0,"epic":"hub","cost":1.16,"est":false,"pr":null,"runner":null,"ws":null,"attempts":0,"started":null,"when":"Yesterday 07:41","blockers":[],"reason":null,"kind":null,"project":"blizzard"},{"id":"4RS8","status":"done","node":"done","refs":[["blizzard#1413","[PLAYWRIGHT] Run the isolation cross-check weekly and before releases"]],"more":0,"epic":"PLAYWRIGHT","cost":1.46,"est":false,"pr":null,"runner":null,"ws":null,"attempts":0,"started":null,"when":"Yesterday 07:05","blockers":[],"reason":null,"kind":null,"project":"blizzard"},{"id":"NET9","status":"done","node":"done","refs":[["blizzard#1412","[PLAYWRIGHT] Port the analytics service tests and measure the shared hub"]],"more":0,"epic":"PLAYWRIGHT","cost":7.17,"est":true,"pr":null,"runner":null,"ws":null,"attempts":0,"started":null,"when":"Yesterday 05:42","blockers":[],"reason":null,"kind":null,"project":"blizzard"},{"id":"T4FK","status":"done","node":"done","refs":[["blizzard#1359","[ACTIONS] Move the packaged graphs onto actions"]],"more":0,"epic":"ACTIONS","cost":30.82,"est":false,"pr":null,"runner":null,"ws":null,"attempts":0,"started":null,"when":"Yesterday 02:19","blockers":[],"reason":null,"kind":null,"project":"blizzard"},{"id":"Z1V5","status":"done","node":"done","refs":[["blizzard#1411","[PLAYWRIGHT] Write the Playwright tier's rulebook into blizzard-context"]],"more":0,"epic":"PLAYWRIGHT","cost":6.75,"est":true,"pr":null,"runner":null,"ws":null,"attempts":0,"started":null,"when":"Yesterday 01:39","blockers":[],"reason":null,"kind":null,"project":"blizzard"},{"id":"G769","status":"done","node":"done","refs":[["hub:586","Pin three runner survivors, and let `--fresh` delta mutation runs work unaided"]],"more":0,"epic":"hub","cost":7.49,"est":false,"pr":null,"runner":null,"ws":null,"attempts":0,"started":null,"when":"Yesterday 00:34","blockers":[],"reason":null,"kind":null,"project":"blizzard"},{"id":"MNG0","status":"done","node":"done","refs":[["blizzard#1410","[PLAYWRIGHT] Run the Playwright half in the service-tier CI jobs"]],"more":0,"epic":"PLAYWRIGHT","cost":1.08,"est":false,"pr":null,"runner":null,"ws":null,"attempts":0,"started":null,"when":"2026/10/23","blockers":[],"reason":null,"kind":null,"project":"blizzard"},{"id":"XTP8","status":"done","node":"done","refs":[["blizzard#1409","[PLAYWRIGHT] Build the Playwright package and its shared-hub harness"]],"more":0,"epic":"PLAYWRIGHT","cost":9.6,"est":false,"pr":null,"runner":null,"ws":null,"attempts":0,"started":null,"when":"2026/10/23","blockers":[],"reason":null,"kind":null,"project":"blizzard"},{"id":"0H9B","status":"done","node":"done","refs":[["hub:591","domain-conformance run (full)"]],"more":0,"epic":"hub","cost":6.7,"est":true,"pr":null,"runner":null,"ws":null,"attempts":0,"started":null,"when":"2026/10/23","blockers":[],"reason":null,"kind":null,"project":"blizzard"},{"id":"FWK6","status":"done","node":"done","refs":[["blizzard#1358","[ACTIONS] Take a hub node's action in a pass beside run: steps"]],"more":0,"epic":"ACTIONS","cost":47.71,"est":false,"pr":null,"runner":null,"ws":null,"attempts":0,"started":null,"when":"2026/10/23","blockers":[],"reason":null,"kind":null,"project":"blizzard"},{"id":"7P8C","status":"done","node":"done","refs":[["blizzard#1408","[PLAYWRIGHT] Gather the daemons' test environment into one contract"]],"more":0,"epic":"PLAYWRIGHT","cost":1.29,"est":false,"pr":null,"runner":null,"ws":null,"attempts":0,"started":null,"when":"2026/10/23","blockers":[],"reason":null,"kind":null,"project":"blizzard"},{"id":"TWJS","status":"done","node":"done","refs":[["hub:585","Pin the runner lifecycle's wiring arguments against surviving mutants"]],"more":0,"epic":"hub","cost":4.61,"est":false,"pr":null,"runner":null,"ws":null,"attempts":0,"started":null,"when":"2026/10/23","blockers":[],"reason":null,"kind":null,"project":"blizzard"},{"id":"1KHP","status":"done","node":"done","refs":[["blizzard#1407","[PLAYWRIGHT] Log unhandled request errors as JSON tagged with their tenant"]],"more":0,"epic":"PLAYWRIGHT","cost":1.71,"est":false,"pr":null,"runner":null,"ws":null,"attempts":0,"started":null,"when":"2026/10/23","blockers":[],"reason":null,"kind":null,"project":"blizzard"},{"id":"69GA","status":"done","node":"done","refs":[["blizzard#1406","[PLAYWRIGHT] Read the hub CLI's tenant from BZ_HUB_TENANT"]],"more":0,"epic":"PLAYWRIGHT","cost":1.61,"est":false,"pr":null,"runner":null,"ws":null,"attempts":0,"started":null,"when":"2026/10/23","blockers":[],"reason":null,"kind":null,"project":"blizzard"}];</script>
+<script>(() => {
+'use strict';
+const CFG = window.BZ_CFG, M = CFG.device === 'mobile';
+const NODES = ['triage','build','review','mutation','pre-push','deliver'];
+const NAB = {triage:'tri',build:'bld',review:'rev',mutation:'mut','pre-push':'pp',deliver:'dlv',survey:'srv',done:'done'};
+const LEVELS = ['field','glyph','row','panel','line'];
+const $ = s => document.querySelector(s);
+const esc = s => String(s ?? '').replace(/[&<>"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+const money = (v, est) => (est ? '~' : '') + '$' + v.toFixed(2);
+const ago = m => m < 60 ? Math.floor(m) + 'm' : Math.floor(m / 60) + 'h' + String(Math.floor(m % 60)).padStart(2, '0');
+// deterministic noise so every render of the mock is the same
+let seed = 7; const rnd = () => ((seed = (seed * 16807) % 2147483647) / 2147483647);
+
+/* ================= model ================= */
+const C = window.BZ_DATA.map(c => ({...c}));
+const byId = Object.fromEntries(C.map(c => [c.id, c]));
+const HIST_DONE = 926;
+const CLOCK0 = new Date(2026, 9, 25, 13, 8, 38).getTime();
+
+const SUBS = {
+  Anthropic: {w: [{k:'5h', spent:.10, el:.55}, {k:'7d', spent:.12, el:.15}], fresh: 44},
+  OpenAI: {w: [{k:'7d', spent:.08, el:.07}], fresh: 240, note:'declining — pace 8% spent, 7% elapsed, until 14:41'},
+};
+const HOST = {name:'xps', id:'H-G1YK', url:'http://127.0.0.1:8431', ver:'0.3.0.dev1002+f208eca7d', seen:34, registered:'2026/10/16 04:36'};
+const RUNNERS = [
+  {name:'r-claude', id:'R-FNE4', harness:'claude code', sub:'Anthropic', agents:3, seen:21, ws:[{name:'blizzard-claude', slots:6}], state:'working'},
+  {name:'r-chatgpt', id:'R-NQ1B', harness:'opencode', sub:'OpenAI', agents:3, seen:17, ws:[{name:'blizzard-chatgpt', slots:4}], state:'declining'},
+];
+const SHARED_WS = {name:'winter', slots:4, boundBy:['r-claude','r-chatgpt']};
+let spendToday = 114.44;
+
+// derived: who holds whom
+C.forEach(c => { c.blocks = []; c.ago = c.started ?? 0; });
+C.forEach(c => c.blockers.forEach(b => byId[b] && byId[b].blocks.push(c.id)));
+function holds(c, seen = new Set()) { c.blocks.forEach(b => { if (!seen.has(b)) { seen.add(b); holds(byId[b], seen); } }); return seen.size; }
+C.forEach(c => { c.holds = holds(c); c.blocked = c.status === 'ready' && c.blockers.some(b => byId[b] && byId[b].status !== 'done'); });
+C.forEach(c => { if (c.status === 'done') { const t = c.when || ''; const hm = /(\d\d):(\d\d)/.exec(t); let m = hm ? (13 * 60 + 8) - (+hm[1] * 60 + +hm[2]) : 60 * 30; if (/Yesterday/.test(t)) m += 24 * 60; if (/2026\/10\/23/.test(t)) m = 48 * 60 + 300; c.ago = m; } });
+C.filter(c => c.status === 'ready').forEach((c, i) => c.ago = 60 * 3 + i * 9);
+
+// node history — real for C-WSCR (baseline chunk view); shaped from attempts for the rest
+const H = {};
+H.WSCR = [
+  ['triage','route','build',263.8,.35,'12:27'],['build','pass','review',1000,.42,'12:33'],['review','fail','build',484.3,.23,'12:35'],
+  ['build','pass','review',335.3,.06,'12:37'],['review','pass','pre-push',283.6,.13,'12:39'],['pre-push','clean','deliver',252.9,.13,'12:40'],
+  ['deliver','bounce','pre-push',0,0,'12:51','PR #1500 did not land: land answered failure'],['pre-push','clean','deliver',157,.05,'12:54'],
+  ['deliver','bounce','pre-push',0,0,'12:54','PR #1500 did not land: land answered failure'],['pre-push','significant','build',270.7,.07,'12:56'],
+  ['build','pass','review',669.4,.13,'13:08'],['review','run',null,0,0,'13:08']].map((s, i) => ({n:i+1, node:s[0], v:s[1], next:s[2], tok:s[3], cost:s[4], at:s[5], note:s[6]}));
+function history(c) {
+  if (H[c.id]) return H[c.id];
+  if (c.id === '6J9H') {
+    const seq = [['triage','route','build'],['build','pass','review'],['review','pass','mutation'],['mutation','pass','pre-push'],['pre-push','clean','deliver']];
+    for (let i = 0; i < 6; i++) seq.push(['deliver','bounce','pre-push'], ['pre-push','clean','deliver']);
+    seq.push(['deliver','escalated',null]);
+    const tk = [310,1200,520,880,260]; let m = 11 * 60 + 2;
+    H[c.id] = seq.map((q, i) => { m += i < 5 ? 14 : 6; const tok = q[1] === 'bounce' || q[1] === 'escalated' ? 0 : (tk[i] || 140); return {n:i+1, node:q[0], v:q[1], next:q[2], tok, cost:0, at:String(Math.floor(m/60)).padStart(2,'0')+':'+String(m%60).padStart(2,'0'), note:q[1] === 'bounce' ? 'PR #1498 did not land: land answered failure' : q[1] === 'escalated' ? 'bounce cap (5) crossed' : ''}; });
+    const tot = H[c.id].reduce((a, s) => a + s.tok, 0); H[c.id].forEach(s => s.cost = c.cost * s.tok / tot);
+    return H[c.id];
+  }
+  if (!['running','needs_human','done'].includes(c.status)) return [];
+  seed = c.id.split('').reduce((a, ch) => a * 31 + ch.charCodeAt(0), 7) % 2147483647 || 7;
+  const tgt = c.status === 'done' ? 5 : NODES.indexOf(c.node);
+  const steps = []; let pos = 0, n = 0; const want = Math.max(c.attempts || 4, tgt + 1);
+  const t0 = 13 * 60 + 8 - (c.ago || 30);
+  while (n < want - 1) {
+    const node = NODES[pos]; let v = 'pass', next = NODES[pos + 1];
+    const left = want - 1 - n, need = tgt - pos;
+    if (pos >= tgt && pos > 0) { v = node === 'deliver' ? 'bounce' : 'fail'; next = NODES[Math.max(1, pos - (node === 'review' ? 1 : 1))]; }
+    else if (left > need + 1 && rnd() < .3 && pos > 1) { v = node === 'review' ? 'fail' : node === 'pre-push' ? 'significant' : node === 'deliver' ? 'bounce' : 'fail'; next = NODES[pos - 1]; }
+    if (node === 'pre-push' && v === 'pass') v = 'clean';
+    if (node === 'triage') { v = 'route'; }
+    steps.push({n: ++n, node, v, next, tok: v === 'bounce' ? 0 : Math.round(150 + rnd() * 700), cost: 0, at: ''});
+    pos = NODES.indexOf(next);
+  }
+  steps.push({n: ++n, node: NODES[Math.max(0, tgt)] || c.node, v: c.status === 'needs_human' ? 'escalated' : c.status === 'done' ? 'landed' : 'run', next: null, tok: 0, cost: 0, at: ''});
+  const paid = steps.filter(s => s.tok); const tot = paid.reduce((a, s) => a + s.tok, 0) || 1;
+  paid.forEach(s => s.cost = c.cost * s.tok / tot);
+  const span = Math.max(steps.length, c.ago || 30);
+  steps.forEach((s, i) => { const m = Math.round(t0 + span * i / steps.length); s.at = String(Math.floor(m / 60) % 24).padStart(2, '0') + ':' + String(((m % 60) + 60) % 60).padStart(2, '0'); });
+  if (c.id === '6J9H') steps.forEach(s => { if (s.v === 'bounce') s.note = 'PR #1498 did not land: land answered failure'; });
+  return (H[c.id] = steps);
+}
+const bounces = c => history(c).filter(s => ['fail','bounce','significant','failure'].includes(s.v)).length;
+C.forEach(c => c.bounces = bounces(c));
+// #scale=80 — a synthetic fleet of 80 live chunks, to show how fidelity budgets the space
+if (/scale=(\d+)/.test(location.hash)) {
+  const want = +/scale=(\d+)/.exec(location.hash)[1]; const titles = C.filter(c => c.status === 'ready');
+  const nR = Math.ceil(want / 10); seed = 99;
+  for (let r = 0; r < nR; r++) RUNNERS.push({name: (r % 2 ? 'r-chatgpt-' : 'r-claude-') + (r + 2), id: 'R-' + (1000 + r), harness: r % 2 ? 'opencode' : 'claude code', sub: r % 2 ? 'OpenAI' : 'Anthropic', agents: 4, seen: 5 + r, ws: [{name: 'pool-' + (r + 2), slots: 10}], state: 'working'});
+  let k = C.filter(c => c.status === 'running').length;
+  for (let i = 0; k < want; i++, k++) {
+    const t = titles[i % titles.length]; const id = 'S' + (i * 7919 % 46656).toString(36).toUpperCase().padStart(3, '0');
+    const rr = RUNNERS[2 + (i % nR)]; const node = NODES[1 + Math.floor(rnd() * 5)];
+    const c = {...t, id, status: 'running', node, runner: rr.name, ws: rr.ws[0].name, cost: +(rnd() * (rnd() < .1 ? 14 : 3)).toFixed(2), est: rnd() < .5, attempts: 1 + Math.floor(rnd() * 9), ago: 2 + rnd() * 120, blockers: [], blocks: [], blocked: false, holds: 0};
+    C.push(c); byId[id] = c; c.bounces = rnd() < .12 ? 3 + Math.floor(rnd() * 4) : Math.floor(rnd() * 2);
+  }
+  C.filter(c => c.status === 'ready').slice(0, 3).forEach(c => { c.status = 'needs_human'; c.kind = 'ask'; c.node = 'review'; c.runner = 'r-claude-2'; c.attempts = 4; c.cost = 2.1; c.pr = 'paul-gross/blizzard#15' + c.id.length; c.reason = 'Agent asks: the issue names two owners for this rule; which file should carry it?'; });
+  H.WSCR && 0;
+}
+
+
+/* ================= state ================= */
+const hp = new URLSearchParams(location.hash.slice(1));
+const S = {
+  zoom: +(hp.get('z') || (M ? 3 : 3)), group: CFG.group, q: hp.get('q') || '', focus: hp.get('f') || null,
+  sel: new Set(), step: null, line: null, clock: CLOCK0, pend: null,
+};
+if (hp.get('theme') === 'night') document.body.classList.add('night');
+if (M) document.body.classList.add('m');
+const VIEWS = {
+  '@triage': ['needs:human | sort holds', 'what needs a human, biggest blast radius first'],
+  '@burn': ['cost>3 | sort cost', 'chunks that have spent the most'],
+  '@bouncing': ['bounces>2 | sort bounces', 'chunks stuck in a loop'],
+  '@chains': ['is:blocked | group epic', 'held work, by epic'],
+  '@claimable': ['is:claimable', 'ready with nothing in the way'],
+  '@landed': ['status:done | sort age', 'what landed, newest first'],
+  '@fleet': ['| group place', 'the fleet projection'],
+  '@board': ['| group status', 'the board projection'],
+};
+
+/* ================= query language ================= */
+// terms filter, pipes reshape, a trailing verb acts on whatever is left
+const VERBS = {takeover:'take over', requeue:'requeue', answer:'answer', promote:'promote', pause:'pause runner of', open:'open PR of'};
+function lex(q) {
+  const out = []; const re = /(\s+)|(\|)|(@[\w-]+)|([a-z]+)(:|>=|<=|>|<)([^\s|]*)|([^\s|]+)/g; let m;
+  let afterPipe = false, pipeWord = 0;
+  while ((m = re.exec(q))) {
+    if (m[1]) { out.push({t:'ws', s:m[1]}); continue; }
+    if (m[2]) { out.push({t:'pipe', s:'|'}); afterPipe = true; pipeWord = 0; continue; }
+    if (m[3]) { out.push({t: VIEWS[m[3]] ? 'view' : (afterPipe ? 'view' : 'err'), s:m[3]}); continue; }
+    if (m[4]) { out.push({t:'key', s:m[4]}, {t:'cmp', s:m[5]}, {t:'val', s:m[6]}); continue; }
+    const w = m[7];
+    if (afterPipe) { out.push({t: pipeWord === 0 ? (VERBS[w] ? 'act' : 'op') : 'val', s:w}); pipeWord++; }
+    else out.push({t:'txt', s:w});
+  }
+  return out;
+}
+function expand(q) { return q.replace(/@[\w-]+/g, v => VIEWS[v] ? VIEWS[v][0] : v); }
+function parse(qRaw) {
+  const q = expand(qRaw); const [head, ...pipes] = q.split('|');
+  const preds = []; const R = {preds, sort:null, group:null, take:null, only:false, verb:null, save:null, empty:!head.trim()};
+  head.trim().split(/\s+/).filter(Boolean).forEach(tok => {
+    const m = /^([a-z]+)(:|>=|<=|>|<)(.*)$/.exec(tok);
+    if (!m) { const w = tok.toLowerCase(); preds.push(c => (c.id + ' ' + c.refs.map(r => r.join(' ')).join(' ') + ' ' + c.epic).toLowerCase().includes(w)); return; }
+    const [, k, op, v] = m; const vl = v.toLowerCase();
+    const num = parseFloat(v.replace(/[^\d.]/g, '')) * (/h$/.test(v) ? 60 : /d$/.test(v) ? 1440 : 1);
+    const cmp = (x) => op === '>' ? x > num : op === '<' ? x < num : op === '>=' ? x >= num : op === '<=' ? x <= num : x === num;
+    const st = {human:'needs_human', needs:'needs_human', live:'running', landed:'done'};
+    if (k === 'needs') preds.push(c => c.status === 'needs_human');
+    else if (k === 'status' || k === 's') preds.push(c => c.status === (st[vl] || vl) || (vl === 'live' && c.status === 'running'));
+    else if (k === 'node' || k === 'n') preds.push(c => (c.node || '').startsWith(vl));
+    else if (k === 'runner' || k === 'r') preds.push(c => (c.runner || '').includes(vl));
+    else if (k === 'epic' || k === 'e') preds.push(c => c.epic.toLowerCase().startsWith(vl));
+    else if (k === 'is') preds.push({blocked: c => c.blocked, claimable: c => c.status === 'ready' && !c.blocked, live: c => c.status === 'running', bounced: c => c.bounces > 0, est: c => c.est}[vl] || (() => false));
+    else if (k === 'holds') preds.push(c => cmp(c.holds));
+    else if (k === 'cost') preds.push(c => cmp(c.cost));
+    else if (k === 'age') preds.push(c => cmp(c.ago));
+    else if (k === 'bounces') preds.push(c => cmp(c.bounces));
+    else if (k === 'attempts') preds.push(c => cmp(c.attempts));
+    else if (k === 'project' || k === 'p') preds.push(c => (c.project || '').startsWith(vl));
+    else if (k === 'id') preds.push(c => c.id.toLowerCase().startsWith(vl.replace(/^c-/, '')));
+    else preds.push(() => false);
+  });
+  pipes.forEach(p => {
+    const [op, ...a] = p.trim().split(/\s+/);
+    if (op === 'sort') R.sort = {k: a[0] || 'age', asc: a[1] === 'asc'};
+    else if (op === 'group') R.group = a[0];
+    else if (op === 'take') R.take = +a[0];
+    else if (op === 'only') R.only = true;
+    else if (op === 'save') R.save = a[0];
+    else if (VERBS[op]) R.verb = op;
+  });
+  return R;
+}
+const Q = () => parse(S.q);
+function matches(c, R) { return R.preds.every(p => p(c)); }
+const queryActive = R => R.preds.length > 0;
+
+/* ================= fidelity renderers ================= */
+// the same chunk at five fidelities; data-k keeps its identity across them so it can fly between layouts
+function nodeTrack(c) {
+  const ci = NODES.indexOf(c.node); const done = c.status === 'done';
+  const cells = NODES.map((n, i) => {
+    let cl = '';
+    if (done || i < ci) cl = 'p';
+    if (i === ci && !done) cl = c.status === 'needs_human' ? 'h' : c.status === 'running' ? 'c' : 'p';
+    return `<i class="${cl}" title="${n}"></i>`;
+  }).join('');
+  const b = c.bounces > 1 ? `<b style="left:${Math.max(0, ci) * 16.6}%">↺${c.bounces}</b>` : '';
+  return `<div class="nt">${cells}${b}</div>`;
+}
+function pxHTML(c, dim) {
+  return `<i class="px s-${c.status}${c.blocked ? ' blk' : ''}${dim ? ' dim' : ''}${S.focus === c.id ? ' f' : ''}" data-k="${c.id}" data-f="${c.id}" title="C-${c.id}"></i>`;
+}
+function glyphHTML(c) {
+  const w = Math.min(100, Math.log10(1 + c.cost) * 70);
+  return `<div class="gl s-${c.status}${c.blocked ? ' blk' : ''}${S.focus === c.id ? ' f' : ''}" data-k="${c.id}" data-f="${c.id}" title="${esc(c.refs[0][1])}">
+    <span class="i">${c.id}</span><span class="m"><span>${c.status === 'done' ? (c.when || '').replace('Yesterday ', 'yd ').replace('2026/10/', '') : NAB[c.node] || ''}</span><span>${c.cost ? '$' + c.cost.toFixed(c.cost < 10 ? 1 : 0) : ''}</span></span>${c.cost ? `<span class="cb" style="width:${w}%"></span>` : ''}</div>`;
+}
+function titleHTML(c) {
+  const t = c.refs[0][1]; const m = /^\[([A-Z-]+)\]\s*(.*)$/.exec(t);
+  const extra = c.refs.length - 1 + (c.more || 0);
+  return (m ? `<span class="ep">${m[1]}</span>${esc(m[2])}` : esc(t)) + (extra ? `<span class="more">+${extra} more</span>` : '');
+}
+function rowHTML(c, ctx = {}) {
+  const ru = c.runner ? c.runner : c.blocked ? 'held' : c.status === 'ready' ? 'claimable' : '';
+  const age = c.status === 'done' ? (c.when || '').replace('Yesterday ', 'yd ') : c.ago ? ago(c.ago) : '';
+  const cls = `rw s-${c.status}${S.focus === c.id ? ' f' : ''}${S.sel.has(c.id) ? ' sel' : ''}`;
+  if (M) return `<div class="${cls}" data-k="${c.id}" data-f="${c.id}"><span class="st"></span>
+      <div class="l1"><span class="i mono">${c.id}</span><span class="ref">${esc(c.refs[0][0])}</span>${c.status === 'running' || c.status === 'needs_human' ? `<span class="mnt">${nodeTrack(c)}${c.node}</span>` : `<span class="mnt">${age}</span>`}</div>
+      <span class="co${c.est ? ' est' : ''}">${c.cost ? money(c.cost, c.est) : ''}</span>
+      <span class="ti">${titleHTML(c)}</span></div>`;
+  return `<div class="${cls}" data-k="${c.id}" data-f="${c.id}"><span class="st"></span><span class="i">${c.id}</span><span class="ref">${esc(c.refs[0][0])}</span>
+    <span class="ti">${titleHTML(c)}</span>${c.status === 'done' ? `<span></span>` : nodeTrack(c)}<span class="ru">${ctx.noRunner ? '' : esc(ru)}</span>
+    <span class="ag" data-age="${c.id}">${age}</span><span class="co${c.est ? ' est' : ''}" data-cost="${c.id}">${c.cost ? money(c.cost, c.est) : ''}</span></div>`;
+}
+function humanHTML(c) {
+  const kind = c.kind === 'ask' ? 'agent asks' : 'bounce cap · takeover';
+  const why = c.reason.replace(/^Agent asks: /, '');
+  const acts = c.kind === 'ask'
+    ? [['a', 'answer'], ['t', 'take over'], ['r', 'requeue'], ['o', 'PR #' + c.pr.split('#')[1]]]
+    : [['t', 'take over'], ['r', 'requeue'], ['o', 'PR #' + c.pr.split('#')[1]], ['↵', 'zoom to history']];
+  return `<div class="hx${S.focus === c.id ? ' f' : ''}" data-k="${c.id}" data-f="${c.id}"><span class="st"></span>
+    <div><div class="l1"><span class="i">C-${c.id}</span><span class="ref">${esc(c.refs[0][0])}</span><span class="kind">${kind}</span></div>
+      <div class="ti">${esc(c.refs[0][1])}</div><div class="why">${esc(why)}</div>
+      ${M ? `<div class="macts"><button class="p">${c.kind === 'ask' ? 'Answer' : 'Take over'}</button><button>${c.kind === 'ask' ? 'Take over' : 'Requeue'}</button><button>PR</button></div>`
+          : `<div class="acts">${acts.map(([k, l]) => `<span><kbd>${k}</kbd>${l}</span>`).join('')}</div>`}</div>
+    ${M ? '' : `<div class="rt"><div class="hd"><span class="big">${c.holds}</span><span>${c.holds ? 'chunks held behind it' : 'holds nothing'}</span></div><span>node</span><b>${c.node}</b><span>spent</span><b>${money(c.cost, c.est)}</b><span>tries</span><b>${c.attempts}</b><span>on</span><b>${c.runner}</b><span>loops</span><b>${c.bounces}</b><span>age</span><b>${ago(c.ago || 20)}</b></div>`}</div>`;
+}
+
+/* ================= projections ================= */
+function chains(list) {
+  // a chain is everything held, transitively, behind one root that is not itself held by a ready chunk
+  const ready = list.filter(c => c.status === 'ready' && c.blocked);
+  const rootOf = c => { let r = c, guard = 0; while (guard++ < 40) { const b = r.blockers.map(x => byId[x]).find(x => x && x.status !== 'done'); if (!b) break; r = b; if (r.status !== 'ready') break; } return r; };
+  const g = new Map();
+  ready.forEach(c => { const r = rootOf(c); const key = r.status === 'ready' ? r.epic : r.id; if (!g.has(key)) g.set(key, {root: r.status === 'ready' ? null : r, epic: c.epic, items: []}); g.get(key).items.push(c); });
+  return [...g.values()].sort((a, b) => (b.root?.status === 'needs_human') - (a.root?.status === 'needs_human') || b.items.length - a.items.length);
+}
+function secHead(n, l, s, r, cls = '') { return `<div class="sh"><span class="n">${n}</span><span class="l">${l}</span>${s ? `<span class="s">${s}</span>` : ''}${r ? `<span class="r">${r}</span>` : ''}</div>`; }
+function orderList(list, R) {
+  if (!R.sort) return list;
+  const k = R.sort.k, f = {cost: c => c.cost, age: c => c.ago, holds: c => c.holds, bounces: c => c.bounces, attempts: c => c.attempts, id: c => c.id}[k] || (c => c.ago);
+  const s = [...list].sort((a, b) => f(b) - f(a) || (k === 'id' ? a.id.localeCompare(b.id) : 0));
+  return R.sort.asc ? s.reverse() : s;
+}
+// fidelity for a chunk at the current zoom: a query de-focuses non-matches to pixels instead of hiding them
+function at(c, lvl, R, ctx) {
+  if (queryActive(R) && !matches(c, R)) return R.only ? '' : pxHTML(c, true);
+  if (lvl <= 1) return pxHTML(c);
+  if (lvl === 2) return glyphHTML(c);
+  if (c.status === 'needs_human' && lvl >= 3) return humanHTML(c);
+  return rowHTML(c, ctx);
+}
+function wrapPx(html) { return html; }
+function group(list, lvl, R, ctx) {
+  // pixels and glyphs flow inline; rows stack — keep de-focused pixels on one shared line between rows
+  if (lvl <= 2) return `<div class="pxs">${list.map(c => at(c, lvl, R, ctx)).join('')}</div>`;
+  let out = '', run = '';
+  list.forEach(c => { const h = at(c, lvl, R, ctx); if (h.startsWith('<i class="px')) run += h; else { if (run) out += `<div class="pxs" style="padding:4px 0">${run}</div>`, run = ''; out += h; } });
+  if (run) out += `<div class="pxs" style="padding:4px 0">${run}</div>`;
+  return out;
+}
+function countLabel(list, R) { if (!queryActive(R)) return list.length; const m = list.filter(c => matches(c, R)).length; return `${m}<span style="font-size:.5em;color:var(--ink3);font-weight:400"> /${list.length}</span>`; }
+
+function viewStatus(lvl, R, rail) {
+  const L = s => orderList(C.filter(c => c.status === s), R);
+  const hum = L('needs_human').sort((a, b) => R.sort ? 0 : b.holds - a.holds), run = L('running'), ready = L('ready'), done = L('done'), back = L('backlog');
+  const claim = ready.filter(c => !c.blocked), held = ready.filter(c => c.blocked);
+  const human = rail ? 2 : lvl === 1 ? 1 : Math.min(3, lvl + 1); // attention-weighted fidelity
+  // fidelity budget: past ~16 live, the calm ones fold to glyphs and only anomalies keep a row
+  const crowded = run.length > 16 && lvl === 3 && !rail;
+  const odd = c => c.bounces >= 3 || c.cost >= 6 || c.ago > 110;
+  const live = crowded ? 3 : lvl;
+  const quiet = Math.max(1, lvl - 1);
+  let h = '';
+  // more than three asks at once: the two with the widest blast radius keep the full card, the rest drop to rows
+  const humBody = hum.length > 3 && human === 3 ? group(hum.slice(0, 2), 3, R) + group(hum.slice(2), 3, R).replace(/class="hx/g, 'class="hx hx-c') : group(hum, human, R);
+  h += `<section class="sec hum">${secHead(countLabel(hum, R), hum.length === 1 ? 'needs you' : 'need you', `holding ${(() => { const u = new Set(); hum.forEach(c => holds(c, u)); return u.size; })()} chunks behind them`, lvl >= 3 ? '<span class="k">g n</span>' : '')}${humBody}</section>`;
+  h += `<section class="sec live">${secHead(countLabel(run, R), 'live', `${[...new Set(run.map(c => c.runner))].length > 2 ? 'across ' + [...new Set(run.map(c => c.runner))].length + ' runners' : RUNNERS.map(r => run.filter(c => c.runner === r.name).length + ' on ' + r.name).join(' · ')} · ${money(run.reduce((a, c) => a + c.cost, 0))} in flight`, lvl >= 3 ? '<span class="k">g l</span>' : '')}${crowded ? `<div class="sub"><b>${run.filter(odd).length} anomalous</b> looping, burning or slow — kept at row fidelity</div>${group([...run.filter(odd)].sort((a, b) => b.bounces - a.bounces || b.cost - a.cost), 3, R)}<div class="sub"><b>${run.filter(c => !odd(c)).length} calm</b> folded to glyphs</div>${group(run.filter(c => !odd(c)), 2, R)}` : group(run, live, R)}</section>`;
+  // ready: claimable at row fidelity, held work collapses into chains of glyphs
+  let rb = '';
+  if (lvl >= 3 && !R.only && !rail) {
+    rb += `<div class="ch" style="border-top:0"><div class="h">claimable<small>${claim.length} · nothing in the way</small></div><div class="seq">${claim.map(c => at(c, 2, R)).join('')}</div></div>`;
+    chains(held).forEach(ch => {
+      const root = ch.root ? `<span class="head h-${ch.root.status}" data-f="${ch.root.id}">${ch.root.id}</span><span class="ar">▸</span>` : '';
+      const eps = [...new Set(ch.items.map(c => c.epic))].filter(e => e !== '—').join(' · ');
+      const head = ch.root ? `behind C-${ch.root.id}` : `inside ${ch.epic === 'hub' ? 'hub' : ch.epic}`;
+      rb += `<div class="ch"><div class="h">${head}<small>${ch.items.length} held · ${esc(eps)}</small></div><div class="seq">${root}${ch.items.map(c => at(c, 2, R)).join('')}</div></div>`;
+    });
+  } else rb = group(ready, quiet === 1 ? 1 : 2, R);
+  h += `<section class="sec">${secHead(countLabel(ready, R), 'ready', `${claim.length} claimable · ${held.length} held`, lvl >= 3 ? '<span class="k">g y</span>' : '')}${rb}</section>`;
+  let db = group(lvl === 1 ? done : done.slice(0, lvl >= 3 ? 38 : 38), lvl >= 3 ? 3 : lvl, R);
+  if (lvl <= 2) db += `<div class="pxs" style="margin-top:6px">${'<i class="px hist"></i>'.repeat(lvl === 1 ? HIST_DONE - done.length : 0)}</div>`;
+  h += `<section class="sec quiet">${secHead(countLabel(done, R), 'landed', `in 48h · ${HIST_DONE} all time · 18 today for ${money(done.filter(c => c.ago < 13 * 60).reduce((a, c) => a + c.cost, 0))}`, lvl >= 3 ? '<span class="k">g d</span>' : '')}${db}</section>`;
+  h += `<section class="sec quiet">${secHead(countLabel(back, R), 'backlog', 'awaiting promotion')}${group(back, lvl, R)}</section>`;
+  return h;
+}
+function winHTML(sub, wide) {
+  const s = SUBS[sub];
+  return s.w.map(w => `<span>${sub === 'Anthropic' ? 'anthropic' : 'openai'} ${w.k}</span><div class="trk" style="${wide ? 'width:' + wide + 'px' : ''}" title="${Math.round(w.spent * 100)}% spent · ${Math.round(w.el * 100)}% of window elapsed"><i class="${w.spent > w.el + .05 ? 'hot' : ''}" style="width:${w.spent * 100}%"></i><u style="left:${w.el * 100}%"></u></div>`).join('');
+}
+function paceText(sub) { const s = SUBS[sub]; return s.w.map(w => `${w.k} ${Math.round(w.spent * 100)}% of ${Math.round(w.el * 100)}%`).join(' · '); }
+function viewPlace(lvl, R) {
+  const run = C.filter(c => c.runner && (c.status === 'running' || c.status === 'needs_human'));
+  const busy = run.length, slots = RUNNERS.reduce((a, r) => a + r.ws.reduce((b, w) => b + w.slots, 0), 0) + SHARED_WS.slots;
+  let h = `<div class="host"><span class="nm">${HOST.name}</span><span class="meta">${M ? '' : `<span class="mono">${HOST.id}</span> · `}online · reported <span data-seen="host">${HOST.seen}s</span> ago${M ? '' : ` · <span class="mono">${HOST.url}</span> · <span class="mono">${HOST.ver}</span>`} · ${busy}/${slots} slots busy</span></div>`;
+  RUNNERS.forEach(r => {
+    const mine = orderList(run.filter(c => c.runner === r.name), R);
+    const s = SUBS[r.sub];
+    h += `<section class="rn"><div class="rnh${S.focus === 'R:' + r.name ? ' f' : ''}" data-f="R:${r.name}" data-k="R:${r.name}">
+      <span class="nm"><span class="dot"></span>${r.name}</span>
+      <span class="d">${r.harness} · spends ${r.sub} · ${r.agents} agents · ${mine.length} held · <span class="mono">${r.id} · seen <span data-seen="${r.name}">${r.seen}s</span></span>${r.state === 'declining' ? ` · <span style="color:var(--hum)">declining</span>` : ''}</span>
+      <span class="w"><span class="win">${winHTML(r.sub)}</span><span class="pace">${s.note ? esc(s.note) : 'within pace · ' + paceText(r.sub)}</span>${M ? '' : '<span class="k">P pause</span>'}</span></div>`;
+    r.ws.forEach(w => {
+      const items = mine.filter(c => c.ws === w.name);
+      const free = w.slots - items.length;
+      const body = lvl <= 2 ? `<div class="pxs" style="padding:6px 0">${items.map(c => at(c, lvl, R)).join('')}${'<i class="px free"></i>'.repeat(free)}</div>`
+        : group(items, 3, R, {noRunner:true}) + (free ? `<div class="sock"><i></i>${free} free</div>` : '');
+      h += `<div class="wsl"><div class="wn"><b>${w.name}</b>${items.length}/${w.slots} slots</div><div>${body}</div></div>`;
+    });
+    h += `</section>`;
+  });
+  h += `<section class="rn"><div class="wsl"><div class="wn"><b>${SHARED_WS.name}</b>0/${SHARED_WS.slots} · both runners</div><div>${lvl <= 2 ? `<div class="pxs" style="padding:6px 0">${'<i class="px free"></i>'.repeat(4)}</div>` : `<div class="sock"><i></i><i></i><i></i><i></i> 4 free — nothing in the winter project is ready, so these idle by design</div>`}</div></div></section>`;
+  // what the fleet will pick up next, and what it left behind
+  const ready = orderList(C.filter(c => c.status === 'ready'), R), claim = ready.filter(c => !c.blocked), held = ready.filter(c => c.blocked);
+  h += `<section class="sec" style="margin-top:8px">${secHead(countLabel(ready, R), 'queued for this fleet', `${claim.length} claimable when a slot frees · ${held.length} held`)}${lvl >= 3 ? group(claim, 2, R) + '<div style="height:6px"></div>' + group(held, 1, R) : group(ready, Math.max(1, lvl - 1), R)}</section>`;
+  const done = C.filter(c => c.status === 'done');
+  h += `<section class="sec quiet">${secHead(countLabel(done, R), 'landed', 'in 48h, by this fleet')}${group(done, lvl === 1 ? 1 : 2, R)}${lvl === 1 ? `<div class="pxs" style="margin-top:6px">${'<i class="px hist"></i>'.repeat(HIST_DONE - done.length)}</div>` : ''}</section>`;
+  return h;
+}
+function viewBy(key, lvl, R) {
+  const f = {epic: c => c.epic, runner: c => c.runner || 'unplaced', node: c => c.node || '—', status: c => c.status}[key] || (c => c.epic);
+  const g = new Map(); C.forEach(c => { const k = f(c); if (!g.has(k)) g.set(k, []); g.get(k).push(c); });
+  return [...g.entries()].sort((a, b) => b[1].filter(c => matches(c, R)).length - a[1].filter(c => matches(c, R)).length || b[1].length - a[1].length)
+    .map(([k, list]) => { const any = list.some(c => matches(c, R)); return `<section class="sec${any ? '' : ' quiet'}">${secHead(countLabel(list, R), esc(k), '')}${group(orderList(list, R), any ? lvl : 1, R)}</section>`; }).join('');
+}
+
+/* ================= deep zoom: panel and line ================= */
+function subway(c, w = 880) {
+  const st = history(c); const n = st.length; if (!n) return '';
+  const lanes = NODES; const lh = 22, top = 16, left = 74, right = 20;
+  const dx = Math.min(56, (w - left - right) / Math.max(1, n - 1));
+  const y = node => top + lanes.indexOf(node) * lh + 6;
+  let s = `<svg class="subway" viewBox="0 0 ${w} ${top + lanes.length * lh + 18}" style="height:${top + lanes.length * lh + 18}px">`;
+  lanes.forEach((l, i) => { s += `<line x1="${left - 6}" x2="${w - 8}" y1="${y(l)}" y2="${y(l)}" stroke="var(--rule2)"/><text x="${left - 12}" y="${y(l) + 4}" text-anchor="end" font-size="11" fill="var(--ink3)">${l}</text>`; });
+  for (let i = 1; i < n; i++) {
+    const a = st[i - 1], b = st[i]; const back = NODES.indexOf(b.node) < NODES.indexOf(a.node);
+    const x1 = left + (i - 1) * dx, x2 = left + i * dx;
+    s += back ? `<path d="M${x1} ${y(a.node)} C${x1 + dx * .6} ${y(a.node)}, ${x2 - dx * .6} ${y(b.node)}, ${x2} ${y(b.node)}" fill="none" stroke="var(--hum)" stroke-width="2"/>`
+      : `<line x1="${x1}" y1="${y(a.node)}" x2="${x2}" y2="${y(b.node)}" stroke="var(--ink)" stroke-width="2"/>`;
+  }
+  st.forEach((p, i) => {
+    const x = left + i * dx, yy = y(p.node), cur = i === n - 1 && c.status !== 'done';
+    const fill = cur ? (c.status === 'needs_human' ? 'var(--hum)' : 'var(--live)') : ['fail','bounce','significant'].includes(p.v) ? 'var(--hum)' : 'var(--ink)';
+    const r = Math.max(3, Math.min(9, 3 + Math.sqrt(p.cost) * 9));
+    s += `<g data-step="${p.n}" style="cursor:pointer"><circle cx="${x}" cy="${yy}" r="${S.step === p.n ? r + 3 : r}" fill="${S.step === p.n ? 'var(--paper)' : fill}" stroke="${fill}" stroke-width="${S.step === p.n ? 3 : 0}">${cur && c.status === 'running' ? '<animate attributeName="r" values="5;9;5" dur="1.4s" repeatCount="indefinite"/>' : ''}</circle><text x="${x}" y="${top - 4}" font-size="9.5" text-anchor="middle" fill="var(--ink3)" font-family="var(--mono)">${p.n}</text></g>`;
+  });
+  return s + '</svg>';
+}
+function stepTable(c) {
+  return `<table class="stab">${history(c).map(p => `<tr data-step="${p.n}" class="${S.step === p.n ? 'f' : ''}"><td class="n">${p.n}</td><td>${p.node}</td><td class="v-${p.v}" style="font-weight:700;color:${['fail','bounce','significant','escalated'].includes(p.v) ? 'var(--hum)' : p.v === 'run' ? 'var(--live)' : 'inherit'}">${p.v}${p.next ? ' → ' + p.next : ''}</td><td style="color:var(--ink2);font-size:12px">${esc(p.note || '')}</td><td class="mono r">${p.tok ? (p.tok >= 1000 ? (p.tok / 1000).toFixed(1) + 'M' : p.tok.toFixed(0) + 'k') + ' tok' : ''}</td><td class="mono r">${p.cost ? '$' + p.cost.toFixed(2) : ''}</td><td class="mono r" style="color:var(--ink3)">${p.at}</td></tr>`).join('')}</table>`;
+}
+const ISSUE = {
+  WSCR: ['An idle Anthropic runner can deadlock. <code>AnthropicSubscriptionSampler</code> only reads <code>~/.claude/.credentials.json</code>, and <code>select_renewer</code> binds no renewer for <code>anthropic</code>.', 'Once the access token lapses, every sample misses as <code>credential_lapsed</code>; the throttle levers have no fresh utilization to admit against, so no worker starts and nothing refreshes the token.'],
+  '6J9H': ['The forge record\'s migration refuses an installation whose records it cannot carry over without one of them silently changing.', 'This child lands the same judgement as a command that reads a hub\'s store directly: <code>blizzard hub config check-forges</code>.'],
+};
+function panelHTML(c) {
+  const st = {needs_human:'needs you', running:'live', ready: c.blocked ? 'held' : 'claimable', done:'landed', backlog:'backlog'}[c.status];
+  const col = c.status === 'needs_human' ? 'var(--hum)' : c.status === 'running' ? 'var(--live)' : 'var(--ink2)';
+  const dep = c.blockers.map(b => `<span class="mono">C-${b} <span style="color:var(--ink3)">${byId[b] ? byId[b].status : ''}</span></span>`).join('<br>') || '—';
+  const blk = c.blocks.map(b => `C-${b}`).join(' ') || '—';
+  return `<div class="pnl"><div class="top1"><span class="i" style="color:${col}">C-${c.id}</span><span class="sta" style="color:${col}">${st}${c.node ? ' · ' + c.node : ''}</span><span class="mono" style="color:var(--ink3);font-size:12px">${c.runner ? HOST.name + '/' + c.runner : ''}</span></div>
+    <h1>${esc(c.refs[0][1])}</h1><div class="refs">${c.refs.map(r => `<span>${esc(r[0])}</span>`).join('')}${c.pr ? `<span style="color:var(--live)">${esc(c.pr)}</span>` : ''}</div>
+    ${c.reason ? `<div class="why">${esc(c.reason)}</div>` : ''}
+    ${M && c.status === 'needs_human' ? `<div class="hx" style="display:block;padding:0;border:0"><div class="macts"><button class="p" data-act="${c.kind === 'ask' ? 'a' : 't'}">${c.kind === 'ask' ? 'Answer' : 'Take over'}</button><button data-act="r">Requeue</button><button data-act="o">PR</button></div></div>` : ''}
+    ${S.zoom === 5 ? '' : `<div class="pgrid"><div><div class="blk"><h3>path through the graph <span>${history(c).length} steps · ${c.bounces} bounces · ↵ on a step zooms to its transcript</span></h3>${subway(c, M ? 360 : 880)}</div>
+      <div class="blk" style="margin-top:14px">${stepTable(c)}</div></div>
+      <div class="side blk"><h3>chunk</h3><dl><dt>spent</dt><dd>${money(c.cost, c.est)}</dd><dt>attempts</dt><dd>${c.attempts}</dd><dt>graph</dt><dd>G-TP4E#bas-dwf</dd><dt>depends on</dt><dd>${dep}</dd><dt>holds</dt><dd>${c.holds} · ${blk}</dd><dt>age</dt><dd>${ago(c.ago)}</dd></dl>
+      <div class="issue">${(ISSUE[c.id] || ['No body captured for this item in the baseline.']).map(p => `<p>${p}</p>`).join('')}</div></div></div>`}</div>`;
+}
+const TX_TEMPL = [
+  ['think', 'The review contract asks me to check the renewer against the throttle gate and the spend doc before passing it.'],
+  ['tool', 'Read src/blizzard/runner/subscriptions/anthropic.py'],
+  ['out', '  212 lines · AnthropicSubscriptionSampler, select_renewer, CredentialRenewalPass'],
+  ['tool', 'Grep "select_renewer" src/ tests/'],
+  ['out', '  src/blizzard/runner/subscriptions/renewal.py:41\n  tests/unit/runner/test_renewal.py:18, :77, :102'],
+  ['think', 'select_renewer now returns HaikuOneShotRenewer for provider "anthropic". Need to confirm it never runs while a worker holds the credential.'],
+  ['tool', 'Read src/blizzard/runner/subscriptions/renewal.py:30-96'],
+  ['tool', 'Bash uv run pytest tests/unit/runner/test_renewal.py -q'],
+  ['out', '  ..............                                     [100%]\n  14 passed in 0.82s'],
+  ['res', 'unit tier: 14 passed'],
+  ['tool', 'Read docs/deployment/spend.md'],
+  ['think', 'The doc still says "a fleet\'s own Claude Code workers renew that token continuously" — that is the assumption this chunk removes. Finding.'],
+  ['err', 'finding R-1 · docs/deployment/spend.md:58 still states the old renewal assumption'],
+  ['tool', 'Bash uv run pytest tests/service/runner -k renewal -q'],
+  ['out', '  ....                                               [100%]\n  4 passed in 9.31s'],
+  ['res', 'service tier: 4 passed'],
+  ['think', 'One finding against an acceptance criterion\'s doc, the code is right. That is a fail back to build, not a pass with notes.'],
+];
+function genericTx(c) {
+  const t = c.refs[0][1].replace(/^\[[A-Z-]+\]\s*/, ''); const slug = t.toLowerCase().split(/\W+/).filter(w => w.length > 4).slice(0, 2).join('_') || 'change';
+  return [['think', `Picking up ${c.node} for "${t}". Reading the issue's acceptance criteria first.`], ['tool', `Read .winter/ext/context/verification/index.md`], ['tool', `Grep "${slug}" src/ tests/`],
+    ['out', `  ${3 + slug.length % 5} matches across ${2 + slug.length % 3} files`], ['tool', `Bash uv run pytest tests/unit -q -k ${slug}`], ['out', '  ........                                           [100%]\n  8 passed in 1.41s'],
+    ['res', 'unit tier: 8 passed'], ['think', 'The criteria name a service-tier check too; running it before deciding.'], ['tool', `Bash uv run pytest tests/service -q -k ${slug}`],
+    ['out', '  ...                                                [100%]\n  3 passed in 11.02s'], ['res', 'service tier: 3 passed'], ['think', 'Both tiers green and the diff stays inside the issue. Writing the step verdict.'],
+    ['tool', 'Write .blizzard/verdict.json'], ['res', `${c.node}: pass`]];
+}
+function txLines(c) {
+  if (!c._tx) { let t = 13 * 3600 + 8 * 60 + 2; c._src = c.id === 'WSCR' ? TX_TEMPL : genericTx(c); c._tx = c._src.slice(0, c.status === 'running' ? 11 : 17).map((l, i) => { t += 3 + (i * 7) % 11; return {t, k: l[0], x: l[1]}; }); }
+  return c._tx;
+}
+const hms = t => [Math.floor(t / 3600), Math.floor(t / 60) % 60, t % 60].map(v => String(v).padStart(2, '0')).join(':');
+function lineHTML(c) {
+  const st = history(c); const step = st.find(s => s.n === S.step) || st[st.length - 1];
+  S.step = step.n;
+  const lines = txLines(c);
+  return panelHTML(c) + `<div class="blk" style="margin-top:14px"><h3>step ${step.n} · ${step.node} · ${step.v}${step.next ? ' → ' + step.next : ''} <span>${c.runner ? HOST.name + '/' + c.runner + ' · ' : ''}claude code · j/k walks lines · y copies · t takes over this session</span></h3>${subway(c, M ? 360 : 1180)}</div>
+    <div class="tx">${lines.map((l, i) => `<div class="tl k-${l.k}${S.line === i ? ' f' : ''}" data-line="${i}" data-f="L:${i}"><span class="t">${hms(l.t)}</span><span class="k">${{think:'thinks',tool:'tool',out:'output',res:'result',err:'finding'}[l.k]}</span><span class="x">${esc(l.x)}</span></div>`).join('')}
+    ${c.status === 'running' ? '<div class="tl"><span class="t"></span><span class="k"></span><span class="x"><span class="cursor"></span></span></div>' : ''}</div>`;
+}
+
+/* ================= peek: the focus, one fidelity deeper ================= */
+function peekHTML() {
+  const f = S.focus;
+  if (f && f.startsWith('R:')) {
+    const r = RUNNERS.find(x => 'R:' + x.name === f); const held = C.filter(c => c.runner === r.name && c.status !== 'done');
+    return `<div class="pk"><div class="lab"><span>runner · peek</span><span>↵ zoom in</span></div><h2>${r.name}</h2>
+      <dl><dt>host</dt><dd>${HOST.name} · ${HOST.id}</dd><dt>harness</dt><dd>${r.harness}</dd><dt>spends</dt><dd>${r.sub}</dd><dt>binds</dt><dd>${r.ws.map(w => w.name).join(', ')}, winter</dd><dt>agents</dt><dd>${r.agents} · ${held.length} held</dd><dt>version</dt><dd>${HOST.ver}</dd><dt>gates</dt><dd>none</dd></dl>
+      <div class="win" style="grid-template-columns:auto 1fr;margin-bottom:6px">${winHTML(r.sub)}</div><div class="why lv">${esc(SUBS[r.sub].note || 'Working, within pace: ' + paceText(r.sub) + '.')}</div>
+      <div class="acts"><button class="pri">Pause runner <kbd>P</kbd></button><button>Drain <kbd>D</kbd></button></div>
+      <div class="lab" style="margin-top:14px"><span>held chunks</span><span>${held.length}</span></div>${held.map(c => `<div class="rl" data-f="${c.id}"><span class="mono">${c.id}</span><span>${c.node}</span><span style="color:${c.status === 'needs_human' ? 'var(--hum)' : 'var(--live)'}">${c.status === 'needs_human' ? 'needs you' : 'live'}</span><span class="mono">${money(c.cost, c.est)}</span></div>`).join('')}</div>`;
+  }
+  const c = byId[f]; if (!c) return `<div class="pk"><div class="lab"><span>peek</span></div><p class="hint">Nothing focused. <kbd>j</kbd> / <kbd>k</kbd> to walk, <kbd>/</kbd> to query.</p></div>`;
+  const st = history(c).slice(-7);
+  const acts = c.status === 'needs_human' ? (c.kind === 'ask' ? [['Answer', 'a', 'hum'], ['Take over', 't', ''], ['Requeue', 'r', ''], ['Open PR', 'o', '']] : [['Take over', 't', 'hum'], ['Requeue', 'r', ''], ['Open PR', 'o', ''], ['History', '↵', '']])
+    : c.status === 'running' ? [['Take over', 't', 'pri'], ['Transcript', '5', ''], ['Pause', 'z', ''], ['Open PR', 'o', '']]
+    : c.status === 'ready' ? [['Promote', 'u', 'pri'], ['Pin to runner', 'b', '']] : c.status === 'backlog' ? [['Promote', 'u', 'pri']] : [['Open PR', 'o', 'pri'], ['History', '↵', '']];
+  const col = c.status === 'needs_human' ? 'var(--hum)' : c.status === 'running' ? 'var(--live)' : 'var(--ink)';
+  return `<div class="pk"><div class="lab"><span>${c.refs.map(r => esc(r[0])).join(' · ')}</span><span>peek · ↵ zoom in</span></div>
+    <span class="i" style="color:${col}">C-${c.id}</span><h2>${esc(c.refs[0][1])}</h2>
+    ${c.reason ? `<div class="why">${esc(c.reason)}</div>` : c.blocked ? `<div class="why lv" style="border-left-color:var(--ink3)">Held by ${c.blockers.map(b => 'C-' + b + ' (' + (byId[b] ? byId[b].status.replace('_', ' ') : '?') + ')').join(', ')}.</div>` : ''}
+    ${c.node && NODES.includes(c.node) ? nodeTrack(c) + `<div class="ntl">${NODES.map(n => `<span class="${n === c.node ? 'c' : ''}">${n}</span>`).join('')}</div>` : ''}
+    <div class="acts">${acts.map(([l, k, cl]) => `<button class="${cl}" data-act="${k}">${l}<kbd>${k}</kbd></button>`).join('')}</div>
+    <dl><dt>spent</dt><dd data-cost="${c.id}">${c.cost ? money(c.cost, c.est) : '—'}</dd><dt>on</dt><dd>${c.runner ? HOST.name + '/' + c.runner : '—'}</dd><dt>attempts</dt><dd>${c.attempts || '—'}${c.bounces ? ' · ' + c.bounces + ' bounces' : ''}</dd><dt>holds</dt><dd>${c.holds ? c.holds + ' chunks' : '—'}</dd><dt>PR</dt><dd>${c.pr ? esc(c.pr) : '—'}</dd></dl>
+    ${st.length ? `<div class="lab"><span>last steps</span><span>${history(c).length} total</span></div>${subway(c, 372)}<div class="sl">${st.map(p => `<div><span class="mono">${p.n}</span><span>${p.node}</span><span class="v-${p.v}">${p.v}${p.next ? ' → ' + p.next : ''}</span><span class="mono r">${p.tok ? (p.tok / 1000).toFixed(1) + 'M' : ''}</span><span class="mono r">${p.cost ? '$' + p.cost.toFixed(2) : ''}</span></div>`).join('')}</div>` : ''}
+    <p class="hint"><kbd>j</kbd><kbd>k</kbd> walk · <kbd>↵</kbd> zoom in · <kbd>-</kbd> zoom out · <kbd>p</kbd> board ⇄ fleet · <kbd>x</kbd> select · <kbd>/</kbd> query · <kbd>?</kbd> all keys</p></div>`;
+}
+
+/* ================= frame ================= */
+function crumb() {
+  const c = byId[S.focus]; const r = S.focus?.startsWith('R:') ? S.focus.slice(2) : c?.runner;
+  const parts = [['fleet', 1], [HOST.name, 2], [r || 'any runner', 2], [c ? 'C-' + c.id : 'chunk', 4], [S.step ? 'step ' + S.step : 'step', 5], [S.line != null ? 'line ' + (S.line + 1) : 'line', 5]];
+  return parts.map(([p, z]) => `<span class="${S.zoom >= z ? 'lit' : ''}">${esc(p)}</span>`).join('<em>›</em>');
+}
+function frame() {
+  const app = $('#app');
+  if (M) {
+    app.innerHTML = `<header class="mtop"><span class="mk">blizzard</span><span class="fs" id="mh"></span><span class="sp" id="msp"></span></header>
+      <div class="main"><main class="cv" id="cv"></main></div>
+      <div class="bar"><div class="ql" id="ql"><span class="pr">›</span><div class="qwrap"><div class="hl" id="hl"></div><input id="q" autocomplete="off" spellcheck="false"></div><div class="sugg" id="sugg"></div></div>
+      <div class="zl"><span class="dots" id="zd"></span><span class="pj" id="pj"></span></div></div>
+      <div class="confirm" id="cf"></div><div class="toast" id="toast"></div><div class="msheet" id="sheet"></div>`;
+  } else {
+    app.innerHTML = `<header class="top"><div class="mark">blizzard<small>paul-gross</small></div>
+      <div class="ql" id="ql"><span class="pr">›</span><div class="qwrap"><div class="hl" id="hl"></div><input id="q" autocomplete="off" spellcheck="false"></div><span class="qmeta" id="qm"></span><div class="sugg" id="sugg"></div></div>
+      <div class="inst"><div class="spend" id="spend"></div><div class="win">${winHTML('Anthropic')}${winHTML('OpenAI')}</div><div class="hub"><b></b>hub ok<br><span class="mono" id="clk"></span></div></div></header>
+      <nav class="zs"><div class="crumb" id="crumb"></div><div class="ladder" id="lad"></div><div class="proj" id="pj"></div></nav>
+      <div class="main" id="main"><main class="cv" id="cv"></main><aside class="peek" id="peek"></aside></div>
+      <footer class="tick" id="tick"></footer><div class="confirm" id="cf"></div><div class="toast" id="toast"></div>
+      <div class="help" id="help"><div class="bx">${helpHTML()}</div></div>`;
+  }
+}
+function helpHTML() {
+  const g = (t, rows) => `<div class="g"><h4>${t}</h4>${rows.map(([k, d]) => `<p><span>${d}</span><kbd>${k}</kbd></p>`).join('')}</div>`;
+  return g('zoom', [['↵ or =', 'zoom into focus'], ['- or esc', 'zoom out'], ['1 … 5', 'field · glyph · row · panel · line'], ['ctrl + wheel', 'zoom (pinch on touch)']]) +
+    g('move', [['j / k', 'next / previous'], ['J / K', 'next / previous section'], ['g n · g l · g y · g d', 'needs you · live · ready · landed'], ['p', 'board ⇄ fleet projection']]) +
+    g('act on focus or selection', [['x', 'select'], ['t', 'take over'], ['a', 'answer an ask'], ['r', 'requeue'], ['u', 'promote'], ['o', 'open PR'], ['P', 'pause runner']]) +
+    g('query line', [['/', 'focus the query line'], ['needs:human cost>5', 'filter (non-matches drop to pixels)'], ['| sort cost · | group epic', 'reshape'], ['| take 5 · | only', 'limit · hide the rest'], ['| takeover', 'act on every match'], ['| save @name', 'save as a view'], ['@triage @burn @chains', 'saved views'], ['\\', 'day ⇄ night']]);
+}
+function hl(q) {
+  if (!q) return `<span class="ph">${M ? 'filter, or a command — @triage' : 'needs:human cost>5 | sort age    ·  @ views  ·  | pipe  ·  ? keys'}</span>`;
+  return lex(q).map(t => t.t === 'ws' ? t.s : `<span class="t-${t.t}">${esc(t.s)}</span>`).join('');
+}
+function suggest() {
+  const q = S.q; const tail = q.split(/\s/).pop();
+  let rows = [];
+  if (!q || tail.startsWith('@')) rows = Object.entries(VIEWS).filter(([k]) => k.startsWith(tail || '@')).map(([k, [v, d]]) => ({a:k, b:v, c:d, ins:k}));
+  else if (/\|\s*\w*$/.test(q)) rows = [['sort', 'cost · age · holds · bounces'], ['group', 'status · place · epic · runner · node'], ['take', 'N'], ['only', 'hide non-matches'], ['save', '@name'], ...Object.keys(VERBS).map(v => [v, 'act on every match'])].filter(([a]) => a.startsWith(tail.replace('|', ''))).map(([a, b]) => ({a, b, c:'', ins:a}));
+  else rows = [['needs:human', 'waiting on you'], ['is:live', 'running now'], ['is:blocked', 'held'], ['is:claimable', 'free to pick up'], ['cost>', 'spent over $N'], ['bounces>', 'looped N times'], ['runner:', 'r-claude · r-chatgpt'], ['node:', NODES.join(' · ')], ['epic:', 'FORGES · STRICT · PW-HUBTIER …'], ['age>', '30m · 2h · 1d']].filter(([a]) => a.startsWith(tail)).map(([a, b]) => ({a, b, c:'', ins:a}));
+  S.sg = rows; S.sgi = Math.min(S.sgi || 0, rows.length - 1);
+  const R = Q(); const n = C.filter(c => matches(c, R)).length;
+  $('#sugg').innerHTML = (rows.length ? `<div class="sghd">${!q || tail.startsWith('@') ? 'saved views' : /\|/.test(q) ? 'pipes and verbs' : 'filters'} · tab completes</div>` + rows.map((r, i) => `<div class="sg${i === S.sgi ? ' cur' : ''}" data-ins="${esc(r.ins)}"><span class="a">${esc(r.a)}</span><span class="b">${esc(r.b)}</span><span class="c">${esc(r.c)}</span></div>`).join('') : '') +
+    `<div class="sghd">${q ? `${n} of ${C.length} match · the rest stay in place as pixels` : 'type to query · a query never navigates, it re-weights the space'}</div>`;
+  $('#sugg').classList.add('show');
+}
+
+/* ================= render ================= */
+let lastZoom = S.zoom;
+function focusables() { return [...document.querySelectorAll('#cv [data-f]')].filter(e => !e.classList.contains('dim')).map(e => e.dataset.f).filter((v, i, a) => a.indexOf(v) === i); }
+function render(anim = true) {
+  const R = Q();
+  const grp = R.group || S.group;
+  const first = new Map(); if (anim) document.querySelectorAll('#cv [data-k]').forEach(e => first.set(e.dataset.k, e.getBoundingClientRect()));
+  const cv = $('#cv');
+  const deep = S.zoom >= 4 && (byId[S.focus] || S.focus?.startsWith('R:'));
+  if (!deep && S.zoom >= 4) S.zoom = 3;
+  const lvl = S.zoom;
+  let html = '';
+  if (deep && byId[S.focus]) html = S.zoom === 5 ? lineHTML(byId[S.focus]) : panelHTML(byId[S.focus]);
+  else if (deep) { S.zoom = 3; }
+  if (!html) html = `<div class="${lvl === 1 ? 'field ' + grp : ''}">${grp === 'place' ? viewPlace(lvl, R) : grp === 'status' ? viewStatus(lvl, R) : viewBy(grp, lvl, R)}</div>`;
+  cv.innerHTML = html;
+  if (!M) {
+    const main = $('#main'); main.classList.toggle('deep', !!deep && !!byId[S.focus]);
+    const side = deep && byId[S.focus] ? 'rail' : 'peek';
+    const pk = $('#peek'); pk.className = side;
+    pk.innerHTML = side === 'rail' ? `<div class="sub" style="margin-top:0"><b>${grp === 'place' ? 'fleet' : 'board'}</b> at glyph fidelity · j/k still walks it</div><div>${grp === 'place' ? viewPlace(2, R) : viewStatus(2, R, true)}</div>` : peekHTML();
+    if (side === 'rail') { main.insertBefore(pk, cv); } else { main.appendChild(pk); }
+    $('#crumb').innerHTML = crumb();
+    $('#lad').innerHTML = LEVELS.map((l, i) => `<button class="${S.zoom === i + 1 ? 'cur' : ''}" data-z="${i + 1}"><kbd>${i + 1}</kbd>${l}</button>`).join('');
+    $('#pj').innerHTML = `<button class="${grp === 'status' ? 'cur' : ''}" data-p="status">board</button><button class="${grp === 'place' ? 'cur' : ''}" data-p="place">fleet</button><kbd>p</kbd>`;
+    const n = C.filter(c => matches(c, R)).length;
+    $('#qm').innerHTML = queryActive(R) ? `<b>${n}</b> / ${C.length}` : `${C.length} loaded · <b>${HIST_DONE}</b> landed`;
+  } else {
+    $('#zd').innerHTML = LEVELS.map((l, i) => `<i class="${i < S.zoom ? 'on' : ''}"></i>`).join('') + `<span style="margin-left:6px"><b>${LEVELS[S.zoom - 1]}</b> · pinch</span>`;
+    $('#pj').innerHTML = `<button class="${grp === 'status' ? 'cur' : ''}" data-p="status">board</button><button class="${grp === 'place' ? 'cur' : ''}" data-p="place">fleet</button>`;
+  }
+  $('#hl').innerHTML = hl(S.q);
+  // confirm strip for verbs
+  const cf = $('#cf');
+  if (R.verb) { const t = C.filter(c => matches(c, R)).slice(0, R.take || 99); S.pend = {verb: R.verb, ids: t.map(c => c.id)}; cf.innerHTML = `<span>${VERBS[R.verb]} <b>${t.length}</b> chunk${t.length === 1 ? '' : 's'}: <b>${t.map(c => 'C-' + c.id).join(' ')}</b></span><span style="margin-left:auto"><kbd>↵</kbd> run · <kbd>esc</kbd> cancel</span>`; cf.classList.add('show'); }
+  else { cf.classList.remove('show'); S.pend = null; }
+  if (anim && first.size) flip(first);
+  if (lastZoom !== S.zoom) { cv.classList.remove('zooming', 'zoomout'); void cv.offsetWidth; cv.classList.add(S.zoom > lastZoom ? 'zooming' : 'zoomout'); lastZoom = S.zoom; }
+  ticker(); readouts();
+}
+function flip(first) {
+  document.querySelectorAll('#cv [data-k]').forEach(e => {
+    const a = first.get(e.dataset.k); if (!a) return; const b = e.getBoundingClientRect();
+    const dx = a.left - b.left, dy = a.top - b.top; if (Math.abs(dx) < 1 && Math.abs(dy) < 1) return;
+    if (Math.abs(dy) > 1400) return;
+    e.animate([{transform: `translate(${dx}px,${dy}px)`}, {transform: 'none'}], {duration: 320, easing: 'cubic-bezier(.2,.7,.2,1)'});
+  });
+}
+function scrollFocus() { const e = document.querySelector(`#cv [data-f="${CSS.escape(S.focus || '')}"]:not(.dim)`) || document.querySelector(`#cv .tl.f`); if (e) e.scrollIntoView({block: 'nearest'}); }
+
+/* ================= live ================= */
+const EV = [
+  ['13:08:38', 'ZG7T', 'review → running → pre-push', 'r-claude'], ['13:08:38', 'WSCR', 'build → running → review', 'r-claude'],
+  ['13:08:34', '27A6', 'pre-push → delivering → deliver', 'r-chatgpt'], ['13:08:34', 'PTP2', 'pre-push → delivering → deliver ×17', 'r-chatgpt'],
+  ['13:08:30', '27A6', 'pre-push → delivering → deliver', 'r-chatgpt'], ['12:48', '6J9H', 'needs a human · bounce cap', 'r-claude', 1],
+  ['12:05', 'VA7X', 'closed hub:602 hub:613 hub:599 hub:610', '—'], ['11:41', 'AFTK', 'closed blizzard#1447', '—'],
+];
+function ticker() {
+  if (M) return; const t = $('#tick'); if (!t) return;
+  t.innerHTML = `<span class="lb">live · repeats folded</span>` + EV.slice(0, 9).map(e => `<span class="ev${e[4] ? ' h' : ''}"><span class="x">${e[0]}</span> <b>C-${e[1]}</b> ${esc(e[2])} <span class="x">${e[3]}</span></span>`).join('');
+}
+function readouts() {
+  const hum = C.filter(c => c.status === 'needs_human').length, live = C.filter(c => c.status === 'running').length;
+  if (M) {
+    $('#mh').innerHTML = `<b></b>${HOST.name} · ${live + hum}/14 slots · hub ok`;
+    $('#msp').innerHTML = `$${spendToday.toFixed(2)}<small>today · $161.25 yd</small>`; return;
+  }
+  $('#spend').innerHTML = `$${spendToday.toFixed(2)}<small>today · $161.25 yesterday</small>`;
+  const d = new Date(S.clock); $('#clk').textContent = d.toTimeString().slice(0, 8);
+}
+function tick() {
+  S.clock += 1000;
+  const live = C.filter(c => c.status === 'running');
+  live.forEach(c => { const d = rnd() * .012; c.cost += d; spendToday += d; c.ago += 1 / 60; });
+  document.querySelectorAll('[data-cost]').forEach(e => { const c = byId[e.dataset.cost]; if (c && c.status === 'running') e.textContent = money(c.cost, c.est); });
+  document.querySelectorAll('[data-age]').forEach(e => { const c = byId[e.dataset.age]; if (c && c.status === 'running') e.textContent = ago(c.ago); });
+  HOST.seen = (HOST.seen + 1) % 40; RUNNERS.forEach(r => r.seen = (r.seen + 1) % 40);
+  document.querySelectorAll('[data-seen]').forEach(e => { const k = e.dataset.seen; e.textContent = (k === 'host' ? HOST.seen : RUNNERS.find(r => r.name === k).seen) + 's'; });
+  readouts();
+  if ((S.clock / 1000) % 5 === 0) {
+    const c = live[Math.floor(rnd() * live.length)];
+    const hhmm = new Date(S.clock).toTimeString().slice(0, 8);
+    EV.unshift([hhmm, c.id, `${c.node} · ${Math.round(40 + rnd() * 300)}k tok · ${money(c.cost, c.est)}`, c.runner]); EV.length = Math.min(EV.length, 20); ticker();
+  }
+  // a transcript line streams in when watching a live chunk at line fidelity
+  const fc = byId[S.focus];
+  if (S.zoom === 5 && fc && fc.status === 'running' && (S.clock / 1000) % 3 === 0 && fc._tx && fc._tx.length < fc._src.length) {
+    const l = fc._src[fc._tx.length]; fc._tx.push({t: fc._tx[fc._tx.length - 1].t + 3, k: l[0], x: l[1]});
+    const sc = $('#cv').scrollTop; render(false); $('#cv').scrollTop = sc; const ls = document.querySelectorAll('.tl[data-line]'); ls[ls.length - 1]?.classList.add('new');
+  }
+}
+
+/* ================= input ================= */
+function toast(msg, cmd) { const t = $('#toast'); t.innerHTML = esc(msg) + (cmd ? `<span class="mono">${esc(cmd)}</span>` : ''); t.style.display = 'block'; clearTimeout(t._h); t._h = setTimeout(() => t.style.display = 'none', 2600); }
+function zoomTo(z, keepFocus = true) {
+  z = Math.max(1, Math.min(5, z));
+  // zooming into a runner is a query: the space narrows to it, and zooming out widens it again
+  if (z > S.zoom && S.zoom === 3 && S.focus?.startsWith('R:')) {
+    const name = S.focus.slice(2); S.q = `runner:${name}`; $('#q').value = S.q; S.focus = C.find(c => c.runner === name && c.status !== 'done')?.id || S.focus; render(); scrollFocus(); return;
+  }
+  if (z < S.zoom && S.zoom === 3 && /^runner:\S+$/.test(S.q.trim())) { const name = S.q.trim().slice(7); S.q = ''; $('#q').value = ''; S.focus = 'R:' + name; render(); scrollFocus(); return; }
+  if (z >= 4 && !byId[S.focus]) { const f = focusables().find(id => byId[id]); if (!f) return; S.focus = f; }
+  if (z < 5) S.line = null; if (z < 4) S.step = null;
+  S.zoom = z; render(); requestAnimationFrame(scrollFocus);
+}
+function move(d) {
+  if (S.zoom === 5) { const n = txLines(byId[S.focus]).length; S.line = S.line == null ? 0 : Math.max(0, Math.min(n - 1, S.line + d)); render(false); scrollFocus(); return; }
+  if (S.zoom === 4) { const st = history(byId[S.focus]); const i = st.findIndex(s => s.n === S.step); S.step = st[Math.max(0, Math.min(st.length - 1, (i < 0 ? st.length : i) + d))].n; render(false); return; }
+  const f = focusables(); let i = f.indexOf(S.focus); i = i < 0 ? 0 : Math.max(0, Math.min(f.length - 1, i + d));
+  S.focus = f[i]; render(false); scrollFocus();
+}
+function jumpSection(d) {
+  const secs = [...document.querySelectorAll('#cv section')]; const cur = document.querySelector(`#cv [data-f="${CSS.escape(S.focus || '')}"]`)?.closest('section');
+  let i = secs.indexOf(cur) + d; i = Math.max(0, Math.min(secs.length - 1, i));
+  const e = secs[i]?.querySelector('[data-f]:not(.dim)'); if (e) { S.focus = e.dataset.f; render(false); scrollFocus(); }
+}
+function goto(sec) {
+  const pick = {n: c => c.status === 'needs_human', l: c => c.status === 'running', y: c => c.status === 'ready', d: c => c.status === 'done'}[sec];
+  if (!pick) return; const id = focusables().find(id => byId[id] && pick(byId[id])); if (id) { S.focus = id; if (S.zoom > 3) S.zoom = 3; render(false); scrollFocus(); }
+}
+function act(k) {
+  const ids = S.sel.size ? [...S.sel] : S.focus ? [S.focus] : []; if (!ids.length) return;
+  const c = byId[ids[0]];
+  if (k === 't') toast(`Taking over ${ids.map(i => 'C-' + i).join(', ')} — the parked session opens in your terminal`, `blizzard runner takeover ${ids.map(i => 'ch_…' + i).join(' ')}`);
+  else if (k === 'a') toast(`Answering C-${ids[0]} — reply goes to the agent on ${c?.runner}`, 'blizzard chunk answer C-' + ids[0]);
+  else if (k === 'r') toast(`Requeued ${ids.length} chunk${ids.length > 1 ? 's' : ''}`, `blizzard chunk requeue ${ids.map(i => 'C-' + i).join(' ')}`);
+  else if (k === 'o') toast(`Opening ${c?.pr || 'no PR on this chunk'}`);
+  else if (k === 'u') toast(`Promoted ${ids.map(i => 'C-' + i).join(' ')}`);
+  else if (k === 'P') toast(`Paused ${S.focus?.startsWith('R:') ? S.focus.slice(2) : c?.runner || 'runner'} — held chunks finish their step, no new claims`);
+}
+function bind() {
+  const q = $('#q');
+  q.value = S.q;
+  q.addEventListener('focus', () => { $('#ql').classList.add('on'); suggest(); });
+  q.addEventListener('blur', () => setTimeout(() => $('#ql').classList.remove('on'), 120));
+  q.addEventListener('input', () => { S.q = q.value; S.sgi = 0; render(); suggest(); });
+  q.addEventListener('keydown', e => {
+    if (e.key === 'Escape') { if (S.q) { S.q = ''; q.value = ''; render(); suggest(); } else q.blur(); e.preventDefault(); }
+    else if (e.key === 'Tab' && S.sg?.length) { e.preventDefault(); const r = S.sg[S.sgi]; const parts = S.q.split(/(\s+)/); parts[parts.length - 1] = (parts[parts.length - 1].startsWith('|') ? '| ' : '') + r.ins; S.q = parts.join(''); if (!/[:<>]$/.test(S.q)) S.q += ' '; q.value = S.q; render(); suggest(); }
+    else if (e.key === 'ArrowDown' || e.key === 'ArrowUp') { e.preventDefault(); S.sgi = Math.max(0, Math.min((S.sg?.length || 1) - 1, (S.sgi || 0) + (e.key === 'ArrowDown' ? 1 : -1))); suggest(); }
+    else if (e.key === 'Enter') {
+      e.preventDefault(); const R = Q();
+      if (S.pend) { toast(`${VERBS[S.pend.verb]} ${S.pend.ids.map(i => 'C-' + i).join(' ')} — sent`, `blizzard chunk ${S.pend.verb} ${S.pend.ids.map(i => 'C-' + i).join(' ')}`); S.q = S.q.replace(/\|\s*\w+\s*$/, '').trim(); q.value = S.q; render(); return; }
+      if (R.save) { VIEWS[R.save.startsWith('@') ? R.save : '@' + R.save] = [S.q.replace(/\|\s*save.*$/, '').trim(), 'saved just now']; toast(`Saved view ${R.save} — it now completes after @`); S.q = S.q.replace(/\|\s*save.*$/, '').trim(); q.value = S.q; render(); return; }
+      if (!S.q && S.sg?.length) { S.q = S.sg[S.sgi].ins; q.value = S.q; render(); suggest(); return; }
+      const f = focusables().find(id => byId[id] && matches(byId[id], R)); if (f) S.focus = f; q.blur(); render(false); scrollFocus();
+    }
+  });
+  $('#sugg').addEventListener('mousedown', e => { const r = e.target.closest('.sg'); if (!r) return; e.preventDefault(); const parts = S.q.split(/(\s+)/); parts[parts.length - 1] = r.dataset.ins; S.q = parts.join('') + ' '; q.value = S.q; render(); suggest(); });
+  let gPend = false;
+  document.addEventListener('keydown', e => {
+    if (e.target === q) return;
+    if ($('#help')?.classList.contains('show')) { $('#help').classList.remove('show'); e.preventDefault(); return; }
+    const k = e.key;
+    if (gPend) { gPend = false; goto(k); return; }
+    if (k === '/' || k === ':') { e.preventDefault(); q.focus(); }
+    else if (k === 'j' || k === 'ArrowDown') { e.preventDefault(); move(1); }
+    else if (k === 'k' || k === 'ArrowUp') { e.preventDefault(); move(-1); }
+    else if (k === 'l' || k === 'ArrowRight') { e.preventDefault(); move(1); }
+    else if (k === 'h' || k === 'ArrowLeft') { e.preventDefault(); move(-1); }
+    else if (k === 'J') jumpSection(1); else if (k === 'K') jumpSection(-1);
+    else if (k === 'Enter' || k === '=' || k === '+') { e.preventDefault(); if (S.pend) { toast(`${VERBS[S.pend.verb]} — sent`); S.q = S.q.replace(/\|\s*\w+\s*$/, '').trim(); render(); return; } zoomTo(S.zoom + 1); }
+    else if (k === '-' || k === 'Escape' || k === 'Backspace') { e.preventDefault(); if (S.pend) { S.q = S.q.replace(/\|\s*\w+\s*$/, '').trim(); $('#q').value = S.q; render(); return; } zoomTo(S.zoom - 1); }
+    else if (/^[1-5]$/.test(k)) zoomTo(+k);
+    else if (k === 'p') { S.group = S.group === 'status' ? 'place' : 'status'; S.q = S.q.replace(/\|\s*group\s+\w+/, '').trim(); $('#q').value = S.q; if (S.zoom > 3) S.zoom = 3; render(); scrollFocus(); }
+    else if (k === 'g') gPend = true;
+    else if (k === 'x' && byId[S.focus]) { S.sel.has(S.focus) ? S.sel.delete(S.focus) : S.sel.add(S.focus); render(false); }
+    else if ('tarouP'.includes(k) && k.length === 1) act(k);
+    else if (k === '?') $('#help')?.classList.add('show');
+    else if (k === '\\') document.body.classList.toggle('night');
+  });
+  document.addEventListener('click', e => {
+    const z = e.target.closest('[data-z]'); if (z) return zoomTo(+z.dataset.z);
+    const p = e.target.closest('[data-p]'); if (p) { S.group = p.dataset.p; if (S.zoom > 3) S.zoom = 3; render(); return; }
+    const a = e.target.closest('[data-act]'); if (a) return act(a.dataset.act === '↵' ? null : a.dataset.act) || (a.dataset.act === '↵' && zoomTo(4)) || (a.dataset.act === '5' && zoomTo(5));
+    const st = e.target.closest('[data-step]'); if (st) { S.step = +st.dataset.step; if (S.zoom === 4 && e.detail > 1) zoomTo(5); else render(false); return; }
+    const ln = e.target.closest('[data-line]'); if (ln) { S.line = +ln.dataset.line; render(false); return; }
+    const f = e.target.closest('[data-f]'); if (f) { const was = S.focus === f.dataset.f; S.focus = f.dataset.f; if (was || e.detail > 1) zoomTo(Math.max(4, S.zoom + 1)); else render(false); }
+  });
+  // pointer zoom: ctrl+wheel on desktop (trackpad pinch arrives as this too)
+  let wacc = 0;
+  document.addEventListener('wheel', e => { if (!e.ctrlKey) return; e.preventDefault(); wacc += e.deltaY; if (Math.abs(wacc) > 60) { const f = e.target.closest?.('[data-f]'); if (f && wacc < 0) S.focus = f.dataset.f; zoomTo(S.zoom + (wacc < 0 ? 1 : -1)); wacc = 0; } }, {passive: false});
+  // touch: pinch steps fidelity, horizontal swipe flips projection, long-press opens actions
+  let t0 = null, pd = null, lp = null;
+  document.addEventListener('touchstart', e => {
+    if (e.touches.length === 2) { pd = Math.hypot(e.touches[0].clientX - e.touches[1].clientX, e.touches[0].clientY - e.touches[1].clientY); t0 = null; clearTimeout(lp); return; }
+    const t = e.touches[0]; t0 = {x: t.clientX, y: t.clientY, at: Date.now(), f: e.target.closest('[data-f]')?.dataset.f};
+    clearTimeout(lp); lp = setTimeout(() => { if (t0?.f) { S.focus = t0.f; sheet(); t0 = null; } }, 520);
+  }, {passive: true});
+  document.addEventListener('touchmove', e => { if (pd && e.touches.length === 2) { const d = Math.hypot(e.touches[0].clientX - e.touches[1].clientX, e.touches[0].clientY - e.touches[1].clientY); if (d / pd > 1.35) { zoomTo(S.zoom + 1); pd = d; } else if (d / pd < .7) { zoomTo(S.zoom - 1); pd = d; } } else clearTimeout(lp); }, {passive: true});
+  document.addEventListener('touchend', e => {
+    clearTimeout(lp); if (pd) { pd = null; return; } if (!t0) return;
+    const t = e.changedTouches[0]; const dx = t.clientX - t0.x, dy = t.clientY - t0.y;
+    if (Math.abs(dx) > 70 && Math.abs(dy) < 45) { if (S.zoom >= 4 && dx > 0) zoomTo(S.zoom - 1); else { S.group = S.group === 'status' ? 'place' : 'status'; render(); } }
+    t0 = null;
+  });
+}
+function sheet() {
+  const s = $('#sheet'); if (!s) return; const c = byId[S.focus]; if (!c) return;
+  s.innerHTML = `<div class="sub" style="margin-top:0"><b>C-${c.id}</b> ${esc(c.refs[0][1])}</div><div class="vsub">${[['t', 'Take over'], ['a', 'Answer'], ['r', 'Requeue'], ['o', 'Open PR'], ['=', 'Zoom in']].map(([k, l]) => `<div data-sheet="${k}"><span class="mono">${k}</span><span>${l}</span><span></span></div>`).join('')}</div>`;
+  s.classList.add('show'); s.onclick = e => { const r = e.target.closest('[data-sheet]'); s.classList.remove('show'); if (!r) return; r.dataset.sheet === '=' ? zoomTo(4) : act(r.dataset.sheet); };
+}
+
+frame();
+if (!S.focus) S.focus = (C.find(c => c.status === 'needs_human' && c.kind === 'takeover') || C[0]).id;
+if (CFG.group === 'place' && !hp.get('f')) S.focus = 'R:r-claude';
+if (M && !hp.get('f')) S.focus = null;
+if (hp.get('step')) S.step = +hp.get('step');
+if (hp.get('line')) S.line = +hp.get('line');
+if (hp.get('sel')) hp.get('sel').split(',').forEach(i => S.sel.add(i));
+render(false);
+bind();
+if (hp.get('open') === 'q') { $('#q').focus(); }
+setInterval(tick, 1000);
+if (hp.get('selftest')) {
+  const log = []; const key = k => document.dispatchEvent(new KeyboardEvent('keydown', {key: k, bubbles: true}));
+  const snap = l => log.push(l + ': zoom=' + S.zoom + ' group=' + (Q().group || S.group) + ' focus=' + S.focus + ' step=' + S.step + ' line=' + S.line + ' rows=' + document.querySelectorAll('#cv [data-f]').length);
+  snap('start'); key('j'); key('j'); snap('jj'); key('Enter'); snap('enter'); key('j'); snap('j in panel'); key('Enter'); snap('enter'); key('j'); key('j'); snap('jj in line');
+  key('-'); key('-'); snap('out x2'); key('p'); snap('p'); key('1'); snap('1'); key('3'); key('g'); key('n'); snap('g n');
+  const q = document.querySelector('#q'); q.value = 'needs:human | sort holds'; q.dispatchEvent(new Event('input')); snap('query'); log.push('match=' + C.filter(c => matches(c, Q())).map(c => c.id).join(','));
+  q.value = 'cost>3 | group runner'; q.dispatchEvent(new Event('input')); snap('group runner'); log.push('match=' + C.filter(c => matches(c, Q())).map(c => c.id).join(','));
+  q.value = '@triage | takeover'; q.dispatchEvent(new Event('input')); log.push('confirm=' + document.querySelector('#cf').textContent);
+  q.value = 'is:claimable epic:pw'; q.dispatchEvent(new Event('input')); log.push('claim=' + C.filter(c => matches(c, Q())).map(c => c.id).join(','));
+  q.value = 'bounces>2 | sort bounces'; q.dispatchEvent(new Event('input')); log.push('bounce=' + C.filter(c => matches(c, Q())).map(c => c.id + ':' + c.bounces).join(','));
+  const o = document.createElement('pre'); o.id = 'selftest'; o.textContent = log.join('\n'); document.body.appendChild(o);
+}
+})();
+</script>
+</body></html>

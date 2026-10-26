@@ -1,0 +1,1269 @@
+BLIZZARD
+PAUL-GROSS
+CHUNKS
+990
+BACKLOG
+1
+READY
+54
+WAITING
+0
+NEEDS HUMAN
+1
+RUNNING
+8
+DONE
+926
+TODAY
+~$107.00
+YESTERDAY
+~$161.25
+HUB
+ok
+BOARD
+FLEET
+GRAPHS
+EVENTS
+GARDENING
+ADMIN
+PROJECT LENS
+All
+blizzard
+winter
+EVENTS · OPERATIONAL LOG
+200
+All
+Info
+Warning
+Critical
+All
+▾
+All
+▾
+12:48
+C-6J9H
+CRITICAL
+needs-human
+—
+chunk ch_01M5HRXPZKYVSXQGHYVGN16J9H needs a human
+12:05
+C-VA7X
+INFO
+work-item-closed
+—
+closed hub:610
+12:05
+C-VA7X
+INFO
+work-item-closed
+—
+closed hub:599
+12:05
+C-VA7X
+INFO
+work-item-closed
+—
+closed hub:613
+12:05
+C-VA7X
+INFO
+work-item-closed
+—
+closed hub:602
+11:41
+C-AFTK
+INFO
+work-item-closed
+—
+closed blizzard#1447
+10:08
+C-BB9E
+INFO
+work-item-closed
+—
+closed blizzard#1445
+09:28
+C-TX56
+INFO
+work-item-closed
+—
+closed blizzard#1175
+08:54
+C-F5V9
+INFO
+work-item-closed
+—
+closed blizzard#1462
+08:43
+C-RWE7
+INFO
+work-item-closed
+—
+closed blizzard#1190
+08:38
+C-R1D5
+INFO
+work-item-closed
+—
+closed hub:623
+08:38
+C-R1D5
+INFO
+work-item-closed
+—
+closed hub:622
+08:38
+C-R1D5
+INFO
+work-item-closed
+—
+closed hub:624
+06:50
+C-2R1E
+INFO
+work-item-closed
+—
+closed blizzard#1443
+06:29
+C-QRP5
+INFO
+work-item-closed
+—
+closed blizzard#1174
+06:22
+C-ZWE9
+INFO
+work-item-closed
+—
+closed blizzard#1364
+06:18
+C-R1D5
+WARNING
+attempt-failed
+xps/r-chatgpt
+attempt failed, retrying — reaped (via reap)
+L-4NS9
+06:18
+C-R1D5
+WARNING
+command-failed
+xps/r-chatgpt
+command failed: await worker identity
+L-4NS9
+04:50
+C-1BF8
+INFO
+work-item-closed
+—
+closed blizzard#1189
+04:45
+C-PZD6
+INFO
+work-item-closed
+—
+closed hub:603
+01:27
+C-PZD6
+WARNING
+attempt-failed
+xps/r-chatgpt
+attempt failed, retrying — reaped (via reap)
+L-2YR1
+01:27
+C-PZD6
+WARNING
+command-failed
+xps/r-chatgpt
+command failed: await worker identity
+L-2YR1
+Yesterday 23:44
+C-RNZD
+INFO
+work-item-closed
+—
+closed blizzard#1181
+Yesterday 22:09
+C-E7DE
+INFO
+work-item-closed
+—
+closed blizzard#1173
+Yesterday 21:42
+C-TNFF
+INFO
+work-item-closed
+—
+closed hub:611
+Yesterday 21:42
+C-TNFF
+INFO
+work-item-closed
+—
+closed hub:608
+Yesterday 21:42
+C-TNFF
+INFO
+work-item-closed
+—
+closed hub:605
+Yesterday 21:42
+C-TNFF
+INFO
+work-item-closed
+—
+closed hub:604
+Yesterday 21:42
+C-TNFF
+INFO
+work-item-closed
+—
+closed hub:609
+Yesterday 15:17
+C-CRTC
+INFO
+work-item-closed
+—
+closed blizzard#1361
+Yesterday 14:50
+C-66JE
+INFO
+work-item-closed
+—
+closed hub:618
+Yesterday 14:50
+C-66JE
+INFO
+work-item-closed
+—
+closed hub:619
+Yesterday 14:48
+C-8Z96
+INFO
+work-item-closed
+—
+closed hub:617
+Yesterday 14:48
+C-8Z96
+INFO
+work-item-closed
+—
+closed hub:615
+Yesterday 11:48
+C-H48F
+INFO
+work-item-closed
+—
+closed hub:614
+Yesterday 11:48
+C-H48F
+INFO
+work-item-closed
+—
+closed hub:600
+Yesterday 11:48
+C-H48F
+INFO
+work-item-closed
+—
+closed hub:601
+Yesterday 11:45
+C-8YFS
+INFO
+work-item-closed
+—
+closed blizzard#1180
+Yesterday 11:41
+C-R4EH
+INFO
+work-item-closed
+—
+closed hub:607
+Yesterday 11:41
+C-R4EH
+INFO
+work-item-closed
+—
+closed hub:612
+Yesterday 11:38
+C-JJPG
+INFO
+work-item-closed
+—
+closed blizzard#1160
+Yesterday 11:03
+C-5EVY
+INFO
+work-item-closed
+—
+closed hub:625
+Yesterday 11:03
+C-5EVY
+INFO
+work-item-closed
+—
+closed hub:621
+Yesterday 10:57
+C-8Z96
+WARNING
+command-failed
+xps/r-claude
+command failed: git ls-remote git@github.com:paul-gross/blizzard.git feat/chunk-action-state-copy (--repo 'blizzard', --env 'r-claude-5')
+L-QXP5
+Yesterday 10:56
+C-8Z96
+WARNING
+command-failed
+xps/r-claude
+command failed: git ls-remote git@github.com:paul-gross/blizzard.git feat/chunk-action-state-copy (--repo 'blizzard', --env 'r-claude-5')
+L-QXP5
+Yesterday 10:55
+C-8Z96
+WARNING
+command-failed
+xps/r-claude
+command failed: git ls-remote git@github.com:paul-gross/blizzard.git feat/chunk-action-state-copy (--repo 'blizzard', --env 'r-claude-5')
+L-QXP5
+Yesterday 09:20
+C-BCN9
+INFO
+work-item-closed
+—
+closed blizzard#1360
+Yesterday 08:21
+C-VA7X
+WARNING
+attempt-failed
+xps/r-chatgpt
+attempt failed, retrying — failed (via advance)
+L-A013
+Yesterday 07:39
+C-49G4
+INFO
+work-item-closed
+—
+closed hub:606
+Yesterday 07:24
+C-VA7X
+WARNING
+attempt-failed
+xps/r-chatgpt
+attempt failed, retrying — reaped (via reap)
+L-HFQT
+Yesterday 07:24
+C-VA7X
+WARNING
+command-failed
+xps/r-chatgpt
+command failed: await worker identity
+L-HFQT
+Yesterday 07:03
+C-4RS8
+INFO
+work-item-closed
+—
+closed blizzard#1413
+Yesterday 05:14
+C-NET9
+INFO
+work-item-closed
+—
+closed blizzard#1412
+Yesterday 01:50
+C-T4FK
+INFO
+work-item-closed
+—
+closed blizzard#1359
+Yesterday 01:36
+C-Z1V5
+INFO
+work-item-closed
+—
+closed blizzard#1411
+Yesterday 00:07
+C-G769
+INFO
+work-item-closed
+—
+closed hub:586
+2026/10/23
+C-MNG0
+INFO
+work-item-closed
+—
+closed blizzard#1410
+2026/10/23
+C-Z1V5
+WARNING
+attempt-failed
+xps/r-chatgpt
+attempt failed, retrying — reaped (via reap)
+L-GWKT
+2026/10/23
+C-Z1V5
+WARNING
+command-failed
+xps/r-chatgpt
+command failed: await worker identity
+L-GWKT
+2026/10/23
+C-XTP8
+INFO
+work-item-closed
+—
+closed blizzard#1409
+2026/10/23
+C-FWK6
+INFO
+work-item-closed
+—
+closed blizzard#1358
+2026/10/23
+C-7P8C
+INFO
+work-item-closed
+—
+closed blizzard#1408
+2026/10/23
+C-TWJS
+INFO
+work-item-closed
+—
+closed hub:585
+2026/10/23
+C-1KHP
+INFO
+work-item-closed
+—
+closed blizzard#1407
+2026/10/23
+C-69GA
+INFO
+work-item-closed
+—
+closed blizzard#1406
+2026/10/23
+C-1KHP
+WARNING
+command-failed
+xps/r-claude
+command failed: git ls-remote git@github.com:paul-gross/blizzard.git feat/unhandled-request-error-log (--repo 'blizzard', --env 'r-claude-2')
+L-GBR7
+2026/10/23
+C-1KHP
+WARNING
+command-failed
+xps/r-claude
+command failed: git ls-remote git@github.com:paul-gross/blizzard.git feat/unhandled-request-error-log (--repo 'blizzard', --env 'r-claude-2')
+L-GBR7
+2026/10/23
+C-1KHP
+WARNING
+command-failed
+xps/r-claude
+command failed: git ls-remote git@github.com:paul-gross/blizzard.git feat/unhandled-request-error-log (--repo 'blizzard', --env 'r-claude-2')
+L-GBR7
+2026/10/23
+C-7MBS
+INFO
+work-item-closed
+—
+closed hub:576
+2026/10/23
+C-47VJ
+INFO
+work-item-closed
+—
+closed blizzard#1414
+2026/10/23
+C-CJ7K
+INFO
+work-item-closed
+—
+closed blizzard#1344
+2026/10/23
+C-156E
+INFO
+work-item-closed
+—
+closed hub:574
+2026/10/23
+C-QCPJ
+INFO
+work-item-closed
+—
+closed hub:573
+2026/10/23
+C-FT1H
+INFO
+work-item-closed
+—
+closed blizzard#1355
+2026/10/23
+C-6CYE
+WARNING
+attempt-failed
+xps/r-chatgpt
+attempt failed, retrying — reaped (via reap)
+L-Y70Q
+2026/10/23
+C-6CYE
+WARNING
+command-failed
+xps/r-chatgpt
+command failed: await worker identity
+L-Y70Q
+2026/10/23
+C-GK58
+INFO
+work-item-closed
+—
+closed hub:587
+2026/10/23
+C-9SR2
+INFO
+work-item-closed
+—
+closed hub:583
+2026/10/23
+C-RRYW
+INFO
+work-item-closed
+—
+closed blizzard#1343
+2026/10/23
+C-CWDY
+INFO
+work-item-closed
+—
+closed hub:588
+2026/10/23
+C-NDEP
+INFO
+work-item-closed
+—
+closed blizzard#1342
+2026/10/23
+C-FT1H
+WARNING
+attempt-failed
+xps/r-chatgpt
+attempt failed, retrying — reaped (via reap)
+L-B31D
+2026/10/23
+C-FT1H
+WARNING
+attempt-failed
+xps/r-chatgpt
+attempt failed, retrying — reaped (via reap)
+L-63J2
+2026/10/23
+C-ZRAM
+INFO
+work-item-closed
+—
+closed hub:584
+2026/10/22
+C-2AEH
+INFO
+work-item-closed
+—
+closed hub:580
+2026/10/22
+C-TMNN
+INFO
+work-item-closed
+—
+closed hub:581
+2026/10/22
+C-24AG
+INFO
+work-item-closed
+—
+closed blizzard#1339
+2026/10/22
+C-HBYA
+INFO
+work-item-closed
+—
+closed hub:582
+2026/10/22
+C-ZE8D
+INFO
+work-item-closed
+—
+closed blizzard#1341
+2026/10/22
+C-8FVJ
+INFO
+work-item-closed
+—
+closed hub:577
+2026/10/22
+C-8P1A
+INFO
+work-item-closed
+—
+closed hub:578
+2026/10/22
+C-P67R
+INFO
+work-item-closed
+—
+closed hub:575
+2026/10/22
+C-QSWM
+INFO
+work-item-closed
+—
+closed blizzard#1340
+2026/10/22
+C-88RS
+INFO
+work-item-closed
+—
+closed hub:572
+2026/10/22
+C-00DH
+INFO
+work-item-closed
+—
+closed hub:571
+2026/10/22
+C-CGNH
+INFO
+work-item-closed
+—
+closed hub:529
+2026/10/22
+C-0W6Y
+INFO
+work-item-closed
+—
+closed blizzard#1311
+2026/10/22
+C-ZE8D
+WARNING
+transcript-sidechain-dropped
+xps/r-claude
+transcript segment seg_01M5JJ5HJWK4K9FAKCPAB1W8NW newly observed 2 unlinked sidechain(s) (latched, not re-warned)
+2026/10/22
+C-PXJJ
+INFO
+work-item-closed
+—
+closed blizzard#1377
+2026/10/22
+C-FT1H
+CRITICAL
+worker-lost
+xps/r-chatgpt
+worker lost — retries exhausted (reaped, via reap)
+L-JN4D
+2026/10/22
+C-WXNH
+INFO
+work-item-closed
+—
+closed blizzard#1338
+2026/10/22
+C-FT1H
+WARNING
+attempt-failed
+xps/r-chatgpt
+attempt failed, retrying — reaped (via reap)
+L-2JXV
+2026/10/22
+C-PN7H
+INFO
+work-item-closed
+—
+closed winter#184
+2026/10/22
+C-3WJE
+INFO
+work-item-closed
+—
+closed hub:589
+2026/10/22
+C-FT1H
+WARNING
+attempt-failed
+xps/r-chatgpt
+attempt failed, retrying — reaped (via reap)
+L-R5BW
+2026/10/22
+C-0W6Y
+WARNING
+transcript-sidechain-dropped
+xps/r-claude
+transcript segment seg_01M5HT884P84M4ZWR7P5SAA95T newly observed 1 unlinked sidechain(s) (latched, not re-warned)
+2026/10/22
+C-PN7H
+WARNING
+command-failed
+xps/r-claude
+command failed: environment preparation step: checkout-base
+2026/10/22
+C-PN7H
+WARNING
+command-failed
+xps/r-claude
+command failed: environment preparation step: checkout-base
+2026/10/22
+C-PN7H
+WARNING
+command-failed
+xps/r-claude
+command failed: environment preparation step: checkout-base
+2026/10/22
+C-PN7H
+WARNING
+command-failed
+xps/r-claude
+command failed: environment preparation step: checkout-base
+2026/10/22
+C-PN7H
+WARNING
+command-failed
+xps/r-claude
+command failed: environment preparation step: checkout-base
+2026/10/22
+C-PN7H
+WARNING
+command-failed
+xps/r-claude
+command failed: environment preparation step: checkout-base
+2026/10/22
+C-PN7H
+WARNING
+command-failed
+xps/r-claude
+command failed: environment preparation step: checkout-base
+2026/10/22
+C-PN7H
+WARNING
+command-failed
+xps/r-claude
+command failed: environment preparation step: checkout-base
+2026/10/22
+C-PN7H
+WARNING
+command-failed
+xps/r-claude
+command failed: environment preparation step: checkout-base
+2026/10/22
+C-PN7H
+WARNING
+command-failed
+xps/r-claude
+command failed: environment preparation step: checkout-base
+2026/10/22
+C-3STT
+INFO
+work-item-closed
+—
+closed hub:570
+2026/10/22
+C-VYQ5
+INFO
+work-item-closed
+—
+closed hub:555
+2026/10/22
+C-3HQZ
+INFO
+work-item-closed
+—
+closed hub:558
+2026/10/21
+C-9V4X
+INFO
+work-item-closed
+—
+closed hub:569
+2026/10/21
+C-0ZNT
+INFO
+work-item-closed
+—
+closed hub:568
+2026/10/21
+C-1BZY
+INFO
+work-item-closed
+—
+closed hub:559
+2026/10/21
+C-RSGV
+INFO
+work-item-closed
+—
+closed hub:563
+2026/10/21
+C-RSGV
+INFO
+work-item-closed
+—
+closed hub:543
+2026/10/21
+C-RSGV
+INFO
+work-item-closed
+—
+closed hub:542
+2026/10/21
+C-R1BN
+INFO
+work-item-closed
+—
+closed hub:567
+2026/10/21
+C-53BF
+INFO
+work-item-closed
+—
+closed hub:560
+2026/10/21
+C-CJW1
+INFO
+work-item-closed
+—
+closed hub:566
+2026/10/21
+C-CJW1
+INFO
+work-item-closed
+—
+closed hub:565
+2026/10/21
+C-KD2V
+INFO
+work-item-closed
+—
+closed hub:540
+2026/10/21
+C-KD2V
+INFO
+work-item-closed
+—
+closed hub:539
+2026/10/21
+C-KD2V
+INFO
+work-item-closed
+—
+closed hub:544
+2026/10/21
+C-W8K1
+INFO
+work-item-closed
+—
+closed hub:561
+2026/10/21
+C-W8K1
+INFO
+work-item-closed
+—
+closed hub:562
+2026/10/20
+C-VQ1B
+INFO
+work-item-closed
+—
+closed hub:554
+2026/10/20
+C-VQ1B
+INFO
+work-item-closed
+—
+closed hub:538
+2026/10/20
+C-AT4V
+INFO
+work-item-closed
+—
+closed hub:535
+2026/10/20
+C-AT4V
+INFO
+work-item-closed
+—
+closed hub:534
+2026/10/20
+C-AT4V
+INFO
+work-item-closed
+—
+closed hub:546
+2026/10/20
+C-HMWT
+INFO
+work-item-closed
+—
+closed hub:553
+2026/10/20
+C-HMWT
+INFO
+work-item-closed
+—
+closed hub:541
+2026/10/20
+C-45D3
+INFO
+work-item-closed
+—
+closed hub:557
+2026/10/20
+C-45D3
+INFO
+work-item-closed
+—
+closed hub:537
+2026/10/20
+C-45D3
+INFO
+work-item-closed
+—
+closed hub:536
+2026/10/20
+C-45D3
+INFO
+work-item-closed
+—
+closed hub:556
+2026/10/20
+C-J8HW
+INFO
+work-item-closed
+—
+closed hub:549
+2026/10/20
+C-J8HW
+INFO
+work-item-closed
+—
+closed hub:550
+2026/10/20
+C-TTWV
+INFO
+work-item-closed
+—
+closed hub:564
+2026/10/20
+C-TTWV
+INFO
+work-item-closed
+—
+closed hub:551
+2026/10/20
+C-TTWV
+INFO
+work-item-closed
+—
+closed hub:552
+2026/10/20
+C-VPYH
+INFO
+work-item-closed
+—
+closed blizzard#1182
+2026/10/20
+C-VPYH
+WARNING
+command-failed
+xps/r-claude
+command failed: git ls-remote git@github.com:paul-gross/blizzard.git feat/store-fold (--repo 'blizzard', --env 'r-claude-1')
+L-56E9
+2026/10/20
+C-6651
+INFO
+work-item-closed
+—
+closed hub:547
+2026/10/20
+C-6651
+INFO
+work-item-closed
+—
+closed hub:533
+2026/10/20
+C-6651
+INFO
+work-item-closed
+—
+closed hub:545
+2026/10/20
+C-WA2S
+INFO
+work-item-closed
+—
+closed blizzard#1167
+2026/10/20
+C-KP9V
+INFO
+work-item-closed
+—
+closed hub:531
+2026/10/20
+C-KP9V
+INFO
+work-item-closed
+—
+closed hub:530
+2026/10/20
+C-DR54
+INFO
+work-item-closed
+—
+closed hub:548
+2026/10/20
+C-DR54
+INFO
+work-item-closed
+—
+closed hub:532
+2026/10/20
+C-RWBN
+INFO
+work-item-closed
+—
+closed blizzard#1197
+2026/10/20
+C-5QAJ
+INFO
+work-item-closed
+—
+closed blizzard#1166
+2026/10/20
+C-67ED
+INFO
+work-item-closed
+—
+closed blizzard#1159
+2026/10/20
+C-1KD3
+INFO
+work-item-closed
+—
+closed blizzard#1165
+2026/10/19
+C-HEM0
+INFO
+work-item-closed
+—
+closed blizzard#1179
+2026/10/19
+C-HEM0
+WARNING
+command-failed
+xps/r-claude
+command failed: git ls-remote git@github.com:paul-gross/blizzard-mock.git feat/release-line-mock-proof (--repo 'blizzard-mock', --env 'r-claude-1')
+L-285K
+2026/10/19
+C-MZK9
+INFO
+work-item-closed
+—
+closed blizzard#1195
+2026/10/19
+C-7B7H
+INFO
+work-item-closed
+—
+closed hub:528
+2026/10/19
+C-RHYH
+INFO
+work-item-closed
+—
+closed hub:527
+2026/10/19
+C-GVJ1
+INFO
+work-item-closed
+—
+closed hub:525
+2026/10/19
+C-BNHT
+INFO
+work-item-closed
+—
+closed hub:526
+2026/10/19
+C-E1HP
+INFO
+work-item-closed
+—
+closed blizzard#1275
+2026/10/19
+C-2MSF
+INFO
+work-item-closed
+—
+closed blizzard#1277
+2026/10/19
+C-3W8N
+INFO
+work-item-closed
+—
+closed blizzard#1276
+2026/10/19
+C-4F55
+INFO
+work-item-closed
+—
+closed blizzard#1273
+2026/10/19
+C-KZ87
+INFO
+work-item-closed
+—
+closed blizzard#1251
+2026/10/18
+C-8AP0
+INFO
+work-item-closed
+—
+closed blizzard#1250
+2026/10/18
+C-ANF8
+INFO
+work-item-closed
+—
+closed blizzard#1188
+2026/10/18
+C-713X
+INFO
+work-item-closed
+—
+closed blizzard#1171
+2026/10/18
+C-WS6G
+INFO
+work-item-closed
+—
+closed blizzard#1272
+2026/10/18
+C-8GT6
+INFO
+work-item-closed
+—
+closed blizzard#1271
+2026/10/18
+C-C0DK
+INFO
+work-item-closed
+—
+closed blizzard#1274
+2026/10/18
+C-C0DK
+WARNING
+command-failed
+xps/r-claude
+command failed: git ls-remote git@github.com:paul-gross/blizzard.git feat/fleet-wire-shape-builders (--repo 'blizzard', --env 'r-claude-4')
+L-JNKZ
+2026/10/18
+C-C0DK
+WARNING
+command-failed
+xps/r-claude
+command failed: git ls-remote git@github.com:paul-gross/blizzard.git feat/fleet-wire-shape-builders (--repo 'blizzard', --env 'r-claude-4')
+L-JNKZ
+2026/10/18
+C-D5YQ
+INFO
+work-item-closed
+—
+closed blizzard#1194
+2026/10/18
+C-C0DK
+WARNING
+command-failed
+xps/r-claude
+command failed: git ls-remote git@github.com:paul-gross/blizzard.git feat/fleet-wire-shape-builders (--repo 'blizzard', --env 'r-claude-4')
+L-JNKZ
+2026/10/18
+C-KHXN
+INFO
+work-item-closed
+—
+closed blizzard#1269
+2026/10/18
+C-HVGY
+INFO
+work-item-closed
+—
+closed blizzard#1193
+2026/10/18
+C-RSBN
+INFO
+work-item-closed
+—
+closed blizzard#1172
+2026/10/18
+C-VSCX
+INFO
+work-item-closed
+—
+closed blizzard#1186
+2026/10/18
+C-8AP0
+WARNING
+transcript-sidechain-dropped
+xps/r-claude
+transcript segment seg_01M584WWZ5J01VE21QBNK4RWCR newly observed 1 unlinked sidechain(s) (latched, not re-warned)
+2026/10/18
+C-8AP0
+WARNING
+transcript-sidechain-dropped
+xps/r-claude
+transcript segment seg_01M58449P2GJWRN34TFB6SSVS0 newly observed 1 unlinked sidechain(s) (latched, not re-warned)
+2026/10/18
+C-8AP0
+WARNING
+transcript-sidechain-dropped
+xps/r-claude
+transcript segment seg_01M58449P2GJWRN34TFB6SSVS0 newly observed 1 unlinked sidechain(s) (latched, not re-warned)
+2026/10/18
+C-2YGA
+INFO
+work-item-closed
+—
+closed blizzard#1187
+2026/10/18
+C-DBG1
+INFO
+work-item-closed
+—
+closed blizzard#1185
+2026/10/18
+C-BVW9
+INFO
+work-item-closed
+—
+closed blizzard#1178
+2026/10/18
+C-NSF5
+INFO
+work-item-closed
+—
+closed blizzard#1252
+2026/10/18
+C-T44G
+INFO
+work-item-closed
+—
+closed blizzard#1192
+2026/10/18
+C-NPRD
+INFO
+work-item-closed
+—
+closed blizzard#1196
+2026/10/18
+C-9V3F
+INFO
+work-item-closed
+—
+closed blizzard#1184

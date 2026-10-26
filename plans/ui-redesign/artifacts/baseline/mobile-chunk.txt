@@ -1,0 +1,120 @@
+blizzard
+paul-gross
+⋮
+‹
+Board
+ch_01M5HRXPZKYVSXQGHYVGN16J9H
+blizzard#1365
+·
+NEEDS_HUMAN
+·
+BLOCKING C-ZEVE
+·
+BLOCKING C-N1JR
+General
+Node history
+Artifacts
+Transcripts
+DELIVERY
+paul-gross/blizzard
+Open PR #1498
+WORK ITEM
+1
+STATUS
+needs_human
+NODE
+deliver
+RUNNER
+xps/r-claude
+ATTEMPTS
+25
+GRAPH
+G-YACK#adv-dwf-20261025
+DEPENDS ON
+C-ZWE9DONE
+BLOCKS
+C-ZEVEREADY
+C-N1JRREADY
+USAGE
+COST
+$8.20
+INPUT
+596
+OUTPUT
+121.8k
+CACHE READ
+19.4M
+CACHE CREATION
+729.0k
+ISSUES
+[FORGES] Report every record the forge migration would refuse
+▾
+blizzard#1365
+```yaml
+type: feature
+complexity: small
+epic: "#1363"
+related: []
+```
+
+## Context
+
+The forge record's migration refuses an installation whose records it cannot carry over without one of them silently changing: an address that is not one, an address it would have to clean, two repositories that would become one coordinate, and two web addresses for one server. On a hub that migrates as it starts, as the hosted hub does, that refusal is a failed deploy, and the old hub is the only one left to make the edit on. An installation runs a pinned build and may move across several landings at once, so a check that only the outgoing hub could run would be missing exactly when it is needed. This child lands the same judgement as a command that reads a hub's store directly, so an operator runs it from the build they are about to install, against the store their current hub still serves, and fixes what it names before the move.
+
+## Current Behavior
+
+- Nothing normalizes a forge address: `repositories.forge_api_url`, `work_sources.api_base`, and `work_sources.web_base` (`src/blizzard/hub/store/schema.py`) are stored as typed. A repository's `validate_fields` checks only an `http` or `https` scheme and a host (`src/blizzard/hub/domain/config/repositories.py::validate_fields`), and a work source's checks neither of its addresses (`src/blizzard/hub/domain/config/work_sources.py::validate_fields`), so a stored `api_base` may lack a scheme or be empty — which the factory reads as `https://api.github.com` (`src/blizzard/hub/work_sources/internal/factory.py::GithubEntry`).
+- `uq_repositories_tenant_coordinate` is `(tenant_id, forge_api_url, owner, repo)` over the raw string, so two spellings of one server's address hold two coordinates.
+- Nothing reports, ahead of a migration, what that migration would refuse. `blizzard hub migrate` and `blizzard hub config import-legacy` already reach a hub's store directly by its runtime directory (`src/blizzard/hub/cli/config.py`, `--dir`).
+
+## Desired Behavior
+
+- **One form for an address.** `canonical_origin(url)` in `src/blizzard/hub/domain/config/forges.py` is the one form an address is compared in: surrounding whitespace trimmed and inner whitespace refused; the scheme `http` or `https`, lowercased, and a host required; the host lowercased, one trailing dot dropped, an internationalized host in ASCII through Python's `idna` codec (IDNA 2003), an IPv6 literal kept bracketed, and a percent-escaped host refused; a default port (80, 443) or an empty port dropped and any other kept; the path's case kept, its escapes normalized as RFC 3986 asks, and trailing slashes stripped; a user, password, query, or fragment refused rather than cleaned. `tests/fixtures/canonical_origin_cases.json` pins every case, and the migration's frozen copy is later tested against the same table.
+- **The check, against the store.** `blizzard hub config check-forges` reads a hub's store directly, as `blizzard hub migrate` does, and reports, changing nothing, every record the migration would refuse and why. It canonicalizes every origin a tenant's records name — each repository's `forge_api_url`; each GitHub work source's `api_base`, or `https://api.github.com` where that is null, empty, or whitespace; and each explicit `web_base` — retired records included, and names every record involved by slug in each of the four cases. It reads the address columns as it finds them in the tables, never through the store's schema module, so it answers alike on a store before the migration and after, and on one already carried over says there is nothing left to carry.
+- **At startup.** The hub's startup log carries a warning naming each such record.
+
+## Acceptance Criteria
+
+- [ ] `blizzard:unit-test`: `canonical_origin` answers every case in `tests/fixtures/canonical_origin_cases.json` — a default port, an empty port, a kept port, a trailing dot, an IDNA host, an IPv6 literal, an escaped path, two paths differing only in case, and each refusal
+- [ ] `blizzard:unit-test`: on a store holding an address with a user in it, a work-source address with no scheme, two spellings of one coordinate (retired or not), and two explicit `web_base`s for one origin, `check-forges` names every record involved by slug and why
+- [ ] `blizzard:unit-test`: on a store holding a feature environment's `http://127.0.0.1:<port>` origin and a work source with an empty `api_base`, `check-forges` names nothing
+- [ ] `blizzard:service-test`: a hub started on a store holding a refusable record logs a warning naming it, and `check-forges` run against that store while the hub serves it names the same record
+- [ ] `blizzard:cli-contract` passes against `contracts/cli/hub.json` with `check-forges`
+
+## Landing and deployment
+
+- **Deploy:** the standard hub move; nothing in it reaches the runner host.
+- **Before it lands:** *Port land and the commit check onto one forge seam* on `master`.
+- **Extra redeploy steps:** none for this move. It is the tool the record's move needs: from the build carrying the record, `blizzard hub config check-forges` is run against the current hub's store, and every record it names is settled on the current hub before the move.
+- **Compatibility:** a new CLI command and a startup warning; no store revision, no route, and no runner wire change.
+- **Going back:** move the hub back to the previous build; nothing in the store changed.
+- **Fleet after:** unchanged; the hub's startup log names any record the forge migration would refuse.
+
+## Out of Scope
+
+- The forge record, its migration, and the migration's refusal as a backstop
+- Storing any address canonical; this child reads and reports, and writes nothing
+- `derived_web_origin` and every other part of `hub/domain/config/forges.py` beyond `canonical_origin`
+
+## References
+
+- Landing order (step 2): `blizzard-product:/plans/advanced-delivery/forges/spec/index.md`
+- The rule: `blizzard-product:/plans/advanced-delivery/forges/spec/record.md` §The table
+- The four refusals: `blizzard-product:/plans/advanced-delivery/forges/spec/carry-over.md` §The migration
+- Coordinate constraint: `src/blizzard/hub/store/schema.py` (`uq_repositories_tenant_coordinate`)
+- A command that reaches the store directly: `src/blizzard/hub/cli/config.py` (`import-legacy`)
+
+MESSAGES · 0
+
+No messages.
+
+EVENTS →
+ASKS · DECISIONS
+NEEDS HUMAN · TAKEOVER
+
+The chunk reached its bounce cap (epoch 25). bounce cap (5) crossed after 6 bounces There is no composed command for this escalation. blizzard runner takeover may still reach the parked session directly; if it refuses, resolve it on the chunk (see its bounce history) and requeue.
+
+BOARD
+FLEET
+EVENTS
+GARDENING

@@ -1,0 +1,135 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=390, initial-scale=1">
+<title>tacit — purse &amp; brakes</title>
+<style>
+/* Two inks. Graphite is the fleet's hand; vermilion is the operator's. Nothing else is coloured. */
+:root{
+  --ground:#ebe9e2; --sheet:#f4f3ee; --rule:#cdc9be; --rule2:#dedad0;
+  --fleet:#1c1c1a; --fleet2:#5f5c55; --fleet3:#9a968c;
+  --you:#cf3a1c; --you-wash:#f6dfd6;
+  --sans:"Noto Sans",sans-serif; --serif:"Noto Serif",serif; --mono:"Noto Sans Mono",monospace;
+}
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
+html,body{width:390px;height:844px;overflow:hidden;background:var(--ground);color:var(--fleet);
+  font-family:var(--sans);font-stretch:87.5%;font-size:15px;line-height:1.38;-webkit-font-smoothing:antialiased}
+.id{font-family:var(--mono);font-size:14px;letter-spacing:-.02em}
+.ink{font-family:var(--serif);font-style:italic;color:var(--you)}
+.num{font-variant-numeric:tabular-nums}
+.top{padding:14px 18px 10px;border-bottom:1px solid var(--fleet)}
+.top .meta{display:flex;justify-content:space-between;font-size:12px;color:var(--fleet2)}
+.answer{font-size:27px;line-height:1.12;font-weight:600;margin-top:8px}
+.until{font-size:14px;color:var(--fleet2);margin-top:5px}
+.until b{color:var(--fleet);font-weight:600}
+section{padding:10px 18px 8px;border-bottom:1px solid var(--rule)}
+h3{font-size:13.5px;font-weight:600;display:flex;justify-content:space-between;align-items:baseline;margin-bottom:4px}
+h3 span{font-weight:400;font-size:12px;color:var(--fleet3)}
+.gauge{display:flex;gap:2px;height:14px;align-items:flex-end;position:relative;margin:4px 0}
+.gauge i{flex:1;height:12px;background:var(--fleet)}
+.gauge i.o{background:none;border:1px solid var(--fleet3)}
+.gauge b.el{position:absolute;top:-3px;width:2px;height:18px;background:var(--fleet)}
+.gauge b.cap{position:absolute;top:-4px;width:3px;height:20px;background:var(--you)}
+.purse .say{font-size:15px}
+.purse .say b{font-weight:600}
+.raise{display:flex;margin-top:8px;border:1px solid var(--you)}
+.raise span{flex:1;text-align:center;min-height:42px;display:flex;align-items:center;justify-content:center;font-family:var(--serif);font-style:italic;color:var(--you);font-size:16px;cursor:pointer;border-right:1px solid var(--you)}
+.raise span:last-child{border-right:0}
+.raise span:active{background:var(--you-wash)}
+.win{display:grid;grid-template-columns:92px 1fr 64px;align-items:center;gap:8px;font-size:13px;padding:2px 0}
+.win .r{text-align:right;color:var(--fleet2);font-size:12.5px}
+.win .r.over{color:var(--fleet);font-weight:600}
+.runner{display:grid;grid-template-columns:1fr 92px;gap:10px;padding:9px 0;border-top:1px solid var(--rule2);align-items:center}
+.runner:first-of-type{border-top:0}
+.runner .n{font-family:var(--mono);font-size:15px}
+.runner .s{font-size:13.5px;color:var(--fleet2);line-height:1.3}
+.runner .s b{color:var(--fleet);font-weight:600}
+.slots{display:flex;gap:3px;margin:5px 0 2px}
+.slots i{width:22px;height:4px;background:var(--fleet)}
+.slots i.need{background:var(--you)}
+.slots i.free{background:none;border-top:1px dashed var(--fleet3)}
+.runner.stayed .n,.runner.stayed .s{text-decoration:line-through;text-decoration-color:var(--you);text-decoration-thickness:2px}
+.stay{min-height:44px;border:1px solid var(--fleet);display:flex;align-items:center;justify-content:center;font-size:14px;cursor:pointer;text-align:center;line-height:1.1}
+.runner.stayed .stay{border-color:var(--you);color:var(--you);font-family:var(--serif);font-style:italic;background:var(--you-wash)}
+.order{display:grid;grid-template-columns:1fr 46px;gap:8px;padding:7px 0;border-top:1px solid var(--rule2);align-items:center;cursor:pointer}
+.order .w{font-family:var(--serif);font-style:italic;color:var(--you);font-size:14.5px;line-height:1.3}
+.order .fc{display:block;font-family:var(--sans);font-style:normal;font-size:12px;color:var(--fleet3)}
+.order .sw{width:40px;height:22px;border:1px solid var(--you);position:relative;justify-self:end}
+.order .sw::after{content:"";position:absolute;top:3px;right:3px;width:14px;height:14px;background:var(--you)}
+.order.off .w{color:var(--fleet3);text-decoration:line-through}
+.order.off .sw{border-color:var(--fleet3)}
+.order.off .sw::after{right:auto;left:3px;background:var(--fleet3)}
+.foot{position:absolute;left:0;right:0;bottom:0;border-top:1px solid var(--fleet);padding:10px 18px 12px;font-size:13px;color:var(--fleet2);display:flex;justify-content:space-between;background:var(--ground)}
+.foot a{color:var(--fleet);text-decoration:none;border-bottom:1px solid var(--fleet)}
+.toast{position:absolute;left:18px;right:18px;bottom:56px;background:var(--fleet);color:var(--ground);padding:9px 12px;font-size:13.5px;opacity:0;transition:opacity .2s}
+.toast.on{opacity:1}
+</style>
+</head>
+<body>
+<div class="top">
+  <div class="meta"><span>tacit · purse &amp; brakes</span><span><span class="num" id="clock">13:10</span> · xps seen <span class="num" id="seen">34</span>s ago</span></div>
+  <div class="answer" id="answer"></div>
+  <div class="until" id="until"></div>
+</div>
+<section class="purse">
+  <h3>Allowance <span>today · your §6</span></h3>
+  <div class="gauge" id="ag"></div>
+  <div class="say" id="asay"></div>
+  <div class="raise"><span data-d="-10">− $10</span><span data-d="25">+ $25</span><span data-d="50">+ $50</span></div>
+</section>
+<section>
+  <h3>Windows <span>caret = time gone · stroke = your ceiling</span></h3>
+  <div id="wins"></div>
+</section>
+<section>
+  <h3>Hands <span>a stayed runner finishes, takes nothing new</span></h3>
+  <div id="runners"></div>
+</section>
+<section style="border-bottom:0">
+  <h3>Standing orders <span>tap to lift</span></h3>
+  <div id="orders"></div>
+</section>
+<div class="toast" id="toast"></div>
+<div class="foot"><a href="board-mobile.html">do you need me?</a><span>hub ok · 10 of 14 hands busy</span></div>
+<script>
+let now = 13*3600+10*60, seen = 34;
+const hm = s => [Math.floor(s/3600)%24,Math.floor(s%3600/60)].map(v=>String(v).padStart(2,'0')).join(':');
+const S = { allowance:150, spent:114.44, rate:7.9 };
+const wins = [["Anthropic 5h",12,55,null,"12%"],["Anthropic 7d",9,10,10,"9%"],["OpenAI 7d",8,7,7,"8% · over"]];
+const runners = [
+  {n:"r-claude", stayed:false, slots:["","","need","","","need"], s:`<b>6 of 6</b> busy · claude code · Anthropic · 2 hands wait on you`},
+  {n:"r-chatgpt", stayed:false, slots:["","","",""], s:`<b>4 of 4</b> busy · opencode · OpenAI · slowed by §2 until <b>14:41</b>`},
+];
+const orders = [
+  {w:"Keep each subscription at or under its 7-day pace.", on:true, f:14},
+  {w:"Never bind winter to r-chatgpt.", on:true, f:0},
+  {w:"Ask me before any chunk spends past $25.", on:true, f:1},
+];
+function gauge(spent, el, cap, n){
+  let h=''; const f=Math.round(spent/100*n); for(let i=0;i<n;i++) h+=`<i class="${i<f?'':'o'}"></i>`;
+  h+=`<b class="el" style="left:${el}%"></b>`; if(cap!=null) h+=`<b class="cap" style="left:${cap}%"></b>`; return h;
+}
+function render(){
+  const dry = now + Math.round((S.allowance-S.spent)/S.rate*3600), past = dry >= 24*3600;
+  const stayed = runners.filter(r=>r.stayed).length;
+  document.getElementById('answer').innerHTML = stayed===2 ? `Both stayed. <span class="ink" style="font-weight:400">Nothing new starts.</span>` : `The purse runs dry ${past?'after midnight':'at '+hm(dry)}.`;
+  document.getElementById('until').innerHTML = stayed===2 ? `The 10 chunks in hand finish; then the fleet sleeps.` : (past?`Every hand stays busy all night.`:`Then §6 stops new claims until midnight${S.allowance===150?'; the night carries ~14 chunks instead of ~23':''}.`);
+  document.getElementById('ag').innerHTML = gauge(Math.min(100,S.spent/S.allowance*100), 55, null, 30);
+  document.getElementById('asay').innerHTML = `<b class="num">$${S.spent.toFixed(2)}</b> of <span class="ink">$${S.allowance}</span> · <b class="num">$${(S.allowance-S.spent).toFixed(2)}</b> left · ~$${S.rate}/h`;
+  document.getElementById('wins').innerHTML = wins.map(w=>`<div class="win"><span>${w[0]}</span><div class="gauge">${gauge(w[1],w[2],w[3],24)}</div><span class="r ${w[4].includes('over')?'over':''}">${w[4]}</span></div>`).join('');
+  document.getElementById('runners').innerHTML = runners.map((r,i)=>`<div class="runner ${r.stayed?'stayed':''}"><div><div class="n">${r.n}</div>
+    <div class="slots">${r.slots.map(x=>`<i class="${x}"></i>`).join('')}</div><div class="s">${r.stayed?'stayed — finishes what it holds, takes nothing new':r.s}</div></div>
+    <div class="stay" data-r="${i}">${r.stayed?'release':'stay it'}</div></div>`).join('');
+  document.getElementById('orders').innerHTML = orders.map((o,i)=>`<div class="order ${o.on?'':'off'}" data-o="${i}"><span class="w">${o.w}<small class="fc">fired ${o.f} today</small></span><span class="sw"></span></div>`).join('');
+  document.querySelectorAll('.stay').forEach(e=>e.onclick=()=>{ const r=runners[+e.dataset.r]; r.stayed=!r.stayed; toast(r.stayed?`${r.n} stayed`:`${r.n} takes work again`); render(); });
+  document.querySelectorAll('.order').forEach(e=>e.onclick=()=>{ const o=orders[+e.dataset.o]; o.on=!o.on; toast(o.on?'order stands':'order lifted'); render(); });
+}
+document.querySelectorAll('.raise span').forEach(e=>e.onclick=()=>{ S.allowance=Math.max(120,S.allowance+ +e.dataset.d); toast(`allowance now $${S.allowance}`); render(); });
+function toast(s){ const t=document.getElementById('toast'); t.textContent=s; t.classList.add('on'); clearTimeout(toast.h); toast.h=setTimeout(()=>t.classList.remove('on'),2200); }
+setInterval(()=>{ now++; seen=(seen+1)%45; document.getElementById('clock').textContent=hm(now); document.getElementById('seen').textContent=seen; if(now%9===0){S.spent+=0.02; render();} },1000);
+render();
+if(location.hash==='#demo=stay'){ runners[1].stayed=true; S.allowance=175; render(); }
+</script>
+</body>
+</html>
