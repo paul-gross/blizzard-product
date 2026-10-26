@@ -18,11 +18,12 @@ question, whether the fleet needs them, and lets them act on the answer.
 
 ## Proposals
 
-Six proposals explore the space before any requirement is decided. Three take the modern frontier, two deliberately work
-outside current convention, and one is a classic SaaS control to measure the others against. Each answers the shared
+Eight proposals explore the space before any requirement is decided. Three take the modern frontier, two deliberately
+work outside current convention, and three are classic SaaS: a control to measure the others against, and two variations
+on it drawn from other families of SaaS product. Each answers the shared
 [brief](./artifacts/brief.md) with a concept, working desktop and mobile mocks of the board and fleet, and rendered
 screenshots. The [baseline](./artifacts/baseline/) is the first design as captured from the live hub, and the
-[comparison](./artifacts/comparison.md) sets the six side by side.
+[comparison](./artifacts/comparison.md) sets the eight side by side.
 
 | Proposal                                     | Direction   | In one line                                                             |
 | -------------------------------------------- | ----------- | ----------------------------------------------------------------------- |
@@ -32,3 +33,5 @@ screenshots. The [baseline](./artifacts/baseline/) is the first design as captur
 | [Synop](./artifacts/synop/README.md)         | Avant-garde | The fleet as a weather chart; blockers are fronts, throttles fog        |
 | [Tacit](./artifacts/tacit/README.md)         | Avant-garde | The fleet proceeds on tacit consent; the operator holds the veto        |
 | [Console](./artifacts/console/README.md)     | Classic     | Classic SaaS: collapsible left nav, grouped table, drawer, compact mode |
+| [Desk](./artifacts/desk/README.md)           | Classic     | A shared support inbox: what needs the operator is triaged to zero      |
+| [Dispatch](./artifacts/dispatch/README.md)   | Classic     | A dispatch console: exceptions pinned, slots over time, honest spend    |
