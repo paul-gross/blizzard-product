@@ -72,4 +72,4 @@ with the `policies` epic, sized against the polling landing itself does. GitHub 
 forge and the seam's vocabulary first has to hold for both — one chunk can already land across servers, since each of
 its repositories lands against its own. A capability that varies from one repository to another, such as a merge queue
 found on one repository and not its neighbour, arrives with the `trains` epic, and until then a forge's capabilities are
-its kind's. Authenticating as an application rather than with a token waits for an operator who needs it.
+its kind's. Application authentication and the credential lifecycle belong to `epic:advanced-forge-auth`.
