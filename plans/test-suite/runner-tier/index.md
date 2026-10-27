@@ -1,7 +1,7 @@
 ---
 epic: test-suite/runner-tier
 refinement: pristine
-status: horizon
+status: in-progress
 ---
 
 # Plan — `epic:test-suite/runner-tier`
@@ -101,6 +101,10 @@ one-worker medians were similar: 6.57–6.70 seconds from `init` to healthy and 
   reads from the store, such as pending outbound facts, usage samples, and a local pause, the epic decides between an
   API or CLI read and letting tests query the schema `contracts/store/runner.json` already pins with plain SQL. The ORM
   is never the contract.
+- **Producing subscription samples.** An operator may name the usage API base for each subscription, with today's
+  provider defaults unchanged. The harness points it at a local vendor counterpart and steps real sampling, rather than
+  inserting samples into a live host store. Priced mock workers produce the spend the budget and release cases exercise
+  ([the read specification](./spec/reads.md#producing-samples-and-spend)).
 
 ## Sharing and stepping
 

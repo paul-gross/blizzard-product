@@ -40,7 +40,9 @@ The `runnerHost` fixture is a host built for the test alone, from the runner pro
    ([the foundation](../../foundation/spec/hubs.md#profiles)), every key checked against `contracts/config/host.json`'s
    keys first. A profile here may expand `${workspace}`, `${origins}`, and `${mockBin}`, which name the minted world's
    paths and the mock fleet's binaries, so it can point the harnesses at `mock-claude-code`, `mock-opencode`, and
-   `mock-codex` and the workspace at the minted one. Additional runners the profile names join with
+   `mock-codex` and the workspace at the minted one. A profile asking for controlled subscription sampling may also
+   expand `${usageBase}`, the fixture-owned vendor counterpart's loopback URL
+   ([reads.md](./reads.md#producing-samples-and-spend)). Additional runners the profile names join with
    `blizzard-runner add`.
 4. It starts `blizzard-runner host --dir <dir> --loop stepped`, unless the test asks for a timed host, with the
    foundation's daemon environment, `BLIZZARD_MOCK_HARNESS_FENCE=1`, and that variable in `worker.env_passthrough`, so a
@@ -50,6 +52,11 @@ The runtime directory is a short, unique scratch path, not the descriptive path 
 Before initialization, the fixture checks the final `host.sock` path's encoded length against the platform's Unix-socket
 limit, 107 bytes on Linux. The socket remains inside the test's own directory; logs and metrics are attached to its
 ordinary Playwright output separately.
+
+`runnerEnv` supplies per-host environment overrides for mock controls, cache inputs, and telemetry, with isolated config
+and cache homes by default. As with `hubEnv`, a caller cannot override any variable the daemon environment contract
+pins. Credential fixtures are synthetic, unused real harnesses are disabled, and a profile that asks for samples points
+only at its own vendor counterpart.
 
 A test that needs a layout no verb produces, such as a halted runner, a foreign runner in the store, or a token file
 missing, writes the documented files directly after step 3, by the contract, never through a class of the runner's. A

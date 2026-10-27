@@ -27,6 +27,24 @@ recovery. In the unreachable-hub case, the fact is `completion.submitted`. A pos
 earlier fact can be queued before a worker has completed at all. The harness client exposes these existing feed fields;
 no new API read is needed for this case.
 
+## Producing samples and spend
+
+The subscription-floor, utilization, budget, and release cases must produce the state they read through the same path as
+an operator's host. A local vendor counterpart serves configurable utilization and reset windows, keyed by the fixture's
+own credential. `subscription[].usage_api_base` is an optional host-file key, carried through the subscription
+declaration and sampler factory to the Anthropic or OpenAI sampler. Each binding keeps its current provider base when
+the key is absent, appends its existing usage path, and validates an explicit HTTP(S) base. This supports an operator's
+gateway as well as a test's counterpart; it is not a test-only sample-writing route. The generated config contract and
+operator documentation cover the key, and diagnostics never expose the credential headers.
+
+The host fixture owns that counterpart and the fake credentials. Its sampling profile uses
+`sample_interval_seconds = 0`, so each explicit host step samples immediately without changing the production default. A
+completed host step performs real sampling, and `GET /api/host/subscriptions` proves which sample the host recorded.
+Tests change the counterpart's response and step the host again; they never insert `external_usage_samples`. A priced
+mock worker produces spend through actual invocations rather than inserts into `usage_facts`. Short configured trailing
+windows and state-driven waits prove budget expiry; worker checkpoints replace fixed-duration worker sleeps when a test
+must hold an invocation open while a sample changes.
+
 ## What the API gains
 
 The table names only reads that exist today, save one: `GET /runners/{id}/api/escalations` gains each escalation's
