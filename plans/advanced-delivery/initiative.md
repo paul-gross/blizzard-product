@@ -12,6 +12,9 @@ epics:
 
 # Plan — `initiative:advanced-delivery`
 
+The `actions` epic is delivered. The remaining epics build on its hub-owned execution boundary: `forges`, `flows`,
+`policies`, `gitlab`, and `trains`.
+
 Landing finished work is where a whole fleet converges on one branch, and blizzard lands it with a single habit: open a
 pull request on GitHub, wait for its checks, merge it — one chunk at a time across a whole tenant, through a script the
 hub starts as a process of its own. That habit suits a fleet of a few agents working one project on GitHub. It strains

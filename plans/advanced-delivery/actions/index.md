@@ -1,7 +1,7 @@
 ---
 epic: advanced-delivery/actions
 refinement: pristine
-status: in-progress
+status: delivered
 ---
 
 # Plan — `epic:advanced-delivery/actions`

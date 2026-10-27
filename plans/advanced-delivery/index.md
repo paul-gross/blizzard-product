@@ -1,12 +1,13 @@
 # Advanced delivery
 
-Finished work that lands the way its project needs it to land: hub steps the hub takes itself, a forge named once and
-spoken through one seam, a flow per branch, a landing policy per repository, GitLab beside GitHub, and merge trains.
+Finished work that lands the way its project needs it to land: a forge named once and spoken through one seam, a flow
+per branch, a landing policy per repository, GitLab beside GitHub, and merge trains. The hub's own actions are delivered
+and provide the execution boundary the remaining epics build on.
 
 | Where                            | Read when                                                                                                  |
 | -------------------------------- | ---------------------------------------------------------------------------------------------------------- |
 | [initiative.md](./initiative.md) | Reasoning about the initiative as a whole — the shape of delivery it moves to, what it builds, and its cut |
-| [actions/](./actions/index.md)   | Turning hub steps into the hub's own actions and retiring `run:`                                           |
+| [actions/](./actions/index.md)   | Tracing the delivered hub-action execution boundary and retirement of `run:`                               |
 | [forges/](./forges/index.md)     | Declaring a forge per tenant and drawing the landing seam every forge sits behind                          |
 | [flows/](./flows/index.md)       | Scoping steps to a named resource and making landing on a branch a flow chunks submit to                   |
 | [policies/](./policies/index.md) | Giving each repository a landing policy and each project a landing order, on GitHub                        |

@@ -1,10 +1,14 @@
 ---
 epic: release-engineering/first-release
-refinement: refined
-status: in-progress
+refinement: pristine
+status: delivered
 ---
 
 # Plan — `epic:release-engineering/first-release`
+
+The release machinery is delivered; [#1155](https://github.com/paul-gross/blizzard/issues/1155) records the superseded
+dogfood cutover requirement. The dogfood instance uses exact pins to builds of `master`, moved by hand, rather than
+releases. The plan below preserves the original intent; its requirement that the instance run releases is withdrawn.
 
 The person who feels this first is the one who lands a change. The hosted hub swaps itself onto every commit `master`
 proves, within five minutes, and the runner host on the desk beside it is rebuilt from `master` after every landing. So

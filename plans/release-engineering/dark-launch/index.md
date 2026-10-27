@@ -1,10 +1,13 @@
 ---
 epic: release-engineering/dark-launch
-refinement: refined
-status: in-progress
+refinement: pristine
+status: delivered
 ---
 
 # Plan — `epic:release-engineering/dark-launch`
+
+The flag machinery and procedures are delivered. [#1183](https://github.com/paul-gross/blizzard/issues/1183) records the
+first real flag's lifecycle proof as deferred until a flag is declared, rather than a condition holding this epic open.
 
 Once a release leaves every week carrying whatever is finished, `master` has to be finished every week. It rarely is. An
 epic the size of multi-tenancy or the runner host lands over weeks in dozens of pieces, and on the morning of a cut some

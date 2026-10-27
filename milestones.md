@@ -83,7 +83,7 @@ own declared method, carried out deterministically, with an agent's judgement ca
 | `epic:multi-tenancy/runner`       | delivered   |
 | `epic:runner-host`                | delivered   |
 | `epic:projects/host`              | retired     |
-| `epic:advanced-delivery/actions`  | in-progress |
+| `epic:advanced-delivery/actions`  | delivered   |
 | `epic:advanced-delivery/forges`   | in-progress |
 | `epic:advanced-delivery/flows`    | in-progress |
 | `epic:advanced-delivery/policies` | in-progress |
@@ -167,11 +167,11 @@ the platform made on the operator's behalf, handed back to them as a decision.
 | Epic                                     | Status      |
 | ---------------------------------------- | ----------- |
 | `epic:runner-host`                       | delivered   |
-| `epic:release-engineering/first-release` | in-progress |
+| `epic:release-engineering/first-release` | delivered   |
 | `epic:release-engineering/compat-floor`  | delivered   |
-| `epic:release-engineering/notes`         | in-progress |
+| `epic:release-engineering/notes`         | delivered   |
 | `epic:release-engineering/release-lines` | in-progress |
-| `epic:release-engineering/dark-launch`   | in-progress |
+| `epic:release-engineering/dark-launch`   | delivered   |
 | `epic:release-engineering/supply-chain`  | in-progress |
 | `epic:storybook`                         | delivered   |
 | `epic:throttling`                        | delivered   |

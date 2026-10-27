@@ -1,15 +1,15 @@
 # Release engineering
 
-Landing, releasing, and deploying pulled apart: a first real release the dogfood instance runs, compatibility held
-against what releases shipped, notes written with the change, a weekly train with a way to patch, `master` kept
-releasable behind flags, and artifacts a stranger can trust.
+The weekly train and verifiable artifacts remain: the first release, compatibility against shipped releases, change
+notes, and dark-launch machinery are delivered. The dogfood instance uses pinned builds of `master`, moved by hand;
+operators' release upgrades remain separate from that policy.
 
 | Where                                      | Read when                                                                                                      |
 | ------------------------------------------ | -------------------------------------------------------------------------------------------------------------- |
 | [initiative.md](./initiative.md)           | Reasoning about the initiative as a whole — the stance, the rhythm, compatibility, and the cut into epics      |
-| [first-release/](./first-release/index.md) | Cutting the first real release and moving the dogfood instance from `master` onto pinned releases              |
+| [first-release/](./first-release/index.md) | Tracing the delivered release machinery and the superseded dogfood-on-releases requirement                     |
 | [compat-floor/](./compat-floor/index.md)   | Tracing `epic:release-engineering/compat-floor` — compatibility held against the supported releases, delivered |
-| [notes/](./notes/index.md)                 | Writing change and upgrade notes beside the code, and assembling a release's notes from them                   |
+| [notes/](./notes/index.md)                 | Tracing the delivered change-note and release-note assembly epic                                               |
 | [release-lines/](./release-lines/index.md) | Running the weekly train, patching a released line, cutting a major, and folding the store's history           |
-| [dark-launch/](./dark-launch/index.md)     | Landing unfinished work behind a flag, turning it on in a release, and retiring it                             |
+| [dark-launch/](./dark-launch/index.md)     | Tracing the delivered flag machinery and its deferred first-real-flag lifecycle proof                          |
 | [supply-chain/](./supply-chain/index.md)   | Signing and attesting every artifact, and publishing a runner installable at a named version                   |

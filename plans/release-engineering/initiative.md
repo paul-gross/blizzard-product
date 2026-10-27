@@ -12,6 +12,11 @@ epics:
 
 # Plan — `initiative:release-engineering`
 
+The remaining work is `release-lines` and `supply-chain`; `first-release`, `compat-floor`, `notes`, and `dark-launch`
+are delivered. The first-release plan records the superseded requirement to move the dogfood instance onto releases;
+that instance instead uses pinned builds of `master`, moved by hand. References below to dogfood release cutovers and
+candidate deployment describe the original intent, not a remaining gate for this initiative.
+
 Today every merge to `master` is a release in all but name. The hosted hub pulls whatever `master` most recently proved,
 the runners beside it are rebuilt from `master` after every landing, and the only version tag blizzard has ever cut is a
 release candidate from the summer. That served while changes were small. It stops serving when the work is the size of
