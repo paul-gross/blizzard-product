@@ -1,7 +1,7 @@
 ---
 epic: test-suite/hub-tier
 refinement: pristine
-status: in-progress
+status: delivered
 ---
 
 # Plan — `epic:test-suite/hub-tier`
@@ -100,6 +100,36 @@ are written without either:
   the event it emits, an act on something only that test made. The stream is ordered, so anything the act under test
   emitted arrives first. This holds only where fan-out is emitted before the request returns, so each event path is
   verified, and one that fails keeps a bounded window with a comment saying why.
+
+## What it measured
+
+Taken on 27 October 2026 against `master` at `c5f56834a`, once the whole tier had ported: the `service-*` projects and
+the harness's own specs, 196 tests a run, unsharded, which needs no repeats to fill the tier's length, at the CI worker
+count of two, pinned to four cores of an eight-core laptop, as
+[the foundation's](../foundation/index.md#what-they-measured) was taken.
+
+| Configuration       | Wall time | Default profile's shared hubs' CPU |
+| ------------------- | --------- | ---------------------------------- |
+| One hub, guards on  | 497 s     | 68 s                               |
+| Hub per worker, on  | 482 s     | 75 s                               |
+| One hub, guards off | 481 s     | 68 s                               |
+| Hub per worker, off | 470 s     | 70 s                               |
+
+- **Hubs per worker: `WORKERS_PER_HUB` stays `8`.** One hub is 3.1% behind a hub per worker, inside the ten percent that
+  would lower it. Its core is far from the wait: 68 CPU-seconds over an eight-minute run is about a seventh of one core,
+  so cheaper tenant creation is still not needed. The guards cost about three percent of wall time and nothing
+  measurable on the hub's CPU.
+- **Ten `fresh-hub` tests from the ports**, among 31 fresh hubs a run with the harness's own: the two gRPC-tracing cases
+  of `event-log`, the two of `platform-tracing`, `hub`'s SIGTERM case, and five in `auth-login`. Each takes about 20 s,
+  twice the foundation's estimate, and its hub 4 to 6 CPU-seconds; together they spend 204 worker-seconds, about a fifth
+  of a run's. The tier's Playwright shards stay under the gate's slowest job, so no placement is revisited.
+- **The tier's CI time fell.** The `service tier (blizzard:service-test)` check took a median 377 s over the 19 `master`
+  pushes between the foundation's landing and this epic's first change, and 296 s over the 10 after its last. The Python
+  shards still set it, their slowest a median 364 s before and 281 s after; the slowest Playwright shard grew from 60 s
+  to 191 s.
+- **One failure in four runs.** In the one-hub, guards-on run,
+  `test_sweeps_reports_last_swept_across_scopes_and_the_windowed_measurement_series` failed when the mock forge hung up
+  on `POST /_repos` while the test made its repository, before the hub was involved; the other three runs were green.
 
 ## Done
 

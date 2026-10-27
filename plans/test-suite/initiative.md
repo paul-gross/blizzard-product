@@ -10,6 +10,8 @@ epics:
 
 # Plan — `initiative:test-suite`
 
+The remaining work is `runner-tier` and `optimization`; `foundation` and `hub-tier` are delivered.
+
 Someday a daemon will be rewritten, in Python or in something else, and whoever does it will want a suite that tells
 them whether the new one still keeps the old one's promises. The service tier is where that suite should live, and today
 it cannot serve. A little over a third of its tests describe the hub from the outside, over HTTP. The rest run the
