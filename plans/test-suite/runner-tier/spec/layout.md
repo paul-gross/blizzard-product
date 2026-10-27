@@ -46,6 +46,11 @@ The `runnerHost` fixture is a host built for the test alone, from the runner pro
    foundation's daemon environment, `BLIZZARD_MOCK_HARNESS_FENCE=1`, and that variable in `worker.env_passthrough`, so a
    worker that escapes the fixture world exits rather than touching the developer's own.
 
+The runtime directory is a short, unique scratch path, not the descriptive path Playwright derives from a test's title.
+Before initialization, the fixture checks the final `host.sock` path's encoded length against the platform's Unix-socket
+limit, 107 bytes on Linux. The socket remains inside the test's own directory; logs and metrics are attached to its
+ordinary Playwright output separately.
+
 A test that needs a layout no verb produces, such as a halted runner, a foreign runner in the store, or a token file
 missing, writes the documented files directly after step 3, by the contract, never through a class of the runner's. A
 runner profile lives beside the test as `runner.toml`, or inline through `test.use({ runnerConfig })`, since the host is

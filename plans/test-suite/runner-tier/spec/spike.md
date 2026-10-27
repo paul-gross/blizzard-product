@@ -11,7 +11,11 @@ what a host costs and to find where the surfaces below fall short.
   the runner's `GET /runners/{id}/api/leases`.
 - **One lever-driven failure.** The unreachable-hub case: the mock hub's `unreachable` lever armed, a completion
   buffered, `GET /runners/{id}/api/runner`'s `hub.buffer_depth` read above zero, the lever cleared, and the buffer seen
-  to drain.
+  to drain. Identify the particular `completion.submitted` fact for the test's chunk through
+  `GET /runners/{id}/api/facts` before arming the outage: its `acked_at` is null, and the chunk is not done. After a
+  captured submission attempt during the outage, that same sequence must still be unacknowledged. After recovery, the
+  chunk must be done, that sequence acknowledged, and the buffer empty. Depth alone can be satisfied by an earlier fact
+  without ever holding a completion through the outage.
 
 Both run on a timed host with `BZ_RUNNER_TICK_SECONDS` small, since nothing steps yet, and lay out the host with
 `blizzard-runner init` against the mock hub. The spike lives on a branch and is never merged.
@@ -30,3 +34,8 @@ The spike records, in this epic's plan, on the CI runner's shape:
 If a host costs so much that porting the runner's roughly ninety tests at a host each would push the tier past the
 gate's slowest job, the plan's fallback, a minted fixture world reused per worker, is built with the harness rather than
 after it.
+
+The [plan's measurements](../index.md#what-it-measured) record the completed spike and the decisions it settles. Neither
+scenario needs an additional product read. The harness's short runtime-path requirement belongs to
+[layout.md](./layout.md#how-the-harness-builds-a-host), and the completion-specific read belongs to
+[reads.md](./reads.md#the-decision).

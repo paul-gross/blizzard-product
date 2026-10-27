@@ -21,6 +21,12 @@ test reads a running host's store.
 `/api/facts` is history, not a queue (`bzh:facts-not-status`), and a test reading a fact's `acked_at` reads that fact's
 history, which is what it asserts on; a test that needs the queue's depth reads the count.
 
+A test whose subject is delivery of one particular fact reads both: queue depth establishes the backlog, while the facts
+feed identifies the test's own `kind`, `chunk_id`, and `seq` and follows that sequence's `acked_at` through failure and
+recovery. In the unreachable-hub case, the fact is `completion.submitted`. A positive depth alone is insufficient: an
+earlier fact can be queued before a worker has completed at all. The harness client exposes these existing feed fields;
+no new API read is needed for this case.
+
 ## What the API gains
 
 The table names only reads that exist today, save one: `GET /runners/{id}/api/escalations` gains each escalation's

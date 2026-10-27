@@ -29,6 +29,60 @@ The foundation's spike never reached the runner. Before the rest is planned, one
 failure test run from Playwright against a real runner host, which sizes what a host costs to start and shows where the
 surfaces below fall short.
 
+### What it measured
+
+Taken on 27 October 2026 against blizzard at `c5f56834a` and blizzard-mock at `321b7dace`, on an Intel Core Ultra 7 258V
+workstation pinned to four CPUs with `taskset -c 0-3`. This matches the foundation's four-core measurement method, not a
+run on a hosted GitHub machine. Both daemons kept the suite's environment contract and statement guards. Each case owned
+a freshly minted basic-provider workspace, a mock hub, and a real `blizzard-runner host`, initialized through its CLI
+and driven by its timer at `BZ_RUNNER_TICK_SECONDS=0.5`. No test imported blizzard or accessed its store.
+
+Each case passed three times at one worker and three times at two workers: twelve passes, no retries. The two-worker run
+used the pinned Node `22.23.3` and completed its six tests in 42.0 seconds. These are its per-case medians:
+
+| Measurement                                                   | Lease round trip | Unreachable hub and recovery |
+| ------------------------------------------------------------- | ---------------- | ---------------------------- |
+| Fixture mint                                                  | 0.30 s           | 0.29 s                       |
+| Mock hub to healthy                                           | 0.97 s           | 0.97 s                       |
+| Runner `init`                                                 | 3.84 s           | 3.87 s                       |
+| Runner host launch to healthy                                 | 2.78 s           | 2.78 s                       |
+| From starting `init` to healthy, including test configuration | 6.64 s           | 6.66 s                       |
+| Whole setup                                                   | 7.90 s           | 8.02 s                       |
+| Test body                                                     | 3.63 s           | 4.14 s                       |
+| Tick scheduling idle within the body                          | 2.00 s           | 2.50 s                       |
+| Setup, body, and shutdown                                     | 12.52 s          | 13.14 s                      |
+
+Scheduling idle is the overlap of each logged `tick end` → next `tick start` interval with the scenario's lifetime. Some
+of it overlaps a worker doing useful work, so it bounds what stepping could save rather than promising that saving. The
+one-worker medians were similar: 6.57–6.70 seconds from `init` to healthy and 12.61–13.26 seconds for the whole test.
+
+### What it settles before slicing
+
+- **The outside is sufficient for both cases.** The round trip observes the claim at `POST /api/fleet/routes`, the event
+  submission in the mock hub's capture, the completed chunk, its lease through the runner's local API, and the worker's
+  actual commit in the bare origin. The recovery case identifies a pending `completion.submitted` fact for its own
+  chunk, stages the outage before that completion is delivered, observes an event submission attempt with that same fact
+  still unacknowledged, then restores the hub and observes the chunk complete, that fact acknowledged, and the buffer
+  empty. Neither case needs a new API read or a change to blizzard-mock.
+- **Buffer depth alone is not proof of a buffered completion.** The first version could pass with an earlier fact in the
+  queue and finish the chunk only after recovery. The harness must expose the existing facts feed's sequence, kind,
+  chunk, and acknowledgement timestamp, and the real port must track the particular completion throughout the outage.
+  The stepped host removes the remaining race between observing that fact and the next timed flush.
+- **The host needs a short scratch path.** The ordinary Playwright output path made `host.sock` 153–169 bytes long and
+  the host correctly refused it; Linux permits 107. The host fixture must allocate a short, unique runtime directory and
+  validate the final socket path, rather than putting the host under a descriptive test-output path. Logs and metrics
+  can still be attached to that test's output.
+- **Initialization needs no internal file writer.** The CLI writes and registers the identities, tokens, store, and
+  harness files. TypeScript preserves those identities and tokens while editing the documented host configuration,
+  supplies a fake Claude credential file, disables the unused OpenCode binding, points the external-usage sampler at
+  absent fixture credentials, and writes the mock harness fence into the disposable workspace. Nothing reads a
+  developer's provider credentials or contacts a real hub or provider.
+- **Keep a host and a mint per test.** A mint costs about 0.3 seconds; reusing it would not remove the roughly
+  6.6-second host initialization. At this sample's cost, ninety tests on two workers project to roughly ten minutes,
+  below the plan's seventeen-minute gate baseline, even without distributing them over service shards. This is a sizing
+  estimate, not a measurement of the full ported roster. It does not justify fixture-world reuse in the initial harness;
+  each port still measures the tier against the speed guard.
+
 ## Surfaces it builds
 
 - **A host that steps on request.** Today a runner's loop can be driven two ways, and neither serves a test from
