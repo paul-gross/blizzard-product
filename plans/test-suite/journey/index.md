@@ -15,6 +15,10 @@ most need to keep, and today the rehearsal could not hold one to it: it builds i
 dataclasses, judges the morning through the Python's own invariant checker, and borrows its helpers from the crash
 sweep. This epic ports it to Playwright, and closes a gap in the mock fleet every Playwright test stands on.
 
+| Where                    | Read when                                                             |
+| ------------------------ | --------------------------------------------------------------------- |
+| [spec/](./spec/index.md) | Implementing any part of the epic or resolving its technical contract |
+
 ## Work areas
 
 The consistency check lands before the port, so the rehearsal is written once against the surface it will keep.
@@ -23,10 +27,11 @@ The consistency check lands before the port, so the rehearsal is written once ag
 
 An architecture change. Today `blizzard dev check-invariants` reads each daemon's configuration to find its database and
 opens the store itself, so it works only beside the files, and anything that calls it is reading the store by another
-name. The hub and the runner each answer the question themselves instead: an authenticated route runs the invariant
-checker inside the daemon and reports every violation by its rule, and `blizzard dev check-invariants` becomes a client
-of those routes. An operator gets the same question after a bad night, against a fleet whose disks they cannot reach.
-The kill-9 crash sweep keeps running the checker in-process.
+name. The hub and the runner each answer the question themselves instead: an authenticated route runs that daemon's half
+of the invariant checker inside it, within one read of its store, and reports every violation by its rule, and
+`blizzard dev check-invariants` becomes a client of those routes. An operator gets the same question after a bad night,
+against a fleet whose disks they cannot reach. The checker's offline mode, pointed at stopped stores, stays for the
+procedures that use it, and the kill-9 crash sweep keeps running the checker in-process.
 
 ### 2. The journey in Playwright
 
@@ -36,12 +41,11 @@ configuration files in place of the dataclasses, and the helpers it borrowed fro
 rather than shared, since the sweep stays in Python.
 
 The morning-after judgement moves from `Invariants` to what an operator could see for themselves: the merges on the bare
-`main` and their history, each chunk's record through the API, the environments left on the host, and `hub status`.
-Where a promise has no outside view yet, the rehearsal gets the surface the initiative's rule asks for, one an operator
-or an integration could use as well, before it settles for anything narrower. The deeper check the rehearsal runs today,
-that both stores still keep every invariant the design rests on, it keeps by asking the daemons through
-`blizzard dev check-invariants`, answered as the first work area leaves it. It stays a local rehearsal, run in a
-provisioned feature environment, since it mints a real winter workspace and CI carries no winter source.
+`main` and their history, each chunk's record through the API, the environments left on the host, and `hub status`. The
+deeper check, that both stores still keep every invariant the design rests on, it keeps by asking the daemons through
+`blizzard dev check-invariants`, after they restart and again in the morning. The check it makes today in the instant
+after the kill, with both daemons dead, has no daemon to ask, and is dropped. The rehearsal runs in CI under the full
+suite, as it does today: it is winter-free, minting its world with the mock fleet's scaffold.
 
 ### 3. The mock fleet's wire parity in CI
 
@@ -49,7 +53,10 @@ provisioned feature environment, since it mints a real winter workspace and CI c
 real thing: the mock hub's models against the committed OpenAPI, its vocabularies against blizzard's own, and
 `mock-opencode`'s output through the real parser. It needs a sibling `blizzard` checkout, so CI deselects it and it runs
 only by hand, which lets a wire change pass both repositories' gates while the mocks go stale beneath every test that
-trusts them. The guard joins `blizzard-mock`'s CI, run against `blizzard` `master`. It depends on nothing else in the
+trusts them. It has already happened: since blizzard's opencode parser began importing a module the guard's loader does
+not provide, ten of its tests fail against `master`. The guard is repaired, then joins `blizzard-mock`'s CI against the
+`blizzard` ref that matches each change, as blizzard's own CI finds the mock's, with a nightly run against `master`
+beside it. The proof that a real runner works against the mock hub joins it. The area depends on nothing else in the
 initiative and can land whenever it is picked up.
 
 ## Out of scope

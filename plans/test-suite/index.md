@@ -9,6 +9,6 @@ of the move, and the gate's speed beside it.
 | [foundation/](./foundation/index.md)     | Building the Playwright package, the shared-hub harness, the mock fleet and rulebook changes it needs, or reading what the spike proved |
 | [hub-tier/](./hub-tier/index.md)         | Tracing the delivered hub-side ports, which service tests stay in Python, or how a fixed SSE wait was replaced                          |
 | [runner-tier/](./runner-tier/index.md)   | Porting a runner-side service test, or building the stepping host and other runner surfaces those tests need                            |
-| [fleet-tier.md](./fleet-tier.md)         | Moving an e2e scenario into the fleet service tests or a browser scenario into the UI tests, or retiring the e2e tier                   |
+| [fleet-tier/](./fleet-tier/index.md)     | Moving an e2e scenario into the fleet service tests or a browser scenario into the UI tests, or retiring the e2e tier                   |
 | [optimization/](./optimization/index.md) | Speeding up the pipeline, the pull request gate, or the tiers that stay in Python                                                       |
-| [journey.md](./journey.md)               | Giving the daemons a consistency check of their own, porting the journey to Playwright, or guarding `blizzard-mock`'s wire parity in CI |
+| [journey/](./journey/index.md)           | Giving the daemons a consistency check of their own, porting the journey to Playwright, or guarding `blizzard-mock`'s wire parity in CI |

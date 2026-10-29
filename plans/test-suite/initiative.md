@@ -104,14 +104,14 @@ ported to prove it. The [hub tier](./hub-tier/index.md) follows, porting the tes
 the few surfaces they still lack. The [runner tier](./runner-tier/index.md) comes after them because it needs real
 product work: a host whose loop can be stepped from outside, and reads of the state its tests check today through the
 ORM. Tests that start a real runner host move with the runner tier even where their subject is the hub, into
-`tests/service/fleet/` when the hub is real too. The [fleet tier](./fleet-tier.md) follows on that host: today's e2e
-scenarios are fleet service tests by this initiative's definition, so they move into `tests/service/fleet/`, the browser
-scenarios into `tests/ui/`, and the e2e tier retires until a real work source can be stood up. Each epic builds the
-public surfaces its own tests need, so the architecture work arrives just in time rather than in advance.
+`tests/service/fleet/` when the hub is real too. The [fleet tier](./fleet-tier/index.md) follows on that host: today's
+e2e scenarios are fleet service tests by this initiative's definition, so they move into `tests/service/fleet/`, the
+browser scenarios into `tests/ui/`, and the e2e tier retires until a real work source can be stood up. Each epic builds
+the public surfaces its own tests need, so the architecture work arrives just in time rather than in advance.
 
-The [journey](./journey.md) follows the fleet tier: the rehearsal of a whole night, ported to Playwright on daemons of
-its own, with the consistency check it asks for answered by the daemons themselves, and beside it the guard that holds
-`blizzard-mock` to the wire it imitates.
+The [journey](./journey/index.md) follows the fleet tier: the rehearsal of a whole night, ported to Playwright on
+daemons of its own, with the consistency check it asks for answered by the daemons themselves, and beside it the guard
+that holds `blizzard-mock` to the wire it imitates.
 
 [Optimization](./optimization/index.md) comes last. Its work speeds the tiers that stay in Python and the pipeline
 around them, but the gate it measures is the one the tier epics leave behind, so its spec stays provisional until they
