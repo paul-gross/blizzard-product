@@ -9,7 +9,9 @@ blizzard's source file and stubbing the one module it used to import. Since bliz
 `src/blizzard/runner/harness/opencode/shapes.py` began importing `blizzard.runner.harness.json_value`, ten of the
 module's tests fail with `ModuleNotFoundError`. The parser runs instead under blizzard's own environment, as a
 subprocess of blizzard's virtual environment fed the façade's output, so its imports resolve to whatever they become and
-the guard stubs nothing. The repair lands first and on its own.
+the guard stubs nothing. The subprocess prints each parsed event as one JSON object per line, its type and the
+attributes the tests assert on, or, when the parser refuses the stream, one object naming `OpenCodeShapeError` and its
+message, and the tests assert on that. The repair lands first and on its own.
 
 The two tests in the module that read nothing of blizzard's,
 `test_no_mirror_entry_point_takes_transposable_positional_arguments` and
@@ -32,8 +34,14 @@ pointing at the checkout. It runs both `needs_blizzard` modules, the parity guar
 hub, the second taking about a minute. Both repositories are public, so the checkout needs no token. The job lands
 optional and is made required by its own later change, once it has run green, as `gate / wire parity (needs_blizzard)`.
 
-A scheduled run of the same job against blizzard's `master`, nightly, catches a wire change merged in blizzard with no
-mock branch of its name, which no pull request of the mock's would see.
+The resolver, like blizzard's, refuses any event its rules do not name, so it gains one input: an explicit ref, which
+skips resolution. A scheduled workflow, `nightly.yml`, calls the parity job nightly with that input set to `master`, and
+so catches a wire change merged in blizzard with no mock branch of its name, which no pull request of the mock's would
+see. `gate.yml` is called by workflows, never triggered itself, so the schedule lives in its own caller.
+
+A wire change lands in blizzard first, then in the mock. Until the mock's branch of the same name merges, the mock's own
+pull requests and its `master` see the new wire through the resolver or the nightly run and fail the parity check. That
+gap is expected, it is the guard doing its work, and the mock's change closes it.
 
 ## Citations
 

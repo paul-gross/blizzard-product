@@ -15,8 +15,8 @@ The four work areas are independent of one another and of the tier epics, save w
 3. **The amd64-only dev image**, independent of everything ([pipeline.md](./pipeline.md#the-dev-image)).
 4. **The board's build on every pull request** and the `web-dist` artifact
    ([pr-gate.md](./pr-gate.md#the-boards-build-on-every-pull-request)), independent of everything.
-5. **The UI job**, after `epic:test-suite/fleet-tier` creates `tests/ui/` and after 4, landing optional and made
-   required by its own later change ([pr-gate.md](./pr-gate.md#the-ui-job)).
+5. **The UI job's move** onto the shared build, after `epic:test-suite/fleet-tier` lands the job and after 4, once its
+   runtime fits ([pr-gate.md](./pr-gate.md#the-ui-job)).
 6. **The three waits**, in one change per file ([waits.md](./waits.md)), the rule's extension landing in
    `blizzard-context` with the last.
 7. **The outliers**, one change per file the measurement names ([outliers.md](./outliers.md)), after 1.

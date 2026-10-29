@@ -43,24 +43,37 @@ assertions move to a companion test at `fresh-hub`, so the expensive isolation i
 subject.
 
 **Test actions get a profile, not a rewrite.** Six files drive graphs through the hub's test-only actions, which a
-shared hub refuses. Those tests run on a shared hub profile that sets the fence admitting them, the same fence their
-Python originals set on a hub of their own, rather than having their graphs rewritten onto shipped actions they were not
-written to test.
+shared hub refuses. The fence that admits them is an environment variable by design, so that no installation's
+configuration can ever turn it on, and a hub profile today is only a configuration file. The harness gains an
+environment it sets for one named profile's hubs alone, and those tests run on that profile, rather than having their
+graphs rewritten onto shipped actions they were not written to test.
 
 **Every missing read is built as a general read.** Where a test reads a value no public surface serves, the value gains
-one an operator could use as well: flows, a graph's definition, a chunk's leases unbounded by the recent-lease cap, a
-lease's resolved model, effort, harness version, and declared commits. Two needs are internal machinery instead, and
-move down to the component tier: a runner's resume intents, and the forge client's conditional-read economy that one
-test proves by scraping the mock forge's log. No surface returns a secret: the leak scans that read route tokens out of
-the runner's store read them as the worker received them.
+one an operator could use as well: flows, a graph's authoring body, a chunk's leases unbounded by the recent-lease cap,
+and a lease's resolved model, effort, harness version, and declared commits. Three needs are internal machinery instead,
+and move down to the component tier: a runner's resume intents; the forge client's conditional-read economy, which one
+test proves by scraping the mock forge's log; and the absence of route tokens from spans and artifacts. A route token
+never reaches a worker, only the runner that holds it, so no outside reader can know what to look for without a surface
+that hands secrets out, and none will. The lease-token and artifact scans stay in the trace companions.
 
 **Store carry-overs are dropped, not ported.** Three tests seed or read a stopped hub's store to prove a migration
-carries data over. Each already has a migration test proving the same mapping, and the upgrade rehearsal proves it
-against released builds, so they are deleted rather than given an exception to the initiative's rule on stores.
+carries data over. Each already has a migration test proving the same mapping, and the upgrade rehearsal walks every one
+of them from a release that predates it, so they are deleted rather than given an exception to the initiative's rule on
+stores.
 
-**A revoked session ends its streams.** The login test expires a session mid-stream by deleting its row, because no
-public path ends a live stream: a stream checks its session only when it connects. The hub gains that behaviour as a
-security property in its own right. Revoking a session closes every stream it holds open.
+**Logging out ends a session's streams.** The hub already closes a member's open streams when their membership is
+revoked. A session that logs out does not: its streams run on until they end on their own. The hub extends the same
+behaviour to logout, as a security property in its own right, and the login test observes a session's end through it
+rather than by deleting the session's row.
+
+**The browser scenarios keep their CI coverage.** They run on every pull request today, as a required check. This epic
+lands the UI method in blizzard-context's matrix, its task, and a required CI job that builds the board itself, as the
+e2e job does, before the first UI port, so no scenario is ever without a gate. The pull request gate's later move to a
+shared build is `epic:test-suite/optimization`'s.
+
+**Hosts are laid out from their documented files.** The federation scenarios need an adopted runner and a host of two.
+The runner tier's rule holds: a test lays out what the host contract documents, as an operator's tooling could, rather
+than through the classes that write it today, and no new CLI verb is built for a test.
 
 **UI tests may seed as a runner.** Three board tests produce spend, transcripts, and completions by speaking the fleet
 wire as a runner would. That is the real wire, and at `fresh-tenant` it reaches no one else's work, so it stays.
@@ -76,8 +89,8 @@ intervals, and termination allowance give way to steps and to waits that end whe
 ### 2. Browser scenarios into `tests/ui/`
 
 The browser scenarios move to `tests/ui/`, the package's one project with a browser installed, against the built board.
-Two of them drive the runner's board, and run a real runner host inside the UI project. The pull request gate's UI job
-waits on this folder existing.
+Two of them drive the runner's board, and run a real runner host inside the UI project. They run in a required CI job of
+their own from the first port.
 
 ### 3. The tier retires
 

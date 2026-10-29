@@ -15,16 +15,18 @@ without changing what it checks.
 
 ## The UI job
 
-`tests/ui/` is `epic:test-suite/fleet-tier`'s, and the job waits until it exists. When it does, `gate.yml` gains `ui`,
-needing `frontend`: the two-repo checkout of `blizzard` and `blizzard-mock` with `persist-credentials: false`, `uv sync`
-in both, Node from `mise.toml`, `npm ci` in `tests/`, `npx playwright install --with-deps chromium`, then `web-dist`
-downloaded into `src/blizzard/static/` and `mise run playwright -- --project='ui-*'`. A failure uploads the same
-evidence the service shards do.
+`epic:test-suite/fleet-tier` lands the UI tests with a job of their own in `upper-tiers.yml`, under `full_suite`, that
+builds the board itself, as the required check `upper-tiers / ui (blizzard:ui)`. This epic moves it: `gate.yml` gains
+`ui`, needing `frontend`, with the two-repo checkout of `blizzard` and `blizzard-mock` with
+`persist-credentials: false`, `uv sync` in both, Node from `mise.toml`, `npm ci` in `tests/`,
+`npx playwright install --with-deps chromium`, then `web-dist` downloaded into `src/blizzard/static/` and
+`mise run playwright -- --project='ui-*'`. A failure uploads the same evidence the service shards do.
 
-The job lives in `gate.yml` rather than in `upper-tiers.yml`, as the plan first placed it, because the hand-off decides
-it: `pr.yml` calls the two workflows side by side, and a job in one cannot wait on a job in the other. Placing it beside
-`frontend` keeps the build made once and the UI tests started the moment it exists.
+The job moves to `gate.yml` because the hand-off decides it: `pr.yml` calls the two workflows side by side, and a job in
+one cannot wait on a job in the other. Placing it beside `frontend` keeps the build made once and the UI tests started
+the moment it exists.
 
-It is not a required check when it lands. Its runtime is recorded over its first twenty runs on `master`; it becomes
-required, under the name `gate / ui`, once those runs show it finishing inside the slowest `python-tests` shard, so it
-never becomes the gate's critical path. `test_winter_free_ci.py`'s set of expected test jobs gains `("gate.yml", "ui")`.
+The move lands only once the job's runtime, recorded over its runs in `upper-tiers.yml`, shows it finishing inside the
+slowest `python-tests` shard, so it never becomes the gate's critical path. The change renames the required check to
+`gate / ui` in branch protection and blizzard-context's packaging page, and `test_winter_free_ci.py`'s set of expected
+test jobs moves its entry from `upper-tiers.yml` to `("gate.yml", "ui")`.

@@ -43,10 +43,9 @@ crash sweep is next behind it. Queue time is negligible, about 2 s.
 
 - **Angular AOT build on every PR.** Run `npm run build` in the frontend job, which today first runs on push or tag.
   Hand the output to the UI job.
-- **UI tests on every PR.** Once `tests/ui/` exists, add a job in `upper-tiers.yml` with the two-repo checkout and
-  Chromium, running the UI project against the frontend job's build. Measure its runtime before making it required.
-  Today's e2e never joins the PR gate: it is moving into the service and UI tiers under `epic:test-suite/fleet-tier`,
-  and the gate picks up its tests where they land.
+- **UI tests on the shared build.** `epic:test-suite/fleet-tier` lands the UI tests with a required job of their own in
+  `upper-tiers.yml`, building the board itself as e2e does today. Move that job beside the frontend job, onto its build,
+  so the board is built once, once its runtime is measured to fit inside the gate's critical path.
 
 ### 3. Event-driven waits
 
