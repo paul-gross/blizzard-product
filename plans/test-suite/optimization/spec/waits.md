@@ -3,7 +3,7 @@
 A fixed wait is either too long, and every run pays for it, or too short, and the test is flaky on a slow machine. The
 fixed waits outside the service tier that this epic owns are three, in two files, and each is replaced by a wait on the
 event it stood for. E2E's tick spacing, its `poll_until` intervals, and its termination allowance move with their
-scenarios under `epic:test-architecture`, and the crash sweep's are untouched.
+scenarios under `epic:test-suite/fleet-tier`, and the crash sweep's are untouched.
 
 ## `tests/test_cli.py`
 

@@ -185,8 +185,9 @@ the platform made on the operator's behalf, handed back to them as a decision.
 | `epic:test-suite/foundation`             | delivered   |
 | `epic:test-suite/hub-tier`               | delivered   |
 | `epic:test-suite/runner-tier`            | in-progress |
+| `epic:test-suite/fleet-tier`             | horizon     |
+| `epic:test-suite/journey`                | horizon     |
 | `epic:test-suite/optimization`           | horizon     |
-| `epic:test-architecture`                 | horizon     |
 | `epic:architectural-sweep`               | delivered   |
 | `epic:strict-types`                      | in-progress |
 | `epic:adopt-di`                          | horizon     |

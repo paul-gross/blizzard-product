@@ -2,8 +2,8 @@
 
 The technical contracts behind `epic:test-suite/foundation`. Product intent begins at the [epic plan](../index.md), and
 the rules every ported test keeps are the [initiative's](../../initiative.md); implementation enters at the concern
-below. The hub and runner tiers fill the package this spec builds, and `epic:test-architecture` its UI folder. None of
-them is specified here.
+below. The hub and runner tiers fill the package this spec builds, and `epic:test-suite/fleet-tier` its UI folder. None
+of them is specified here.
 
 It builds on the service tier as it runs today. `mise run service-test` runs
 `BLIZZARD_SERVICE=1 uv run pytest -n auto tests/service/`, about fifty `test_*_service.py` files with no conftest of

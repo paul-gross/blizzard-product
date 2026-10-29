@@ -28,8 +28,8 @@ Playwright config. Its folders are named for the kind of test they hold, never f
 | `tests/ui/`             | the built board in a browser | a real hub, and the mocks behind it |
 
 This epic builds the package and `service/hub/`; the hub and runner tiers fill the service folders, and
-`epic:test-architecture` the UI folder. A Playwright project is a folder crossed with a hub profile: the profile's tests
-live in a subfolder named for it, `tests/service/hub/auth/` running as `service-hub-auth`, and a folder's default
+`epic:test-suite/fleet-tier` the UI folder. A Playwright project is a folder crossed with a hub profile: the profile's
+tests live in a subfolder named for it, `tests/service/hub/auth/` running as `service-hub-auth`, and a folder's default
 profile sits at its root, `tests/service/hub/` running as `service-hub`. A test declares its profile by where it lives,
 and a selection such as `--project='service-*'` takes every profile at once. The fixtures that start daemons, mint
 tenants, and run the mock fleet live once in the package and serve every project. The package shares `tests/` with the

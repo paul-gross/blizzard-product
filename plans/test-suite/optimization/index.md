@@ -10,9 +10,9 @@ Every chunk the fleet lands waits on the gate. The unit and component tier, alre
 takes 11–17 min per shard, and a PR waits on the slowest of them, about 17 min. The goal is to cut that time without
 weakening any assertion, and to close the coverage gaps in the PR gate.
 
-| Where                    | Read when                                                                                                       |
-| ------------------------ | --------------------------------------------------------------------------------------------------------------- |
-| [spec/](./spec/index.md) | Provisional until the three tier epics land — reading where the epic's contract is headed, not building from it |
+| Where                    | Read when                                                                                                           |
+| ------------------------ | ------------------------------------------------------------------------------------------------------------------- |
+| [spec/](./spec/index.md) | Provisional until the tier epics before it land — reading where the epic's contract is headed, not building from it |
 
 ## Baseline
 
@@ -45,11 +45,8 @@ crash sweep is next behind it. Queue time is negligible, about 2 s.
   Hand the output to the UI job.
 - **UI tests on every PR.** Once `tests/ui/` exists, add a job in `upper-tiers.yml` with the two-repo checkout and
   Chromium, running the UI project against the frontend job's build. Measure its runtime before making it required.
-  Today's e2e never joins the PR gate: it is moving into the service and UI tiers under `epic:test-architecture`, and
-  the gate picks up its tests where they land.
-- **Journey stays local.** It mints a real winter workspace, and the CI workflows carry no winter source on purpose. It
-  is also currently red: a local run on `master` times out at its first wait, with the first chunk still `ready` after
-  300 s, 5 min into the run. Determine whether that is rot or the local environment, then make it green where it runs.
+  Today's e2e never joins the PR gate: it is moving into the service and UI tiers under `epic:test-suite/fleet-tier`,
+  and the gate picks up its tests where they land.
 
 ### 3. Event-driven waits
 
@@ -62,12 +59,11 @@ as the service tier's are.
 ### 4. Slow unit outliers
 
 `test_runner_harness_opencode_diagnostic.py` takes ~164 s of CPU: one 35 s test and ~30 tests at 4–5 s, all spawning
-subprocesses. Decide per test whether the subprocess is what's under test. Share one fake binary per module where
-possible.
+subprocesses. Decide per test whether the subprocess is what's under test. Share one fake binary per module where \1
 
 ## Out of scope
 
 The service tier's cost is not this epic's: the foundation and the two tier epics replace a stack per test with a tenant
 per test on a shared hub, under the initiative's guard that the tier never becomes the gate's slowest job, so nothing
 here shortens a stack the initiative is retiring. Making tests implementation-independent belongs to the initiative's
-other epics and to `epic:test-architecture`, and where speed conflicts with it, the black-box line wins.
+other epics, and where speed conflicts with it, the black-box line wins.
