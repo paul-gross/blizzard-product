@@ -80,8 +80,7 @@ one-worker medians were similar: 6.57–6.70 seconds from `init` to healthy and 
 - **Keep a host and a mint per test.** A mint costs about 0.3 seconds; reusing it would not remove the roughly
   6.6-second host initialization. At this sample's cost, ninety tests on two workers project to roughly ten minutes,
   below the plan's seventeen-minute gate baseline, even without distributing them over service shards. This is a sizing
-  estimate, not a measurement of the full ported roster. It does not justify fixture-world reuse in the initial harness;
-  each port still measures the tier against the speed guard.
+  estimate, not a measurement of the full ported roster. It does not justify fixture-world reuse in the initial harness.
 
 ## Surfaces it builds
 

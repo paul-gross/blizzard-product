@@ -38,5 +38,4 @@ project runs one worker on one hub, so ideation, the event log, hub actions, and
 timeout is thirty minutes. The sizing estimates each project's time from the e2e run's per-file costs and the runner
 tier's measured host cost, about 6.6 seconds to initialize and 13 for a whole test, and decides the job's shape before
 the first port: how many shards `service-fleet` takes, and whether `actions` and the companions run in jobs of their
-own. Each port then records its project's CI time against that estimate, and a port that would cross the line is
-preceded by the change that reshapes the jobs.
+own. The sizing is the whole guard: no port records a CI time against it.

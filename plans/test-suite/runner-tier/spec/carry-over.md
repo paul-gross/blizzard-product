@@ -53,6 +53,6 @@ join as ports teach them, how a runner test builds its host and steps it.
 ## The speed guard
 
 The runner half is not expected to get faster, and the initiative's guard holds it: the tier never becomes the gate's
-slowest job. Each port records the tier's CI time. If a port would cross the line, the next change, before any further
-port, reuses one minted fixture world per worker, reset between tests with `blizzard-mock-fixture reset`, in place of a
-mint per test.
+slowest job. No port records the tier's CI time. If the tier ever crosses the line, the change that brings it back
+reuses one minted fixture world per worker, reset between tests with `blizzard-mock-fixture reset`, in place of a mint
+per test.

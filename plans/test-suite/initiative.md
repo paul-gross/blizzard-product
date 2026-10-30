@@ -33,9 +33,9 @@ tenant or a hub of its own, creates only what it needs inside that, and asserts 
 `initiative:multi-tenancy` built the boundary that makes the sharing possible, and the test suite is the first tenant it
 was built for.
 
-Independence is the purpose; speed is a guard. The tier never becomes the gate's slowest job, and each epic records the
-tier's CI time when it lands. What a pull request waits on today is the unit and component shards, which the
-optimization epic owns, so a faster service tier alone would not shorten that wait.
+Independence is the purpose; speed is a guard. The tier never becomes the gate's slowest job; no port or epic records
+the tier's CI time. What a pull request waits on today is the unit and component shards, which the optimization epic
+owns, so a faster service tier alone would not shorten that wait.
 
 ## Decisions
 
