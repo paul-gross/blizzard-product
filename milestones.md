@@ -84,8 +84,8 @@ own declared method, carried out deterministically, with an agent's judgement ca
 | `epic:runner-host`                | delivered   |
 | `epic:projects/host`              | retired     |
 | `epic:advanced-delivery/actions`  | delivered   |
-| `epic:advanced-delivery/forges`   | in-progress |
-| `epic:advanced-delivery/flows`    | in-progress |
+| `epic:advanced-delivery/forges`   | delivered   |
+| `epic:advanced-delivery/flows`    | delivered   |
 | `epic:advanced-delivery/policies` | in-progress |
 | `epic:advanced-deployment`        | horizon     |
 
