@@ -7,13 +7,14 @@ epics:
   - runner-tier
   - fleet-tier
   - journey
+  - controlled-clock
   - optimization
 ---
 
 # Plan — `initiative:test-suite`
 
-The remaining work is `runner-tier`, `fleet-tier`, `journey`, and `optimization`; `foundation` and `hub-tier` are
-delivered.
+The remaining work is `runner-tier`, `fleet-tier`, `journey`, `controlled-clock`, and `optimization`; `foundation` and
+`hub-tier` are delivered.
 
 Someday a daemon will be rewritten, in Python or in something else, and whoever does it will want a suite that tells
 them whether the new one still keeps the old one's promises. The service tier is where that suite should live, and today
@@ -112,6 +113,11 @@ the public surfaces its own tests need, so the architecture work arrives just in
 The [journey](./journey/index.md) follows the fleet tier: the rehearsal of a whole night, ported to Playwright on
 daemons of its own, with the consistency check it asks for answered by the daemons themselves, and beside it the guard
 that holds `blizzard-mock` to the wire it imitates.
+
+The [controlled clock](./controlled-clock/index.md) gives the hub, the runner host, and the mock fleet a clock a test
+moves through their surfaces, so a promise about time is proved by advancing past it rather than waiting for it. It
+needs only what the hub and runner tiers already built, the stepped sweeps and the stepped host, so it may start beside
+the fleet tier and the journey rather than after them, and the journey may adopt it once both have landed.
 
 [Optimization](./optimization/index.md) comes last. Its work speeds the tiers that stay in Python and the pipeline
 around them, but the gate it measures is the one the tier epics leave behind, so its spec stays provisional until they
