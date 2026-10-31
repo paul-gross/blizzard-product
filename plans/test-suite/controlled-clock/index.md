@@ -1,6 +1,6 @@
 ---
 epic: test-suite/controlled-clock
-refinement: scaffolded
+refinement: refined
 status: horizon
 ---
 
