@@ -1,7 +1,7 @@
 ---
 epic: test-suite/runner-tier
 refinement: pristine
-status: in-progress
+status: delivered
 ---
 
 # Plan — `epic:test-suite/runner-tier`

@@ -1,7 +1,7 @@
 ---
 epic: test-suite/fleet-tier
 refinement: scaffolded
-status: horizon
+status: in-progress
 ---
 
 # Plan — `epic:test-suite/fleet-tier`

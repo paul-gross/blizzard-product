@@ -1,7 +1,7 @@
 ---
 epic: test-suite/journey
 refinement: scaffolded
-status: horizon
+status: in-progress
 ---
 
 # Plan — `epic:test-suite/journey`

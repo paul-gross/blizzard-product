@@ -13,8 +13,8 @@ epics:
 
 # Plan — `initiative:test-suite`
 
-The remaining work is `runner-tier`, `fleet-tier`, `journey`, `controlled-clock`, and `optimization`; `foundation` and
-`hub-tier` are delivered.
+The remaining work is `fleet-tier`, `journey`, `controlled-clock`, and `optimization`; `foundation`, `hub-tier`, and
+`runner-tier` are delivered.
 
 Someday a daemon will be rewritten, in Python or in something else, and whoever does it will want a suite that tells
 them whether the new one still keeps the old one's promises. The service tier is where that suite should live, and today
