@@ -1,7 +1,7 @@
 ---
 epic: release-engineering/release-lines
-refinement: refined
-status: in-progress
+refinement: pristine
+status: delivered
 ---
 
 # Plan — `epic:release-engineering/release-lines`

@@ -170,9 +170,9 @@ the platform made on the operator's behalf, handed back to them as a decision.
 | `epic:release-engineering/first-release` | delivered   |
 | `epic:release-engineering/compat-floor`  | delivered   |
 | `epic:release-engineering/notes`         | delivered   |
-| `epic:release-engineering/release-lines` | in-progress |
+| `epic:release-engineering/release-lines` | delivered   |
 | `epic:release-engineering/dark-launch`   | delivered   |
-| `epic:release-engineering/supply-chain`  | in-progress |
+| `epic:release-engineering/supply-chain`  | delivered   |
 | `epic:storybook`                         | delivered   |
 | `epic:throttling`                        | delivered   |
 | `epic:tagging`                           | horizon     |
