@@ -11,5 +11,5 @@ of the move, and the gate's speed beside it.
 | [runner-tier/](./runner-tier/index.md)           | Tracing the delivered runner-side ports, the stepping host and the runner surfaces they needed, or which runner tests stay in pytest    |
 | [fleet-tier/](./fleet-tier/index.md)             | Moving an e2e scenario into the fleet service tests or a browser scenario into the UI tests, or retiring the e2e tier                   |
 | [optimization/](./optimization/index.md)         | Speeding up the pipeline, the pull request gate, or the tiers that stay in Python                                                       |
-| [journey/](./journey/index.md)                   | Giving the daemons a consistency check of their own, porting the journey to Playwright, or guarding `blizzard-mock`'s wire parity in CI |
+| [journey/](./journey/index.md)                   | Tracing the delivered daemon-answered consistency check, the journey's Playwright port, or `blizzard-mock`'s wire parity in CI          |
 | [controlled-clock/](./controlled-clock/index.md) | Giving the daemons a clock a test moves, moving a spec off a real-time wait, or reading time in a spec                                  |
