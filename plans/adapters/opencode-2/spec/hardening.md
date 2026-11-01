@@ -48,14 +48,56 @@ Each corpus manifest declares the degradations its version carries, and the oper
 line-2 binding begins with none declared; any row the proof cannot settle as supported enters the manifest as degraded
 or blocks its step, never as an unstated assumption.
 
+## Verification layers
+
+| Layer                    | Required proof                                                                                                                                                                                                          |
+| ------------------------ | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Adapter unit             | Session-id minting, model and variant reference composition and validation, permission rule composition per autonomy, completion detection, usage and child-usage attribution, verdict extraction, error classification |
+| Fixture contract         | Every 2.1.4 session, message, part, event, child, permission, compaction, error, and usage shape production parsing reads, from the committed corpus                                                                    |
+| Line dispatch            | Version-to-line admission, the `@line` selector at graph mint and acquisition, a session's line surviving restart, refusal of a binary from the wrong line, and the launch-time version recheck                         |
+| Mock service integration | The mock OpenCode 2 plus mock hub and runner through acquisition, mint, prompt, completion, judgement, nudge, takeover, transcript pumping, interruption, and every failure lever below                                 |
+| Crash verification       | Kill before session create, after create before prompt, during a tool, during a child, between a transcript boundary write and its launch, during resume, and during judgement                                          |
+| Mixed-line acceptance    | One runner advertising Claude Code, OpenCode 1, and OpenCode 2 executes a graph whose sessions need all three, including a bare `opencode` and an `opencode@1`, and dispatches each correctly across restart            |
+| Live provider acceptance | `blizzard:manual-opencode-compatibility` proves 2.1.4 against a real provider, by hand                                                                                                                                  |
+
+Everything above the live row runs hermetically, against the corpus and the mock, in ordinary test tiers and on any
+fleet runner. Only the live row needs OpenCode 2 installed.
+
+## Mock OpenCode 2
+
+`blizzard-mock` gains a line-2 OpenCode surface beside its line-1 surface, sharing the mock harness engine — the prompt
+is the program, executed in the worktree with the session's environment — and nothing of line 1's shapes. It is a
+separate executable reporting `opencode v2.1.4` by default, with the version a lever, so line dispatch, wrong-line
+refusal, and an upgrade beneath a running runner are testable.
+
+Its `serve --hostname 127.0.0.1 --port 0` answers the stable `/api/*` subset the binding uses: session create with a
+caller-named id, get, list by `parentID`, message list with cursor paging, prompt with `queue` and `steer` delivery,
+interrupt, compact, environment, permission rules, permission requests and replies, the model listing with variants, and
+the event stream with per-session `seq`. Basic auth is enforced with the credential the proof establishes. A behavior
+script can edit the worktree, run a shell tool under the session's permission rules, spawn a `subagent` child session
+that runs its own script, raise a permission request and wait for its reply, and emit text, reasoning, `<Choice>`, and
+per-step usage and cost. `opencode --standalone --session <id>` exists far enough to prove takeover composition.
+
+Every response shape the mock emits is taken from, and tested against, the committed 2.1.4 corpus, so the mock and the
+real binary answer to the same evidence; a corpus for a new admitted version updates the mock in the same change.
+
+Levers inject the failures the binding must survive: provider refusal, usage limit with reset time, overload, unknown
+model, unknown variant, a server that never becomes ready, a dropped event stream, an interrupt the server ignores, a
+server that exits mid-turn, a child that outlives its root's idle, a session the API still reports running after its
+server is gone, and distorted or unknown response shapes.
+
+The mock runner advertises line-carrying capabilities and the mock hub matches `@line` selectors by the same wire
+contract as the real ones, with wire parity, mock unit tests, and service tests landing with the application change
+rather than after it.
+
 ## Release gate
 
-Line 2 is built and verified by hand on an operator workstation that has OpenCode 2, because no fleet runner host
-carries it. The gate is the 2.x compatibility proof, the generic selftest, the concurrency soak, and one real chunk run
-end to end on a local hub against a 2.x worker — never the hosted hub — with a judgement, a nudge, a takeover, and an
-interrupted lease among its turns. The gate passes for one admitted version and records it; a later version inside the
-range is admitted only by re-running the proof and committing its corpus. A runner host joins line 2 by passing the same
-gate on its own machine.
+The gate is the line's live evidence, run by hand on an operator workstation that has OpenCode 2, because no fleet
+runner host carries it. It is the 2.x compatibility proof, the generic selftest, the concurrency soak, and one real
+chunk run end to end on a local hub against a 2.x worker — never the hosted hub — with a judgement, a nudge, a takeover,
+and an interrupted lease among its turns. The gate passes for one admitted version and records it; a later version
+inside the range is admitted only by re-running the proof and committing its corpus. A runner host joins line 2 by
+passing the same gate on its own machine.
 
 Line 1 is regression-verified by the same gate's 1.x half on every landing, because both lines live in one runner and a
 change to shared composition can break either.

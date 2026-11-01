@@ -98,23 +98,36 @@ background subagent cannot outlive the turn that started it and keep editing a w
 through `blizzard runner ask` exactly as the 1.x worker does. Routing native questions into Blizzard's channel is worth
 doing, but it belongs to the human-channel work, not to this binding.
 
-**Built by hand, outside the fleet.** No fleet runner host carries OpenCode 2, and every step of this epic needs a live
-one to be honest. It is built on an operator workstation that has OpenCode 2, and its issues stay out of the fleet's
-intake until a runner host does.
+**Live evidence by hand, the build by the fleet.** No fleet runner host carries OpenCode 2, so only an operator
+workstation that has it can produce honest evidence about it. That evidence is needed twice: at the start, where the
+live proof writes the fixture corpus, and at the end, where the release gate runs a real chunk against a real OpenCode
+2. Everything between is built against what the evidence left behind — the committed corpus and a mock OpenCode 2 in
+`blizzard-mock` shaped from it — which is work the fleet can do. The proof and the gate are the operator's; the binding
+is the fleet's, once the corpus it builds from has landed.
+
+**A mock OpenCode 2 is part of the epic.** Blizzard tests every harness against a mock that runs the prompt as a
+behavior script and fails on command, and line 2 gets its own beside line 1's: a mock server answering the API subset
+the binding uses, held to the same corpus as the real binary, so a test can script a turn that edits, spawns a child,
+asks permission, hits a usage limit, or loses its server, without a real OpenCode or a real token.
 
 ## Sequence
 
 The epic lands in the four steps the OpenCode epic proved, each gated on the one before.
 
-1. **Prove the 2.x line.** A 2.x compatibility proof runs against a private server in an isolated store, writes a
-   fixture corpus for 2.1.4, and settles every row with evidence. The runner's compatibility diagnostic dispatches to
+1. **Prove the 2.x line, by hand.** A 2.x compatibility proof runs against a private server in an isolated store, writes
+   a fixture corpus for 2.1.4, and settles every row with evidence. The runner's compatibility diagnostic dispatches to
    the proof for the line it observes.
-2. **A usable 2.x worker.** The 2.x binding spawns, resumes, judges, nudges, and hands over a session through its
-   private server, and the runner holds both lines at once, advertising and selecting by version.
+2. **A usable 2.x worker.** The mock OpenCode 2 lands first, shaped from the corpus. Against it, the 2.x binding spawns,
+   resumes, judges, nudges, and hands over a session through its private server, and the runner holds both lines at
+   once, advertising and selecting by version.
 3. **Conversation parity.** Transcripts, context measurement, usage, cost, and child agents are read from the server
    API, normalized into Blizzard's vocabulary, and recognized by the hub's analytics under their own dialect.
-4. **Hardening.** Interruption, upgrade under a running runner, concurrent leases sharing a store, health, the generic
-   selftest, and a release gate the operator runs by hand against a real OpenCode 2.
+4. **Hardening, closed by hand.** Interruption, upgrade under a running runner, concurrent leases sharing a store,
+   health, and the generic selftest are built against the mock; the release gate is the operator's run against a real
+   OpenCode 2.
+
+The fleet works steps 2 and 3 and the mock-tested half of step 4. Their issues are filed blocked on the step 1 issue,
+which the operator closes when the corpus lands; the release gate is the operator's issue, blocked on the rest.
 
 ## Worth exploring next
 
