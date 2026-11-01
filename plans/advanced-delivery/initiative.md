@@ -12,8 +12,9 @@ epics:
 
 # Plan — `initiative:advanced-delivery`
 
-The `actions`, `forges`, and `flows` epics are delivered. The remaining epics build on the hub-owned execution boundary,
-the landing seam, and the per-branch flow they gave: `policies`, `gitlab`, and `trains`.
+The `actions`, `forges`, `flows`, and `policies` epics are delivered. The remaining epics build on the hub-owned
+execution boundary, the landing seam, the per-branch flow, and the per-repository landing policies they gave: `gitlab`
+and `trains`.
 
 Landing finished work is where a whole fleet converges on one branch, and blizzard lands it with a single habit: open a
 pull request on GitHub, wait for its checks, merge it — one chunk at a time across a whole tenant, through a script the
