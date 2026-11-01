@@ -51,7 +51,7 @@ left, and `j`/`k` still walk it. Zooming into a **runner** is itself a query (`r
 
 ## The query line
 
-```
+```text
 needs:human | sort holds              what needs you, biggest blast radius first   (@triage)
 cost>3 | sort cost                    who is burning                                (@burn)
 bounces>2 | sort bounces              who is looping                                (@bouncing)

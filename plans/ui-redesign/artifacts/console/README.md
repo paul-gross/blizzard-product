@@ -29,7 +29,7 @@ matters more than novelty.
 
 ## Information architecture
 
-```
+```text
 [tenant switcher: paul-gross ▾]          ← who/where; tenant settings, members
 [Search or jump to…  ⌘K]
 Inbox            (2)  red badge           ← needs-human chunks + agent asks + open gates

@@ -20,10 +20,10 @@ question, whether the fleet needs them, and lets them act on the answer.
 
 Eight proposals explore the space before any requirement is decided. Three take the modern frontier, two deliberately
 work outside current convention, and three are classic SaaS: a control to measure the others against, and two variations
-on it drawn from other families of SaaS product. Each answers the shared
-[brief](./artifacts/brief.md) with a concept, working desktop and mobile mocks of the board and fleet, and rendered
-screenshots. The [baseline](./artifacts/baseline/) is the first design as captured from the live hub, and the
-[comparison](./artifacts/comparison.md) sets the eight side by side.
+on it drawn from other families of SaaS product. Each answers the shared [brief](./artifacts/brief.md) with a concept,
+working desktop and mobile mocks of the board and fleet, and rendered screenshots. The [baseline](./artifacts/baseline/)
+is the first design as captured from the live hub, and the [comparison](./artifacts/comparison.md) sets the eight side
+by side.
 
 | Proposal                                     | Direction   | In one line                                                             |
 | -------------------------------------------- | ----------- | ----------------------------------------------------------------------- |

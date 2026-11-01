@@ -56,7 +56,11 @@ Put everything in your own subfolder, `artifacts/<your-slug>/`:
    mocks must render offline. Interactions that carry the concept (keyboard nav, command palette, hover states, live
    ticking) should actually work.
 3. A PNG of each mock, rendered with headless Chrome:
-   `google-chrome --headless=new --disable-gpu --hide-scrollbars --window-size=1600,1000 --screenshot=<out>.png file://<abs path>`
+
+   ```sh
+   google-chrome --headless=new --disable-gpu --hide-scrollbars --window-size=1600,1000 --screenshot=<out>.png file://<abs path>
+   ```
+
    (use 390,844 with `--force-device-scale-factor=2` for mobile). Look at your own screenshots and iterate until they
    are right. Do not use the chrome-devtools MCP: other designers share that browser.
 

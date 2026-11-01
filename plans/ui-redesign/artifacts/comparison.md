@@ -2,8 +2,8 @@
 
 Five proposals are experiments, and one is the control: a conventional SaaS application built with care, against which
 the experiments' gains can be measured. Two more are classic variations on the control, each drawn from a different
-family of SaaS product and each borrowing the experiments' strongest elements. Each proposal answers the [brief](./brief.md) differently, and each one starts
-from a different question about what the board is for.
+family of SaaS product and each borrowing the experiments' strongest elements. Each proposal answers the
+[brief](./brief.md) differently, and each one starts from a different question about what the board is for.
 
 | Proposal                           | The board's question               | Direction   |
 | ---------------------------------- | ---------------------------------- | ----------- |
@@ -38,20 +38,19 @@ from a different question about what the board is for.
   standing orders absorb repetition, so the screen empties as the operator masters it. It holds the clearest answer to
   "does the fleet need me?" and the best mobile contract. Its risk is that it stands or falls on forecast accuracy: once
   the fuses prove wrong, the operator stops trusting silence and wants raw state back.
-
 - **Console** is the classic SaaS control. It has a collapsible left nav with an Inbox badge, a grouped chunk table in
   attention order with the needs-human group pinned and actionable in the row, saved views, a ⌘K palette, a push drawer,
   and a compact mode that is a single density switch. It costs the least to learn, and its pinned needs-human group sets
   the bar each experiment must beat. Its risks are that it reads as one more Linear-style app, and that a table-first
   board loses the kanban's sense of flow.
 - **Desk** takes the shared support inbox (Front, Intercom, Superhuman). Halts, asks and gates form one queue with
-  response-time clocks, assignment, snooze and macros, the node history is the conversation thread, and a note can travel
-  with a requeue as guidance for the next agent. Inbox zero is where the operator walks away, so that screen carries
-  Tacit's forecast of what the fleet will do without them. Its risks are that it has no flow view at all, and that notes
-  travelling with a macro need blizzard to support them.
+  response-time clocks, assignment, snooze and macros, the node history is the conversation thread, and a note can
+  travel with a requeue as guidance for the next agent. Inbox zero is where the operator walks away, so that screen
+  carries Tacit's forecast of what the fleet will do without them. Its risks are that it has no flow view at all, and
+  that notes travelling with a macro need blizzard to support them.
 - **Dispatch** takes fleet and dispatch consoles (Samsara, Onfleet, Flexport) with a Stripe-style spend view. Exceptions
-  are pinned first, and a conventional Gantt of slots over time carries Current's bounce loops, with the past left of the
-  now line and forecasts right of it. Altitude's query line is its search box and Synop's blocking chains become a
+  are pinned first, and a conventional Gantt of slots over time carries Current's bounce loops, with the past left of
+  the now line and forecasts right of it. Altitude's query line is its search box and Synop's blocking chains become a
   dependency diagram. It is the only classic proposal that answers "when". Its risks are that its ETAs may read as
   promises, and that the timeline needs width a laptop may not have.
 
