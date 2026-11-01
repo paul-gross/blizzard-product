@@ -4,6 +4,7 @@ refinement: refined
 epics:
   - claude-code
   - opencode
+  - opencode-2
   - codex
 ---
 
@@ -23,7 +24,8 @@ The initiative lands one harness at a time. The delivered [Claude Code epic](./c
 rather than scope to rebuild. [OpenCode](./opencode/index.md), delivered as the second live binding, was the test of
 whether the seam is real, and it built the [harness selection](./harness-selection.md) every later occupant inherits.
 [Codex](./codex/index.md) follows the same contract after two occupants have forced every Claude-shaped assumption into
-the binding that owns it.
+the binding that owns it. [OpenCode 2](./opencode-2.md) carries the OpenCode binding onto the harness's rewritten 2.x
+line, proving it afresh rather than assuming the 1.x contract survived.
 
 ## Boundaries
 
