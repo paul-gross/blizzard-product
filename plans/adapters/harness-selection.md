@@ -68,6 +68,16 @@ or bare lineage with a default is visible to the walk while it is still reachabl
 across a runner boundary is a `resume:<node>` whose stored session lives on a runner that no longer holds the chunk —
 the fresh mint that follows resolves under the new holder, exactly as the lost conversation itself does.
 
+## Version lines
+
+A harness family may hold more than one **line** — OpenCode 1 and OpenCode 2 are two lines of `opencode` — each a
+separate binding with its own admitted range. An acceptable-set entry may name a line with an `@` suffix: `opencode`
+accepts any available line, `opencode@2` only line 2. The suffix is additive; a bare id keeps its meaning, and an entry
+naming a line on a harness that has none is invalid at graph mint. A runner capability carries its line beside its
+observed version, a line-selected entry is satisfiable only by a runner advertising that line, and a session's line is
+fixed at mint and derived thereafter from its recorded mint-time version. The
+[OpenCode lines specification](./opencode-2/spec/lines.md) owns the rules for the one family that has lines today.
+
 ## Capability tiers
 
 A graph asks for a **capability tier** — `frontier`, `advanced`, and the rest of Blizzard's tier vocabulary — not for a
