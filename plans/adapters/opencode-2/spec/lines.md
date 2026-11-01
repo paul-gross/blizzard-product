@@ -1,77 +1,107 @@
 # OpenCode version lines specification
 
 OpenCode 1 and OpenCode 2 are two **lines** of one harness family. They share the harness id `opencode` and nothing
-else: each line has its own binding, admitted range, fixture corpus, runner configuration section, and conversation
+else: each line has its own binding, admitted versions, fixture corpus, runner configuration section, and conversation
 store. A line is named by its major version.
 
 ## Binding dispatch
 
-The runner's harness registry holds one adapter per configured line, keyed by `(harness_id, line)`. The `opencode` id
-resolves to a line in two places only. At capability probe, each configured line's binary reports its version, and the
-version must fall inside that line's admitted range; at session mint, selection picks a line, and the session records
-it. Every later operation on the session — resume, judgement, answer, nudge, context read, transcript read, takeover —
-dispatches through the recorded line's adapter without consulting the binary's current version to choose a binding.
+Each configured line is its own adapter, and every structure the runner and hub key by harness id today is keyed by
+`(harness_id, line)` for `opencode`. On the runner that is the harness registry and its wiring
+(`runner/harness/wiring.py`, `runner/harness/registry.py`), the health cache, the capability snapshot, the
+`selftest_results` table, and the `blizzard runner selftest` argument, which accepts `opencode@2`. On the hub it is
+eligibility (`hub/domain/execution/eligibility.py`), which today takes the first capability whose id matches and would
+judge tiers against one line only; it judges each advertised line separately. The mock hub's matching mirrors the hub.
 
-The line is derived from the session's recorded mint-time harness version, which the
-[harness selection contract](../../harness-selection.md) already persists. No column is added. A session reference
-remains `(harness_id, session_id)` for display and uniqueness; dispatch reads the line beside it. A session whose
-recorded line has no available adapter on its runner is unavailable, exactly as a session whose harness is missing, and
-the ordinary retry policy mints a fresh session or escalates. Neither line ever resumes a session the other minted.
+The line is fixed at mint. A session's line is the line of the harness version recorded on its first identified spawn
+for `(harness_id, session_id)`; a session whose first spawn recorded no version is line 1, which covers every session
+minted before this epic. A line-2 mint refuses to record a spawn without an observed version, so no line-2 session can
+fall into that default. No column is added. Every later operation on the session — resume, judgement, answer, nudge,
+context read, transcript read, takeover — dispatches through that line's adapter, without consulting the binary's
+current version to choose one.
+
+A session whose line has no available adapter on its runner is unavailable, as a session whose harness is missing is,
+and the attempt escalates in place. Neither line ever resumes a session the other minted.
 
 ## Admission
 
-| Line | Admitted range   | Corpus                          |
-| ---- | ---------------- | ------------------------------- |
-| 1    | `>=1.18.25,<2.0` | 1.18.25, 1.18.32, 1.18.33       |
-| 2    | `>=2.1.4,<2.2`   | 2.1.4, written by the 2.x proof |
+| Line | Admitted versions | Corpus                                        |
+| ---- | ----------------- | --------------------------------------------- |
+| 1    | `>=1.18.25,<2.0`  | `contracts/opencode/1.18.25/`                 |
+| 2    | `==2.1.4`         | `contracts/opencode-2/2.1.4/`, from the proof |
 
-The 2.x range admits one minor version at a time because the 2.x server API is young and has renamed payload fields
-within a major. Moving it is a compatibility proof and a committed corpus inside the new range. The 1.x range is not
-changed by this epic.
+Line 2 admits exactly the versions it has proven, as a set of pinned versions rather than a range, because the 2.x
+server API is young and has renamed payload fields within a major. Admitting another version is a compatibility proof
+run against it and its corpus committed beside the first. Line-2 corpora live under their own `contracts/opencode-2/`
+root, so line-1 corpus guards that walk `contracts/opencode/` never see a 2.x capture. Line 1's range is not changed by
+this epic.
 
-The runner re-reads the binary's version at every server launch, not only at daemon start. OpenCode 2 ships an `upgrade`
-command, so the binary can change beneath a running runner. A launch whose observed version differs from the version the
-capability advertised is refused before the server starts, marks the line unavailable, and triggers a fresh capability
-probe; a version inside the admitted range becomes available again only through that probe. The 2.x worker configuration
-disables OpenCode's own automatic update.
+The runner already reads the binary's version at every launch. What line 2 adds is the comparison: a launch whose
+observed version differs from the version the capability advertised is refused before the driver starts a server, marks
+the line unavailable, and triggers a fresh capability probe; the line becomes available again only through that probe.
+Every line-2 process carries `OPENCODE_DISABLE_AUTOUPDATE=1`.
 
 ## Runner configuration
 
-The existing `[opencode]` section configures line 1 and keeps its meaning. A new `[opencode_2]` section configures line
-2: the binary path, the store directory, model and effort aliases, the operator bundle, and the compaction mapping. A
-runner may carry either section, both, or neither. Each binary is named by an absolute path, because both lines install
-an executable called `opencode` and `PATH` cannot tell them apart.
+The existing `[opencode]` section configures line 1, and every key in it keeps its meaning, including a `binary` found
+on `PATH`. A new `[opencode_2]` section configures line 2:
 
-A section whose binary reports a version from the other line is a configuration error, not a quiet promotion: the
-capability is unavailable and the runner's health names the line the binary actually belongs to.
+| Key                  | Meaning                                                                                       |
+| -------------------- | --------------------------------------------------------------------------------------------- |
+| `enabled`            | Whether the line is configured at all                                                         |
+| `binary`             | Absolute path to the 2.x executable; required, because both lines install a binary `opencode` |
+| `store`              | The line-2 store directory, defaulting under the runner's state root                          |
+| `worker_config_path` | The runner-owned worker configuration, as for line 1                                          |
+| `models.supported`   | The models the line may resolve                                                               |
+| `models.aliases`     | Tier-to-model mapping                                                                         |
+| `effort.aliases`     | Effort-to-variant mapping                                                                     |
+| `compaction`         | Mapping of the compaction window onto OpenCode's compaction keys                              |
+| `preferred`          | Whether a bare `opencode` prefers line 2 when both lines are available; default true          |
+
+A runner may carry either section, both, or neither. A section whose binary reports a version from the other line is a
+configuration error, not a quiet promotion: the capability is unavailable and the runner's health names the line the
+binary actually belongs to.
+
+Both lines on one host need two binaries at two paths, and OpenCode 2's installer replaces a 1.x binary where it finds
+one. The runner's install guide therefore places each pinned version in its own directory, from OpenCode's release
+archives, and points each section at its own path; neither line's binary is the one on `PATH` unless the operator
+chooses it for line 1.
 
 ## Store isolation
 
-A line-2 store is a runner-owned OpenCode data and state directory, defaulting under the runner's own state root. The
-runner refuses a line-2 store that is the operator's personal OpenCode data directory, and refuses one that holds a 1.x
-store, because OpenCode 2 migrates a 1.x store in place on first start. Isolation is by `XDG_DATA_HOME`,
-`XDG_STATE_HOME`, and `XDG_CACHE_HOME` on every line-2 process the runner launches; `HOME` and `XDG_CONFIG_HOME` remain
-the operator's, so their skills and user configuration stay discoverable exactly as they are for 1.x, subject to what
-the proof records under ambient discovery.
+A line-2 store is a runner-owned OpenCode data, state, and cache directory. Isolation is by `XDG_DATA_HOME`,
+`XDG_STATE_HOME`, and `XDG_CACHE_HOME` on every line-2 process the runner launches. `HOME` and `XDG_CONFIG_HOME` remain
+the operator's, so the operator's global OpenCode configuration and skills are discoverable to line 2 as they are to
+line 1, subject to what the proof records under ambient discovery.
 
-`blizzard runner opencode login --line 2` runs `opencode auth login` against the runner's line-2 store, so the operator
-authenticates the store once with their ordinary flow. Capability health treats a store with no usable provider
-credential for the configured tiers as unavailable.
+The runner refuses a line-2 store that is the operator's personal OpenCode data directory, and one that holds a 1.x
+store, because OpenCode 2 migrates a 1.x store in place on first start.
+
+Line 1 keeps its sessions in the operator's personal store, which it does not isolate. On a host where the operator also
+runs OpenCode 2 personally, that store can be migrated beneath the 1.x runner. Line 1's capability health therefore
+recognizes a store OpenCode 2 has migrated and reports the line unavailable, naming the cause, rather than failing
+session by session.
+
+`blizzard runner opencode login --line 2` runs `opencode auth login --standalone` against the line-2 store, so the
+operator authenticates the store once with their ordinary flow and the managed service is never started. Capability
+health treats a store with no usable provider credential for the configured tiers as unavailable.
 
 ## Selection
 
-An acceptable-set entry is a harness id with an optional line selector: `opencode` accepts any available line,
-`opencode@2` and `opencode@1` accept only that line. The selector is additive to the acceptable-set grammar the
-[harness selection contract](../../harness-selection.md) defines, and every surface that authors or validates a harness
-list accepts it. An entry for a harness with no lines, such as `claude_code@1`, is invalid at graph mint.
+An acceptable-set entry is a harness id with an optional line selector, `<id>[@<line>]`: `opencode` accepts any
+available line, `opencode@2` and `opencode@1` only that line. The selector is additive to the acceptable-set grammar the
+[harness selection contract](../../harness-selection.md) defines. Graph mint validates the grammar only: a line on a
+harness that has none, such as `claude_code@1`, is well-formed and simply unclaimable, as any unsupported harness is.
+Entries are unique as written, so `["opencode@2", "opencode"]` is valid and means "line 2 if there is one, else any
+line".
 
-A bare `opencode` entry on a runner holding both lines resolves to the newest available line whose binding can resolve
-the session's authored tiers; the runner may override that preference with `[opencode_2] preferred = false`. Line
-preference applies only at mint. Acquisition eligibility counts a line-selected entry as satisfiable only by a runner
-advertising that line, so a chunk that needs `opencode@2` waits for a runner that has it.
+A bare `opencode` on a runner holding both lines resolves to line 2 when `[opencode_2] preferred` is true and line 2 can
+resolve the session's authored tiers, and to line 1 otherwise. A runner's default harness, used when the envelope
+carries no set, names a line explicitly when it names `opencode`. Line preference applies only at mint.
 
-A runner advertises one capability per available line, each carrying the harness id, the line, and the observed version.
-A runner from before this epic advertises no line; the hub reads its `opencode` capability as line 1, which is the only
-line such a runner can hold, and so never offers it a chunk that needs `opencode@2`. A runner from before this epic that
-is nonetheless handed a line-selected entry reads it as a harness id it does not hold and refuses the mint, so a
-line-selected session never runs on the wrong line.
+A runner advertises one capability per available line, each carrying the harness id, the line, and the observed version,
+and acquisition counts a line-selected entry as satisfiable only by a runner advertising that line. The hub stores
+capabilities as JSON and ignores fields it does not know, so the line is additive on the wire. A runner from before this
+epic advertises no line, and the hub reads its `opencode` capability as line 1, the only line such a runner can hold. A
+runner from before this epic handed a line-selected entry treats it as a harness it does not hold and tries the next
+entry, so a line-selected session never runs on a line it did not ask for.

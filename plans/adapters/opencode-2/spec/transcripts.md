@@ -3,31 +3,34 @@
 The line-2 transcript source implements the harness transcript seam and feeds the transcript lane owned by
 `epic:transcripts`. It reads the server API's documented surfaces, never OpenCode's SQLite schema.
 
-## Reading outside a lease
+## Read servers
 
-Transcripts are read while a lease runs and long after it ends, by the transcript pump, usage recovery, and context
-sampling. During a lease the source reads through the lease's own server. Outside a lease it launches a short-lived read
-server on the line-2 store — the same `serve` invocation with no worker configuration and every tool denied — reads, and
-stops it. Read servers are pooled per runner with an idle timeout, so a burst of reads does not start a server per read.
-A read never starts, joins, or depends on the operator's managed service.
+Transcripts are read while a turn runs and long after it ends, by the transcript pump, usage recovery, and context
+sampling. Every read goes through a read server: a private `opencode serve --stdio --port 0` on the line-2 store, owned
+by the runner process, whose injected configuration denies every tool and loads no plugin, so a read can never start or
+continue a turn. Read servers are pooled per runner with an idle timeout, so a burst of reads does not start a server
+per read. A read never starts, joins, or depends on the operator's managed service, and never goes through a driver's
+server, whose lifetime is the turn's.
 
 ## Forward reads
 
-`turns_since` reads `GET /api/session/{id}/message?order=asc` with cursor paging. Its opaque cursor carries the last
-admitted message id and the session's last admitted event `seq`, not an array offset. A cold read returns the bounded
-retained conversation; a forward read returns only messages after the cursor. A message still in progress — an assistant
-step whose tool part reads `running` — is a valid turn, and a later read of the completed message produces the output
-patch that finishes an already-shipped call.
+`turns_since` reads `GET /api/session/{id}/message?order=asc`, paging with the API's own opaque `cursor.next`. The
+source's cursor stores that API cursor together with the ids of every message it admitted while still in progress. A
+cold read returns the bounded retained conversation; a forward read returns the messages after the stored API cursor,
+then re-reads each still-unsettled message by id (`GET /api/session/{id}/message/{messageID}`). Messages are rewritten
+in place as they complete and never move, so a forward read alone would never see a completed state; the re-read is what
+produces the output patch that finishes an already-shipped call. A message is unsettled while any tool part in it reads
+`streaming` or `running`.
 
 The `prt_` part ids that `run --format json` prints are client-synthesized and absent from the API, so nothing keys on
-them. Message ids are stable and time-sortable; within a message, parts are ordered by position.
+them. Message ids are stable; within a message, parts are ordered by position.
 
 `size_bytes` measures the serialized root conversation the source reads, excluding child sessions. `context_tokens`
-reads the newest root assistant step's input, cache read, and cache write tokens, excluding `compaction` and `idle`
-marker messages; where the proof shows `GET /api/session/{id}/context` reports the model-visible context more exactly,
-that becomes the source.
+reads the newest root assistant step's input, cache read, and cache write tokens, skipping `compaction` and `idle`
+marker messages. `GET /api/session/{id}/context` returns the messages after the last compaction, not a token count, and
+is not used for either.
 
-Every read is bounded, timeout-limited, and safe against the server writing the session concurrently. A missing session
+Every read is bounded, timeout-limited, and safe against a server writing the session concurrently. A missing session
 returns `not_found`, which the API distinguishes from failure, unlike 1.x export; any other failure returns `unreadable`
 and logs once at the source boundary.
 
@@ -51,15 +54,16 @@ a parent link: a child with a `parentID` but no linked call becomes an unlinked 
 
 ## Usage and cost
 
-Turn usage is the root session's per-step usage for the turn's messages, read from the API, plus every descendant
-session's usage over the same turn, because root totals exclude children. Each child's spend is attributed to the turn
-whose `subagent` call spawned it, and recorded with the child's own model and variant. Cost is recorded as reported; a
-cost of zero under subscription authentication is unknown, not free, unless the proof shows the 2.x line reports real
-subscription cost, in which case the corpus records it and zero means zero.
+Turn usage is the root session's per-step usage for the turn's messages plus every descendant's usage over the same
+turn, read separately because root totals exclude children. The driver's result carries both for a completed turn; the
+transcript source recomputes them for an interrupted one, so a turn killed mid-flight still accounts for every completed
+step. Each child's spend is attributed to the turn whose `subagent` call spawned it, with the child's own model.
 
-Interrupted-invocation recovery reads the same per-step records, so a lease killed mid-turn still accounts for every
-completed step. Price estimates for unknown cost come from OpenCode's models cache in the line-2 store's cache
-directory.
+Cost is recorded as reported. A cost of zero under subscription authentication is unknown, not free, unless the corpus
+shows the line reports real subscription cost, in which case zero means zero. Where a step reports no cost, an estimate
+comes from the per-model prices `GET /api/model` serves, when the proof shows it carries them; otherwise cost stays
+unknown.
 
-Every transcript segment and usage record carries harness id, line, harness version, model, variant, and normalizer
-version as provenance.
+Usage and transcript records carry the provenance fields that already exist: harness id, harness version, model, effort,
+and normalizer version. The line is derived from the harness version and the variant is recorded as effort, so no field
+is added.
