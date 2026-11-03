@@ -24,11 +24,10 @@ The runner keeps the service up; a driver never starts it. At every capability p
 checks the service through `GET /api/info`, and when none is running it runs `opencode service start` itself, under the
 runner's tool profile — the allowlist alone, never a lease identity, lease token, or the worker profile's per-spawn
 variables — so nothing of a lease can leak into the service or into the operator's own sessions on it. It launches the
-command detached, in a session of its own, so no lease's group kill and no launch-timeout kill reaches the service;
-whether `opencode service start` detaches the service by itself is recorded by the proof. The runner never stops or
-restarts the service. A managed service the operator has disabled, under which OpenCode clients fall back to private
-servers, makes the capability unavailable by name. A service that cannot be reached within a bound fails the turn as a
-spawn failure.
+command detached, in a session of its own, so no lease's group kill and no launch-timeout kill reaches the service,
+though `opencode service start` already detaches the service by itself. The runner never stops or restarts the service.
+A managed service the operator has disabled, under which OpenCode clients fall back to private servers, makes the
+capability unavailable by name. A service that cannot be reached within a bound fails the turn as a spawn failure.
 
 The operator's configuration — global and project agents, MCP servers, skills, plugins, providers, and automatic
 compaction — applies to fleet sessions as it applies to the operator's own, as the OpenCode 1 binding's ambient
@@ -58,9 +57,9 @@ lease.
 **Environment.** Immediately after create, and at the start of every resumed invocation, the driver sets
 `PUT /api/session/{id}/environment` to the full allowlisted worker environment plus `BLIZZARD_*` identity. The call
 replaces the shell environment wholesale and is held only in the service's memory, so it carries everything a tool needs
-and is re-applied by every driver that opens the session. Each child session gets the same environment as it appears,
-because a child that falls back to the service's environment would see the operator's, not the lease's; until the driver
-reaches it, a child's tools run without the lease's identity, a degradation the binding declares.
+and is re-applied by every driver that opens the session. A child does not inherit it, and the driver does not apply it
+to children: a child's tools run under the service's environment, without the lease's identity — an accepted risk the
+binding declares as a degradation, revisited if a fleet workflow needs the lease's environment inside a subagent.
 
 **Prompt.** The prompt is the request body of `POST /api/session/{id}/prompt`, never a command-line argument, so it
 reaches the model verbatim. The fresh-mint prompt prefix is prepended exactly as for OpenCode 1.
@@ -68,7 +67,9 @@ reaches the model verbatim. The fresh-mint prompt prefix is prepended exactly as
 **Resume.** A resumed invocation opens only a session whose metadata names this runner; any other, including a 1.x
 session OpenCode 2 migrated into the store, is missing and takes the existing path for a lost conversation. It
 re-applies the session's permission rules through `PATCH /api/session/{id}`, re-applies its environment, and prompts the
-recorded id. It never sends a model on resume; the session keeps its own.
+recorded id. It keeps the session's own model, except after a takeover: the operator's TUI switches the session to the
+operator's model and agent, so a resume of a taken-over session sets the lease's model and agent again through
+`session.switchModel` and `session.switchAgent` before it prompts.
 
 **Completion.** A turn is complete when the root session is idle, no descendant is running, and the root's inbox
 (`GET /api/session/{id}/inbox`) is empty, observed after the last descendant settled — a finished background subagent
@@ -122,8 +123,15 @@ under takeover, and it completes before any restart resume is dispatched, so no 
 running. Both read the runner's own records, never a listing of the service's sessions, so one runner never touches
 another runner's sessions or the operator's. A turn that outlives its driver is stopped, never adopted.
 
-A service that restarts or goes away mid-turn ends the turn as failed. The session keeps its history in the store, and
-the next driver prompts it normally once the service is back.
+A service that restarts or goes away mid-turn ends the turn as failed. The driver recognizes a restart by the service's
+identity, not by an outage: a restart can finish within a second, between two polls. When it opens the session it
+records the registration's `id` and the `pid` that `GET /api/info` reports, and it compares both at every poll; an event
+stream that ends, which a restart ends cleanly rather than with an error, or a request that cannot connect makes it
+compare at once. OpenCode resumes a turn its restart interrupted by itself, without the session's environment, so on a
+changed identity the driver interrupts the session tree on the new service, writes its result with outcome `failed`, and
+exits. A service that stays unreachable past the bound fails the turn the same way, and the driver interrupts the tree
+if the service returns within the grace. A restart that also ends the driver, such as a reboot, leaves the turn to
+reconcile. The session keeps its history, and the next driver re-applies its environment and prompts it normally.
 
 ## Permissions
 

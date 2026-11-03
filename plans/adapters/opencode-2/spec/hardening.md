@@ -14,9 +14,9 @@ first one that fails:
 - the generic selftest passes
 
 The runner advertises harness id, observed version, and availability, as for any harness; failure detail stays
-runner-local. OpenCode 1 gains one check of its own: a store OpenCode 2 has migrated makes OpenCode 1 unavailable, by
-name. A probe never swaps the composed binding; a change of major version waits for a restart
-([versions](./versions.md#binding-dispatch)).
+runner-local. OpenCode 1 gains one check of its own: a store OpenCode 2 has migrated — marked by its `kv` key
+`migration.v1-v2` — makes OpenCode 1 unavailable, by name. A probe never swaps the composed binding; a change of major
+version waits for a restart ([versions](./versions.md#binding-dispatch)).
 
 Availability is recalculated at daemon start, after an operator-triggered selftest, when the observed version changes,
 and when a launch-time version comparison refuses. Losing availability removes the capability from new acquisition and
@@ -57,16 +57,16 @@ as one harness and separable when they disagree.
 
 Each corpus manifest declares the degradations its version carries, and the operator-facing capability lists them. The
 OpenCode 2 binding begins with two declared, both because a session's settings do not reach its children: a subagent's
-permissions follow the operator's agent configuration, and its tools run without the lease's identity, until the driver
-applies the session's rules and environment to it. Any other row the proof cannot settle as supported enters the
-manifest as degraded or blocks its step, never as an unstated assumption.
+permissions follow the operator's agent configuration until the driver applies the session's rules to it, and its tools
+run without the lease's environment or identity, which the driver never applies to a child. Any other row the proof
+cannot settle as supported enters the manifest as degraded or blocks its step, never as an unstated assumption.
 
 ## Verification layers
 
 | Layer                    | Required proof                                                                                                                                                                                                                                                                                                                                                                                                                                                      |
 | ------------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | Adapter unit             | Session-id minting and runner metadata, model reference and variant validation, the fixed-deny rule list and the reply each autonomy gives, completion detection, usage and child-usage attribution, verdict extraction from the driver result, error classification                                                                                                                                                                                                |
-| Driver unit              | Service discovery, environment application to root and children, signal-to-interrupt translation, permission and form replies, heartbeat from observed tool completions, compaction requested when the lease's window is crossed, polling with the event stream lost, and result writing                                                                                                                                                                            |
+| Driver unit              | Service discovery, environment application to the root alone, signal-to-interrupt translation, permission and form replies, heartbeat from observed tool completions, compaction requested when the lease's window is crossed, polling with the event stream lost, and result writing                                                                                                                                                                               |
 | Fixture contract         | Every 2.1.4 session, message, part, event, child, permission, form, compaction, error, and usage shape production parsing reads, from the committed corpus                                                                                                                                                                                                                                                                                                          |
 | Version dispatch         | Binding selection by the binary's version, the service's version advertised and recorded, admission by version range, a session without this runner's metadata reported missing, the launch-time comparison, and a change of major version leaving the capability unavailable until restart                                                                                                                                                                         |
 | Configuration and store  | One `[opencode]` section driving either major version, `auth_path` and `worker_config_path` ignored on OpenCode 2, OpenCode 1's migrated-store check, and every capability health check above                                                                                                                                                                                                                                                                       |

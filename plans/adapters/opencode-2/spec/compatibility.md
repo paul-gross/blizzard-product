@@ -22,7 +22,7 @@ version and one result per row, and writes evidence to a caller-named directory.
 | Caller-named session  | `POST /api/session` accepts a runner-minted `ses_` id, a `location`, a model reference with variant, a permission rule list, and metadata, and every later read reports that id and metadata                                                                                                                                                                                               |
 | Session environment   | `PUT /api/session/{id}/environment` reaches shell tools, replaces rather than merges, and is invisible to every other session; whether a child inherits its root's environment is recorded                                                                                                                                                                                                 |
 | Prompt and completion | A prompt body with newlines and quotes reaches the model verbatim; root idle, settled descendants, and an empty inbox are observable by polling alone, with the event stream disconnected                                                                                                                                                                                                  |
-| Service restart       | A session survives a restart of the service and is prompted normally afterward; a turn running when the service stopped is reported as no longer running once it returns                                                                                                                                                                                                                   |
+| Service restart       | A session survives a restart of the service and is prompted normally afterward; the service's identity across a restart, the event stream's end, and what becomes of a turn running when the service stopped are recorded                                                                                                                                                                  |
 | Concurrent sessions   | Two fleet sessions and an operator session run on one service at once without leaking rules, environment, permission requests, or events between them                                                                                                                                                                                                                                      |
 | Interrupt             | `POST /api/session/{id}/interrupt` stops a turn mid-tool, ends the tool's processes, and records `outcome: interrupted`; interrupting a running child before its root settles both                                                                                                                                                                                                         |
 | Judgement             | A prompt to a resumed session yields final root assistant text from which `<Choice>` and the assessment can be isolated without tool output or child text                                                                                                                                                                                                                                  |
@@ -56,10 +56,45 @@ records `outcome: interrupted`. Manual compaction produces a `compaction` messag
 default message order is descending. The event stream is volatile, and replay from a sequence number is experimental. A
 bogus variant fails with `provider.no-route`.
 
-What the proof must still settle is how the managed service is found, started, and authenticated by a client that is not
-OpenCode's own and whether `service start` detaches it, whether events carry the session id, whether a child inherits
-its root's environment, whether a spawning tool part records its child's id, and what migrating a 1.x store actually
-changes.
+The rest is settled for 2.1.4 too, and the proof records each as a regression fixture:
+
+- **Managed service.** The service registers itself in `$XDG_STATE_HOME/opencode/service.json` (default
+  `~/.local/state/opencode/service.json`, mode 0600) as `{id, version, url, pid, password}`, written on listen and
+  removed on stop; reading that file is the whole discovery contract. A client authenticates with HTTP Basic, username
+  `opencode` and the registered password, and confirms the service by `GET /api/info`, whose `pid` and `version` must
+  match the registration; without the password every `/api/*` route answers 401. It binds `127.0.0.1:49374` unless
+  `opencode service set` overrides the address. `opencode service start` returns at once and detaches the service by
+  itself: the server runs in a session of its own with no terminal. A second service under an isolated state directory
+  collides with the operator's on the default port, so hermetic runs use `--standalone` or another port.
+- **Events.** Every `session.*` event carries `data.sessionID`, for the root and each child alike; `shell.*` and
+  service-wide events carry none.
+- **Child environment.** A child does not inherit its root's environment: a variable set on the root through
+  `PUT /api/session/{id}/environment` is absent from its subagent's shell. A child does inherit its root's metadata.
+- **Child id.** The spawning `subagent` tool part records its child at `state.metadata.sessionID`, and removing a root
+  removes its children.
+- **Concurrent sessions.** Two fleet sessions and an operator session ran at once, in overlapping windows, on one
+  service: each shell saw only its own environment, an `ask` rule raised a request listed under its own session alone
+  and held the turn until `session.permission.reply` answered `{"decision": "once"}`, a `deny` rule failed the call with
+  `permission.rejected` without ending the turn, and every event carried only its own session's id.
+- **Takeover.** After `PATCH /api/session/{id}` replaced a fleet session's rules with the attended set,
+  `opencode --session <id>` opened it in the operator's TUI with its history, ran a typed prompt under the attended
+  rules, and recorded the turn on the same session. The TUI switches the session to the operator's own model and agent
+  and records `model-switched` and `agent-switched` messages, so a driver resuming a taken-over session sets the lease's
+  model again.
+- **Service restart.** `opencode service restart` completes in under a second, and the restarted service has a new
+  registration `id` and a new `pid`. An open event stream ends cleanly, with no error. A turn running at the restart is
+  resumed by the service itself: the interrupted tool is marked aborted (`Tool execution interrupted`), a synthetic
+  message tells the model the server restarted and to continue, `GET /api/session/active` lists the session as running,
+  and the model may run the interrupted command again. The session's environment does not survive the restart, so the
+  resumed turn's shells see none of it. The session keeps its history and is prompted normally afterward.
+- **Interrupting a tree.** Interrupting a root while its child runs a tool leaves both `interrupted` within a second and
+  ends the child's tool process.
+- **1.x store migration.** OpenCode 2 migrates the same `opencode.db` in place on first open and marks it with the `kv`
+  key `migration.v1-v2` = `{"phase":"completed"}`. It copies 1.x sessions and messages into `session_v2` and
+  `session_message` under the same ids, deletes every `event` row, and drops `data_migration`, `session_context_epoch`,
+  and `session_input`; the 1.x `session`, `message`, and `part` tables are left byte-identical. OpenCode 1 still lists,
+  exports, and continues its sessions afterward, but the migration runs once, so whatever OpenCode 1 writes later is
+  never seen by OpenCode 2 and the two views diverge.
 
 ## Corpus
 

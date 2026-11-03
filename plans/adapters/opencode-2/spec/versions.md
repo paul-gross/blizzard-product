@@ -74,7 +74,8 @@ credential for the configured tiers as unavailable.
 OpenCode 1 also keeps its sessions in the operator's personal store, and OpenCode 2 migrates a 1.x store in place the
 first time it opens it. An OpenCode 1 runner whose store has been migrated beneath it — by an operator who upgraded
 OpenCode without stopping it — reports its capability unavailable, naming the cause and recognizing the migration by the
-signal the 2.x proof records, rather than failing session by session.
+`kv` key `migration.v1-v2`, rather than failing session by session. OpenCode 1 can still read a migrated store, but
+nothing it writes afterward reaches OpenCode 2, so the refusal keeps the two views from diverging.
 
 ## Selection
 
