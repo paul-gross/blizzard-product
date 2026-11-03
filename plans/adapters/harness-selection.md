@@ -12,8 +12,8 @@ constraints.
 A **runner capability** is one enabled harness id together with the observed harness version, its availability evidence,
 and the capability tiers its configuration can resolve. Configured but missing, version-incompatible, failed-selftest,
 or unmapped-tier bindings remain visible diagnostically but do not satisfy the requirement they cannot run. One
-available capability is the runner's default; a duplicate id — or, for a harness with version lines, a duplicate id and
-line — or a default that is not available is a configuration error.
+available capability is the runner's default; a duplicate id or a default that is not available is a configuration
+error.
 
 An **acceptable harness set** is an ordered, nonempty list of harness ids. Order is preference and membership is
 permission: the first available member wins, and no harness outside the list may substitute. This deliberately differs
@@ -68,19 +68,17 @@ or bare lineage with a default is visible to the walk while it is still reachabl
 across a runner boundary is a `resume:<node>` whose stored session lives on a runner that no longer holds the chunk —
 the fresh mint that follows resolves under the new holder, exactly as the lost conversation itself does.
 
-## Version lines
+## Major versions
 
-A harness family may hold more than one **line** — OpenCode 1 and OpenCode 2 are two lines of `opencode` — each a
-separate binding with its own admitted versions. An acceptable-set entry is `<id>[@<line>]`: `opencode` accepts any
-available line, `opencode@2` only line 2. The suffix is additive, and a bare id keeps its meaning. Graph mint validates
-the grammar only, so a line on a harness that has none is well-formed and unclaimable, like any unsupported harness.
-Entries are unique as written, which lets `["opencode@2", "opencode"]` mean "line 2 if there is one, else any line".
+A harness may span more than one **major version** — OpenCode 1 and OpenCode 2 are both `opencode` — each a separate
+binding with its own admitted versions. The observed version of the runner's configured binary selects the binding, so a
+runner holds one major version at a time and advertises one capability for the harness, carrying its observed version as
+every capability does. The acceptable-set grammar is unchanged: a graph names the harness, never a major version.
 
-A runner advertises one capability per available line, carrying its line beside its observed version, and a
-line-selected entry is satisfiable only by a capability of that line. A runner's default names a line when its harness
-has lines. A session's line is fixed at mint and derived thereafter from the harness version of its first identified
-spawn; session identity stays `(harness_id, session_id)`, and dispatch reads the line beside it. The
-[OpenCode lines specification](./opencode-2/spec/lines.md) owns the rules for the one family that has lines today.
+A session lives in its major version's own store; nothing tracks or checks which major version a session belongs to, and
+a binding that cannot find a session treats it as a lost conversation. The
+[OpenCode versions specification](./opencode-2/spec/versions.md) owns the rules for the one harness that spans major
+versions today.
 
 ## Capability tiers
 

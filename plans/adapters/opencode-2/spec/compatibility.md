@@ -2,8 +2,8 @@
 
 The 2.x proof is the 2.x half of the existing `blizzard:manual-opencode-compatibility` verification method. The runner
 diagnostic `blizzard runner opencode compatibility` reads the binary's version first and dispatches to the proof for the
-observed line; a version in no admitted line is reported and nothing is probed. The 1.x proof is unchanged. A version is
-compatible only when every required row passes together; a result from documentation alone is not evidence.
+observed major version; a version neither admits is reported and nothing is probed. The 1.x proof is unchanged. A
+version is compatible only when every required row passes together; a result from documentation alone is not evidence.
 
 ## Isolation
 
@@ -15,10 +15,10 @@ exists to observe what production, which keeps both, actually reads. The proof n
 without `--server` or `--standalone`, because a bare client starts or joins the per-user managed service on its fixed
 port (49374).
 
-The operator authenticates the proof's isolated store beforehand with the line-2 login command pointed at it. The proof
-never prints, copies, or persists provider credentials, and its evidence is sanitized before it is written. It accepts
-the binary, model, and variant explicitly, prints the observed version and one result per row, and writes evidence to a
-caller-named directory.
+The operator authenticates the proof's isolated store beforehand with the OpenCode 2 login command pointed at it. The
+proof never prints, copies, or persists provider credentials, and its evidence is sanitized before it is written. It
+accepts the binary, model, and variant explicitly, prints the observed version and one result per row, and writes
+evidence to a caller-named directory.
 
 ## Rows
 
@@ -77,14 +77,15 @@ ambient source escapes the injected configuration.
 
 ## Corpus
 
-The proof writes its fixtures to `contracts/opencode-2/<version>/`, with a manifest naming the line, every row's result,
-the startup measurement, and the declared degradations. Line 2 admits a version only when its corpus is committed.
-Admitting another version is a proof run and a committed corpus; nothing else may move it.
+The proof writes its fixtures to `contracts/opencode/<version>/`, with a manifest naming the major version, every row's
+result, the startup measurement, and the declared degradations. The corpus is what the parsers and the mock are held to;
+it does not gate admission, which is the major version's range. The proof is rerun, and a new corpus committed, when a
+2.x release breaks the binding.
 
 ## Companion changes
 
 The proof extends `blizzard:manual-opencode-compatibility` rather than adding a method. The method's row in
 `blizzard-context`'s verification matrix (`verification/blizzard.md`) pins the admitted range `>=1.18.25,<2.0`; the
-change that lands the proof rewrites it to name both lines' admitted versions, and its manual-method detail gains the
-2.x procedure. `blizzard:manual-opencode-compatibility-rehearsal` gains a 2.x walk against the line-2 CLI-surface
-artifact, so the procedure is rehearsable offline.
+change that lands the proof rewrites it to name both major versions' admitted versions, and its manual-method detail
+gains the 2.x procedure. `blizzard:manual-opencode-compatibility-rehearsal` gains a 2.x walk against the OpenCode 2
+CLI-surface artifact, so the procedure is rehearsable offline.

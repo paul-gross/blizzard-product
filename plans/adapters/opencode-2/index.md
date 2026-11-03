@@ -7,7 +7,7 @@ status: horizon
 # Plan — `epic:adapters/opencode-2`
 
 An operator who has moved to OpenCode 2 finds the fleet will not follow them there. The OpenCode binding admits only the
-1.x line it was proven against, so a runner holding OpenCode 2 reports the harness as version-incompatible and never
+1.x releases it was proven against, so a runner holding OpenCode 2 reports the harness as version-incompatible and never
 offers it to a session. That refusal is the binding doing its job. OpenCode 2 is a new build, not a point release, and
 very little of what the 1.x binding stands on survived the rewrite. This epic gives OpenCode 2 a binding of its own,
 built to be the better of the two rather than a port that limps.
@@ -34,20 +34,20 @@ Much of what the 1.x binding had to infer from a stream of stdout, the 2.x bindi
 
 ## What the operator gets
 
-A runner offers OpenCode 1 and OpenCode 2 at the same time, and that is the destination, not a migration window. A
-runner holding either line is a first-class worker; a runner holding both advertises both; the fleet's runner host keeps
-running 1.x throughout. This epic adds 2.x and retires nothing: 1.x stays admitted, and no removal is planned beside it.
+Both major versions are first-class, and that is the destination, not a migration window. A runner works whichever major
+version its binary is: point it at OpenCode 2 and it is a 2.x worker, with the same configuration it had as a 1.x one.
+An operator who wants both runs two runners, and the fleet's runner host keeps running 1.x throughout. This epic adds
+2.x and retires nothing: 1.x stays admitted, and no removal is planned beside it.
 
-A graph author keeps writing `opencode` and gets whichever line the runner has, preferring the newer. An author who
-needs one line writes `opencode@2` or `opencode@1`, and a runner without that line does not take the chunk. A session
-stays on the line that minted it for its whole life, because the two lines keep separate conversation stores and neither
-can resume what the other wrote.
+A graph author keeps writing `opencode` and gets the major version of whichever runner takes the work. The two major
+versions keep separate conversation stores, so a runner moved from 1.x to 2.x loses its open 1.x conversations and
+carries on in fresh ones; conversations are ephemeral, and nothing more is done to preserve them.
 
-Nothing runs on a version Blizzard has not proven. The 2.x binding admits exactly the patch versions it has proven,
-beginning with 2.1.4, because the server API is young and renamed fields as recently as 2.1.0. A binary outside the
-admitted set is visible and refused, never driven on hope; a binary that changes under a running runner — OpenCode 2
-ships its own `upgrade` command — is caught at the next launch, refused, and re-proven before it is offered again.
-Admitting a new version is a compatibility proof and a committed fixture corpus, not an edit to a constant.
+Each binding admits its whole major version as a range, OpenCode 2 `>=2.0,<3.0` as OpenCode 1 admits 1.x. The proof runs
+against one real 2.x release, 2.1.4 to start, and its fixtures are what the parsers are tested against; a later 2.x
+release is trusted until it breaks, and a break is fixed when it shows up rather than prevented by pinning. A binary
+outside both ranges is visible and refused. A binary that changes under a running runner — OpenCode 2 ships its own
+`upgrade` command — is caught at the next launch, and the runner probes it again before offering it.
 
 And the 2.x worker is good where 1.x was merely workable:
 
@@ -66,21 +66,21 @@ And the 2.x worker is good where 1.x was merely workable:
 
 Each question the build would otherwise stop on is decided here, so the build starts from choices.
 
-**One harness id, two bindings.** OpenCode 2 is still OpenCode to the people choosing it, so it keeps the `opencode`
-harness id. Behind the id sit two separate implementations, each owning its admitted versions and its fixture corpus.
-The runner configures each line in its own section, naming the binary for it, and the observed version confirms the
-binary belongs to that line; a binary from the other line is refused, not quietly promoted. Authors select a line with
-an `@` suffix on the acceptable-set entry; the [harness selection contract](../harness-selection.md) gains that suffix
-as an additive extension.
+**One harness id, two bindings, chosen by version.** OpenCode 2 is still OpenCode to the people choosing it, so it keeps
+the `opencode` harness id. Behind the id sit two separate implementations, each owning its admitted versions and its
+fixture corpus, and the version of the runner's configured binary selects between them. Configuration stays identical
+across the two — the operator moves a runner to 2.x by changing its binary and nothing else — and graphs, the hub, and
+the [harness selection contract](../harness-selection.md) see one `opencode` capability with an observed version, as
+they do today.
 
 **A Blizzard driver owns each turn, and each turn owns a private server.** The runner's seam treats a worker's exit as
-the end of its turn, and that seam stays as it is. So the recorded worker for every line-2 spawn, resume, and judgement
-is a Blizzard driver process. The driver starts a private OpenCode server as its own child, on loopback, with the turn's
-environment and configuration; drives the session over the API; answers permission requests; writes the turn's result
-where the runner already reads one; stops the server; and exits. One turn, one process group, whose death ends every
-tool it started — the invariant the 1.x specification insisted on — while every API affordance is in reach. A signal
-asking the turn to stop becomes an API interrupt before it becomes a kill. The operator's own background service is
-never started, joined, or touched.
+the end of its turn, and that seam stays as it is. So the recorded worker for every OpenCode 2 spawn, resume, and
+judgement is a Blizzard driver process. The driver starts a private OpenCode server as its own child, on loopback, with
+the turn's environment and configuration; drives the session over the API; answers permission requests; writes the
+turn's result where the runner already reads one; stops the server; and exits. One turn, one process group, whose death
+ends every tool it started — the invariant the 1.x specification insisted on — while every API affordance is in reach. A
+signal asking the turn to stop becomes an API interrupt before it becomes a kill. The operator's own background service
+is never started, joined, or touched.
 
 **The runner owns the store.** A runner's 2.x sessions live in a runner-owned OpenCode data directory, which every
 driver's server opens, so a session minted in one turn resumes in the next. It is never the operator's personal store,
@@ -110,26 +110,26 @@ live proof writes the fixture corpus, and at the end, where the release gate run
 is the fleet's, once the corpus it builds from has landed.
 
 **A mock OpenCode 2 is part of the epic.** Blizzard tests every harness against a mock that runs the prompt as a
-behavior script and fails on command, and line 2 gets its own beside line 1's: a mock server answering the API subset
-the driver uses, held to the same corpus as the real binary, so a test can script a turn that edits, spawns a child,
-asks permission, hits a usage limit, or loses its server, without a real OpenCode or a real token.
+behavior script and fails on command, and OpenCode 2 gets its own beside OpenCode 1's: a mock server answering the API
+subset the driver uses, held to the same corpus as the real binary, so a test can script a turn that edits, spawns a
+child, asks permission, hits a usage limit, or loses its server, without a real OpenCode or a real token.
 
 ## Sequence
 
 The epic lands in the four steps the OpenCode epic proved, each gated on the one before.
 
-1. **Prove the 2.x line, by hand.** A 2.x compatibility proof runs against a private server in an isolated store, writes
-   a fixture corpus for 2.1.4, and settles every row with evidence. The runner's compatibility diagnostic dispatches to
-   the proof for the line it observes, and a line-2 CLI-surface artifact in `blizzard-mock` lets the diagnostic's own
-   tests run without OpenCode.
+1. **Prove OpenCode 2, by hand.** A 2.x compatibility proof runs against a private server in an isolated store, writes a
+   fixture corpus for 2.1.4, and settles every row with evidence. The runner's compatibility diagnostic dispatches to
+   the proof for the major version it observes, and an OpenCode 2 CLI-surface artifact in `blizzard-mock` lets the
+   diagnostic's own tests run without OpenCode.
 2. **A usable 2.x worker.** The mock OpenCode 2 lands first, shaped from the corpus. Against it, the driver spawns,
-   resumes, judges, nudges, and hands over a session, and the runner holds both lines at once, advertising and selecting
-   by line.
+   resumes, judges, nudges, and hands over a session, and the runner composes the OpenCode 2 binding when its binary is
+   2.x.
 3. **Conversation parity.** Transcripts, context measurement, usage, cost, and child agents are read from the server
    API, normalized into Blizzard's vocabulary, and recognized by the hub's analytics under their own dialect.
 4. **Hardening, closed by hand.** Interruption, upgrade under a running runner, concurrent turns sharing a store,
    health, and the generic selftest are built against the mock; the release gate is the operator's run against a real
-   OpenCode 2, with line 1's live proof re-run beside it.
+   OpenCode 2, with OpenCode 1's live proof re-run beside it.
 
 The fleet works steps 2 and 3 and the mock-tested half of step 4. Their issues are filed blocked on the step 1 issue,
 which the operator closes when the corpus lands; the release gate is the operator's issue, blocked on the rest.

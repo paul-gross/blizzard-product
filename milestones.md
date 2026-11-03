@@ -17,8 +17,8 @@ way around.
 ## `milestone:polyglot` — any harness, with the safeties on
 
 No single coding agent should ever be load-bearing for the fleet. The operator runs the harness that serves the work —
-chosen for the whole fleet, or mixed by node the way models already are — and when a harness ships a new major line, the
-fleet takes it up beside the old one rather than forcing a migration. Harness choice becomes a tunable rather than a
+chosen for the whole fleet, or mixed by node the way models already are — and when a harness ships a new major version,
+the fleet takes it up beside the old one rather than forcing a migration. Harness choice becomes a tunable rather than a
 fact of the platform: the harness engineer runs the same chunk through two harnesses and compares them on cost and
 quality.
 

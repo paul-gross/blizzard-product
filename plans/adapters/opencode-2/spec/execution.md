@@ -2,11 +2,11 @@
 
 ## Composition
 
-The line-2 adapter is a new binding beside the line-1 adapter, not a branch inside it. It implements the same harness
-seam, returns harness-neutral values, and keeps model and variant mapping, driver composition, permission translation,
-plugin generation, usage translation, and transcript access inside itself. It shares no parsing code with line 1: the
-two lines' shapes are fixture-proven separately and may drift separately. Harness selection, line selection, and retry
-policy remain outside both.
+The OpenCode 2 adapter is a new binding beside the OpenCode 1 adapter, not a branch inside it. It implements the same
+harness seam, returns harness-neutral values, and keeps model and variant mapping, driver composition, permission
+translation, plugin generation, usage translation, and transcript access inside itself. It shares no parsing code with
+OpenCode 1: the two versions' shapes are fixture-proven separately and may drift separately. Harness selection, the
+choice of binding by observed version, and retry policy remain outside both.
 
 The adapter's server client is a small typed client over the stable `/api/*` operations the proof admits. It does not
 depend on OpenCode's JavaScript SDK, and it calls no operation the proof marked experimental for any behavior a turn
@@ -14,10 +14,10 @@ needs to finish.
 
 ## The driver
 
-Every line-2 spawn, resume, judgement, and nudge launches one `blizzard runner opencode drive` process, and that process
-is the worker the seam records: its PID and start time are the lease's process, its exit is the end of the turn, and its
-stdout, or the judgement's `output_path`, carries the turn's result. The seam's contract that a worker's exit declares
-its turn done is unchanged; nothing in the runner loop, judgement, or selftest learns that a server exists.
+Every OpenCode 2 spawn, resume, judgement, and nudge launches one `blizzard runner opencode drive` process, and that
+process is the worker the seam records: its PID and start time are the lease's process, its exit is the end of the turn,
+and its stdout, or the judgement's `output_path`, carries the turn's result. The seam's contract that a worker's exit
+declares its turn done is unchanged; nothing in the runner loop, judgement, or selftest learns that a server exists.
 
 The driver is launched through the runner's ordinary process launcher, so it is held behind the launcher's trampoline
 until the provisional spawn is durable. Only then does it start OpenCode:
@@ -31,11 +31,11 @@ closes its stdin. A server that does not announce and answer a readiness probe w
 fails as a spawn failure.
 
 The server's environment is the driver's: the allowlisted worker environment, the `BLIZZARD_*` identity variables, the
-line-2 store's `XDG_DATA_HOME`, `XDG_STATE_HOME`, and `XDG_CACHE_HOME`, `OPENCODE_CONFIG_CONTENT` carrying the effective
-worker configuration, and `OPENCODE_DISABLE_AUTOUPDATE=1`. `OPENCODE_CONFIG_DIR` is never set, because it replaces the
-operator's global configuration directory rather than adding to it; the operator bundle is merged into the injected
-configuration, with its plugins referenced by absolute path. Because the server serves one turn and inherits the
-driver's environment, a child session that falls back to the server's environment still sees the lease's own.
+OpenCode 2 store's `XDG_DATA_HOME`, `XDG_STATE_HOME`, and `XDG_CACHE_HOME`, `OPENCODE_CONFIG_CONTENT` carrying the
+effective worker configuration, and `OPENCODE_DISABLE_AUTOUPDATE=1`. `OPENCODE_CONFIG_DIR` is never set, because it
+replaces the operator's global configuration directory rather than adding to it; the operator bundle is merged into the
+injected configuration, with its plugins referenced by absolute path. Because the server serves one turn and inherits
+the driver's environment, a child session that falls back to the server's environment still sees the lease's own.
 
 The driver never runs an OpenCode client command without `--server` or `--standalone`, so the operator's managed service
 is never started or joined.
@@ -54,7 +54,7 @@ replaces the shell environment wholesale and is held only in the server's memory
 and is re-applied by every driver that opens the session.
 
 **Prompt.** The prompt is the request body of `POST /api/session/{id}/prompt`, never a command-line argument, so it
-reaches the model verbatim. The fresh-mint prompt prefix is prepended exactly as for line 1.
+reaches the model verbatim. The fresh-mint prompt prefix is prepended exactly as for OpenCode 1.
 
 **Resume.** A resumed invocation starts a new private server on the same store, re-applies the session's permission
 rules through `PATCH /api/session/{id}`, re-applies its environment, and prompts the recorded id. It never sends a model
@@ -120,20 +120,20 @@ recorded in the driver's result, so nothing waits on a person and every answer l
 
 ## Runner-owned plugin
 
-The line-2 heartbeat plugin is a generated directory plugin, default-exporting `{ id, setup(ctx) }` with no package
+The OpenCode 2 heartbeat plugin is a generated directory plugin, default-exporting `{ id, setup(ctx) }` with no package
 dependency, listed in the worker configuration's `plugins` by absolute path. It runs `blizzard runner heartbeat` after
 every tool execution in the root and in its descendants, observes `session.execution.*` events for the root as its
 lifecycle signal, and distinguishes root from child through the session's `parentID`. The lifecycle signal lifts the 1.x
-root-hook degradation for line 2. The plugin filters by session id even though its server serves one turn, so a future
-shared-server mode cannot leak another lease's events into it. A plugin that fails to load degrades heartbeat and the
-lifecycle signal without affecting the turn.
+root-hook degradation for OpenCode 2. The plugin filters by session id even though its server serves one turn, so a
+future shared-server mode cannot leak another lease's events into it. A plugin that fails to load degrades heartbeat and
+the lifecycle signal without affecting the turn.
 
 ## Models, variants, and compaction
 
 The resolved model and effort become a model reference `{providerID, id, variant}`. Effort maps to a variant through
-`[opencode_2.effort.aliases]`, defaulting to the identity mapping for `low`, `medium`, `high`, and `max`; the driver
+`[opencode.effort.aliases]`, defaulting to the identity mapping for `low`, `medium`, `high`, and `max`; the driver
 checks the variant against the model listing (`GET /api/model`) before creating the session and refuses an unknown one,
-rather than discovering `provider.no-route` mid-turn. Tiers map through `[opencode_2.models.aliases]`. An empty model
+rather than discovering `provider.no-route` mid-turn. Tiers map through `[opencode.models.aliases]`. An empty model
 leaves OpenCode's configured default in force. The CLI's `provider/model#variant` form appears only in the takeover
 command.
 
@@ -153,7 +153,7 @@ must repair.
 
 Takeover composes `blizzard runner opencode attend <id>` in the recorded working directory. The runner's existing
 takeover path first stops the lease's worker, which the driver turns into an interrupt. The attend command then starts a
-private server on the line-2 store with the lease identity environment and `OPENCODE_DISABLE_AUTOUPDATE=1`, replaces the
-session's unattended rules with the attended set through `PATCH /api/session/{id}`, and runs the TUI as
+private server on the OpenCode 2 store with the lease identity environment and `OPENCODE_DISABLE_AUTOUPDATE=1`, replaces
+the session's unattended rules with the attended set through `PATCH /api/session/{id}`, and runs the TUI as
 `opencode --server <url> --session <id>`. When the operator leaves, it stops the server. The next automated resume
 re-applies the unattended rules, so attended permissions never leak back into unattended work.

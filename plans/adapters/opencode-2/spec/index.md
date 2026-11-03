@@ -8,7 +8,7 @@ edited by this epic.
 | Where                                              | Read when                                                                                                     |
 | -------------------------------------------------- | ------------------------------------------------------------------------------------------------------------- |
 | [compatibility.md](./compatibility.md)             | Proving an OpenCode 2 version before implementing or admitting it, or its verification-matrix companion edit  |
-| [lines.md](./lines.md)                             | Implementing version lines: dispatch, the `@` selector, admission, runner configuration, store isolation      |
+| [versions.md](./versions.md)                       | Implementing major versions: dispatch by version, sessions, admission, configuration, store isolation         |
 | [execution.md](./execution.md)                     | Implementing the driver, session lifecycle, stopping, permissions, the plugin, models, or takeover            |
 | [transcripts.md](./transcripts.md)                 | Implementing 2.x read servers, transcript reads, normalization, context, usage, or cost                       |
 | [hardening.md](./hardening.md)                     | Implementing health, selftest, concurrency, analytics, verification, the mock OpenCode 2, or the release gate |
