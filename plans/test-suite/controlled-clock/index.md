@@ -62,11 +62,12 @@ clock without saying so in the spec.
 
 ## What it moves
 
-Three specs wait out real windows today, and they move first: the budget lever's thirty-second trailing window, the
-forge-status sweep's full-pass floor, and the egress night's fifteen-second slow station and its whole-second window
-close. Three more read the machine's clock to build instants the daemons then judge against their own: the subscription
-floor, release, and utilization-lever specs. Under a controlled clock, they can also prove the moment a floor opens at
-its reset, which none of them can reach today. [spec/ports.md](./spec/ports.md) carries the roster.
+Four specs wait out real windows today, and they move first: the budget lever's thirty-second trailing window, the
+forge-status sweep's full-pass floor, the egress night's fifteen-second slow station and its whole-second window close,
+and the park spec's one-hour review timeout, whose two cases stay off under `test.fixme` until the clock lands. Three
+more read the machine's clock to build instants the daemons then judge against their own: the subscription floor,
+release, and utilization-lever specs. Under a controlled clock, they can also prove the moment a floor opens at its
+reset, which none of them can reach today. [spec/ports.md](./spec/ports.md) carries the roster.
 
 ## Boundaries
 
