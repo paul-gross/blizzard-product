@@ -1,8 +1,8 @@
 # OpenCode major versions specification
 
 OpenCode 1 and OpenCode 2 are two major versions of one harness, `opencode`. Each has its own binding, admitted
-versions, fixture corpus, and conversation store. They share the harness id and the runner's configuration: which major
-version a runner works is decided by the version of the binary it is configured with, never by a setting.
+versions, and fixture corpus. They share the harness id and the runner's configuration: which major version a runner
+works is decided by the version of the binary it is configured with, never by a setting.
 
 ## Binding dispatch
 
@@ -16,8 +16,8 @@ and a runner from before this epic is indistinguishable from one that holds Open
 The version is read where the runner reads it today: on every capability probe, which chooses the binding, and before
 every launch. A launch whose observed version differs from the version the capability advertised — an operator ran
 `opencode upgrade`, or replaced the binary — is refused before anything starts, marks the capability unavailable, and
-triggers a fresh probe, which composes whichever binding the new version selects. Every OpenCode 2 process carries
-`OPENCODE_DISABLE_AUTOUPDATE=1`.
+triggers a fresh probe, which composes whichever binding the new version selects. OpenCode 2's service is the operator's
+and may update itself; the comparison is what catches it, against the version the service reports.
 
 An operator who wants both major versions on one machine runs two runners, each configured with its own binary. The
 runner host already hosts several runners; the two major versions need nothing more from it. Both major versions install
@@ -27,12 +27,12 @@ runner's `binary` at its own path.
 
 ## Sessions
 
-A session lives in the store of the major version that minted it, and the two stores never share a session. Nothing
-tracks which major version a session belongs to or checks it: a binding asked to resume a session its store does not
-hold finds it missing, and the attempt takes the existing path for a lost conversation. A runner moved from 1.x to 2.x
-simply loses its open 1.x conversations, which are ephemeral, and its work carries on in fresh ones. The harness version
-recorded on every spawn, as the [harness selection contract](../../harness-selection.md) requires of every harness,
-stays a record for analytics and diagnosis, never a dispatch key.
+A session lives in the store its major version keeps — OpenCode 1's and OpenCode 2's are separate — and the two never
+share a session. Nothing tracks which major version a session belongs to or checks it: a binding asked to resume a
+session its store does not hold finds it missing, and the attempt takes the existing path for a lost conversation. A
+runner moved from 1.x to 2.x simply loses its open 1.x conversations, which are ephemeral, and its work carries on in
+fresh ones. The harness version recorded on every spawn, as the [harness selection contract](../../harness-selection.md)
+requires of every harness, stays a record for analytics and diagnosis, never a dispatch key.
 
 ## Admission
 
@@ -52,27 +52,21 @@ inside its own range. OpenCode 1's range is not changed by this epic.
 The `[opencode]` section is unchanged, and every key in it means the same thing on either major version: `binary`,
 including one found on `PATH`, `worker_config_path`, `models.supported`, `models.aliases`, `effort.aliases`, and
 `compaction`. Each binding applies a key the way its major version needs it — OpenCode 2 carries effort into the model
-reference's variant, for one — but an operator who moves a runner from 1.x to 2.x changes the binary and nothing else.
+reference's variant, enforces the compaction window itself rather than through OpenCode's configuration, and has no
+worker configuration to inject, so it leaves `worker_config_path` unused — but an operator who moves a runner from 1.x
+to 2.x changes the binary and nothing else.
 
-## Store isolation
+## The operator's store
 
-An OpenCode 2 store is a runner-owned OpenCode data, state, and cache directory under the runner's state root, chosen by
-the runner rather than configured. Isolation is by `XDG_DATA_HOME`, `XDG_STATE_HOME`, and `XDG_CACHE_HOME` on every
-OpenCode 2 process the runner launches. `HOME` and `XDG_CONFIG_HOME` remain the operator's, so the operator's global
-OpenCode configuration and skills are discoverable to OpenCode 2 as they are to OpenCode 1, subject to what the proof
-records under ambient discovery.
+OpenCode 2 sessions live in the operator's own store, on the operator's own service, under the operator's own
+authentication; the runner owns no store and has no login of its own
+([execution](./execution.md#the-operators-opencode-service)). Capability health treats a service with no usable provider
+credential for the configured tiers as unavailable.
 
-The runner refuses an OpenCode 2 store that is the operator's personal OpenCode data directory, and one that holds a 1.x
-store, because OpenCode 2 migrates a 1.x store in place on first start.
-
-OpenCode 1 keeps its sessions in the operator's personal store, which it does not isolate. On a host where the operator
-also runs OpenCode 2 personally, that store can be migrated beneath the 1.x runner. OpenCode 1's capability health
-therefore recognizes a store OpenCode 2 has migrated and reports the capability unavailable, naming the cause, rather
-than failing session by session.
-
-On an OpenCode 2 runner, `blizzard runner opencode login` runs `opencode auth login --standalone` against the runner's
-store, so the operator authenticates the store once with their ordinary flow and the managed service is never started.
-Capability health treats a store with no usable provider credential for the configured tiers as unavailable.
+OpenCode 1 also keeps its sessions in the operator's personal store, and OpenCode 2 migrates a 1.x store in place the
+first time it opens it. On a host where an OpenCode 1 runner and OpenCode 2 share a user, the 1.x store is migrated
+beneath the 1.x runner. OpenCode 1's capability health therefore recognizes a store OpenCode 2 has migrated and reports
+the capability unavailable, naming the cause, rather than failing session by session.
 
 ## Selection
 

@@ -3,14 +3,11 @@
 The OpenCode 2 transcript source implements the harness transcript seam and feeds the transcript lane owned by
 `epic:transcripts`. It reads the server API's documented surfaces, never OpenCode's SQLite schema.
 
-## Read servers
+## Reads
 
 Transcripts are read while a turn runs and long after it ends, by the transcript pump, usage recovery, and context
-sampling. Every read goes through a read server: a private `opencode serve --stdio --port 0` on the OpenCode 2 store,
-owned by the runner process, whose injected configuration denies every tool and loads no plugin, so a read can never
-start or continue a turn. Read servers are pooled per runner with an idle timeout, so a burst of reads does not start a
-server per read. A read never starts, joins, or depends on the operator's managed service, and never goes through a
-driver's server, whose lifetime is the turn's.
+sampling. Every read goes to the operator's service through the same API the driver uses, and only through its read
+operations, so a read can never start or continue a turn.
 
 ## Forward reads
 
@@ -30,7 +27,7 @@ reads the newest root assistant step's input, cache read, and cache write tokens
 marker messages. `GET /api/session/{id}/context` returns the messages after the last compaction, not a token count, and
 is not used for either.
 
-Every read is bounded, timeout-limited, and safe against a server writing the session concurrently. A missing session
+Every read is bounded, timeout-limited, and safe against the service writing the session concurrently. A missing session
 returns `not_found`, which the API distinguishes from failure, unlike 1.x export; any other failure returns `unreadable`
 and logs once at the source boundary.
 
