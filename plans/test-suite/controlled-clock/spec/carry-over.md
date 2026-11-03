@@ -11,7 +11,11 @@ installation holds moves.
 2. **`ControlledClock` and the fence** in `src/blizzard/foundation/clock.py`, with their component tests. Nothing calls
    them yet.
 3. **The hub's composition root and its clock routes** ([clock.md](./clock.md#the-composition-roots),
-   [routes.md](./routes.md)), after 2.
+   [routes.md](./routes.md)), after 2. It replaces the hub's test-fenced flow-step control: the `FixedClock` that
+   `BLIZZARD_TEST_FLOW_STEP` builds the hub core on in `src/blizzard/hub/app.py`, and the
+   `POST
+   /api/admin/test-flow/advance` route in `src/blizzard/hub/api/test_flow_control.py` behind the harness's
+   `flowAdvance()`. The controlled clock takes over their callers, and both are removed in this change.
 4. **The runner host's composition root and its clock routes**, after 1 and 2, independent of 3.
 5. **The mock fleet's clocks and `/_clock` routes**, in `blizzard-mock`, independent of everything before it.
 6. **`docs/versioning.md`'s sentence on fenced surfaces** ([routes.md](./routes.md#not-a-released-surface)), with 3, the
@@ -20,8 +24,8 @@ installation holds moves.
    alignment, moves, session refresh, the browser, and `vendor-usage.ts` reading `clock.now()`
    ([harness.md](./harness.md)). A harness check spec proves alignment, a move across hub, host, and forge, and the
    refusal at a shared isolation level.
-8. **The ports**, one change per spec, after 7 ([ports.md](./ports.md)): the three that wait out real windows first,
-   then the three that build instants from the machine's clock.
+8. **The ports**, one change per spec, after 7 ([ports.md](./ports.md)): the four that wait out real windows first, then
+   the three that build instants from the machine's clock.
 9. **The check against the machine's clock and the rulebook's rewrite**, after the last port
    ([below](#citations-and-the-rulebook)).
 
