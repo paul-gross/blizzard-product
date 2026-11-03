@@ -14,26 +14,33 @@ finish.
 
 ## The operator's OpenCode service
 
-OpenCode 2 runs one managed background service per user, and Blizzard works through it. The runner never starts a
-private server, never isolates a store, and never injects configuration into OpenCode: every session the fleet runs is a
-session on the operator's own service, in the operator's own store, under the operator's own authentication and
-configuration. Everything Blizzard controls about a session it sets through the API on that session. Blizzard never
-tracks, signals, or kills an OpenCode process; the API is the only way it starts, stops, or interrupts work.
+OpenCode 2 runs one managed background service per user, and Blizzard works through it: every session the fleet runs is
+a session on the operator's own service, in the operator's own store, under the operator's own authentication and
+configuration. The runner never runs a private server, never isolates a store, and never injects configuration into
+OpenCode. Everything Blizzard controls about a session it sets through the API on that session. Blizzard never tracks,
+signals, or kills an OpenCode process; the API is the only way it stops or interrupts work.
 
-A driver finds the service through the registration OpenCode writes for it, and starts it the way any OpenCode client
-does when none is registered. A service that cannot be reached within a bound fails the turn as a spawn failure.
+The runner keeps the service up; a driver never starts it. At every capability probe and before every launch, the runner
+checks the service through `GET /api/health`, and when none is running it runs `opencode service start` itself — outside
+every lease's process group, and with none of the worker environment: only the operator's own home, path, and locale
+reach it, so no lease identity, token, or allowlisted variable can leak into the service or into the operator's own
+sessions on it. The runner never stops or restarts the service. A managed service the operator has disabled, under which
+OpenCode clients fall back to private servers, makes the capability unavailable by name. A service that cannot be
+reached within a bound fails the turn as a spawn failure.
 
 The operator's configuration — global and project agents, MCP servers, skills, plugins, providers, and automatic
 compaction — applies to fleet sessions as it applies to the operator's own, as the OpenCode 1 binding's ambient
 configuration already does. Where the runner needs something narrower, it says so in the session's own rules: a session
-can deny an MCP server's tools as it denies any tool.
+can deny an MCP server's tools as it denies any tool. What the operator does to a fleet session directly, on their own
+service, is theirs to do; the binding does not guard against it.
 
 ## The driver
 
 Every OpenCode 2 spawn, resume, judgement, and nudge launches one `blizzard runner opencode drive` process, and that
 process is the worker the seam records: its exit is the end of the turn, and its stdout, or the judgement's
 `output_path`, carries the turn's result. The seam's contract that a worker's exit declares its turn done is unchanged;
-nothing in the runner loop, judgement, or selftest learns that a service exists. The driver is Blizzard's own API
+nothing in the runner loop, judgement, or selftest learns that a service exists, and what the runner does on the service
+itself goes through the seam additions under [stopping a turn](#stopping-a-turn). The driver is Blizzard's own API
 client, launched through the runner's ordinary process launcher and held behind its trampoline until the provisional
 spawn is durable. It starts no OpenCode process of its own.
 
@@ -43,20 +50,23 @@ spawn is durable. It starts no OpenCode process of its own.
 differently from native ids, which nothing in Blizzard depends on — and returns an identified handle at spawn, the path
 the seam already provides for a harness that names its session at launch. The driver creates the session after the
 launcher has released it: `POST /api/session` with the id, the spawn's working directory as its `location`, the resolved
-model reference `{providerID, id, variant}`, the session's permission rules, and metadata marking it as the runner's and
-naming its lease.
+model reference `{providerID, id, variant}`, the session's permission rules, and metadata naming the runner and the
+lease.
 
 **Environment.** Immediately after create, and at the start of every resumed invocation, the driver sets
 `PUT /api/session/{id}/environment` to the full allowlisted worker environment plus `BLIZZARD_*` identity. The call
 replaces the shell environment wholesale and is held only in the service's memory, so it carries everything a tool needs
 and is re-applied by every driver that opens the session. Each child session gets the same environment as it appears,
-because a child that falls back to the service's environment would see the operator's, not the lease's.
+because a child that falls back to the service's environment would see the operator's, not the lease's; until the driver
+reaches it, a child's tools run without the lease's identity, a degradation the binding declares.
 
 **Prompt.** The prompt is the request body of `POST /api/session/{id}/prompt`, never a command-line argument, so it
 reaches the model verbatim. The fresh-mint prompt prefix is prepended exactly as for OpenCode 1.
 
-**Resume.** A resumed invocation re-applies the session's permission rules through `PATCH /api/session/{id}`, re-applies
-its environment, and prompts the recorded id. It never sends a model on resume; the session keeps its own.
+**Resume.** A resumed invocation opens only a session whose metadata names this runner; any other, including a 1.x
+session OpenCode 2 migrated into the store, is missing and takes the existing path for a lost conversation. It
+re-applies the session's permission rules through `PATCH /api/session/{id}`, re-applies its environment, and prompts the
+recorded id. It never sends a model on resume; the session keeps its own.
 
 **Completion.** A turn is complete when the root session is idle, no descendant is running, and the root's inbox
 (`GET /api/session/{id}/inbox`) is empty, observed after the last descendant settled — a finished background subagent
@@ -97,34 +107,42 @@ writes its result with outcome `interrupted`, and exits. The interrupt is the st
 started.
 
 A driver that dies without writing its result — a SIGKILL, a crash — leaves its turn running on the service, because
-nothing Blizzard kills reaches OpenCode. So the runner owns the last word: whenever a driver exits without a result, the
-runner interrupts that session's tree through the API itself, and at every daemon start it lists the sessions its
-metadata marks as its own and interrupts any still running. A turn that outlives its driver is stopped, never adopted.
+nothing Blizzard kills reaches OpenCode. So the runner owns the last word, through two harness-neutral additions to the
+worker lifecycle seam that every binding implements and the bindings whose worker owns its turn's processes — Claude
+Code and OpenCode 1 — implement as no-ops. **Orphan** is called when a worker exits without a result, and the OpenCode 2
+binding interrupts that session's tree through the API. **Reconcile** is called at every daemon start with the runner's
+own lease records, never a listing of the service's sessions, and the OpenCode 2 binding interrupts each recorded
+session that has no live worker and is not under takeover. A turn that outlives its driver is stopped, never adopted,
+and one runner's reconciliation never touches another runner's sessions or the operator's.
 
 A service that restarts or goes away mid-turn ends the turn as failed. The session keeps its history in the store, and
 the next driver prompts it normally once the service is back.
 
 ## Permissions
 
-Blizzard's fixed denies — the native question and form surfaces, and anything the runner forbids outright — are part of
-each session's own rule list. A session's rules do not reach the subagents it spawns, which take their agent's
-configured permissions from the operator's configuration; the driver applies the session's rule list to each child
-through `PATCH /api/session/{id}` as the child appears, which covers a child from that moment, not from its first tool
-call. That gap is accepted and declared, and closes when OpenCode lets a session's rules reach its children.
+Blizzard's fixed denies — the native question and form surfaces, and anything the runner forbids outright — are each
+session's own rule list, and the list holds nothing else. Every other rule is the operator's, read by OpenCode from the
+operator's own configuration, so the driver never reads or restates it, and a session rule can never widen what the
+operator's configuration denies. A session's rules do not reach the subagents it spawns, which take their agent's
+configured permissions; the driver applies the session's rule list to each child through `PATCH /api/session/{id}` as
+the child appears, which covers a child from that moment, not from its first tool call. That gap is accepted and
+declared, and closes when OpenCode lets a session's rules reach its children.
 
-A session's ordered `permissions` list is composed from the autonomy level and ranks after agent configuration:
+Autonomy is the driver's answer to whatever the rules leave as `ask`. Over the API a permission request waits until
+something replies, so the driver replies to every one in its session tree through
+`POST
+/api/session/{id}/permission/{requestID}/reply`:
 
-| Autonomy    | Session rules                                                                                     |
-| ----------- | ------------------------------------------------------------------------------------------------- |
-| `normal`    | The operator's rules, the fixed denies, then a final rule turning every remaining `ask` into deny |
-| `auto`      | The operator's rules and the fixed denies; any remaining `ask` is approved by the driver          |
-| `dangerous` | The operator's denies and the fixed denies; everything else allowed                               |
+| Autonomy    | Reply to a remaining `ask` |
+| ----------- | -------------------------- |
+| `normal`    | `reject`                   |
+| `auto`      | `once`                     |
+| `dangerous` | `once`                     |
 
-Over the API a permission request waits until something replies, so the driver replies to every one in its session tree
-through `POST /api/session/{id}/permission/{requestID}/reply`: `reject` under `normal`, `once` under `auto` and
-`dangerous` unless the request matches a deny. A form request (`session.form.*`) is cancelled under every autonomy. Each
-reply is recorded in the driver's result, so nothing waits on a person and every answer leaves a trace. The 1.x
-binding's `debug config` and `agent list` resolution is not ported.
+`auto` and `dangerous` are the same here, because nothing the operator's configuration allows or denies is the driver's
+to change. A form request (`session.form.*`) is cancelled under every autonomy. Each reply is recorded in the driver's
+result, so nothing waits on a person and every answer leaves a trace. The 1.x binding's `debug config` and `agent list`
+resolution is not ported.
 
 `blizzard runner ask` remains an ordinary shell command, reachable under every autonomy.
 
@@ -137,10 +155,9 @@ rather than discovering `provider.no-route` mid-turn. Tiers map through `[openco
 leaves OpenCode's configured default in force. The CLI's `provider/model#variant` form appears only in the takeover
 command.
 
-Automatic compaction is the operator's service-wide setting, and a session cannot carry its own threshold. The runner's
-compaction window is enforced by the runner instead: it already reads a session's context size, and when the window is
-crossed it requests a compaction through `POST /api/session/{id}/compact`, which is also how rotation policy compacts at
-a precise moment.
+Automatic compaction is the operator's service-wide setting, and a session cannot carry its own threshold. The lease's
+compaction window is enforced by the driver instead: it receives the window at launch, already polls the session's
+context size, and requests a compaction through `POST /api/session/{id}/compact` when the window is crossed.
 
 ## Errors and limits
 

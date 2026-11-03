@@ -5,15 +5,17 @@
 An OpenCode 2 capability becomes available only when every one of these checks passes, and the runner's health names the
 first one that fails:
 
-- the configured binary is found, and the version it and the service report is inside OpenCode 2's admitted range
-- the operator's service is reachable, or starts when asked
+- the configured binary is found, its version and the service's are in the same major version, and the service's is
+  inside OpenCode 2's admitted range
+- the operator's managed service is enabled, and is running or starts when the runner runs `opencode service start`
 - the service holds a provider credential that resolves the configured tiers
 - every configured variant exists on its model
 - the generic selftest passes
 
 The runner advertises harness id, observed version, and availability, as for any harness; failure detail stays
 runner-local. OpenCode 1 gains one check of its own: a store OpenCode 2 has migrated makes OpenCode 1 unavailable, by
-name.
+name. A probe never swaps the composed binding; a change of major version waits for a restart
+([versions](./versions.md#binding-dispatch)).
 
 Availability is recalculated at daemon start, after an operator-triggered selftest, when the observed version changes,
 and when a launch-time version comparison refuses. Losing availability removes the capability from new acquisition and
@@ -30,10 +32,9 @@ holds. Version-specific evidence stays in the compatibility proof, not in branch
 
 Every runner path that stops an OpenCode 2 worker — shutdown drain, pause-park, restart, lease cancellation, forced
 takeover — does so with the signals it already sends, and the driver turns the first SIGINT or SIGTERM into an API
-interrupt of every running descendant and the root, bounded by a grace ([execution](./execution.md#stopping-a-turn)). A
-driver that exits without a result has its session tree interrupted by the runner, and every daemon start interrupts the
-runner's own sessions still running. No runner path gains a version-specific branch, and none signals an OpenCode
-process.
+interrupt of every running descendant and the root, bounded by a grace ([execution](./execution.md#stopping-a-turn)).
+The seam's orphan and reconcile additions carry what the runner does on the service itself, so no runner path gains a
+version-specific branch, and none signals an OpenCode process.
 
 ## Concurrency
 
@@ -54,27 +55,29 @@ as one harness and separable when they disagree.
 ## Declared degradations
 
 Each corpus manifest declares the degradations its version carries, and the operator-facing capability lists them. The
-OpenCode 2 binding begins with one declared: a subagent's permissions follow the operator's agent configuration until
-the driver applies the session's rules to it, because a session's rules do not reach its children. Any other row the
-proof cannot settle as supported enters the manifest as degraded or blocks its step, never as an unstated assumption.
+OpenCode 2 binding begins with two declared, both because a session's settings do not reach its children: a subagent's
+permissions follow the operator's agent configuration, and its tools run without the lease's identity, until the driver
+applies the session's rules and environment to it. Any other row the proof cannot settle as supported enters the
+manifest as degraded or blocks its step, never as an unstated assumption.
 
 ## Verification layers
 
-| Layer                    | Required proof                                                                                                                                                                                                                                                                                  |
-| ------------------------ | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Adapter unit             | Session-id minting, model reference and variant validation, permission composition per autonomy, completion detection, usage and child-usage attribution, verdict extraction from the driver result, error classification                                                                       |
-| Driver unit              | Service discovery and start, environment application to root and children, signal-to-interrupt translation, permission and form replies, heartbeat from observed tool completions, polling with the event stream lost, and result writing                                                       |
-| Fixture contract         | Every 2.1.4 session, message, part, event, child, permission, form, compaction, error, and usage shape production parsing reads, from the committed corpus                                                                                                                                      |
-| Version dispatch         | Binding selection by observed version, admission by version range, a session the other major version minted reported missing, and the launch-time version comparison                                                                                                                            |
-| Configuration and store  | One `[opencode]` section driving either major version, OpenCode 1's migrated-store check, and every capability health check above                                                                                                                                                               |
-| Transcript source        | Forward reads with re-read of unsettled messages, reads that never start a turn, `not_found` against `unreadable`, and interrupted-turn usage recovery                                                                                                                                          |
-| Analytics                | The `opencode-v2` dialect over corpus-derived segments, and no events from an unknown normalizer version                                                                                                                                                                                        |
-| Wire skew                | An OpenCode 2 runner against a hub from before this epic, acquiring and executing unchanged                                                                                                                                                                                                     |
-| Diagnostic service       | The 2.x compatibility diagnostic against the OpenCode 2 CLI-surface artifact, under every lever                                                                                                                                                                                                 |
-| Mock service integration | The real runner against the mock hub and the mock OpenCode 2 through acquisition, mint, prompt, completion, judgement, nudge, takeover, transcript pumping, stopping, and every failure lever below                                                                                             |
-| Crash verification       | Kill the driver before session create, after create before prompt, during a tool, during a child, between a transcript boundary write and its launch, during resume, and during judgement — each followed by the runner interrupting the orphaned session tree — and a service restart mid-turn |
-| Mixed-version acceptance | A runner host with an OpenCode 1 runner and an OpenCode 2 runner executes a graph across both, and a runner moved from 1.x to 2.x carries its chunks on in fresh conversations                                                                                                                  |
-| Live provider acceptance | `blizzard:manual-opencode-compatibility` proves 2.1.4 against a real provider, by hand                                                                                                                                                                                                          |
+| Layer                    | Required proof                                                                                                                                                                                                                                                                                                                                            |
+| ------------------------ | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Adapter unit             | Session-id minting and runner metadata, model reference and variant validation, the fixed-deny rule list and the reply each autonomy gives, completion detection, usage and child-usage attribution, verdict extraction from the driver result, error classification                                                                                      |
+| Driver unit              | Service discovery, environment application to root and children, signal-to-interrupt translation, permission and form replies, heartbeat from observed tool completions, compaction requested when the lease's window is crossed, polling with the event stream lost, and result writing                                                                  |
+| Fixture contract         | Every 2.1.4 session, message, part, event, child, permission, form, compaction, error, and usage shape production parsing reads, from the committed corpus                                                                                                                                                                                                |
+| Version dispatch         | Binding selection by the binary's version, the service's version advertised and recorded, admission by version range, a session without this runner's metadata reported missing, the launch-time comparison, and a change of major version leaving the capability unavailable until restart                                                               |
+| Configuration and store  | One `[opencode]` section driving either major version, `auth_path` and `worker_config_path` ignored on OpenCode 2, OpenCode 1's migrated-store check, and every capability health check above                                                                                                                                                             |
+| Runner on the service    | `opencode service start` run outside every lease's process group with no worker environment, a disabled managed service reported by name, orphan interrupting a driver's session tree, and reconcile interrupting only this runner's recorded sessions with no live worker and no takeover; both no-ops for Claude Code and OpenCode 1                    |
+| Transcript source        | Forward reads with re-read of unsettled messages, reads that never start a turn, `not_found` against `unreadable`, and interrupted-turn usage recovery                                                                                                                                                                                                    |
+| Analytics                | The `opencode-v2` dialect over corpus-derived segments, and no events from an unknown normalizer version                                                                                                                                                                                                                                                  |
+| Wire skew                | An OpenCode 2 runner against a hub from before this epic, acquiring and executing unchanged                                                                                                                                                                                                                                                               |
+| Diagnostic service       | The 2.x compatibility diagnostic against the OpenCode 2 CLI-surface artifact, under every lever                                                                                                                                                                                                                                                           |
+| Mock service integration | The real runner against the mock hub and the mock OpenCode 2 through acquisition, mint, prompt, completion, judgement, nudge, takeover, transcript pumping, stopping, and every failure lever below                                                                                                                                                       |
+| Crash verification       | Kill the driver before session create, after create before prompt, during a tool, during a child, between a transcript boundary write and its launch, during resume, and during judgement — each followed by orphan interrupting the session tree — kill the runner daemon mid-turn and restart it, asserting reconcile, and restart the service mid-turn |
+| Upgrade acceptance       | A runner stopped on OpenCode 1, upgraded, and started on OpenCode 2 carries its chunks on in fresh conversations, and a runner whose binary changes major version while running reports unavailable until restarted                                                                                                                                       |
+| Live provider acceptance | `blizzard:manual-opencode-compatibility` proves 2.1.4 against a real provider, by hand                                                                                                                                                                                                                                                                    |
 
 Everything above the live row runs hermetically, against the corpus and the mocks, in ordinary test tiers and on any
 fleet runner. Only the live row needs OpenCode 2 installed.
@@ -121,7 +124,7 @@ reject, and a corpus for a newly admitted version updates both parts in the same
 The gate is OpenCode 2's live evidence, run by hand on an operator workstation that has OpenCode 2, because no fleet
 runner host carries it. It is the 2.x compatibility proof, the generic selftest, the concurrency soak on the operator's
 service, and one real chunk run end to end on a local hub against a 2.x worker — never the hosted hub — with a
-judgement, a nudge, a takeover, and an interrupted lease among its turns. OpenCode 1's live proof runs in the same gate,
-because both major versions share one runner's composition and a change to it can break either; on every ordinary
-landing, OpenCode 1 is held by its hermetic tiers. The gate passes for one admitted version and records it. A runner
-host joins OpenCode 2 by passing the same gate on its own machine.
+judgement, a nudge, a takeover, and an interrupted lease among its turns. OpenCode 1 is held by its hermetic tiers, and
+its live proof runs on a machine that has OpenCode 1, because the two major versions do not share a machine. The gate
+passes for one admitted version and records it. A runner host joins OpenCode 2 by passing the same gate on its own
+machine.

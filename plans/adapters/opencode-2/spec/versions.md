@@ -13,48 +13,49 @@ at a time, and advertises one `opencode` capability carrying its observed versio
 hub or the mock hub keys by harness id changes: eligibility, acquisition, and the wire see one capability per harness,
 and a runner from before this epic is indistinguishable from one that holds OpenCode 1.
 
-The version is read where the runner reads it today: on every capability probe, which chooses the binding, and before
-every launch. A launch whose observed version differs from the version the capability advertised — an operator ran
-`opencode upgrade`, or replaced the binary — is refused before anything starts, marks the capability unavailable, and
-triggers a fresh probe, which composes whichever binding the new version selects. OpenCode 2's service is the operator's
-and may update itself; the comparison is what catches it, against the version the service reports.
+The binding is composed at daemon start, as the runner's harness registry is today, and never swapped while the runner
+runs. The binary's version selects it. The version the runner advertises, records on every spawn, and compares before
+every launch is the service's own, as its API reports it, and the binary's where the API reports none. A launch whose
+observed version differs from the advertised one — the operator's service updated itself, or the binary was replaced —
+is refused before anything starts and triggers a fresh probe; a probe that finds a version still inside the composed
+binding's range makes it available again under the new version, and one that finds another major version, or a binary
+and service in different major versions, leaves the capability unavailable, naming the change, until the runner is
+restarted.
 
-An operator who wants both major versions on one machine runs two runners, each configured with its own binary. The
-runner host already hosts several runners; the two major versions need nothing more from it. Both major versions install
-a binary named `opencode`, and OpenCode 2's installer replaces a 1.x binary where it finds one, so the runner's install
-guide places each major version's binary in its own directory, from OpenCode's release archives, and points each
-runner's `binary` at its own path.
+A machine runs one major version. Moving it to OpenCode 2 is the operator's sequence to carry out: stop the runner,
+upgrade OpenCode, start the runner. Running OpenCode 1 and OpenCode 2 runners side by side on one machine is not
+supported.
 
 ## Sessions
 
-A session lives in the store its major version keeps — OpenCode 1's and OpenCode 2's are separate — and the two never
-share a session. Nothing tracks which major version a session belongs to or checks it: a binding asked to resume a
-session its store does not hold finds it missing, and the attempt takes the existing path for a lost conversation. A
-runner moved from 1.x to 2.x simply loses its open 1.x conversations, which are ephemeral, and its work carries on in
-fresh ones. The harness version recorded on every spawn, as the [harness selection contract](../../harness-selection.md)
-requires of every harness, stays a record for analytics and diagnosis, never a dispatch key.
+The OpenCode 2 binding resumes only a session whose metadata names its runner. A 1.x session — whether still in a 1.x
+store or migrated into OpenCode 2's by OpenCode 2 itself — carries no such metadata, so it is missing and takes the
+existing path for a lost conversation. Nothing tracks which major version a session belongs to. A runner moved from 1.x
+to 2.x loses its open 1.x conversations, which are ephemeral, and its work carries on in fresh ones. The harness version
+recorded on every spawn, as the [harness selection contract](../../harness-selection.md) requires of every harness,
+stays a record for analytics and diagnosis, never a dispatch key.
 
 ## Admission
 
-| Major version | Admitted versions | Corpus                                      |
-| ------------- | ----------------- | ------------------------------------------- |
-| OpenCode 1    | `>=1.18.25,<2.0`  | `contracts/opencode/1.18.25/`               |
-| OpenCode 2    | `>=2.0,<3.0`      | `contracts/opencode/2.1.4/`, from the proof |
+| Major version | Admitted versions | Corpus                                                                  |
+| ------------- | ----------------- | ----------------------------------------------------------------------- |
+| OpenCode 1    | `>=1.18.25,<2.0`  | `src/blizzard/runner/harness/contracts/opencode/1.18.25/`               |
+| OpenCode 2    | `>=2.0,<3.0`      | `src/blizzard/runner/harness/contracts/opencode/2.1.4/`, from the proof |
 
 Each major version admits a range, not a set of proven releases. A release inside the range is trusted until it breaks,
 and a break is fixed when it appears: the proof is rerun against the release that broke, its corpus is committed beside
 the first, and the binding is corrected against it. Both major versions' corpora live side by side under
-`contracts/opencode/`, one folder per proven release, and each major version's corpus guards read only the folders
-inside its own range. OpenCode 1's range is not changed by this epic.
+`src/blizzard/runner/harness/contracts/opencode/`, one folder per proven release, and each major version's corpus guards
+read only the folders inside its own range. OpenCode 1's range is not changed by this epic.
 
 ## Runner configuration
 
-The `[opencode]` section is unchanged, and every key in it means the same thing on either major version: `binary`,
-including one found on `PATH`, `worker_config_path`, `models.supported`, `models.aliases`, `effort.aliases`, and
-`compaction`. Each binding applies a key the way its major version needs it — OpenCode 2 carries effort into the model
-reference's variant, enforces the compaction window itself rather than through OpenCode's configuration, and has no
-worker configuration to inject, so it leaves `worker_config_path` unused — but an operator who moves a runner from 1.x
-to 2.x changes the binary and nothing else.
+The `[opencode]` section is unchanged, and an operator who moves a runner from 1.x to 2.x changes its `binary` and
+nothing else. `enabled`, `binary` (including one found on `PATH`), `models.supported`, `models.aliases`, and
+`effort.aliases` mean the same thing on either major version, and OpenCode 2 carries effort into the model reference's
+variant. `auth_path` and `worker_config_path` have no meaning on OpenCode 2, which uses the operator's own
+authentication and injects no worker configuration, so its binding ignores both. The compaction window is not
+configuration; it arrives with each lease, and the OpenCode 2 driver enforces it.
 
 ## The operator's store
 
@@ -64,9 +65,9 @@ authentication; the runner owns no store and has no login of its own
 credential for the configured tiers as unavailable.
 
 OpenCode 1 also keeps its sessions in the operator's personal store, and OpenCode 2 migrates a 1.x store in place the
-first time it opens it. On a host where an OpenCode 1 runner and OpenCode 2 share a user, the 1.x store is migrated
-beneath the 1.x runner. OpenCode 1's capability health therefore recognizes a store OpenCode 2 has migrated and reports
-the capability unavailable, naming the cause, rather than failing session by session.
+first time it opens it. An OpenCode 1 runner whose store has been migrated beneath it — by an operator who upgraded
+OpenCode without stopping it — reports its capability unavailable, naming the cause, rather than failing session by
+session.
 
 ## Selection
 

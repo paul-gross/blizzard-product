@@ -75,8 +75,8 @@ binding with its own admitted versions. The observed version of the runner's con
 runner holds one major version at a time and advertises one capability for the harness, carrying its observed version as
 every capability does. The acceptable-set grammar is unchanged: a graph names the harness, never a major version.
 
-A session lives in its major version's own store; nothing tracks or checks which major version a session belongs to, and
-a binding that cannot find a session treats it as a lost conversation. The
+A binding resumes only the sessions it minted; nothing tracks or checks which major version a session belongs to, and a
+binding that cannot find a session, or finds one it did not mint, treats it as a lost conversation. The
 [OpenCode versions specification](./opencode-2/spec/versions.md) owns the rules for the one harness that spans major
 versions today.
 

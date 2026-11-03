@@ -36,15 +36,15 @@ from a stream of stdout, the 2.x binding can ask for, and nothing it does depend
 ## What the operator gets
 
 Both major versions are first-class, and that is the destination, not a migration window. A runner works whichever major
-version its binary is: point it at OpenCode 2 and it is a 2.x worker, with the same configuration it had as a 1.x one.
-An operator who wants both runs two runners, and the fleet's runner host keeps running 1.x throughout. This epic adds
-2.x and retires nothing: 1.x stays admitted, and no removal is planned beside it.
+version its binary is: point it at OpenCode 2 and it is a 2.x worker, with the same configuration it had as a 1.x one. A
+machine runs one major version, and moving it is the operator's sequence: stop the runner, upgrade OpenCode, start the
+runner. The fleet's runner host keeps running 1.x throughout. This epic adds 2.x and retires nothing: 1.x stays
+admitted, and no removal is planned beside it.
 
-A graph author keeps writing `opencode` and gets the major version of whichever runner takes the work. The two major
-versions keep separate conversation stores, so a runner moved from 1.x to 2.x loses its open 1.x conversations and
-carries on in fresh ones; conversations are ephemeral, and nothing more is done to preserve them. A fleet's 2.x sessions
-are the operator's own OpenCode sessions, listed beside theirs and run under their configuration, so taking one over is
-opening it.
+A graph author keeps writing `opencode` and gets the major version of whichever runner takes the work. The OpenCode 2
+binding resumes only sessions it minted, so a runner moved from 1.x to 2.x loses its open 1.x conversations and carries
+on in fresh ones; conversations are ephemeral, and nothing more is done to preserve them. A fleet's 2.x sessions are the
+operator's own OpenCode sessions, listed beside theirs and run under their configuration, and takeover opens one there.
 
 Each binding admits its whole major version as a range, OpenCode 2 `>=2.0,<3.0` as OpenCode 1 admits 1.x. The proof runs
 against one real 2.x release, 2.1.4 to start, and its fixtures are what the parsers are tested against; a later 2.x
@@ -80,23 +80,25 @@ they do today.
 
 **The operator's OpenCode, through its API alone.** OpenCode 2 runs one managed service per user, and the binding works
 on it rather than beside it: fleet sessions live in the operator's store, under the operator's authentication and
-configuration, on the same service as the operator's own. Blizzard never starts a private server, isolates a store,
-injects configuration, or tracks, signals, or kills an OpenCode process; the API is the only way it starts, stops, or
+configuration, on the same service as the operator's own. The runner starts that service with `opencode service start`
+when it is not running, carrying none of the worker environment, and otherwise never runs a private server, isolates a
+store, injects configuration, or tracks, signals, or kills an OpenCode process; the API is the only way it stops or
 interrupts work, and everything it controls about a session it sets on that session. What only a service-wide setting
-could give — automatic compaction thresholds, plugins, MCP servers — is the operator's, and the runner enforces its own
-compaction window by requesting compaction when the window is crossed.
+could give — automatic compaction thresholds, plugins, MCP servers — is the operator's, and the driver enforces the
+lease's compaction window by requesting compaction when the window is crossed.
 
 **A Blizzard driver owns each turn.** The runner's seam treats a worker's exit as the end of its turn, and that seam
 stays as it is. So the recorded worker for every OpenCode 2 spawn, resume, and judgement is a Blizzard driver process: a
 thin API client that creates or resumes the session, drives it, answers its permission requests, runs the heartbeat from
 what it observes, writes the turn's result where the runner already reads one, and exits. A signal asking the turn to
-stop becomes an API interrupt. Because killing a driver no longer kills its turn, the runner interrupts the session of
-any driver that exits without a result, and at every start interrupts any of its own sessions still running.
+stop becomes an API interrupt. Because killing a driver no longer kills its turn, the worker lifecycle seam gains two
+harness-neutral additions: the runner interrupts the session of any driver that exits without a result, and at every
+start interrupts its own recorded sessions that are still running with no worker.
 
 **OpenCode 1 is guarded against the migration.** OpenCode 2 migrates a 1.x store in place the first time it opens it,
-and both major versions use the operator's personal store. On a host where an OpenCode 1 runner and OpenCode 2 share a
-user, the 1.x runner's sessions are migrated out from under it, so the 1.x binding's health learns to recognize a
-migrated store and refuses it by name.
+and both major versions use the operator's personal store. An operator who upgrades OpenCode without stopping a 1.x
+runner migrates its sessions out from under it, so the 1.x binding's health learns to recognize a migrated store and
+refuses it by name.
 
 **Required behavior stands only on stable endpoints.** Endpoints OpenCode marks experimental — wait-until-idle, event
 replay, instruction entries, export — may enrich the binding behind a proven capability, but nothing a turn needs to
@@ -135,9 +137,9 @@ The epic lands in the four steps the OpenCode epic proved, each gated on the one
    2.x.
 3. **Conversation parity.** Transcripts, context measurement, usage, cost, and child agents are read from the service's
    API, normalized into Blizzard's vocabulary, and recognized by the hub's analytics under their own dialect.
-4. **Hardening, closed by hand.** Interruption, interrupting orphaned turns, upgrade under a running runner, concurrent
-   turns on one service, health, and the generic selftest are built against the mock; the release gate is the operator's
-   run against a real OpenCode 2, with OpenCode 1's live proof re-run beside it.
+4. **Hardening, closed by hand.** Interruption, interrupting orphaned turns, a version change under a running runner,
+   concurrent turns on one service, health, and the generic selftest are built against the mock; the release gate is the
+   operator's run against a real OpenCode 2.
 
 The fleet works steps 2 and 3 and the mock-tested half of step 4. Their issues are filed blocked on the step 1 issue,
 which the operator closes when the corpus lands; the release gate is the operator's issue, blocked on the rest.
