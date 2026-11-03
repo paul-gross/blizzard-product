@@ -64,6 +64,24 @@ every move, and once after alignment, the fixture calls `page.clock.setFixedTime
 `new Date()` at the stack's instant and leaves the page's timers running, so the board's polling and stream reconnects
 behave as they do today. `page.clock.install` is not used, since it would fake those timers too.
 
+## The flow-step control it retires
+
+The hub already carries a test-fenced flow-step control: `BLIZZARD_TEST_FLOW_STEP` behind `BLIZZARD_CRASH_FENCE` builds
+the hub core on a `FixedClock` (`build_stepped_clock`, `src/blizzard/hub/composition.py`), stops the driver's timer, and
+mounts `POST /api/admin/test-flow/step` and `POST /api/admin/test-flow/advance`. The harness asks for it with
+`test.use({ flowStepped: true })` (`tests/harness/tenancy.ts`) and calls it through `api.flowStep()` and
+`api.flowAdvance()` (`tests/harness/client/clients.ts`).
+
+The clock fixture's change retires all of it but the step route:
+
+- `clock: 'controlled'` replaces `flowStepped`, and the harness's refusal below `fresh-hub` moves with it.
+- `clock.advance(seconds)` replaces `api.flowAdvance()`, and the `/advance` route goes.
+- `api.flowStep()` stays, calling the route at its unchanged path.
+- `BLIZZARD_TEST_FLOW_STEP` and `build_stepped_clock` go, so the hub has one controlled clock, not two.
+
+`tests/service/fleet/flow-turns.spec.ts` and `tests/harness/checks/fresh-hub.spec.ts` move onto the fixture in that
+change.
+
 ## The vendor counterpart
 
 `tests/harness/vendor-usage.ts` is a fixture of the test's own worker and keeps no clock. Its `defaultLevels()` reads

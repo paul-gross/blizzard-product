@@ -56,6 +56,12 @@ shared hub would expire leases and sessions in every neighbouring test. A test t
 `fresh-hub`, or on a held stack shared only by its own block. A runner test that already owns its mock hub and host owns
 its clock with them.
 
+**The flow driver steps with the rest of the hub.** It is the one hub lane with a timer of its own even when every sweep
+is stepped. On a controlled hub it starts no timer, and a test runs its pass through the hub's flow-step route
+([spec/routes.md](./spec/routes.md#the-flow-drivers-step)), so no flow pass runs while a stack is part-way moved. The
+epic takes that route over from the hub's existing test-fenced flow-step control, and retires the control's own switch
+and clock.
+
 **Every spec reads time from the harness.** A spec that needs an instant asks the clock fixture for it, whether the
 stack runs controlled or not. A check refuses any spec that reads the machine's clock, so a test can no longer race the
 clock without saying so in the spec.
@@ -75,10 +81,6 @@ The crash sweep, the pytest half of the service tier, and the component tier are
 processes on purpose, and the other two already hold their clocks in-process. The OpenTelemetry collector's own sampling
 wait is a third party's real time. A worker's own transcript, produced by a harness process outside the daemons, stays
 on the machine's clock unless the spec's open question settles otherwise.
-
-The hub's flow driver is the one hub lane with a timer of its own even when every sweep is stepped. Its floor reads the
-controlled clock, so an advance can let it act on its next wake without being asked. Tests wait on its effects as they
-do today, and giving it a stepped mode is not this epic's work.
 
 ## Done
 

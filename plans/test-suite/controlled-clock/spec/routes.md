@@ -37,6 +37,17 @@ means is for the next pass the test steps.
 One clock serves the whole runner host, so the route is host-wide rather than per runner: every runner on the host reads
 the host's clock.
 
+## The flow driver's step
+
+A controlled hub starts no flow-driver timer. `POST /api/admin/test-flow/step` runs one flow-driver pass and answers
+`200` once its writes are readable, with the clock's `now` and the pass's counts: `reconciled`, `skipped`, `failed`,
+`submitted`, `closed`, `interrupted`, `started`, and `noticed`. Steps and clock moves serialize on one lock, so a move
+never lands part-way through a pass. It takes the clock routes' permission and is mounted under the same fence, with
+`include_in_schema=False`. A hub on the system clock keeps the driver's timer and answers `404`.
+
+The route exists on the hub today, in `src/blizzard/hub/api/test_flow_control.py`, behind the flow-step control's own
+switch. The epic keeps its path and answer and moves it behind the clock fence.
+
 ## Not a released surface
 
 `bzh:released-surface-additive` holds every surface that `docs/versioning.md` names: the HTTP API, the wire,

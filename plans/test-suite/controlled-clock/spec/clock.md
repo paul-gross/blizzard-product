@@ -18,8 +18,8 @@ clock:
 | The subprocess deadlines in `src/blizzard/runner/process/` and `src/blizzard/runner/harness/opencode/compatibility/`, and selftest | Each waits on a real process                                                    |
 | Span timestamps (`src/blizzard/foundation/span_clock.py`)                                                                          | Telemetry observes. A span stamped on a frozen clock would have no duration     |
 
-The flow driver's reconcile floor, `RECONCILE_FLOOR`, is judged against `IClock`, so it moves with the controlled clock
-even though the driver's two-second wake does not.
+The flow driver's reconcile floor, `RECONCILE_FLOOR`, is judged against `IClock`, so it moves with the controlled clock.
+A controlled hub starts no two-second wake for the driver at all ([routes.md](./routes.md#the-flow-drivers-step)).
 
 ## The fence
 

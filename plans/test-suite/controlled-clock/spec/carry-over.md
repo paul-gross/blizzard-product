@@ -11,11 +11,9 @@ installation holds moves.
 2. **`ControlledClock` and the fence** in `src/blizzard/foundation/clock.py`, with their component tests. Nothing calls
    them yet.
 3. **The hub's composition root and its clock routes** ([clock.md](./clock.md#the-composition-roots),
-   [routes.md](./routes.md)), after 2. It replaces the hub's test-fenced flow-step control: the `FixedClock` that
-   `BLIZZARD_TEST_FLOW_STEP` builds the hub core on in `src/blizzard/hub/app.py`, and the
-   `POST
-   /api/admin/test-flow/advance` route in `src/blizzard/hub/api/test_flow_control.py` behind the harness's
-   `flowAdvance()`. The controlled clock takes over their callers, and both are removed in this change.
+   [routes.md](./routes.md)), after 2. A controlled hub also runs its flow driver stepped and mounts the flow-step route
+   behind the clock fence ([routes.md](./routes.md#the-flow-drivers-step)). The hub's existing flow-step control keeps
+   working beside it until 7.
 4. **The runner host's composition root and its clock routes**, after 1 and 2, independent of 3.
 5. **The mock fleet's clocks and `/_clock` routes**, in `blizzard-mock`, independent of everything before it.
 6. **`docs/versioning.md`'s sentence on fenced surfaces** ([routes.md](./routes.md#not-a-released-surface)), with 3, the
@@ -23,7 +21,8 @@ installation holds moves.
 7. **The clock fixture**, after 3, 4, and 5: the `clock` option and its refusals, the profile check, the environment,
    alignment, moves, session refresh, the browser, and `vendor-usage.ts` reading `clock.now()`
    ([harness.md](./harness.md)). A harness check spec proves alignment, a move across hub, host, and forge, and the
-   refusal at a shared isolation level.
+   refusal at a shared isolation level. The same change retires the hub's flow-step control
+   ([harness.md](./harness.md#the-flow-step-control-it-retires)).
 8. **The ports**, one change per spec, after 7 ([ports.md](./ports.md)): the four that wait out real windows first, then
    the three that build instants from the machine's clock.
 9. **The check against the machine's clock and the rulebook's rewrite**, after the last port
@@ -60,9 +59,6 @@ floor's reset, is cited where its subject already is, in the same change.
 - **The CLI's clock.** `blizzard` the CLI judges a window such as `--since 1h` against the machine's clock
   (`CliCollaborators`, `src/blizzard/cli/collaborators.py`). A test driving the CLI against an advanced hub passes
   explicit instants. Whether the CLI should read the hub's clock through the route when one answers is open.
-- **The flow driver.** It wakes on its own two-second timer on a stepped hub, so an advance can let it reconcile without
-  being asked ([../index.md](../index.md#boundaries)). Whether it gains a stepped mode, here or under its own plan, is
-  open.
 - **The runner's hub retry.** Two specs wait out the runner's bounded hub retry in real time:
   `tests/service/runner/system-artifacts.spec.ts`'s system-scope read with the hub unreachable, and
   `tests/service/runner/runner.spec.ts`'s graph-scoped artifact read with the hub unreachable. Together they take about
