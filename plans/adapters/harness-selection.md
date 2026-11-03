@@ -75,10 +75,10 @@ binding with its own admitted versions. The observed version of the runner's con
 runner holds one major version at a time and advertises one capability for the harness, carrying its observed version as
 every capability does. The acceptable-set grammar is unchanged: a graph names the harness, never a major version.
 
-A binding resumes only the sessions it minted; nothing tracks or checks which major version a session belongs to, and a
-binding that cannot find a session, or finds one it did not mint, treats it as a lost conversation. The
-[OpenCode versions specification](./opencode-2/spec/versions.md) owns the rules for the one harness that spans major
-versions today.
+A binding resumes and reads only the sessions its own runner minted; nothing tracks or checks which major version a
+session belongs to, and a binding that cannot find a session, or finds one its runner did not mint, treats it as a lost
+conversation. The [OpenCode versions specification](./opencode-2/spec/versions.md) owns the rules for the one harness
+that spans major versions today.
 
 ## Capability tiers
 
@@ -116,18 +116,18 @@ established after reassignment or graph migration resolves afresh because pools 
 graph moving from one harness to another does so by entering a different declared session; the sessions share the
 chunk's durable artifacts and the environments under current tenure, not conversational context.
 
-Within-node retries mint fresh sessions but retain the prior attempt's harness in the OpenCode epic. If that capability
-is unavailable or no longer permitted, the attempt escalates explicitly. Cross-harness retry may later choose another
-member of the authored acceptable set only under a separate policy that records the switch; ordinary failure never
-advances the list implicitly.
+Within-node retries mint fresh sessions but retain the prior attempt's harness in `epic:adapters/opencode`. If that
+capability is unavailable or no longer permitted, the attempt escalates explicitly. Cross-harness retry may later choose
+another member of the authored acceptable set only under a separate policy that records the switch; ordinary failure
+never advances the list implicitly.
 
 ## Existing sessions
 
-Every session id recorded before this epic was minted by Claude Code, so the migration is a single stamp rather than a
-reconciliation. The runner-store migration adds the harness id beside the session id on the six tables that carry one —
-`leases`, `asks`, `takeovers`, `session_preamble_facts`, `context_samples`, and `transcript_segments` — and backfills
-`claude_code`. The hub's `questions.session_id` receives the same stamp. A session pool needs no migration because a
-pool head is derived from the leases themselves and inherits their stamp for free.
+Every session id recorded before `epic:adapters/opencode` was minted by Claude Code, so the migration is a single stamp
+rather than a reconciliation. The runner-store migration adds the harness id beside the session id on the six tables
+that carry one — `leases`, `asks`, `takeovers`, `session_preamble_facts`, `context_samples`, and `transcript_segments` —
+and backfills `claude_code`. The hub's `questions.session_id` receives the same stamp. A session pool needs no migration
+because a pool head is derived from the leases themselves and inherits their stamp for free.
 
 Existing rows have no trustworthy mint-time Claude Code version, so that version remains unknown; the configured Claude
 Code adapter may still resume them, and the first new invocation records the actual version it used without rewriting

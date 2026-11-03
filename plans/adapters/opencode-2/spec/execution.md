@@ -8,9 +8,9 @@ translation, usage translation, and transcript access inside itself. It shares n
 versions' shapes are fixture-proven separately and may drift separately. Harness selection, the choice of binding by
 observed version, and retry policy remain outside both.
 
-The adapter's client is a small typed client over the stable `/api/*` operations the proof admits. It does not depend on
-OpenCode's JavaScript SDK, and it calls no operation the proof marked experimental for any behavior a turn needs to
-finish.
+The adapter's client is a small typed client over the `/api/*` operations the proof admits. It does not depend on
+OpenCode's JavaScript SDK, and it calls no `/api/experimental/*` operation for any behavior a turn needs to finish.
+OpenCode labels its whole HTTP API experimental; that path is the line the binding draws.
 
 ## The operator's OpenCode service
 
@@ -21,12 +21,14 @@ OpenCode. Everything Blizzard controls about a session it sets through the API o
 signals, or kills an OpenCode process; the API is the only way it stops or interrupts work.
 
 The runner keeps the service up; a driver never starts it. At every capability probe and before every launch, the runner
-checks the service through `GET /api/health`, and when none is running it runs `opencode service start` itself — outside
-every lease's process group, and with none of the worker environment: only the operator's own home, path, and locale
-reach it, so no lease identity, token, or allowlisted variable can leak into the service or into the operator's own
-sessions on it. The runner never stops or restarts the service. A managed service the operator has disabled, under which
-OpenCode clients fall back to private servers, makes the capability unavailable by name. A service that cannot be
-reached within a bound fails the turn as a spawn failure.
+checks the service through `GET /api/info`, and when none is running it runs `opencode service start` itself, under the
+runner's tool profile — the allowlist alone, never a lease identity, lease token, or the worker profile's per-spawn
+variables — so nothing of a lease can leak into the service or into the operator's own sessions on it. It launches the
+command detached, in a session of its own, so no lease's group kill and no launch-timeout kill reaches the service;
+whether `opencode service start` detaches the service by itself is recorded by the proof. The runner never stops or
+restarts the service. A managed service the operator has disabled, under which OpenCode clients fall back to private
+servers, makes the capability unavailable by name. A service that cannot be reached within a bound fails the turn as a
+spawn failure.
 
 The operator's configuration — global and project agents, MCP servers, skills, plugins, providers, and automatic
 compaction — applies to fleet sessions as it applies to the operator's own, as the OpenCode 1 binding's ambient
@@ -100,20 +102,25 @@ plugin is installed. Observing the root's lifecycle through the API lifts the 1.
 
 ## Stopping a turn
 
-The runner already stops workers with signals: SIGINT for shutdown drain and pause-park, SIGTERM then SIGKILL for
-restart, cancellation, and forced takeover. The driver treats SIGINT and SIGTERM alike: it interrupts each running
+The runner stops workers with signals. Shutdown drain and pause-park send SIGINT, and the driver interrupts each running
 descendant and then the root through `POST /api/session/{id}/interrupt`, waits a bounded grace for them to settle,
 writes its result with outcome `interrupted`, and exits. The interrupt is the stop: OpenCode ends the tools the turn
 started.
 
-A driver that dies without writing its result — a SIGKILL, a crash — leaves its turn running on the service, because
-nothing Blizzard kills reaches OpenCode. So the runner owns the last word, through two harness-neutral additions to the
-worker lifecycle seam that every binding implements and the bindings whose worker owns its turn's processes — Claude
-Code and OpenCode 1 — implement as no-ops. **Orphan** is called when a worker exits without a result, and the OpenCode 2
-binding interrupts that session's tree through the API. **Reconcile** is called at every daemon start with the runner's
-own lease records, never a listing of the service's sessions, and the OpenCode 2 binding interrupts each recorded
-session that has no live worker and is not under takeover. A turn that outlives its driver is stopped, never adopted,
-and one runner's reconciliation never touches another runner's sessions or the operator's.
+Restart, cancellation, failure, preemption, and forced takeover kill the worker's process group outright, as they do for
+every harness, and a kill never reaches OpenCode. So wherever the runner kills a worker, or a worker exits without
+writing its result, the runner also stops the session tree through the API. The stop is best effort: a failed interrupt
+is logged and nothing waits on it, and a turn that keeps running anyway is one reconciliation can still stop.
+
+Two harness-neutral additions to the worker lifecycle seam carry this, and the bindings whose worker owns its turn's
+processes — Claude Code and OpenCode 1 — implement both as no-ops. The runner decides which sessions each applies to and
+passes harness-neutral session references; the binding only interrupts what it is handed, and never chooses. **Orphan**
+is called with the session of a worker the runner has just killed, or that exited without a result, except a worker
+killed for takeover, whose session the operator is about to attend. **Reconcile** is called at every daemon start with
+each session whose lease generation the runner's records hold as unfinished, that has no live worker, and that is not
+under takeover, and it completes before any restart resume is dispatched, so no resume queues behind a turn still
+running. Both read the runner's own records, never a listing of the service's sessions, so one runner never touches
+another runner's sessions or the operator's. A turn that outlives its driver is stopped, never adopted.
 
 A service that restarts or goes away mid-turn ends the turn as failed. The session keeps its history in the store, and
 the next driver prompts it normally once the service is back.
@@ -157,7 +164,8 @@ command.
 
 Automatic compaction is the operator's service-wide setting, and a session cannot carry its own threshold. The lease's
 compaction window is enforced by the driver instead: it receives the window at launch, already polls the session's
-context size, and requests a compaction through `POST /api/session/{id}/compact` when the window is crossed.
+context size, and requests a compaction through `POST /api/session/{id}/compact` when the window is crossed. A window of
+`auto` leaves the operator's automatic compaction in force, and the driver requests none.
 
 ## Errors and limits
 
@@ -169,7 +177,8 @@ must repair.
 ## Takeover
 
 Takeover composes `blizzard runner opencode attend <id>` in the recorded working directory. The runner's existing
-takeover path first stops the lease's worker, which the driver turns into an interrupt. The attend command then replaces
-the session's unattended rules with the attended set through `PATCH /api/session/{id}` and opens the session in the
-operator's own OpenCode with `opencode --session <id>`. The next automated resume re-applies the unattended rules, so
-attended permissions never leak back into unattended work.
+takeover path kills the lease's worker, and calls no orphan for it. The attend command interrupts the session tree
+through the API, best effort, replaces the session's unattended rules with the attended set through
+`PATCH
+/api/session/{id}`, and opens the session in the operator's own OpenCode with `opencode --session <id>`. The next
+automated resume re-applies the unattended rules, so attended permissions never leak back into unattended work.

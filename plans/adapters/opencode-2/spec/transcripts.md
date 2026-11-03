@@ -7,7 +7,10 @@ The OpenCode 2 transcript source implements the harness transcript seam and feed
 
 Transcripts are read while a turn runs and long after it ends, by the transcript pump, usage recovery, and context
 sampling. Every read goes to the operator's service through the same API the driver uses, and only through its read
-operations, so a read can never start or continue a turn.
+operations, so a read can never start or continue a turn. Reads apply the rule resume does: a session its runner did not
+mint reads as `not_found` on every operation, so a 1.x session OpenCode 2 migrated into the store is never read through
+the 2.x source, and segments from two normalizers never mix in one session. A cursor the OpenCode 2 source did not mint
+is rejected as `unreadable`.
 
 ## Forward reads
 
@@ -26,6 +29,12 @@ them. Message ids are stable; within a message, parts are ordered by position.
 reads the newest root assistant step's input, cache read, and cache write tokens, skipping `compaction` and `idle`
 marker messages. `GET /api/session/{id}/context` returns the messages after the last compaction, not a token count, and
 is not used for either.
+
+A raw line is one source record: one API message, of the root or of a descendant, serialized with its session id, in the
+order the source admitted it. `read_raw_lines(start, end)` returns the records between two positions, and
+`sum_transcript_usage` and interrupted-turn recovery sum the step usage those records carry, descendants included, so
+one session's range accounts for its children's spend. `tail_position` returns the position after the last record
+admitted so far: the stored API cursor and unsettled-message ids for the root and for each descendant.
 
 Every read is bounded, timeout-limited, and safe against the service writing the session concurrently. A missing session
 returns `not_found`, which the API distinguishes from failure, unlike 1.x export; any other failure returns `unreadable`

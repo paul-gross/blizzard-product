@@ -92,17 +92,19 @@ stays as it is. So the recorded worker for every OpenCode 2 spawn, resume, and j
 thin API client that creates or resumes the session, drives it, answers its permission requests, runs the heartbeat from
 what it observes, writes the turn's result where the runner already reads one, and exits. A signal asking the turn to
 stop becomes an API interrupt. Because killing a driver no longer kills its turn, the worker lifecycle seam gains two
-harness-neutral additions: the runner interrupts the session of any driver that exits without a result, and at every
-start interrupts its own recorded sessions that are still running with no worker.
+harness-neutral additions: wherever the runner kills a driver or one exits without a result, it also interrupts that
+session through the API, best effort, and at every start it interrupts its own recorded sessions still running with no
+worker, before any restart resume.
 
 **OpenCode 1 is guarded against the migration.** OpenCode 2 migrates a 1.x store in place the first time it opens it,
 and both major versions use the operator's personal store. An operator who upgrades OpenCode without stopping a 1.x
 runner migrates its sessions out from under it, so the 1.x binding's health learns to recognize a migrated store and
 refuses it by name.
 
-**Required behavior stands only on stable endpoints.** Endpoints OpenCode marks experimental — wait-until-idle, event
-replay, instruction entries, export — may enrich the binding behind a proven capability, but nothing a turn needs to
-finish depends on them. The event stream is a prompt to look, never the record; the session's own state is the record.
+**Required behavior never stands on `/api/experimental/*`.** OpenCode labels its whole HTTP API experimental, so the
+line the binding draws is the operations under `/api/experimental/*` — wait-until-idle, event replay, instruction
+entries, export — which may enrich the binding behind a proven capability, while nothing a turn needs to finish depends
+on them. The event stream is a prompt to look, never the record; the session's own state is the record.
 
 **A turn includes its children.** A turn ends when the root session is idle, every descendant has settled, and nothing
 is waiting in the root's inbox — so a background subagent cannot outlive the turn that started it, and a child's
@@ -126,20 +128,20 @@ child, asks permission, hits a usage limit, or loses its service, without a real
 
 ## Sequence
 
-The epic lands in the four steps the OpenCode epic proved, each gated on the one before.
+The epic lands in the four steps `epic:adapters/opencode` proved, each gated on the one before.
 
 1. **Prove OpenCode 2, by hand.** A 2.x compatibility proof runs against the operator's own OpenCode service, writes a
    fixture corpus for 2.1.4, and settles every row with evidence. The runner's compatibility diagnostic dispatches to
    the proof for the major version it observes, and an OpenCode 2 CLI-surface artifact in `blizzard-mock` lets the
    diagnostic's own tests run without OpenCode.
 2. **A usable 2.x worker.** The mock OpenCode 2 lands first, shaped from the corpus. Against it, the driver spawns,
-   resumes, judges, nudges, and hands over a session, and the runner composes the OpenCode 2 binding when its binary is
-   2.x.
+   resumes, judges, nudges, stops, and hands over a session, the runner interrupts the session of every driver it kills,
+   and the runner composes the OpenCode 2 binding when its binary is 2.x.
 3. **Conversation parity.** Transcripts, context measurement, usage, cost, and child agents are read from the service's
    API, normalized into Blizzard's vocabulary, and recognized by the hub's analytics under their own dialect.
-4. **Hardening, closed by hand.** Interruption, interrupting orphaned turns, a version change under a running runner,
-   concurrent turns on one service, health, and the generic selftest are built against the mock; the release gate is the
-   operator's run against a real OpenCode 2.
+4. **Hardening, closed by hand.** Interruption, reconciling orphaned turns at start, a version change under a running
+   runner, concurrent turns on one service, health, and the generic selftest are built against the mock; the release
+   gate is the operator's run against a real OpenCode 2.
 
 The fleet works steps 2 and 3 and the mock-tested half of step 4. Their issues are filed blocked on the step 1 issue,
 which the operator closes when the corpus lands; the release gate is the operator's issue, blocked on the rest.

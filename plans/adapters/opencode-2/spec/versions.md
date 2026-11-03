@@ -13,14 +13,20 @@ at a time, and advertises one `opencode` capability carrying its observed versio
 hub or the mock hub keys by harness id changes: eligibility, acquisition, and the wire see one capability per harness,
 and a runner from before this epic is indistinguishable from one that holds OpenCode 1.
 
-The binding is composed at daemon start, as the runner's harness registry is today, and never swapped while the runner
-runs. The binary's version selects it. The version the runner advertises, records on every spawn, and compares before
-every launch is the service's own, as its API reports it, and the binary's where the API reports none. A launch whose
-observed version differs from the advertised one — the operator's service updated itself, or the binary was replaced —
-is refused before anything starts and triggers a fresh probe; a probe that finds a version still inside the composed
-binding's range makes it available again under the new version, and one that finds another major version, or a binary
-and service in different major versions, leaves the capability unavailable, naming the change, until the runner is
-restarted.
+The binding is composed once, at daemon start, and never swapped while the runner runs. The choice is made by a
+dispatcher in the runner's harness wiring, outside both adapter packages and with its own place in the runner's package
+layering: before the bundle is published and the registry is built, it runs the configured binary's `--version` once and
+returns the OpenCode 1 or the OpenCode 2 declaration for the one `[opencode]` section. Each declaration carries its own
+binding facts — normalizer, bundle and publish layout, scaffold runtime, and telemetry names — so OpenCode 2 publishes
+no worker configuration and no plugin, and the analytics dialect guard iterates the normalizers of both. Selecting a
+binding by observed version is a case the runner's architecture guidance does not yet name: the rules that bindings are
+selected by configuration, through the catalog, gain one section whose binding its binary's version chooses, at
+composition, through that same catalog. The version the runner advertises, records on every spawn, and compares before
+every launch is the service's own, as `GET /api/info` reports it. A launch whose observed version differs from the
+advertised one — the operator's service updated itself, or the binary was replaced — is refused before anything starts
+and triggers a fresh probe; a probe that finds a version still inside the composed binding's range makes it available
+again under the new version, and one that finds another major version, or a binary and service in different major
+versions, leaves the capability unavailable, naming the change, until the runner is restarted.
 
 A machine runs one major version. Moving it to OpenCode 2 is the operator's sequence to carry out: stop the runner,
 upgrade OpenCode, start the runner. Running OpenCode 1 and OpenCode 2 runners side by side on one machine is not
@@ -28,19 +34,20 @@ supported.
 
 ## Sessions
 
-The OpenCode 2 binding resumes only a session whose metadata names its runner. A 1.x session — whether still in a 1.x
-store or migrated into OpenCode 2's by OpenCode 2 itself — carries no such metadata, so it is missing and takes the
-existing path for a lost conversation. Nothing tracks which major version a session belongs to. A runner moved from 1.x
-to 2.x loses its open 1.x conversations, which are ephemeral, and its work carries on in fresh ones. The harness version
-recorded on every spawn, as the [harness selection contract](../../harness-selection.md) requires of every harness,
-stays a record for analytics and diagnosis, never a dispatch key.
+The OpenCode 2 binding resumes and reads only a session minted by its runner, which every session it mints carries in
+its metadata. A 1.x session — whether still in a 1.x store or migrated into OpenCode 2's by OpenCode 2 itself — carries
+no such metadata, so it is missing and takes the existing path for a lost conversation. Nothing tracks which major
+version a session belongs to. A runner moved from 1.x to 2.x loses its open 1.x conversations, which are ephemeral, and
+its work carries on in fresh ones. The harness version recorded on every spawn, as the
+[harness selection contract](../../harness-selection.md) requires of every harness, stays a record for analytics and
+diagnosis, never a dispatch key.
 
 ## Admission
 
-| Major version | Admitted versions | Corpus                                                                  |
-| ------------- | ----------------- | ----------------------------------------------------------------------- |
-| OpenCode 1    | `>=1.18.25,<2.0`  | `src/blizzard/runner/harness/contracts/opencode/1.18.25/`               |
-| OpenCode 2    | `>=2.0,<3.0`      | `src/blizzard/runner/harness/contracts/opencode/2.1.4/`, from the proof |
+| Major version | Admitted versions | Corpus                                                                            |
+| ------------- | ----------------- | --------------------------------------------------------------------------------- |
+| OpenCode 1    | `>=1.18.25,<2.0`  | `src/blizzard/runner/harness/contracts/opencode/1.18.25/`, `1.18.32/`, `1.18.33/` |
+| OpenCode 2    | `>=2.0,<3.0`      | `src/blizzard/runner/harness/contracts/opencode/2.1.4/`, from the proof           |
 
 Each major version admits a range, not a set of proven releases. A release inside the range is trusted until it breaks,
 and a break is fixed when it appears: the proof is rerun against the release that broke, its corpus is committed beside
@@ -66,8 +73,8 @@ credential for the configured tiers as unavailable.
 
 OpenCode 1 also keeps its sessions in the operator's personal store, and OpenCode 2 migrates a 1.x store in place the
 first time it opens it. An OpenCode 1 runner whose store has been migrated beneath it — by an operator who upgraded
-OpenCode without stopping it — reports its capability unavailable, naming the cause, rather than failing session by
-session.
+OpenCode without stopping it — reports its capability unavailable, naming the cause and recognizing the migration by the
+signal the 2.x proof records, rather than failing session by session.
 
 ## Selection
 
