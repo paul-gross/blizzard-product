@@ -114,12 +114,13 @@ completion cannot wake a root after Blizzard has declared it done.
 asks through `blizzard runner ask` exactly as the 1.x worker does. Routing native questions into Blizzard's channel is
 worth doing, but it belongs to the human-channel work, not to this binding.
 
-**Live evidence by hand, the build by the fleet.** No fleet runner host carries OpenCode 2, so only an operator
-workstation that has it can produce honest evidence about it. That evidence is needed twice: at the start, where the
-live proof writes the fixture corpus, and at the end, where the release gate runs a real chunk against a real OpenCode
-2. Everything between is built against what the evidence left behind — the committed corpus and a mock OpenCode 2 in
-`blizzard-mock` shaped from it — which is work the fleet can do. The proof and the gate are the operator's; the binding
-is the fleet's, once the corpus it builds from has landed.
+**Built by hand, on a machine that runs OpenCode 2.** No fleet runner host carries OpenCode 2, and a machine runs one
+major version, so only an operator workstation that has it can produce honest evidence about it or exercise what is
+built against it. The whole epic is worked there, by hand. Live evidence is still needed twice: at the start, where the
+live proof writes the fixture corpus, and at the end, where the release gate runs a real chunk against a real
+OpenCode 2. Everything between is built against what the evidence left behind — the committed corpus and a mock OpenCode
+2 in `blizzard-mock` shaped from it — so its tests stay hermetic and run anywhere, including on the fleet's OpenCode 1
+host.
 
 **A mock OpenCode 2 is part of the epic.** Blizzard tests every harness against a mock that runs the prompt as a
 behavior script and fails on command, and OpenCode 2 gets its own beside OpenCode 1's: a mock service answering the API
@@ -143,8 +144,8 @@ The epic lands in the four steps `epic:adapters/opencode` proved, each gated on 
    change under a running runner, concurrent turns on one service, health, and the generic selftest are built against
    the mock; the release gate is the operator's run against a real OpenCode 2.
 
-The fleet works steps 2 and 3 and the mock-tested half of step 4. Their issues are filed blocked on the step 1 issue,
-which the operator closes when the corpus lands; the release gate is the operator's issue, blocked on the rest.
+Every issue of the epic is filed for the operator, never ingested by the fleet, each blocked on the one before it in
+landing order.
 
 ## Worth exploring next
 
