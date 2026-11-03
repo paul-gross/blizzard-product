@@ -1,6 +1,6 @@
 ---
 epic: adapters/opencode-2
-refinement: scaffolded
+refinement: pristine
 status: horizon
 ---
 
@@ -63,7 +63,7 @@ And the 2.x worker is good where 1.x was merely workable:
 - **Usage is read, not reconstructed.** Cost, tokens, and outcome come from the session records themselves, per step,
   for the root and for each child.
 - **Stopping is an interrupt.** A turn is stopped through the API, so the transcript records an interruption instead of
-  a severed stream, and no process is ever signalled.
+  a severed stream, and no OpenCode process is ever signalled.
 - **The lifecycle arrives.** The 1.x binding declared it could not see a root session's lifecycle; the 2.x binding reads
   it from the session itself, and tells a root from a child by its parent.
 
@@ -139,9 +139,9 @@ The epic lands in the four steps `epic:adapters/opencode` proved, each gated on 
    and the runner composes the OpenCode 2 binding when its binary is 2.x.
 3. **Conversation parity.** Transcripts, context measurement, usage, cost, and child agents are read from the service's
    API, normalized into Blizzard's vocabulary, and recognized by the hub's analytics under their own dialect.
-4. **Hardening, closed by hand.** Interruption, reconciling orphaned turns at start, a version change under a running
-   runner, concurrent turns on one service, health, and the generic selftest are built against the mock; the release
-   gate is the operator's run against a real OpenCode 2.
+4. **Hardening, closed by hand.** Crash verification of every stop path, reconciling orphaned turns at start, a version
+   change under a running runner, concurrent turns on one service, health, and the generic selftest are built against
+   the mock; the release gate is the operator's run against a real OpenCode 2.
 
 The fleet works steps 2 and 3 and the mock-tested half of step 4. Their issues are filed blocked on the step 1 issue,
 which the operator closes when the corpus lands; the release gate is the operator's issue, blocked on the rest.
