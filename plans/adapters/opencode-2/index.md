@@ -136,13 +136,15 @@ The epic lands in the four steps `epic:adapters/opencode` proved, each gated on 
    the proof for the major version it observes, and an OpenCode 2 CLI-surface artifact in `blizzard-mock` lets the
    diagnostic's own tests run without OpenCode.
 2. **A usable 2.x worker.** The mock OpenCode 2 lands first, shaped from the corpus. Against it, the driver spawns,
-   resumes, judges, nudges, stops, and hands over a session, the runner interrupts the session of every driver it kills,
-   and the runner composes the OpenCode 2 binding when its binary is 2.x.
+   resumes, judges, nudges, stops, and hands over a session, and the runner interrupts the session of every driver it
+   kills.
 3. **Conversation parity.** Transcripts, context measurement, usage, cost, and child agents are read from the service's
-   API, normalized into Blizzard's vocabulary, and recognized by the hub's analytics under their own dialect.
+   API, normalized into Blizzard's vocabulary, and recognized by the hub's analytics under their own dialect. With the
+   binding whole, the runner composes it when its binary is 2.x and drives it against the mock end to end.
 4. **Hardening, closed by hand.** Crash verification of every stop path, reconciling orphaned turns at start, a version
-   change under a running runner, concurrent turns on one service, health, and the generic selftest are built against
-   the mock; the release gate is the operator's run against a real OpenCode 2.
+   change under a running runner, health, the generic selftest, a hub from before this epic, and a runner moved across
+   major versions are built against the mock; the release gate, with its soak of concurrent turns on one service, is the
+   operator's run against a real OpenCode 2.
 
 Every issue of the epic is filed for the operator, never ingested by the fleet, each blocked on the one before it in
 landing order.
