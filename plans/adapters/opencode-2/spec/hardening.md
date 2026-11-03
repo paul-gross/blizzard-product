@@ -82,9 +82,9 @@ manifest as degraded or blocks its step, never as an unstated assumption.
 
 Each layer runs under the matrix method that owns its kind: the adapter, driver, fixture contract, version dispatch,
 configuration, runner-on-the-service, transcript source, and analytics layers under `blizzard:unit-test`; wire skew
-under `blizzard:compat`; the diagnostic service and mock service integration under `blizzard:service-test`; crash
-verification under `blizzard:crash-sweep`; upgrade acceptance under `blizzard:e2e`; and live provider acceptance under
-`blizzard:manual-opencode-compatibility`.
+under `blizzard:compat`; the diagnostic service, mock service integration, and upgrade acceptance under
+`blizzard:service-test`, upgrade acceptance as a fleet spec under `tests/service/fleet/`; crash verification under
+`blizzard:crash-sweep`; and live provider acceptance under `blizzard:manual-opencode-compatibility`.
 
 Everything above the live row runs hermetically, against the corpus and the mocks, in ordinary test tiers and on any
 fleet runner. Only the live row needs OpenCode 2 installed.
