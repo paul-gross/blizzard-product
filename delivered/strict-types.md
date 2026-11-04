@@ -1,7 +1,7 @@
 ---
 epic: strict-types
-refinement: scaffolded
-status: in-progress
+refinement: pristine
+status: delivered
 ---
 
 # Plan — `epic:strict-types`
@@ -83,23 +83,30 @@ small and obvious, and filed on its own when it is not, so a typing slice never 
 
 ## Shipping code first, tests after the migration
 
-The burn-down starts with `src/` and the exemplars and leaves the tests alone. `initiative:test-suite` is moving the
-service tier out of Python and into Playwright, and typing a test that is about to be ported is work thrown away, while
-touching the files it is being ported from only invites conflicts. So the first wave is every slice above that lives in
-shipping code — the store, compat, harness, domain, auth, delivery, and CLI slices, with their exemplars — and the
-sweeps for bare generics, context managers, conformance sentinels, and leftovers run over `src/` and the exemplars only.
-That is about 4,500 of the 21,000, and the part an agent reads before it builds on anything.
+The burn-down started with `src/` and the exemplars and left the tests alone. `initiative:test-suite` was moving the
+service tier out of Python and into Playwright, and typing a test about to be ported is work thrown away, while touching
+the files it is being ported from only invites conflicts. So the first wave was every slice above that lives in shipping
+code — the store, compat, harness, domain, auth, delivery, and CLI slices, with their exemplars — and the sweeps for
+bare generics, context managers, conformance sentinels, and leftovers ran over `src/` and the exemplars only. That was
+about 4,500 of the 21,000, and the part an agent reads before it builds on anything. It closed with shipping code held
+to strict in the gate.
 
-Every test slice waits: the factories, the test families, the fixture-parameter sweep, the private-name slices, and the
-store migration tests that live under `src/`. They are cut and filed once the service tier has moved, against whatever
-tests remain in Python, and the ported service tests are never typed at all.
+The tests waited for a closing spike, run once the service tier had moved. It re-measured every Python project in the
+workspace: about 17,000 strict errors left in blizzard's tests and store migration tests, about 1,600 in
+`blizzard-mock`, and under a hundred in `blizzard-infra`. Fixture parameters, the shared factories' `object` overrides,
+the private-name reach, and the bare generics were still the clusters the first measurement named, and each test
+family's untyped helpers made up the rest. The second wave was cut from that measurement by the same rule: inert
+comments first, then the shared test support, the cross-cutting sweeps, the store migration tests, each test family, a
+final sweep, and the switch.
 
 ## Turning it on
 
-How strict mode is switched on, and how it is held once it is, is decided when the count is low, not before: what is
-left by then decides whether a final sweep clears it or a short list of waivers is written down. The epic is delivered
-when the gate runs strict. The rule lands with it, in `blizzard-context` beside `bzh:python-toolchain`, in the same
-change that makes the code obey it, so a reviewer has a rule to cite, which is what was missing all along.
+Strict mode went on once the second wave left nothing to waive: `[tool.pyright]` runs `typeCheckingMode = "strict"` over
+`src`, `tests`, and `exemplars/python` with zero errors and no `# type: ignore` anywhere, and there is no separate
+strict report any more, because the gate is the strict report. The rule landed with it as `bzh:strict-types` in
+`blizzard-context`, beside `bzh:python-toolchain`, and the structural gate rejects a `# type: ignore` comment and a
+`# pyright: basic` or `# pyright: standard` header across all three trees. The repo's Python outside them — the root
+`conftest.py` and `scripts/` — was never in the gate's scope, and is brought under it as a chore of its own.
 
 ## Out of scope
 

@@ -103,7 +103,7 @@ is blizzard's 1.0.
 | `epic:test-suite/controlled-clock`       | in-progress |
 | `epic:test-suite/optimization`           | horizon     |
 | `epic:architectural-sweep`               | delivered   |
-| `epic:strict-types`                      | in-progress |
+| `epic:strict-types`                      | delivered   |
 | `epic:adopt-di`                          | horizon     |
 
 ## `milestone:human-in-the-loop` — the operator stops being the wire

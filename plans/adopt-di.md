@@ -186,9 +186,9 @@ constructed twice across the hub's root files — are restated against the trans
 the foundation. The exemplars move with the code they model (`bzh:exemplar-conformance`): the exemplar wiring module at
 the foundation, and each exemplar service the day its production counterpart adopts.
 
-`epic:strict-types` is in flight beside this one, and dishka's `provide` is partially unknown to pyright in strict mode.
-Because only the translation modules import dishka, the two epics agree on one named waiver confined to them, and every
-wiring module stays strict-clean through the registry interface.
+Pyright runs in strict mode since `epic:strict-types`, and dishka's `provide` is partially unknown to it there. Because
+only the translation modules import dishka, the two epics agree on one named waiver confined to them, and every wiring
+module stays strict-clean through the registry interface.
 
 ## Compatibility
 
