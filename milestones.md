@@ -75,6 +75,7 @@ is blizzard's 1.0.
 | `epic:documentation`                     | horizon     |
 | `epic:test-suite/optimization`           | horizon     |
 | `epic:adopt-di`                          | horizon     |
+| `epic:transactions`                      | horizon     |
 | `epic:advanced-forge-auth`               | horizon     |
 
 ## `milestone:autonomy` — a fleet that runs itself
