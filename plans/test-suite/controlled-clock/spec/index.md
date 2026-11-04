@@ -11,11 +11,12 @@ It builds on time as the daemons keep it today. `src/blizzard/foundation/clock.p
 `SystemClock`, `FixedClock`, `SystemMonotonicClock`, and `ManualMonotonicClock`. `bzh:injected-clock` already holds
 every instant in loop, store, and domain code to `IClock`. Each daemon builds its `SystemClock` once at its composition
 root. For the hub, that is `build_process_core` in `src/blizzard/hub/composition.py`, which `build_hosted_app` in
-`src/blizzard/hub/app.py` calls, with `_runtime_of` in `src/blizzard/hub/runtime.py` beside it for boot's migration and
-event-log stamps. For the runner host, it is `_build_host_graph` in `src/blizzard/runner/composition.py`, whose
-`host.clock` reaches the local API through `_wire_hosted_app` in `src/blizzard/runner/app.py`. The mock fleet keeps the
-same seam in `blizzard_mock/clock.py`, used by the mock hub and mock runner, and in
-`blizzard_mock/forge/domain/clock.py`, and binds a `SystemClock` in each app's `create_app`.
+`src/blizzard/hub/app.py` calls; the offline `init` and `migrate` commands stamp through `_runtime_of` in
+`src/blizzard/hub/runtime.py`. For the runner host, it is `_build_host_graph` in `src/blizzard/runner/composition.py`,
+which both `build_host_process` and the one-shot `build_runner_process` call, and whose `host.clock` reaches the local
+API through `_wire_hosted_app` in `src/blizzard/runner/app.py`. The mock fleet keeps the same seam in
+`blizzard_mock/clock.py`, used by the mock hub and mock runner, and in `blizzard_mock/forge/domain/clock.py`, and binds
+a `SystemClock` in each app's `create_app`.
 
 Paths are relative to the `blizzard` repo root unless a leaf says otherwise. The epic reaches `blizzard-mock` for the
 mock fleet's clocks, and `blizzard-context` for the rules it changes

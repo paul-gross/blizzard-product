@@ -18,15 +18,16 @@ installation holds moves.
 5. **The mock fleet's clocks and `/_clock` routes**, in `blizzard-mock`, independent of everything before it.
 6. **`docs/versioning.md`'s sentence on fenced surfaces** ([routes.md](./routes.md#not-a-released-surface)), with 3, the
    first change that mounts a fenced route.
-7. **The clock fixture**, after 3, 4, and 5: the `clock` option and its refusals, the profile check, the environment,
-   alignment, moves, session refresh, the browser, and `vendor-usage.ts` reading `clock.now()`
-   ([harness.md](./harness.md)). A harness check spec proves alignment, a move across hub, host, and forge, and the
-   refusal at a shared isolation level. The same change retires the hub's flow-step control
-   ([harness.md](./harness.md#the-flow-step-control-it-retires)).
-8. **The ports**, one change per spec, after 7 ([ports.md](./ports.md)): the four that wait out real windows first, then
-   the three that build instants from the machine's clock.
-9. **The check against the machine's clock and the rulebook's rewrite**, after the last port
-   ([below](#citations-and-the-rulebook)).
+7. **The clock fixture**, after 3, 4, and 5: the `clockMode` option and its refusals, the environment, alignment, moves,
+   session refresh, the browser, and `vendor-usage.ts` reading `clock.now()` ([harness.md](./harness.md)). A harness
+   check spec proves alignment, a move across hub, host, and forge, and the refusal at a shared isolation level. Until
+   8, a hub refuses to boot with both the controlled clock and the flow-step control permitted.
+8. **The flow-step control's retirement**, after 7 ([harness.md](./harness.md#the-flow-step-control-it-retires)),
+   independent of the ports.
+9. **The ports**, after 7 ([ports.md](./ports.md)), in three changes: the fleet specs that wait out real windows, the
+   budget lever with the subscription floor, and the release with the utilization lever.
+10. **The check against the machine's clock and the rulebook's rewrite**, after the last port
+    ([below](#citations-and-the-rulebook)).
 
 ## Citations and the rulebook
 
@@ -37,7 +38,7 @@ In `blizzard-context`:
 - `bzh:service-waits-on-the-system` (`verification/blizzard/service-tests.md`) loses its exception for wall-clock
   expiry. A wait whose subject is a window ageing out no longer polls with a deadline covering the window. It advances
   the stack's clock past the window and steps. The rule gains the controlled clock's own Do, and its Detect names the
-  new lint. This lands in 9, since the rule must not refuse a spec the suite still holds.
+  new lint. This lands in 10, since the rule must not refuse a spec the suite still holds.
 - `verification/blizzard/service-tests.md` gains how a test asks for the clock and who may, beside its account of the
   stepped host, in the change that lands 7.
 

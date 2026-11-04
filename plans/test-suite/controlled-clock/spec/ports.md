@@ -1,7 +1,12 @@
 # The specs it moves
 
-Each spec moves in a change of its own, keeps its title, and gives up its real-time wait or its read of the machine's
-clock in that change.
+The specs move in three changes ([carry-over.md](./carry-over.md#the-order-of-landings)). Each keeps its title and gives
+up its real-time wait or its read of the machine's clock in its change.
+
+A controlled hub starts no flow-driver timer, so a port whose stack runs `deliver` nodes, the egress night and the park
+spec, steps the flow driver too. Each wait on a node advances the clock past the node's own poll floor, steps the host,
+and runs `api.flowStep()`. An advance of an hour or more reaps any live worker, whose heartbeat is then over
+`HEARTBEAT_STALENESS_THRESHOLD` old, so a port advances that far only once no lease it needs is open.
 
 ## Specs that wait out a real window
 
@@ -9,6 +14,7 @@ clock in that change.
 | ------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | `tests/service/runner/budget-lever.spec.ts` | A trailing window shrunk to thirty seconds (`window_hours` of `30 / 3600`), and a poll of the runner's throttle read with a sixty-second deadline until the spend ages out                                                                                                                                                                                            | The window returns to whole hours. The test advances past it, steps the host, and reads the budget admitting                                                                                                                                    |
 | `tests/service/fleet/forge-status.spec.ts`  | `annotation_interval_seconds = 1`, and two polls against a deadline of the five-second full-pass floor plus twenty-five seconds                                                                                                                                                                                                                                       | The interval returns to its default. The test advances past the floor, which `src/blizzard/hub/domain/observability/forge_status.py` judges against `IClock`, and steps the sweep                                                               |
+| `tests/service/fleet/forge-budget.spec.ts`  | The rate-refused landing cases poll up to 160 seconds for the forge's `Retry-After: 60` refusal to lift, and the low-budget case polls thirty seconds for the forge-status full-pass floor                                                                                                                                                                            | The test moves the clock to each `next_poll_at` the chunk names and steps the flow driver, which `ForgeBudgets.admit` judges against `IClock`. The low-budget case drops its one-second interval and advances past the default floor            |
 | `tests/service/fleet/egress-night.spec.ts`  | A worker held fifteen real seconds at a checkpoint so its station is the night's slowest; a 1.1-second wait so the window closes on a whole second past every fact; `since` from `Date.now()`                                                                                                                                                                         | The worker stays held while the test advances the stack, so the station's recorded duration is set by the test rather than by real time. The window's bounds come from `clock.now()`                                                            |
 | `tests/service/fleet/park.spec.ts`          | Two cases held under `test.fixme`, since each waits out a real hour: `test_park_timeout_then_person_merge_is_adopted_on_requeue` polls up to sixty-seven minutes for a one-hour `park_timeout_hours` to escalate `park-timeout`, and `test_second_parked_repository_has_its_own_review_clock` polls until the first repository's park marker is more than an hour old | The `test.fixme` comes off both. Each test advances past the hour, which `src/blizzard/hub/delivery/actions/landing/park.py` judges as `visit.now` against the park marker's `produced_at`, and reads what the deliver node's next poll records |
 
@@ -44,8 +50,12 @@ not the controlled clock:
   a system stack, so nothing about it changes but its source.
 - `tests/service/hub/hub.spec.ts`'s prompt-shutdown case and `tests/service/runner/runner.spec.ts`'s two timed shutdown
   cases have real elapsed time as their subject. Each keeps its read with a reasoned disable.
-- `tests/service/fleet/collector-sampling.spec.ts` waits out the OpenTelemetry collector's own decision wait, a third
-  party's real time, and keeps it the same way.
+- `tests/service/fleet/garden-routine.spec.ts`, `tests/service/hub/finding-exits.spec.ts`,
+  `tests/service/runner/store/host-init-readd.spec.ts`, and `tests/ui/event-log.spec.ts` read the machine's clock on a
+  system stack, and read `clock.now()` instead.
+
+The OpenTelemetry collector's decision wait in `tests/service/fleet/acceptance-loop.spec.ts` reads no clock, so the
+check never reaches it.
 
 ## What is not this epic's
 

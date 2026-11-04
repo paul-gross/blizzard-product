@@ -2,8 +2,9 @@
 
 ## Asking for it
 
-A test asks for a controlled stack with `test.use({ clock: 'controlled' })`. The default is `'system'`. The `clock`
-fixture is built for every test either way, so a spec reads time through one surface whatever its stack runs on:
+A test asks for a controlled stack with `test.use({ clockMode: 'controlled' })`. The default is `'system'`. The option
+is not named `clock`, since `test.use` with a fixture's own name replaces the fixture. The `clock` fixture is built for
+every test either way, so a spec reads time through one surface whatever its stack runs on:
 
 | Member             | On a `'controlled'` stack                                                               | On a `'system'` stack             |
 | ------------------ | --------------------------------------------------------------------------------------- | --------------------------------- |
@@ -26,10 +27,10 @@ A controlled clock is one clock per process, so a test controls it only where no
 - **Anything else is refused** when the fixture is built, with a message naming `fresh-hub`, as `factories.ts` refuses
   an all-tenant act below it.
 
-A controlled clock pairs only with stepped daemons. The profile check that already refuses a timed sweep in a harness
-profile (`checkStepped`, `tests/harness/profiles.ts`) also refuses a controlled clock on a timed runner host. A timed
-pass between two moves of one stack could read the hub's new instant and the runner's old one, which is the race
-stepping exists to close.
+A controlled clock pairs only with stepped daemons. `checkStepped` (`tests/harness/profiles.ts`) refuses a timed sweep
+only in a profile's `profile.toml`, so the fixture adds its own refusal: a controlled stack refuses a timed sweep in the
+test's `hubConfig` and a timed runner host (`runnerLoop: 'timed'`). A timed pass between two moves of one stack could
+read the hub's new instant and the runner's old one, which is the race stepping exists to close.
 
 ## Starting the stack
 
@@ -43,6 +44,11 @@ Each daemon anchors at the moment it booted, so a hub started seconds before its
 Before the test body runs, the fixture reads every daemon's clock and sets each to the latest reading. Every move is
 forward, so no refusal can fire. A daemon whose clock route answers `404` failed to take the controlled mode, and the
 fixture fails the test there, naming the daemon and the fence.
+
+Specs also start daemons inside the test body (`runnerHosts.create`, `mockRunner(…)`), and a fresh hub may restart. A
+daemon that joins a stack already aligned is aligned as it joins: set forward to the stack's instant if it reads behind,
+or the whole stack moved forward to its reading if it reads ahead. A restarted daemon runs its boot work on its own boot
+instant until it is aligned. `FreshHub.start()` no longer refuses to restart a stepped hub.
 
 ## Moving a stack
 
@@ -66,18 +72,22 @@ behave as they do today. `page.clock.install` is not used, since it would fake t
 
 ## The flow-step control it retires
 
+The control retires in a change of its own, after the fixture's
+([carry-over.md](./carry-over.md#the-order-of-landings)). Until then, a hub permitted both the controlled clock and the
+flow-step control refuses to boot, so one hub never has two controlled clocks.
+
 The hub already carries a test-fenced flow-step control: `BLIZZARD_TEST_FLOW_STEP` behind `BLIZZARD_CRASH_FENCE` builds
 the hub core on a `FixedClock` (`build_stepped_clock`, `src/blizzard/hub/composition.py`), stops the driver's timer, and
 mounts `POST /api/admin/test-flow/step` and `POST /api/admin/test-flow/advance`. The harness asks for it with
 `test.use({ flowStepped: true })` (`tests/harness/tenancy.ts`) and calls it through `api.flowStep()` and
 `api.flowAdvance()` (`tests/harness/client/clients.ts`).
 
-The clock fixture's change retires all of it but the step route:
+That change retires all of it but the step route:
 
-- `clock: 'controlled'` replaces `flowStepped`, and the harness's refusal below `fresh-hub` moves with it.
+- `clockMode: 'controlled'` replaces `flowStepped`, and the harness's refusal below `fresh-hub` moves with it.
 - `clock.advance(seconds)` replaces `api.flowAdvance()`, and the `/advance` route goes.
 - `api.flowStep()` stays, calling the route at its unchanged path.
-- `BLIZZARD_TEST_FLOW_STEP` and `build_stepped_clock` go, so the hub has one controlled clock, not two.
+- `BLIZZARD_TEST_FLOW_STEP` and `build_stepped_clock` go, and with them the hub's refusal to boot with both.
 
 `tests/service/fleet/flow-turns.spec.ts` and `tests/harness/checks/fresh-hub.spec.ts` move onto the fixture in that
 change.
@@ -91,9 +101,9 @@ change.
 
 `tests/eslint.config.mjs` already refuses `waitForTimeout`, `setTimeout`, `setInterval`, and `node:timers` in specs. It
 gains `Date.now()` and a zero-argument `new Date()` in every file under `tests/service/` and `tests/ui/`, with a message
-pointing at `clock.now()`. A spec whose subject is real elapsed time, such as a shutdown that must finish promptly or a
-third-party collector's sampling wait, disables the rule on that line with a reason the reviewer can judge. Harness code
-outside those folders may read the machine's clock, as it does to time its own setup.
+pointing at `clock.now()`. A spec whose subject is real elapsed time, such as a shutdown that must finish promptly,
+disables the rule on that line with a reason the reviewer can judge. Harness code outside those folders may read the
+machine's clock, as it does to time its own setup.
 
 The check lands with the last port ([carry-over.md](./carry-over.md#the-order-of-landings)), since it fails every spec
 not yet moved.

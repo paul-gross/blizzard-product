@@ -42,14 +42,16 @@ in place of `SystemClock()`.
 
 Only the serving processes take the controlled clock:
 
-- **The hub's `host` process.** `build_hosted_app` resolves the clock once. It passes it to the core, which today
-  `build_process_core` builds on `SystemClock()`, and to `_runtime_of`'s boot stamps, so the events recorded at boot are
-  stamped on the same timeline. The offline commands that also call `build_process_core`, `rotate-key` and
-  `import-legacy`, stay on the system clock: they run against a stopped hub, and no test moves their time.
-- **The runner's `host` process.** `_build_host_graph` resolves the clock in place of its `SystemClock()`, and every
-  runner on the host shares it through `host.clock`, the local API included. The runner's one-shot commands (`init`,
-  `add`, `store reset`, `tick` without a running host) stay on the system clock. `blizzard-runner tick` against a
-  running host steps that host, so it reads the host's clock.
+- **The hub's `host` process.** `build_hosted_app` resolves the clock once and passes it to the core, which today
+  `build_process_core` builds on `SystemClock()`. The running hub's boot stamps already read the core's clock, so the
+  events recorded at boot are stamped on the same timeline. The offline commands stay on the system clock: `init` and
+  `migrate`, which stamp through `_runtime_of`, and `rotate-key` and `import-legacy`, which also call
+  `build_process_core`. They run against a stopped hub, and no test moves their time.
+- **The runner's `host` process.** `build_host_process` resolves the clock and passes it to `_build_host_graph` in place
+  of its `SystemClock()`, and every runner on the host shares it through `host.clock`, the local API included.
+  `build_runner_process`, which serves the one-shot commands (`init`, `add`, `store reset`, `tick` without a running
+  host), passes the system clock. The places that type the host's clock as `SystemClock` widen to `IClock`.
+  `blizzard-runner tick` against a running host steps that host, so it reads the host's clock.
 - **The mock fleet.** The mock hub's, mock runner's, and mock forge's `create_app` resolve the same pair of variables
   through the same rule, implemented in `blizzard-mock` against its own clock protocol, since `blizzard-mock` does not
   import `blizzard`.
