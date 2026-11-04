@@ -87,6 +87,12 @@ The rest is settled for 2.1.4 too, and the proof records each as a regression fi
   message tells the model the server restarted and to continue, `GET /api/session/active` lists the session as running,
   and the model may run the interrupted command again. The session's environment does not survive the restart, so the
   resumed turn's shells see none of it. The session keeps its history and is prompted normally afterward.
+- **Permission rules.** A rule denying a call by pattern fails that call with `permission.rejected` and the turn goes
+  on. A rule denying a tool for every resource withholds the tool from the model altogether, so it is never called
+  rather than called and refused; an MCP server's tools denied by `<server>_*` on `*` are withheld the same way.
+- **Pricing.** A model priced by its provider lists its prices in `GET /api/model`, and OpenCode's own free models list
+  zero. A model an OpenAI ChatGPT-plan login covers lists none, because OpenCode clears the prices of every model the
+  subscription pays for; on that login cost cannot be estimated from the listing, and `pricing` is degraded.
 - **Interrupting a tree.** Interrupting a root while its child runs a tool leaves both `interrupted` within a second and
   ends the child's tool process.
 - **1.x store migration.** OpenCode 2 migrates the same `opencode.db` in place on first open and marks it with the `kv`
