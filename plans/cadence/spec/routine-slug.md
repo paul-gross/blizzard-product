@@ -35,11 +35,16 @@ Every surface keeps answering what it answers today, and gains the slug beside i
   slug and name are both that value, exactly as today.
 - **Edit** accepts `name`, which until now it refused as immutable. `slug` stays refused.
 - **The config document** keys a routine entry by `slug`. An entry with `name` alone, as every document written today
-  has, keys by that name as its slug, and so applies as it always has. An entry stating both keys by `slug` and sets
-  `name`. Export writes both.
-- **The CLI** resolves a routine by slug. A released CLI resolves by name, and keeps working until an operator renames a
-  routine's display name, after which it no longer finds that routine by the name it was given. That is the one behavior
-  a released client sees change, and only after an operator uses the new edit.
+  has, keys by that name as its slug, and so applies as it always has; it says nothing about the display name, so
+  re-applying an old document never undoes a name an operator has since edited. An entry stating both keys by `slug` and
+  sets `name`. Export writes both.
+- **The board** joins by slug everywhere it joined by name: a routine's pages are keyed by its slug, and a routine's
+  runs, findings, and baselines are matched to it by slug. It shows the name wherever it shows a routine to a person.
+  The board ships inside the hub, so the board and the hub it is served by always move together.
+- **The CLI** resolves a routine by slug. A released CLI resolves by name, and keeps working until an operator edits a
+  routine's display name, after which it no longer finds that routine by the name it was given. A script reading `name`
+  from the API as a key is in the same position. That narrowing of `name`, from handle to display name, is the one
+  behavior a released client can see change, and only after an operator uses the new edit; the change note says so.
 - **Run titles and charges** show the display name; the charge also names the slug, so a worker can quote the handle.
 
 ## Follow-up

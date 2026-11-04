@@ -1,20 +1,18 @@
 # Showing a cadence
 
-Everything an operator reads about a cadence is worked out in the hub, in `hub/domain/cadence/`, and answered on the
+Everything an operator reads about a cadence is worked out in the hub, by the cadence package, and answered on the
 cadence's views, so the API, the CLI, and the board say the same thing. The board computes nothing of its own here,
-unlike the routine's *blocked* badge, which it derives in the browser today
-(`web/projects/hub/src/app/garden/routines/gardening-routines-page.model.ts:12`).
+unlike the routine's *blocked* badge, which it derives in the browser today.
 
 ## Needs attention
 
 A cadence's view carries `attention`: a list of what stops its errands, empty when nothing does. Each entry names its
-chore by key, its scope when it stops one errand, and a reason. The reasons mirror the refusals of a hand-started run
-(`plan_run`, `hub/domain/garden/runs/run.py:138`), so that whatever a cadence would be refused at mint, it shows
-beforehand:
+chore by key, its scope when it stops one errand, and a reason. The reasons mirror the refusals of a hand-started run,
+so that whatever a cadence would be refused at mint, it shows beforehand:
 
 | Reason             | Stops                 | When                                                                             |
 | ------------------ | --------------------- | -------------------------------------------------------------------------------- |
-| `routine_unknown`  | every errand of chore | no routine in the cadence's project carries the chore's routine name             |
+| `routine_unknown`  | every errand of chore | no routine in the cadence's project carries the chore's routine slug             |
 | `routine_retired`  | every errand of chore | the routine is retired                                                           |
 | `graph_unresolved` | every errand of chore | no enabled graph carries the routine's graph name                                |
 | `scope_unknown`    | one errand            | a listed slug names no scope in the project                                      |
@@ -45,15 +43,14 @@ working, waiting, or stuck. `state` is an open vocabulary.
 
 ## Runs
 
-A run's views — `RunSummary` on `GET /api/runs` and `GET /api/runs/{chunk_id}` (`hub/api/garden_runs.py:158`) — gain an
-optional `cadence`, naming the cadence's id, slug, and name and the chore's key, for a run a cadence minted, and none
-for a run started by hand. A run whose chore has since been removed still names its cadence and its removed chore's id,
-with no key.
+A run's views, on the runs list and a run's own detail, gain an optional `cadence`, naming the cadence's id, slug, and
+name and the chore's key, for a run a cadence minted, and none for a run started by hand. A run whose chore has since
+been removed still names its cadence and its removed chore's id, with no key.
 
 ## The CLI
 
-A `cadence` group in `hub/cli/cadence.py`, registered in `hub/cli/__init__.py`, with the conventions of `routine`
-(`hub/cli/routine.py`): `FleetCommand`, `project_option`, and a cadence resolved by slug within its project.
+A `cadence` command group, with the conventions of the `routine` group: the project option, and a cadence resolved by
+slug within its project.
 
 ```text
 blizzard hub cadence create SLUG --project P [--name TEXT] [--cron EXPR --zone ZONE]
@@ -72,24 +69,24 @@ blizzard hub cadence chore remove SLUG KEY
 
 `--hold` writes `promote: false`, and `--promote` writes it back to true. A chore verb is an edit of its cadence, with
 the cadence's revision and change row. A whole cadence is also declared in the config document through
-`blizzard hub config apply`, which is the way to keep many of them. `contracts/cli/hub.json` is regenerated
+`blizzard hub config apply`, which is the way to keep many of them. The CLI's contract document is regenerated
 (`blizzard:cli-contract`).
 
 ## The board
 
-The gardening tab (`web/projects/hub/src/app/garden/gardening.routes.ts`) gains a fourth noun beside scopes, routines,
-and runs: **Cadences**, at `/p/{project}/gardening/cadences`, a list and a detail route keyed by the cadence's slug,
-laid out as the routines' are (`bzh:frontend-placement`, `bzh:frontend-container-presentational`).
+The gardening tab gains a fourth noun beside scopes, routines, and runs: **Cadences**, at
+`/p/{project}/gardening/cadences`, a list and a detail route keyed by the cadence's slug, laid out as the routines' are
+(`bzh:frontend-placement`, `bzh:frontend-container-presentational`).
 
 - **The list** shows each cadence's name and slug, its rhythm — the cron expression and zone, its next moment, and its
-  spacing (*`0 20 * * *` America/Chicago, next Thu 20:00, at least ten days apart*), its chores' count, its errand
+  spacing (*`0 20 * * *` America/Chicago, next Thu 20:00, at least ten days apart*) — its chores' count, its errand
   counts by state, and an attention badge when `attention` is not empty.
 - **The detail** shows the rhythm with the schedule's next five moments, the attention list, and each chore with its
   errands in a table: scope, state, last run linked to the run's detail, and `due_at`. Its actions — edit, retire,
   enable, and add, edit, or remove a chore — are mutations over the routes, and each settles on refresh
   (`bzh:frontend-mutation-settles-on-refresh`).
-- **A routine's detail** gains a *Kept by* line naming every cadence and chore that run it, so that a routine the plan's
-  garden once said had no next-run time now shows when it runs next.
+- **A routine's detail** gains a *Kept by* line naming every cadence and chore that run it, so a routine shows when it
+  runs next.
 - **A run's detail** names the cadence and chore that minted it, where one did.
 
 The project-agnostic lens shows the doorway the gardening tab already shows. While the `cadences` flag is off, the tab
@@ -97,8 +94,9 @@ is shown, and its list carries a line saying that cadences mint nothing until th
 
 ## Operator documents
 
-`docs/deployment/cadences.md` is the operator's page: what a cadence, a chore, and an errand are; the record's fields
-with an example; when an errand is due, with the three anchors; promoting; attention; the CLI; and the board. It is
-routed from `docs/deployment.md` and linked from `docs/deployment/routines-and-scopes.md` §Runs. The neighbouring pages
-gain what touches them: `config-documents.md` the `cadences` section and its order after routines; `observability.md`
-the `cadence` row in the table of sweeps, now seven; `board.md` the tab.
+Blizzard's operator documentation gains a page on cadences: what a cadence, a chore, and an errand are; the record's
+fields with an example; when an errand is due, with the three anchors, a missed moment, and cron's edges; promoting;
+attention; the CLI; and the board. It is routed from the deployment guide's index and linked from the page on routines
+and scopes. The neighbouring pages gain what touches them: the config-documents page the `cadences` section and its
+order after routines, the observability page the `cadence` row in its table of sweeps, now seven, and the board's page
+the tab.

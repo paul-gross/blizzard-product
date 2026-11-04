@@ -1,6 +1,6 @@
 ---
 epic: cadence
-refinement: scaffolded
+refinement: pristine
 status: horizon
 ---
 
@@ -87,8 +87,8 @@ bed by bed. The same three words carry this epic:
   - **Finished**, for work that should rest after it is done, as a bed lies fallow: the next run waits out the spacing
     from the moment the last one was.
 - **An errand's last run is the last one it minted.** Whatever became of it — finished, failed, or cancelled. A failed
-  or cancelled run is not quietly retried; the operator restarts it if they want it, and the restarted run is still the
-  errand's own.
+  or cancelled run is not quietly retried: an operator who wants the work again starts the routine by hand, and that run
+  belongs to no errand.
 - **One live run per errand.** An errand is never minted while its last run is unfinished, as no gardener waters soil
   that is still wet. A fleet behind on its queue does not pile up copies of the same sweep, and a scheduled anchor skips
   forward while an errand's last run still waits rather than stacking another behind it.
@@ -101,8 +101,6 @@ bed by bed. The same three words carry this epic:
 - **Minting at the hub when due.** The hub creates the work in the cadence's own project, exactly as a run started by
   hand is ingested there, and only a runner serving that project claims it. A fleet behind on work falls behind on its
   own housekeeping rather than displacing an operator's.
-- **Urgency per chore.** Each chore will name the urgency of everything it mints, so a chore over all scopes mints every
-  one of its errands at the same urgency. The wiring belongs to `epic:urgency`; this epic leaves the chore room for it.
 - **Promoted, unless the chore says otherwise.** A run started by hand rests behind the promote gate until someone
   admits it, and a sweep minted at three in the morning that waits for someone to promote it has not kept the fleet's
   schedule at all. So a chore promotes what it mints by default, its errands entering the ready queue the moment they

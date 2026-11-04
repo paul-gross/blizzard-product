@@ -20,8 +20,9 @@ after there are years of facts to move.
 - **The derivation rule, enforced.** What leaves is only ever what nothing derives from. A record some live status is
   computed from is never a retention candidate, regardless of age — the fleet must not be able to forget its way into
   lying.
-- **The sweep as ordinary work.** Expiry runs on a schedule rather than on a boot, riding the cadence machinery
-  `epic:cadence` builds instead of growing a timer of its own.
+- **Expiry as a pass of the hub.** Letting go of old records is the hub's own housekeeping over its own rows, not work
+  for a runner, so it runs as one of the hub's sweeps, on a timer of its own and on a floor that keeps it cheap, the way
+  fact egress's export runs. A cadence mints work for runners and is not the place for it.
 - **Export before drop.** `initiative:fact-egress` decides what has already left the building; nothing is dropped that
   the operator asked to keep and has not yet been handed.
 
