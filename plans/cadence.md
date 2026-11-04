@@ -65,11 +65,11 @@ bed by bed. The same three words carry this epic:
   that scope, so the monthly full run sets the baseline the next weekly delta reads from.
 - **Two checks: a schedule and a spacing.** A **schedule** names the moments a cadence may fire — four in the afternoon
   every day, or every Sunday at four. A **spacing** names the least time that must pass since an errand's last run
-  before it is minted again — seven days, or thirty-six hours. A cadence may carry either or both. With only a
-  schedule, every moment it names mints each errand. With only a spacing, an errand is minted the moment its spacing has
-  passed. With both, an errand is minted at the first scheduled moment after its spacing has passed, which keeps a
-  ten-day sweep arriving in the evening, when the fleet is idle, rather than drifting around the clock with however long
-  the last run took.
+  before it is minted again — seven days, or thirty-six hours. A cadence may carry either or both. With only a schedule,
+  every moment it names mints each errand. With only a spacing, an errand is minted the moment its spacing has passed.
+  With both, an errand is minted at the first scheduled moment after its spacing has passed, which keeps a ten-day sweep
+  arriving in the evening, when the fleet is idle, rather than drifting around the clock with however long the last run
+  took.
 - **A spacing measured from a chosen anchor.** Every run passes three moments: it is **scheduled** when its chunk is
   created, **started** when a runner takes it up, and **finished** when the chunk is done. A chunk scheduled today may
   start tomorrow and finish the day after, so a spacing says which moment it counts from:
@@ -85,11 +85,11 @@ bed by bed. The same three words carry this epic:
 - **One live run per errand.** An errand is never minted while its last run is unfinished, as no gardener waters soil
   that is still wet. A fleet behind on its queue does not pile up copies of the same sweep, and a scheduled anchor skips
   forward while an errand's last run still waits rather than stacking another behind it.
-- **No catch-up.** An errand that has come due is owed one run, however long it has been overdue. Watering twice
-  because yesterday was missed does the plant no good. A fleet switched off for a week mints each overdue errand once
-  when it returns, and every scheduled moment it missed folds into that single run.
-- **Checked every minute.** The hub looks over its cadences once a minute, and a schedule is stated to the minute, so
-  a cadence fires within a minute of the moment it names. A hub that was down at eight finds the errand overdue on its
+- **No catch-up.** An errand that has come due is owed one run, however long it has been overdue. Watering twice because
+  yesterday was missed does the plant no good. A fleet switched off for a week mints each overdue errand once when it
+  returns, and every scheduled moment it missed folds into that single run.
+- **Checked every minute.** The hub looks over its cadences once a minute, and a schedule is stated to the minute, so a
+  cadence fires within a minute of the moment it names. A hub that was down at eight finds the errand overdue on its
   first look back, and mints it once.
 - **Minting at the hub when due.** The hub creates the work in the cadence's own project, exactly as a run started by
   hand is ingested there, and only a runner serving that project claims it. A fleet behind on work falls behind on its
@@ -103,14 +103,14 @@ bed by bed. The same three words carry this epic:
 
 A spacing counts from an errand's own run, and a sweep finishing is not its findings being dealt with. A sweep that
 raised a dozen findings on Sunday is finished on Sunday, while the fixes those findings became land on Thursday as work
-of their own. A cadence that should wait until last week's findings are resolved needs a condition on open findings,
-not on a moment in a run, and that condition is a later addition rather than a fourth anchor.
+of their own. A cadence that should wait until last week's findings are resolved needs a condition on open findings, not
+on a moment in a run, and that condition is a later addition rather than a fourth anchor.
 
 ## Open questions
 
 - Whether a cadence promotes what it mints. A run started by hand rests behind the ordinary promote gate rather than
   entering the ready queue, and a sweep minted at three in the morning that waits for someone to promote it has not kept
-  the fleet's schedule at all. Promoting would make a cadence the first thing beside an operator that admits work to
-  the queue, so it is a deliberate exception to the gate, perhaps one each chore chooses.
+  the fleet's schedule at all. Promoting would make a cadence the first thing beside an operator that admits work to the
+  queue, so it is a deliberate exception to the gate, perhaps one each chore chooses.
 - Whether an errand's last run carries over when its chore is edited — its mode changed, its charge note rewritten, or
   its routine swapped for another — or the edited chore starts afresh.
