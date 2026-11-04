@@ -4,15 +4,16 @@ What users will be able to do. A milestone is a destination stated in the user's
 where the product must reach, then ask what work the journey requires — the milestone demands its epics, never the other
 way around.
 
-| Milestone                      | What users will be able to do                                                                                                                                                                                                                                                                                                                                                                                           |
-| ------------------------------ | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `milestone:polyglot`           | Run the fleet on the coding harness of their choice — Claude Code, Codex, or OpenCode, first-class and mixable by node — with the safeties on: no worker runs with permissions dangerously bypassed.                                                                                                                                                                                                                    |
-| `milestone:projects`           | Run every project from one fleet: a single hub hosting many projects and the sources they draw from, and a single runner host per machine working all of them — a workspace for each project or set of projects, not a stack per project. Each project lands and deploys its finished work its own declared way.                                                                                                        |
-| `milestone:hardening`          | Decide for themselves how the fleet behaves: every operational constant theirs to set, what each runner will take and when and at what rate theirs to declare, a provider outage ridden out rather than slept through, nothing growing without end underneath them, every upgrade taken when they choose and told beforehand what it asks of them, and every question about the platform answerable without cloning it. |
-| `milestone:human-in-the-loop`  | Stop being the wire between the fleet and everything it needs: it reaches them wherever they are when a decision is genuinely theirs, and settles CI's verdict itself when it is not.                                                                                                                                                                                                                                   |
-| `milestone:mobile`             | Carry the fleet in a pocket: watch the night, answer a question, and unblock a chunk from a phone, through notifications that arrive the way the phone's own do.                                                                                                                                                                                                                                                        |
-| `milestone:project-management` | Assemble what the fleet works on from inside blizzard — browse the backlog, take many items at once, and shape them into chunks — instead of handing over ids one at a time.                                                                                                                                                                                                                                            |
-| `milestone:future-state`       | Unsorted work that belongs to no major milestone underway.                                                                                                                                                                                                                                                                                                                                                              |
+| Milestone                      | What users will be able to do                                                                                                                                                                                                                                                                                                                                      |
+| ------------------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| `milestone:polyglot`           | Run the fleet on the coding harness of their choice — Claude Code or OpenCode, first-class and mixable by node — with the safeties on: no worker runs with permissions dangerously bypassed.                                                                                                                                                                       |
+| `milestone:hardening`          | Decide for themselves how the fleet behaves: every operational constant theirs to set, when and at what rate each runner takes work theirs to declare, a provider outage ridden out rather than slept through, every upgrade taken when they choose and told beforehand what it asks of them, and every question about the platform answerable without cloning it. |
+| `milestone:autonomy`           | Leave the fleet to run itself: it keeps its own schedule, takes up work the moment something happens, reaches first for what is most urgent, hands each piece to the runner and the settings suited to it, and clears the road for a change too large to share it — without the operator choreographing any of it.                                                 |
+| `milestone:foundational-seams` | Run blizzard on the tools they already use, not only the ones it was first built on: each seam the fleet was drawn along — the coding harness first — opened from the one tool it shipped with to the range of tools its users actually work in.                                                                                                                   |
+| `milestone:human-in-the-loop`  | Stop being the wire between the fleet and everything it needs: it reaches them wherever they are when a decision is genuinely theirs, settles CI's verdict itself when it is not, and takes a word of direction mid-flight without the session being taken over.                                                                                                   |
+| `milestone:mobile`             | Carry the fleet in a pocket: watch the night, answer a question, and unblock a chunk from a phone, through notifications that arrive the way the phone's own do.                                                                                                                                                                                                   |
+| `milestone:project-management` | Assemble what the fleet works on from inside blizzard — browse the backlog, take many items at once, and shape them into chunks — instead of handing over ids one at a time.                                                                                                                                                                                       |
+| `milestone:future-state`       | Unsorted work that belongs to no major milestone underway.                                                                                                                                                                                                                                                                                                         |
 
 ## `milestone:polyglot` — any harness, with the safeties on
 
@@ -30,46 +31,16 @@ branches remain the forge's to guard, not the agent's to respect on a bad night.
 | Epic                            | Status      |
 | ------------------------------- | ----------- |
 | `epic:adapters/opencode`        | delivered   |
-| `epic:adapters/opencode-2`      | in-progress |
-| `epic:adapters/codex`           | horizon     |
 | `epic:security/worker-security` | delivered   |
-
-## `milestone:projects` — one fleet, every project
-
-One operator should be able to run every project they care about from one fleet. Today blizzard silently assumes it
-serves only itself, so a second project means a second hub, a second runner, a whole second stack on the same desk, none
-of them aware of the others. This milestone makes the project a first-class idea — what to do and who does it, grouped —
-so one hub serves many projects, one runner host per machine works all of them, and one board shows the whole fleet or
-narrows to the single project that matters right now.
-
-Each project keeps the terms of its own work: the sources it draws from, the repositories it may land in, and how
-finished work is delivered and deployed there — merged by the fleet or by a human, deployed in the order its
-repositories depend on one another, proved healthy or rolled back. Above projects sits the hard boundary, the tenant:
-one hub can host wholly separate worlds, each with its own graphs, projects, runners, and board, and none aware of the
-others.
-
-| Epic                              | Status    |
-| --------------------------------- | --------- |
-| `epic:live-config`                | delivered |
-| `epic:multi-tenancy/hub`          | delivered |
-| `epic:projects/hub`               | delivered |
-| `epic:projects/runner`            | delivered |
-| `epic:multi-tenancy/runner`       | delivered |
-| `epic:runner-host`                | delivered |
-| `epic:projects/host`              | retired   |
-| `epic:advanced-delivery/actions`  | delivered |
-| `epic:advanced-delivery/forges`   | delivered |
-| `epic:advanced-delivery/flows`    | delivered |
-| `epic:advanced-delivery/policies` | delivered |
-| `epic:advanced-deployment`        | horizon   |
+| `epic:adapters/opencode-2`      | in-progress |
 
 ## `milestone:hardening` — the platform stops guessing on your behalf
 
 A young platform is full of choices someone made once, on the operator's behalf, without knowing their fleet, their
 machine, or their budget. Hardening hands those choices back. What was a constant in code becomes a decision the
-operator makes, and what the platform presumed — that the provider is always reachable, that storage is free, that an
-upgrade may land the moment it is ready, that a reader will clone the repository to learn it — becomes something it is
-built to handle.
+operator makes, and what the platform presumed — that the provider is always reachable, that a credential able to open a
+pull request can also land it, that an upgrade may land the moment it is ready, that a reader will clone the repository
+to learn it — becomes something it is built to handle.
 
 The same intent turns inward, onto the ground the fleet itself stands on: code an agent meeting it for the first time
 can find its way through, tests that gate every landing quickly and prove what they claim, and releases that reach the
@@ -88,28 +59,70 @@ is blizzard's 1.0.
 | `epic:release-engineering/supply-chain`  | delivered   |
 | `epic:storybook`                         | delivered   |
 | `epic:throttling`                        | delivered   |
-| `epic:tagging`                           | horizon     |
-| `epic:resilience`                        | horizon     |
-| `epic:retention`                         | horizon     |
-| `epic:config/model-resolution`           | horizon     |
-| `epic:config/sweep`                      | horizon     |
-| `epic:ui-toolkit`                        | horizon     |
-| `epic:documentation`                     | horizon     |
 | `epic:test-suite/foundation`             | delivered   |
 | `epic:test-suite/hub-tier`               | delivered   |
 | `epic:test-suite/runner-tier`            | delivered   |
 | `epic:test-suite/fleet-tier`             | delivered   |
 | `epic:test-suite/journey`                | delivered   |
-| `epic:test-suite/controlled-clock`       | in-progress |
-| `epic:test-suite/optimization`           | horizon     |
 | `epic:architectural-sweep`               | delivered   |
 | `epic:strict-types`                      | delivered   |
+| `epic:test-suite/controlled-clock`       | in-progress |
 | `epic:strict-mock`                       | in-progress |
+| `epic:resilience`                        | horizon     |
+| `epic:config/model-resolution`           | horizon     |
+| `epic:config/sweep`                      | horizon     |
+| `epic:ui-toolkit`                        | horizon     |
+| `epic:documentation`                     | horizon     |
+| `epic:test-suite/optimization`           | horizon     |
 | `epic:adopt-di`                          | horizon     |
+| `epic:advanced-forge-auth`               | horizon     |
+
+## `milestone:autonomy` — a fleet that runs itself
+
+A fleet that only does what it was handed, in the order it was handed, still needs someone standing over it. The sweep
+that should run every Sunday runs when somebody remembers it. The production error that arrived at two in the morning
+waits for a person to read it and type it in. The urgent fix sits behind forty features until someone drags it up, every
+runner reaches for whatever is next whether or not it suits the work, and the rewrite that cannot share the road with
+anything has no way to ask for it. Each of those is the operator acting as the fleet's scheduler, and the fleet's whole
+promise is that the operator can step away.
+
+This milestone hands the scheduling to the fleet. Housekeeping keeps its own cadence, and the outside world can raise
+work directly when something happens. Work says how soon it should be picked as well as where it stands, and a runner
+declares the kinds of work it takes, running each under settings named once rather than restated on every node. A change
+too large to share the road is marked a chokepoint, worked alone, and built by a swarm. The operator still decides what
+matters; they stop being the one who has to set it moving.
+
+| Epic                         | Status  |
+| ---------------------------- | ------- |
+| `epic:cadence`               | horizon |
+| `epic:signals`               | horizon |
+| `epic:urgency`               | horizon |
+| `epic:tagging`               | horizon |
+| `epic:worker-profiles`       | horizon |
+| `epic:chokepoint/chokepoint` | horizon |
+| `epic:chokepoint/epic-dwf`   | horizon |
+
+## `milestone:foundational-seams` — the seams opened wide
+
+Blizzard was built down one vertical: Claude Code as the harness, GitHub as the forge and the place work comes from, one
+of each so that the whole road from an issue to a landed change could be walked end to end. Every one of those seams was
+drawn to admit a second tool, and almost none of them has one yet. That is the right order to build a platform in, and
+the wrong place to leave it, because the operator who would adopt the fleet tomorrow works in a shop that already chose
+its tools, and their tools are rarely exactly ours.
+
+This milestone circles the wagons around those foundational seams and widens each from the one tool it shipped with to
+the range its users actually work in. It is not new capability so much as reach: the same fleet, the same graphs, the
+same board, open to many more of the people who could run it. It starts where the demand is loudest, with a second
+coding harness.
+
+| Epic                  | Status  |
+| --------------------- | ------- |
+| `epic:adapters/codex` | horizon |
 
 ## `milestone:human-in-the-loop` — the operator stops being the wire
 
-Work stops and waits for a person for two quite different reasons, and today they look identical from the outside.
+Work stops and waits for a person for two quite different reasons, and today they look identical from the outside. A
+third moment needs no stopping at all.
 
 In the first, the fleet has met something only a human can settle — an ambiguity in what was asked, a judgment call the
 charge does not cover — and it is right to wait. What is wrong is *how* it waits: silently, on a board nobody is looking
@@ -124,12 +137,17 @@ owning session closes the loop without them, and the cap on how many rounds it m
 agent arguing with CI indefinitely is worse than one that stops and asks, which returns the moment to the first kind
 honestly.
 
+In the third, the fleet has asked nothing and the operator is the one who sees it: a chunk heading somewhere wrong. They
+should not have to choose between watching the night go to waste and taking the session over. One sentence, delivered at
+the agent's next natural pause, lets the work carry on in the right direction.
+
 The milestone is named for the distinction. A human belongs in the loop exactly where judgment lives, and nowhere else.
 
 | Epic               | Status  |
 | ------------------ | ------- |
 | `epic:chat`        | horizon |
 | `epic:ci-feedback` | horizon |
+| `epic:steering`    | horizon |
 
 ## `milestone:mobile` — the fleet in a pocket
 
@@ -184,19 +202,11 @@ Work that belongs to no major milestone underway, held here until one claims it.
 
 | Epic                                      | Status  |
 | ----------------------------------------- | ------- |
-| `epic:cadence`                            | horizon |
-| `epic:steering`                           | horizon |
-| `epic:signals`                            | horizon |
 | `epic:preview`                            | horizon |
-| `epic:worker-profiles`                    | horizon |
 | `epic:provider-kit`                       | horizon |
 | `epic:terraform-provider`                 | horizon |
 | `epic:tenant-telemetry`                   | horizon |
 | `epic:demo`                               | horizon |
-| `epic:queue/priority`                     | retired |
-| `epic:urgency`                            | horizon |
-| `epic:chokepoint/chokepoint`              | horizon |
-| `epic:chokepoint/epic-dwf`                | horizon |
 | `epic:code-harness-window/agent-observer` | horizon |
 | `epic:code-harness-window/swarm-view`     | horizon |
 | `epic:mutation-testing/angular`           | horizon |
@@ -210,4 +220,7 @@ Work that belongs to no major milestone underway, held here until one claims it.
 | `epic:lab/evidence`                       | horizon |
 | `epic:advanced-delivery/gitlab`           | horizon |
 | `epic:advanced-delivery/trains`           | horizon |
+| `epic:advanced-deployment`                | horizon |
+| `epic:retention`                          | horizon |
 | `epic:ui-redesign`                        | horizon |
+| `epic:queue/priority`                     | retired |
