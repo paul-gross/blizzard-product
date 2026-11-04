@@ -11,6 +11,10 @@ is for. The one on the desk should take small, safe fixes; the one in the corner
 and the queue, which the operator can only reorder, offers no way to express either. Work that says what kind of work it
 is makes the queue something they can partition instead of merely shuffle.
 
+A project is not a tag. `initiative:projects` stores a project as a record that owns a garden and links sources and
+repositories, which a tag cannot. Tagging pairs instead with `epic:throttling`: one declares what a runner will take,
+the other when it will take anything.
+
 ## What to build
 
 - **Scoped tags on a chunk.** `type:feature`, `risk:low` — a scope admits one value at a time, so a filter over a scope

@@ -18,6 +18,10 @@ session runs on, inventoried and promoted under one resolution order.
 - **One resolution order.** Where a value may be stated in more than one place, the precedence is declared once and
   holds everywhere, so the answer to "what is this fleet actually running with" is a lookup rather than an
   investigation.
+- **A worker's environment stated in the runner's own config.** Environment variables a worker should see are set in the
+  runner's toml or an env file it names. Today `worker_env_passthrough` only passes through what is already set outside
+  the runner, so tuning worker behavior — test parallelism through `PYTEST_XDIST_AUTO_NUM_WORKERS`, say — means
+  scattered setup across systemd, a shell profile, and the runner config.
 - **The comparable run.** The harness engineer changes one constant, runs the same chunk again, and can attribute the
   difference — which means the values a run used are recoverable after the fact, not only before it.
 

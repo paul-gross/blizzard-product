@@ -61,7 +61,7 @@ every time they load.
 Blizzard records with care and remembers nothing on its own. A chunk's retrospective is an asset attached to that chunk.
 Review findings land in the hub's findings store, and gardening closes a loop on the codebase rather than on any agent's
 recall. The closest analogue to compounding is this workspace's retrospective analysis, which clusters recurring
-complaints across closed chunks and drafts a fix for a rule, a prompt, or the registry, then waits for a human to
+complaints across closed chunks and drafts a fix for a rule, a prompt, or the product's plans, then waits for a human to
 approve it. No epic covers agent memory, and the mission does not refuse it. This is a genuine gap, and the evidence
 Soleur supplies about it is unusually candid. Its own benchmark found the knowledge-base search skill recalling worse
 than plain grep, 0.77 against 0.95 on exact-phrase queries, and the write-back loop is what swelled its skills to their
@@ -80,29 +80,27 @@ cluster, and hands it to `one-shot`. Much of this calendar is Soleur running its
 digest, auditing its own SEO, and drafting its own content, rather than anything a customer would schedule.
 
 Blizzard has no cron anywhere. Routines run when an operator runs them, and its Claude Code workers are explicitly
-denied the harness's scheduling tools. [`epic:cadence`](../../../epics.md) holds the hub minting a routine's work when
-its interval comes due, so the calendar is a schedule difference. The label drain splits in two. Browsing and bulk
-ingest are [`epic:intake`](../../../epics.md)'s, also scheduled. A machine choosing which issues belong together in one
-run is a position: blizzard executes the shape it is handed and never computes it.
+denied the harness's scheduling tools. `epic:cadence` holds the hub minting a routine's work when its interval comes
+due, so the calendar is a schedule difference. The label drain splits in two. Browsing and bulk ingest are
+`epic:intake`'s, also scheduled. A machine choosing which issues belong together in one run is a position: blizzard
+executes the shape it is handed and never computes it.
 
 ### Work that starts from an event, as a draft
 
 When something happens on a founder's repository, a review waiting, CI failing, a high-priority issue opened, a
 vulnerability advisory, Soleur's hosted app has an agent draft a response and places it as a card in a *Today* queue.
-The founder sends it, edits it, or discards it, and only sending starts the agent's turn.
-[`epic:signals`](../../../epics.md) holds inbound events raising work, so the trigger is scheduled. The draft card is
-the more interesting half: a proposal sized to approve with one tap, which is the shape the product owner persona
-answering from a phone is waiting for.
+The founder sends it, edits it, or discards it, and only sending starts the agent's turn. `epic:signals` holds inbound
+events raising work, so the trigger is scheduled. The draft card is the more interesting half: a proposal sized to
+approve with one tap, which is the shape the product owner persona answering from a phone is waiting for.
 
 ### Conversation, push, and a phone
 
 The hosted app is a conversation before it is anything else. A founder chats with one of eight department leads over a
 WebSocket that resumes a session or replays the stream after a dropped connection, answers questions inline, and
 approves gated actions, with web push and then email reaching them when the tab is closed, all inside an installable
-progressive web app. Blizzard has a mobile glance board and no notifications or chat of any kind.
-[`epic:chat`](../../../epics.md) and [`epic:pwa`](../../../epics.md) hold the notification and phone halves, so those
-are schedule differences. Speaking freely with the agent that holds a chunk remains a difference of kind, as it was
-against Fusion.
+progressive web app. Blizzard has a mobile glance board and no notifications or chat of any kind. `epic:chat` and
+`epic:pwa` hold the notification and phone halves, so those are schedule differences. Speaking freely with the agent
+that holds a chunk remains a difference of kind, as it was against Fusion.
 
 ### Trust dialed per action, not per station
 
@@ -131,8 +129,8 @@ keys derived per user, and Stripe plans at $49, $149, and $499 a month that cap 
 and fifty. The tenancy is thinner at runtime than in the data. Every tenant's agent shares one container on one host,
 separated by a sandbox rather than a machine, and the server refuses to run as more than one replica because live
 sessions, locks, and approval gates are held in process memory. Blizzard's hosted hub is its author's own fleet, and
-[`initiative:multi-tenancy`](../../../epics.md) partitions a hub without sign-up or billing, so the commercial surface
-is a position difference.
+`initiative:multi-tenancy` partitions a hub without sign-up or billing, so the commercial surface is a position
+difference.
 
 ### Confinement, where Soleur's hosted path is ahead
 
@@ -223,8 +221,8 @@ findings forward, Soleur by filing them as issues and blizzard by recording them
 dollars, per unit of work and over a rolling window, and both stop rather than explain. Both start child processes from
 an allowlisted environment instead of the daemon's own, both keep secrets encrypted at rest, and both put Claude Code
 first with a second harness live beside it, Devin for Soleur and OpenCode for blizzard. Both leave Codex unfinished:
-Soleur's engine is coded and switched off, and blizzard's is [`initiative:adapters`](../../../epics.md). Both are built
-by one person and a fleet, dogfooded on themselves, and deployed from their own main branch.
+Soleur's engine is coded and switched off, and blizzard's is `initiative:adapters`. Both are built by one person and a
+fleet, dogfooded on themselves, and deployed from their own main branch.
 
 Neither is open source, and the Fusion comparison's line that both of those products are needs correcting on blizzard's
 side. Soleur moved to the Business Source License early in the year to protect a hosted launch, and later had to scrub
@@ -248,11 +246,11 @@ narrower permission posture, or the epic needs an operating-system boundary adde
 decision. The Fusion comparison's sandboxing row should be corrected in the same change.
 
 **Learning deserves a decision, not a copy.** Agent memory is now the idea from two competitors that the mission does
-not refuse and the registry does not hold. Soleur's evidence argues against the automatic half: write-back swelled its
+not refuse and the plans do not hold. Soleur's evidence argues against the automatic half: write-back swelled its
 prompts, and its retrieval lost to grep. The half worth taking is the one blizzard's workspace already does by hand,
 which is to cluster what went wrong across many chunks, draft the fix to a rule or a prompt, and let a human decide. The
-likely answer is to make that pass recurring once [`epic:cadence`](../../../epics.md) exists, not to give agents a
-memory. It should be a considered answer either way.
+likely answer is to make that pass recurring once `epic:cadence` exists, not to give agents a memory. It should be a
+considered answer either way.
 
 **The methodology seam needs a written boundary.** Soleur is proof that a lane can be portable and sold on its own,
 which is the best news the delegation thesis could get. It is also a lane that wants to do the fleet's work. Its
@@ -266,8 +264,8 @@ dropped into a repository blizzard drives.
 Soleur's default branch failed 8 of its last 100 CI runs, a short window, and its bot fixes revert themselves when they
 turn the branch red. The [field survey](../factory-field/index.md) puts blizzard at about one landing in five turning
 `master` red, through a strict single-file queue. The cause is not settled by this comparison, but the asymmetry is
-large enough to examine before [`initiative:advanced-delivery`](../../../epics.md) designs its train, because the train
-is where the lesson would land. Whether delivery owns a revert path belongs in the same conversation.
+large enough to examine before `initiative:advanced-delivery` designs its train, because the train is where the lesson
+would land. Whether delivery owns a revert path belongs in the same conversation.
 
 The remaining differences are the design working. Departments beyond engineering, a priced multi-tenant service, and a
 model that picks which issues travel together are positions the mission already takes, and Soleur's own competitive

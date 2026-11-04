@@ -2,13 +2,13 @@ name = "blizzard-product"
 prefix = "bp"
 
 # blizzard-product is blizzard's live product-intent repo. It carries the
-# charter, the epic registry (roadmap.md), and per-feature requirements docs;
+# charter, the milestone registry, and the plans behind each epic;
 # ready-to-execute work lives in GitHub issues, not here. Addressed via the
-# `blizzard-product:` path notation (e.g. `blizzard-product:/roadmap.md`).
+# `blizzard-product:` path notation (e.g. `blizzard-product:/milestones.md`).
 
 # Lazily loaded: this repo's hub is a router, and product intent is in scope
 # only when planning what to build — not on every task. `load = "lazy"` renders
 # a routing row in AGENTS.winter.md instead of an `@`-import, so the hub costs
 # one line per session rather than its whole entry point.
-description = "Blizzard's live product intent — charter, epic registry, plans, delivered log. Read when planning what to build."
+description = "Blizzard's live product intent — charter, milestones, plans, delivered log. Read when planning what to build."
 load = "lazy"

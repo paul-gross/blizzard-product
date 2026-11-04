@@ -18,9 +18,8 @@ The record of what has made it into the product, organized the way the work was 
 ## Entry rules
 
 - Entries are records, not registry rows: an epic that served several milestones appears under each of them, and an id
-  that has fully landed *resolves* here (the live registries stay the single home for anything still in flight).
-- A Notes cell states what the epic comprises and, where its initiative still has live epics, links the remainder to the
-  registry.
+  that has fully landed *resolves* here (a live plan's frontmatter stays the single home for anything still in flight).
+- A Notes cell states what the epic comprises and, where its initiative still has live epics, names the remainder by id.
 - An entry keeps its link to the plan it was built from — under `delivered/` once it has moved there, under `plans/`
   while its initiative is still live.
 - The ledger is append-mostly: entries arrive when work lands and are never reshaped retroactively — the record is the
@@ -28,7 +27,7 @@ The record of what has made it into the product, organized the way the work was 
 
 ## Lifecycle
 
-An epic completes and its row leaves `epics.md` — or, inside an initiative, its name stays in the initiative's plan
+An epic completes and its plan moves to `delivered/` — or, inside an initiative, its name stays in the initiative's plan
 marked `delivered` by its own frontmatter. If every milestone it served is still live, its delivery is marked in those
 milestones' epic charts and it waits; it enters this ledger under a milestone's section when that destination is reached
 (or under `## Outside the milestones` immediately, if it served none). When a destination is reached, its row leaves

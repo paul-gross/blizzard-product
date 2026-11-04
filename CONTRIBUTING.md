@@ -37,16 +37,16 @@ whether an idea is in scope, and will sharpen it if it is.
 
 ## What happens next
 
-An accepted proposal is promoted in steps. It enters [epics.md](./epics.md) with a stable id, a position in priority
-order, and a plan under `plans/` — as an epic, or as an initiative naming the epics it will land in. When an epic comes
-close enough to start, its plan earns detailed requirements with its scope decided. Only then is it filed to GitHub as
-issues, each blocked by the ones it builds on, which the fleet picks up in that order. Once it has landed, it leaves the
-registry and enters [delivered.md](./delivered.md).
+An accepted proposal is promoted in steps. It enters as a plan under `plans/` carrying a stable id — as an epic, or as
+an initiative naming the epics it will land in. When an epic comes close enough to start, its plan earns detailed
+requirements with its scope decided. Only then is it filed to GitHub as issues, each blocked by the ones it builds on,
+which the fleet picks up in that order. Once it has landed, its plan moves to `delivered/` and it enters
+[delivered.md](./delivered.md).
 
 Two things follow from that shape. Nothing here tracks day-to-day progress: each epic's plan marks it as waiting,
 underway, delivered, or retired, never who is working on it or how far along, so a proposal can sit accepted and
-unstarted without that being an oversight. And the registries stay human-owned, which is why an idea has to be argued
-rather than filed.
+unstarted without that being an oversight. And the plans stay human-owned, which is why an idea has to be argued rather
+than filed.
 
 [MAINTAINERS.md](./MAINTAINERS.md) documents the promotion workflow in full, along with the commit, formatting, and
 delivery conventions this repo is kept to.

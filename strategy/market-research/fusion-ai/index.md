@@ -21,8 +21,7 @@ public task numbering past FN-9280; blizzard is at its first release candidate. 
 product and say nothing about direction, so a Fusion feature blizzard lacks means one of three quite different things,
 and the comparison is only useful when it says which:
 
-- **A schedule difference.** Blizzard has already priced the work and placed it in [`epics.md`](../../../epics.md);
-  Fusion got there first.
+- **A schedule difference.** Blizzard has already priced the work and placed it in a plan; Fusion got there first.
 - **A position difference.** Blizzard's [mission](../../../charter/mission.md) names the capability a non-goal. The gap
   is the design, and the comparison confirms it rather than challenging it.
 - **A genuine gap.** Neither scheduled nor refused — an idea worth a decision it has not yet had.

@@ -28,13 +28,13 @@ that reach it. Thinking flows milestone → epics, never the reverse.
   status: `horizon`, `in-progress`, `delivered`, or `retired` ([structure/plans.md](./plans.md)), and `horizon` for an
   epic a flat initiative names. The repeat is deliberate, so a milestone reads whole on its own; the epic's plan is the
   source, and where the two disagree the chart is the one corrected.
-- Every epic in a chart resolves through a row in `epics.md` — its own, or its initiative's — or through `delivered.md`;
-  demanding new work and creating its row happen in the same change, never a dangling reference.
+- Every epic in a chart resolves through a plan's frontmatter — its own, or its initiative's — under `plans/` or
+  `delivered/`; demanding new work and writing its plan happen in the same change, never a dangling reference.
 - An epic may appear in more than one milestone's chart.
 - Every summary-table row has its section and vice versa.
 
 ## Lifecycle
 
-A milestone enters when a destination is declared — before its epics exist, whose rows it creates. When the destination
+A milestone enters when a destination is declared — before its epics exist, whose plans it creates. When the destination
 is reached, the milestone leaves this file for its own section in `delivered.md`, carrying the grid of epics that got it
 there.

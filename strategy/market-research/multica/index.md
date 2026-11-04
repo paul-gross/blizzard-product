@@ -28,8 +28,8 @@ humans first, that wants to hire agents into the way it already works: "two engi
 like twenty," in its own vision's words. Blizzard's customer is an engineer who queues work, walks away, and wants to
 come back to landed work. A Multica feature blizzard lacks is therefore read the way the
 [Fusion folder](../fusion-ai/index.md#reading-these-findings-honestly) set out: a *schedule difference* blizzard has
-already placed in [`epics.md`](../../../epics.md), a *position difference* its mission already takes, or a *genuine gap*
-that has not yet had a decision.
+already placed in a plan, a *position difference* its mission already takes, or a *genuine gap* that has not yet had a
+decision.
 
 Unlike Soleur, Multica's numbers are market evidence. As of 2026-10-29 the repository has 54,220 stars and 7,136 forks
 after nine and a half months, 369 contributors, 168 releases, and 1,846 open issues and pull requests. Its own team is

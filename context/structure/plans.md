@@ -2,8 +2,8 @@
 
 The required shape of the plans under `plans/`: epic plans, initiative plans, and the grouping folders that hold them. A
 review of a plan asserts its frontmatter and placement against this guide; the prose itself answers to the
-[writing guide](../writing-guide.md). Single-story plans with no registry entry above them carry no frontmatter and are
-not governed here.
+[writing guide](../writing-guide.md). Single-story plans, which declare no id, carry no frontmatter and are not governed
+here.
 
 ## Purpose
 
@@ -41,7 +41,7 @@ An id resolves through the frontmatter that declares it, never through the path 
   - **Shared documents** — a contract every epic in the group answers to, carrying no frontmatter
     (`plans/adapters/harness-selection.md`).
 
-  A folder with no `initiative.md` is a plain grouping of related epics: each epic stands in the registry on its own.
+  A folder with no `initiative.md` is a plain grouping of related epics: each epic stands on its own.
 
 ## Required frontmatter
 
@@ -111,8 +111,9 @@ An epic that landed or was dropped without a plan still has a file: its frontmat
 
 ## Lifecycle
 
-- **A registry entry enters with its plan.** Creating the `epics.md` row and writing the plan — frontmatter and a
-  statement of intent, plus an initiative's epics as far as they are known — happen in the same change.
+- **An epic or initiative enters as its plan.** Its frontmatter and a statement of intent, plus an initiative's epics as
+  far as they are known, are written in one change, together with the milestone epic chart that demands it where one
+  does.
 - **An epic plan deepens in place.** It opens at capability level and, when the epic comes within striking distance,
   grows the detailed requirements a planning agent decomposes from — in the same file, or a folder once it needs
   supporting pieces.

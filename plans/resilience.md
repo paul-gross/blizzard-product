@@ -10,7 +10,8 @@ At one in the morning a model provider stops answering. Nobody is awake, and the
 weather turned bad" — reads the silence as work that failed. Every chunk in flight escalates, the queue fills with
 failures that describe nothing an operator can act on, and by breakfast the night is gone and the morning starts with
 cleanup. What the operator wanted was the obvious thing: for the fleet to wait, and then carry on. This epic teaches it
-to.
+to. It is the likeliest cause of the wedged fleet the charter's first success criterion forbids: an outage at one in the
+morning currently costs the whole night.
 
 ## What to build
 

@@ -10,7 +10,8 @@ Every small surface the board grows â€” a form, a picker, a confirmation sheet â
 hand, and the count climbs with every epic that touches it. The cost of writing each one is the visible half. The
 expensive half is drift: two dialogs written six months apart agree on nothing, and the operator learns each of them
 separately. Assembling the next one from a toolkit is faster to write, and quieter to use. In the spirit of
-`initiative:config`, this is a survey first and an adoption second.
+`initiative:config`, this is a survey first and an adoption second. It follows `epic:storybook`, whose workshop is where
+the survey's candidates are judged.
 
 ## What to build
 

@@ -19,18 +19,18 @@ when the task is deciding what to build, rather than carrying it on every task.
 
 Intent is promoted in deliberate steps rather than drifting from an idea into a branch. A destination is declared as
 something users will be able to do, and it demands the capability areas that serve it. A capability area enters as a
-registry row with a plan that records how refined its intent is — one epic, or an initiative naming the epics it will
-land in; when an epic comes within striking distance, its plan earns its scope decided and its open questions resolved.
-Only then does anything reach GitHub as a startable issue. Landed work leaves the registry and enters the ledger.
+plan that records how refined its intent is — one epic, or an initiative naming the epics it will land in; when an epic
+comes within striking distance, its plan earns its scope decided and its open questions resolved. Only then does
+anything reach GitHub as a startable issue. Landed work leaves the plans and enters the ledger.
 
-[index.md](./index.md) is the map: the charter that judges whether a capability is ours to build, the epic and milestone
-registries, the plans behind promoted work, the delivered ledger, and the market research we keep against the field.
-[MAINTAINERS.md](./MAINTAINERS.md) owns the promotion workflow itself and the rules each registry is held to.
+[index.md](./index.md) is the map: the charter that judges whether a capability is ours to build, the milestone
+registry, the plans behind promoted work, the delivered ledger, and the market research we keep against the field.
+[MAINTAINERS.md](./MAINTAINERS.md) owns the promotion workflow itself and the rules each file is held to.
 
-Note what is deliberately absent. Nothing here tracks status. A registry row says a capability is intended and where it
-sits in priority, never whether someone is working on it; where work actually stands lives in GitHub and in the
-milestone charts. The registries are human-owned: the fleet may argue for a direction, and does, but what enters a
-registry and where it ranks is decided rather than accumulated.
+Note what is deliberately absent. Nothing here tracks day-to-day progress. A plan says a capability is intended, how
+refined that intent is, and whether it is waiting, underway, delivered, or retired, never who is working on it or how
+far along; the work itself is tracked in GitHub. The plans and milestones are human-owned: the fleet may argue for a
+direction, and does, but what enters a plan or a milestone is decided rather than accumulated.
 
 ## Contributing ideas
 

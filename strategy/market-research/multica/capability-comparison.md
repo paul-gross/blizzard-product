@@ -35,12 +35,12 @@ takes a prompt and returns a stream of messages, is all a new harness must satis
 twenty-six in under a year. Users bring their own CLI, signed in with their own subscription, and Multica never touches
 a model key.
 
-Blizzard has two. [`initiative:adapters`](../../../epics.md) brings Codex next, and
-[`epic:provider-kit`](../../../epics.md) would let someone else ship a binding, so the breadth is a schedule difference.
-The asymmetry in depth is the design: a blizzard adapter must resume a session it did not start, return a verdict the
-graph can route on, report usage, survive a compatibility contract pinned to a harness version, and hand a human the
-session with one command. A Multica adapter must only run. Its popularity is still evidence that, for a team choosing a
-tool, *does it run the CLI I already have* is the first question, and blizzard answers it for two names.
+Blizzard has two. `initiative:adapters` brings Codex next, and `epic:provider-kit` would let someone else ship a
+binding, so the breadth is a schedule difference. The asymmetry in depth is the design: a blizzard adapter must resume a
+session it did not start, return a verdict the graph can route on, report usage, survive a compatibility contract pinned
+to a harness version, and hand a human the session with one command. A Multica adapter must only run. Its popularity is
+still evidence that, for a team choosing a tool, *does it run the CLI I already have* is the first question, and
+blizzard answers it for two names.
 
 ### The tracker itself
 
@@ -68,25 +68,25 @@ This looks like a blizzard graph and is a different kind of thing, examined unde
 [A lifecycle the agent cannot skip](#a-lifecycle-the-agent-cannot-skip). As a surface, though, it is ahead: a team lead
 shapes the flow from the board, in words, without writing YAML. The
 [`persona:product-manager`](../../../charter/personas/product-manager.md) who never opens a repository can do it. A
-graph editor on the board is not in the registry, and it is worth noticing that the most-adopted product in the field
-made workflow authoring a non-engineer's job.
+graph editor on the board is not planned, and it is worth noticing that the most-adopted product in the field made
+workflow authoring a non-engineer's job.
 
 ### A word to an agent mid-run
 
 A comment on an issue whose agent is running is delivered into the current run rather than queued for the next. Multica
 does this through each harness's native injection point, Claude Code's hooks, Codex's steer call, and the equivalents in
 Grok, Kiro, and Cursor, gated by harness version, and records whether the message arrived before the run ended. On
-harnesses without such a point, the comment wakes a follow-up run instead. [`epic:steering`](../../../epics.md) holds
-the same promise for blizzard, so this is a schedule difference, and Multica's code is useful evidence that the
-injection points exist natively in the harnesses blizzard means to support.
+harnesses without such a point, the comment wakes a follow-up run instead. `epic:steering` holds the same promise for
+blizzard, so this is a schedule difference, and Multica's code is useful evidence that the injection points exist
+natively in the harnesses blizzard means to support.
 
 ### A calendar and a doorbell
 
 Multica's autopilots run on a cron schedule, from a webhook, or from an API call, and either file an issue or start a
 run directly, with a policy for an autopilot that fires while its last run is still going. Wakeup rules on an issue can
 fire on a time, an interval, another issue's change, or a pull request's state. Blizzard has no scheduler; routines run
-when an operator runs them. [`epic:cadence`](../../../epics.md) and [`epic:signals`](../../../epics.md) hold the two
-halves, so both are schedule differences. Two competitors in a row have shipped them first.
+when an operator runs them. `epic:cadence` and `epic:signals` hold the two halves, so both are schedule differences. Two
+competitors in a row have shipped them first.
 
 ### Every surface, and the chat the team already has open
 
@@ -94,9 +94,9 @@ Beside the web board, Multica ships a desktop app that registers its own machine
 built from source, and bots in Slack, Feishu, DingTalk, WeCom, and Telegram where a team member can mention an agent,
 file an issue, or answer it without opening the board. A private chat window lets a person talk to one agent about
 anything, with a project attached for context and no issue required. Blizzard has the board, a board complete from a
-phone, the runner's panel, and the CLI. [`epic:chat`](../../../epics.md), [`epic:pwa`](../../../epics.md), and the
-native apps hold the reach, so those are schedule differences. Free conversation with an agent outside a unit of work
-remains a difference in kind, as it was against Fusion and Soleur.
+phone, the runner's panel, and the CLI. `epic:chat`, `epic:pwa`, and the native apps hold the reach, so those are
+schedule differences. Free conversation with an agent outside a unit of work remains a difference in kind, as it was
+against Fusion and Soleur.
 
 ### A team product with a price
 
@@ -235,9 +235,8 @@ larger decision.
 
 **Breadth of harness is the first question a buyer asks.** Twenty-six against two is not a gap blizzard should close
 adapter by adapter, because each of blizzard's adapters carries a contract Multica's do not. It is an argument for
-[`epic:provider-kit`](../../../epics.md) arriving soon after Codex rather than long after, so that the long tail of CLIs
-becomes someone else's adapter rather than blizzard's backlog. The order of those two in the registry deserves a look in
-light of it.
+`epic:provider-kit` arriving soon after Codex rather than long after, so that the long tail of CLIs becomes someone
+else's adapter rather than blizzard's backlog. The order in which those two are taken up deserves a look in light of it.
 
 **A popular tracker is a work source.** Multica has made itself the place where a great many teams already file work for
 agents, and exposes all of it through an API and a CLI. The work-source seam exists so that blizzard can sit behind
@@ -257,7 +256,7 @@ proposal.
 question. Its agent merges unreviewed onto an unprotected branch and keeps that branch greener than blizzard keeps
 `master` through a strict queue. Some of the gap will be what each suite tests, and how much of each suite runs on a
 push. Some may be the merge skew the [field survey](../factory-field/index.md) named. The asymmetry is large enough to
-settle before [`initiative:advanced-delivery`](../../../epics.md) designs its train.
+settle before `initiative:advanced-delivery` designs its train.
 
 The remaining differences are the design working. A tracker in its own right, an agent that drives its own record, and a
 per-seat cloud are positions the mission already takes. Multica's customer, the small team hiring its first agents, will

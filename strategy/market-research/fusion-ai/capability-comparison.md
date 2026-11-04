@@ -41,8 +41,8 @@ retryable provider failure.
 So the honest difference is not presence but placement and reach. Blizzard binds the model twice — abstractly in the
 graph, concretely in the runner — which is what keeps one graph driving twenty applications; the cost is that an
 operator cannot retarget a single chunk at a different model without editing configuration, and the reachable set is
-whatever the harness supports rather than whatever speaks HTTP. [`initiative:adapters`](../../../epics.md) widens the
-harness seam, which moves that ceiling without changing the shape.
+whatever the harness supports rather than whatever speaks HTTP. `initiative:adapters` widens the harness seam, which
+moves that ceiling without changing the shape.
 
 ### Iteration inside a node, and a planning artifact the platform owns
 
@@ -88,8 +88,8 @@ talk to each other: a built-in mailbox with inbox, outbox, and approvals carries
 experimental chat rooms let several agents coordinate with mention-routing and a cap on ambient participants.
 
 Blizzard's human channel is precise and narrow by design — an ask, a gate, an escalation, a takeover — and there is no
-way to simply speak with the agent holding your chunk short of entering its session. [`epic:chat`](../../../epics.md) is
-a notification binding rather than a conversation surface, so the difference here is one of kind and not of schedule.
+way to simply speak with the agent holding your chunk short of entering its session. `epic:chat` is a notification
+binding rather than a conversation surface, so the difference here is one of kind and not of schedule.
 
 ### Agents with names, roles, and a reporting line
 
@@ -100,7 +100,7 @@ advertises 440-plus agents across sixteen prebuilt companies.
 
 Blizzard's workers are anonymous. Runners are registered and named; the agent inside a lease is a session, and the fact
 log records what it did rather than who it was. This is the one Fusion idea in this section that is neither scheduled in
-the registry nor refused by the mission, and it is examined again under
+the plans nor refused by the mission, and it is examined again under
 [What the differences ask](#what-the-differences-ask).
 
 ### A backlog hierarchy inside the product
@@ -167,9 +167,8 @@ computer-use. Its Command Center renders token spend by model, productivity and 
 language mix, an agent org chart, throughput timelines, and anomaly signals, across more than seventy themes and seven
 README languages.
 
-Blizzard has one board with a mobile glance shell. [`epic:pwa`](../../../epics.md), [`epic:android`](../../../epics.md),
-[`epic:ios`](../../../epics.md), and [`epic:ui-toolkit`](../../../epics.md) all sit in the registry, so this is the
-clearest case in the document of a schedule difference rather than a disagreement.
+Blizzard has one board with a mobile glance shell. `epic:pwa`, `epic:android`, `epic:ios`, and `epic:ui-toolkit` are all
+planned, so this is the clearest case in the document of a schedule difference rather than a disagreement.
 
 ### A third-party plugin ecosystem
 
@@ -186,11 +185,11 @@ after an edit or a repository rename; PR and issue badges update live; a GitLab 
 naming are both in the tree. Automations and routines fire on cron, webhook, or a manual trigger, at global or
 per-project scope, with run history and signature verification.
 
-Blizzard ingests a work item by id, and [`epic:intake`](../../../epics.md) holds the workbench that would make selecting
-those items pleasant. Its routines exist but are gardening's, addressed at a scope and an axis rather than at arbitrary
-work, and they carry no cron: a routine is run, not scheduled. The one half of this row blizzard already answers is the
-return trip — a periodic best-effort sweep reflects a chunk's derived status onto its forge items as labels, writing
-only the diff and holding no state of its own, so a mid-sweep crash self-heals.
+Blizzard ingests a work item by id, and `epic:intake` holds the workbench that would make selecting those items
+pleasant. Its routines exist but are gardening's, addressed at a scope and an axis rather than at arbitrary work, and
+they carry no cron: a routine is run, not scheduled. The one half of this row blizzard already answers is the return
+trip — a periodic best-effort sweep reflects a chunk's derived status onto its forge items as labels, writing only the
+diff and holding no state of its own, so a mid-sweep crash self-heals.
 
 ## What blizzard has that Fusion does not
 
@@ -343,8 +342,8 @@ boundary that already exists to every adapter, and on the network and credential
 finished, rather than on a bare gap.
 
 **Surface breadth changes the schedule, not the thesis.** Phones, chat, an intake workbench, and a component toolkit are
-all already in the registry. Fusion having them first is a reminder of what an operator notices in the first ten
-minutes, not evidence that the floor was the wrong place to start.
+all already planned. Fusion having them first is a reminder of what an operator notices in the first ten minutes, not
+evidence that the floor was the wrong place to start.
 
 **Several gaps are the design working.** The mission hierarchy, the platform-owned planning artifact, the loop
 underneath the node, the model lanes, and the per-application configuration surface are each either a stated non-goal or
@@ -354,7 +353,7 @@ still has to be there in the repository being driven, and a prospect who arrives
 delegation as an absence.
 
 **Agent identity deserves a deliberate answer.** Named, durable agents with roles and a reporting line are the one
-Fusion idea in this document that the mission does not refuse and the registry does not already hold. They change what
-an operator can ask — which reviewer is best, which worker keeps escalating, who should take the next chunk of this kind
-— without touching the fact log, the graph, or the lease protocol. The answer may well be no. It should be a considered
+Fusion idea in this document that the mission does not refuse and the plans do not already hold. They change what an
+operator can ask — which reviewer is best, which worker keeps escalating, who should take the next chunk of this kind —
+without touching the fact log, the graph, or the lease protocol. The answer may well be no. It should be a considered
 no.
