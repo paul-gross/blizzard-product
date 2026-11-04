@@ -13,7 +13,7 @@ epics:
 
 # Plan — `initiative:test-suite`
 
-The remaining work is `fleet-tier`, `controlled-clock`, and `optimization`; `foundation`, `hub-tier`, `runner-tier`, and
+The remaining work is `controlled-clock` and `optimization`; `foundation`, `hub-tier`, `runner-tier`, `fleet-tier`, and
 `journey` are delivered.
 
 Someday a daemon will be rewritten, in Python or in something else, and whoever does it will want a suite that tells

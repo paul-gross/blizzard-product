@@ -98,7 +98,7 @@ is blizzard's 1.0.
 | `epic:test-suite/foundation`             | delivered   |
 | `epic:test-suite/hub-tier`               | delivered   |
 | `epic:test-suite/runner-tier`            | delivered   |
-| `epic:test-suite/fleet-tier`             | in-progress |
+| `epic:test-suite/fleet-tier`             | delivered   |
 | `epic:test-suite/journey`                | delivered   |
 | `epic:test-suite/controlled-clock`       | in-progress |
 | `epic:test-suite/optimization`           | horizon     |
