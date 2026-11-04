@@ -27,12 +27,12 @@ native configurations and tool rules they carry — and every harness honours th
 a headless run stuck on a prompt and without any worker running with its permissions dangerously bypassed. Protected
 branches remain the forge's to guard, not the agent's to respect on a bad night.
 
-| Epic                            | Status    |
-| ------------------------------- | --------- |
-| `epic:adapters/opencode`        | delivered |
-| `epic:adapters/opencode-2`      | horizon   |
-| `epic:adapters/codex`           | horizon   |
-| `epic:security/worker-security` | delivered |
+| Epic                            | Status      |
+| ------------------------------- | ----------- |
+| `epic:adapters/opencode`        | delivered   |
+| `epic:adapters/opencode-2`      | in-progress |
+| `epic:adapters/codex`           | horizon     |
+| `epic:security/worker-security` | delivered   |
 
 ## `milestone:projects` — one fleet, every project
 
