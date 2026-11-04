@@ -6,11 +6,15 @@ status: horizon
 
 # Plan — `epic:cadence`
 
-Four epics already promise the fleet a schedule — mutation testing's corpus pass, fact-egress's export, ideation's
-routine, and the trends that gardening can only draw from repeated measurement — and each of them would otherwise build
-a timer of its own. The fleet should keep its own schedule instead. An operator says once what the fleet should do
-regularly and how often, and when it comes due the hub mints the work. Eight in the evening, every ten days, the
-architecture sweep enters the queue for every scope its routine tends, and each pass waits its turn like any other work.
+Three epics already promise the fleet a schedule — mutation testing's corpus pass, ideation's routine, and the trends
+that gardening can only draw from repeated measurement — and each of them would otherwise build a timer of its own. The
+fleet should keep its own schedule instead. An operator says once what the fleet should do regularly and how often, and
+when it comes due the hub mints the work. Eight in the evening, every ten days, the architecture sweep enters the queue
+for every scope its routine tends, and each pass waits its turn like any other work.
+
+| Where                    | Read when                                                             |
+| ------------------------ | --------------------------------------------------------------------- |
+| [spec/](./spec/index.md) | Implementing any part of the epic or resolving its technical contract |
 
 ## Vocabulary
 
@@ -47,10 +51,13 @@ bed by bed. The same three words carry this epic:
 - **Errands, each with a run of its own.** A cadence mints one chunk per errand that is due. Every rule below is judged
   errand by errand, so one scope stuck in the queue holds back only its own next sweep while the other eleven go out on
   time.
-- **Linked by name.** A chore names its routine by name and its scopes by slug, the way the people who set it up think
-  of them. A routine's name is its lineage, fixed at mint and never reused, so it is as steady a key as any id. Changing
-  what a chore does is a matter of pointing its routine at another graph, and every cadence carrying that routine
-  follows without an edit, its lineage and its delta baselines intact.
+- **Linked by slug.** A chore names its routine and its scopes by slug, the way the people who set it up think of them.
+  A routine's slug is its lineage, fixed at mint and never reused, so it is as steady a key as any id. Today a routine
+  has only a name, doing double duty as that lineage and as what the board shows, so this epic gives it a slug and a
+  name as a project already has: the slug its handle, the name free to read well and change. Every routine's slug is its
+  name as it stands, so nothing it has recorded moves. Changing what a chore does is a matter of pointing its routine at
+  another graph, and every cadence carrying that routine follows without an edit, its lineage and its delta baselines
+  intact.
 - **Needs attention, never invalid.** A cadence whose chore can no longer run is flagged as needing attention, so the
   operator sees it where they look rather than finding out from a sweep that never came. A retired routine, or a graph
   that no longer resolves, stops every errand of its chore; a scope in a fixed list that is retired, or no longer linked
@@ -96,8 +103,17 @@ bed by bed. The same three words carry this epic:
   own housekeeping rather than displacing an operator's.
 - **Urgency per chore.** Each chore will name the urgency of everything it mints, so a chore over all scopes mints every
   one of its errands at the same urgency. The wiring belongs to `epic:urgency`; this epic leaves the chore room for it.
-- **The existing four, moved over.** The epics already promising a cadence declare one here instead of scheduling
-  themselves, which is how the machinery earns its place rather than adding a fifth way to do this.
+- **Promoted, unless the chore says otherwise.** A run started by hand rests behind the promote gate until someone
+  admits it, and a sweep minted at three in the morning that waits for someone to promote it has not kept the fleet's
+  schedule at all. So a chore promotes what it mints by default, its errands entering the ready queue the moment they
+  are minted, and a chore whose work the operator wants to look over first says so and leaves its runs resting behind
+  the gate. A cadence is the one thing beside an operator that admits work to the queue, and only because an operator
+  configured it to.
+- **An edited chore keeps its errands.** Changing a chore's mode, rewriting its charge note, or pointing it at another
+  routine is still the same chore, so each of its errands keeps its last run, its spacing, and its one live run. Only a
+  chore removed and another added in its place starts afresh.
+- **The existing three, moved over.** The epics already promising a cadence declare one here instead of scheduling
+  themselves, which is how the machinery earns its place rather than adding a fourth way to do this.
 
 ## Left for later
 
@@ -106,11 +122,8 @@ raised a dozen findings on Sunday is finished on Sunday, while the fixes those f
 of their own. A cadence that should wait until last week's findings are resolved needs a condition on open findings, not
 on a moment in a run, and that condition is a later addition rather than a fourth anchor.
 
-## Open questions
-
-- Whether a cadence promotes what it mints. A run started by hand rests behind the ordinary promote gate rather than
-  entering the ready queue, and a sweep minted at three in the morning that waits for someone to promote it has not kept
-  the fleet's schedule at all. Promoting would make a cadence the first thing beside an operator that admits work to the
-  queue, so it is a deliberate exception to the gate, perhaps one each chore chooses.
-- Whether an errand's last run carries over when its chore is edited — its mode changed, its charge note rewritten, or
-  its routine swapped for another — or the edited chore starts afresh.
+The release train and the store fold are written as procedures a routine could carry, but today they are an operator's
+workflows, carried out where the workspace is, and no fleet chunk's environment holds the workspace. Scheduling them
+waits for a routine that can carry them, and a cadence takes that routine up the day it exists, with nothing here
+changing. Fact egress keeps the timer it has: its export is a lane of the hub advancing a cursor over facts, not work
+minted for a runner, and a cadence only ever mints work.
