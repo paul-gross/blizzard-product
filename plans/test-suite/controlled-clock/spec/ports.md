@@ -54,3 +54,11 @@ It has no window to wait out, and it stays in the pytest half as `bzh:external-c
 OpenCode spec's `JUDGE_WAIT_SECONDS` is a wait inside a worker's own program, not in the spec. The crash sweep and the
 journey keep their own timing: the crash sweep stays in Python on purpose, and the journey may adopt the clock once both
 have landed, under its own plan.
+
+Two runner specs wait out the runner's bounded hub retry in real time, about ninety seconds a run between them:
+`tests/service/runner/system-artifacts.spec.ts`'s system-scope read with the hub unreachable, and
+`tests/service/runner/runner.spec.ts`'s graph-scoped artifact read with the hub unreachable. The retry gives up at
+`HUB_RETRY_CEILING` (`src/blizzard/runner/api/hub_proxy.py`), a mechanical deadline, so its seam, `hub_retry_clock`,
+stays on real time with the rest. Binding one mechanical deadline to the controlled clock would add logic for little
+gain, and a spec that must wait out a whole ceiling to prove a read gives up is a question about the spec, not the
+clock. Both stay as they are.

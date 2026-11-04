@@ -59,15 +59,3 @@ floor's reset, is cited where its subject already is, in the same change.
 - **The CLI's clock.** `blizzard` the CLI judges a window such as `--since 1h` against the machine's clock
   (`CliCollaborators`, `src/blizzard/cli/collaborators.py`). A test driving the CLI against an advanced hub passes
   explicit instants. Whether the CLI should read the hub's clock through the route when one answers is open.
-- **The runner's hub retry.** Two specs wait out the runner's bounded hub retry in real time:
-  `tests/service/runner/system-artifacts.spec.ts`'s system-scope read with the hub unreachable, and
-  `tests/service/runner/runner.spec.ts`'s graph-scoped artifact read with the hub unreachable. Together they take about
-  ninety seconds a run. The retry gives up at `_HUB_RETRY_CEILING`, twenty-five seconds of backoff in
-  `src/blizzard/runner/api/hub_proxy.py`, which is a mechanical deadline, so the plan's first decision leaves it on real
-  time. The retry already keeps its time through a seam of its own, `hub_retry_clock`, an `IMonotonicClock` the runner
-  app takes in `src/blizzard/runner/app.py`. The owner leans toward keeping the ceiling as it is and letting the test
-  move time past it, over making the ceiling configurable for tests. That means binding the seam to the controlled
-  clock, so a read parked in its backoff ends when the test advances the host. Whether the decision admits this one
-  mechanical deadline, and so whether these two specs join [ports.md](./ports.md), is open.
-- **The milestone.** Every other epic of this initiative serves `milestone:hardening`. Whether this one does too is the
-  owner's call. Until then it serves none.
