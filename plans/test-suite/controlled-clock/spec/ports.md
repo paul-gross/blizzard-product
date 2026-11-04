@@ -59,11 +59,11 @@ check never reaches it.
 
 ## What is not this epic's
 
-`tests/service/test_credential_renewal_service.py` races two real `mock-codex app-server` processes refreshing one file.
-It has no window to wait out, and it stays in the pytest half as `bzh:external-cli-fake-is-service-tier` places it. The
-OpenCode spec's `JUDGE_WAIT_SECONDS` is a wait inside a worker's own program, not in the spec. The crash sweep and the
-journey keep their own timing: the crash sweep stays in Python on purpose, and the journey may adopt the clock once both
-have landed, under its own plan.
+`tests/service/harnesses/test_credential_renewal_service.py` races two real `mock-codex app-server` processes refreshing
+one file. It has no window to wait out, and it stays in the pytest half as `bzh:external-cli-fake-is-service-tier`
+places it. The OpenCode spec's `JUDGE_WAIT_SECONDS` is a wait inside a worker's own program, not in the spec. The crash
+sweep and the journey keep their own timing: the crash sweep stays in Python on purpose, and the journey may adopt the
+clock once both have landed, under its own plan.
 
 Two runner specs wait out the runner's bounded hub retry in real time, about ninety seconds a run between them:
 `tests/service/runner/system-artifacts.spec.ts`'s system-scope read with the hub unreachable, and
