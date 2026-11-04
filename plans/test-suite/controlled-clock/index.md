@@ -1,7 +1,7 @@
 ---
 epic: test-suite/controlled-clock
 refinement: refined
-status: horizon
+status: in-progress
 ---
 
 # Plan — `epic:test-suite/controlled-clock`

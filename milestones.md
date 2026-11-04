@@ -100,7 +100,7 @@ is blizzard's 1.0.
 | `epic:test-suite/runner-tier`            | delivered   |
 | `epic:test-suite/fleet-tier`             | in-progress |
 | `epic:test-suite/journey`                | delivered   |
-| `epic:test-suite/controlled-clock`       | horizon     |
+| `epic:test-suite/controlled-clock`       | in-progress |
 | `epic:test-suite/optimization`           | horizon     |
 | `epic:architectural-sweep`               | delivered   |
 | `epic:strict-types`                      | in-progress |
