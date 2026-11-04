@@ -104,6 +104,7 @@ is blizzard's 1.0.
 | `epic:test-suite/optimization`           | horizon     |
 | `epic:architectural-sweep`               | delivered   |
 | `epic:strict-types`                      | delivered   |
+| `epic:strict-mock`                       | in-progress |
 | `epic:adopt-di`                          | horizon     |
 
 ## `milestone:human-in-the-loop` — the operator stops being the wire
