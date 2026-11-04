@@ -29,19 +29,19 @@ for it. *Priority* would have meant both, which is why it is left unused here.
 
 - **An ordered set of urgencies, one per tenant.** The operator names the groups, orders them, and gives each an
   indicator — an emoji, or an icon of their own — while the hub runs, without a redeploy. The set belongs to the tenant,
-  so once `initiative:projects` lands every project in it speaks the same urgencies and an urgent chunk means the same
-  thing on every board. One group is the default every new chunk takes when nothing says otherwise: `standard`, out of
-  the box.
+  so every project in it speaks the same urgencies and an urgent chunk means the same thing on every board. One group
+  is the default every new chunk takes when nothing says otherwise: `standard`, out of the box.
 - **Urgency on every chunk, set the way rank is.** The operator sets and changes a chunk's urgency from the board and
   the CLI, at mint or at any time after, in the backlog and the ready queue alike, without touching anything else about
   the chunk. In the backlog it changes nothing about what the fleet does; it is a signal to the operator deciding what
   to promote, and it travels with the chunk into the ready queue.
 - **Work that arrives already urgent.** Work should not depend on someone being awake to say how urgent it is. A routine
   names the urgency of the work it mints, so a gardening pass enters the queue as background and a nightly security
-  sweep as urgent, with `epic:cadence` deciding when each is minted and urgency deciding how hard it competes once it is
-  there. A work item's own stated priority — a Jira ticket marked Highest — maps onto an urgency through a table the
-  operator keeps, and an alert raised through `epic:signals` can arrive urgent. Whatever work arrives with, the operator
-  can change it afterwards like any other.
+  sweep as urgent. Routines already exist, so this needs nothing from `epic:cadence`: a run started by hand carries the
+  routine's urgency, and once cadence lands a run it starts on schedule carries the same one. Cadence decides when a
+  routine's work is minted; urgency decides how hard it competes once it is there. A work item's own stated priority —
+  a Jira ticket marked Highest — maps onto an urgency through a table the operator keeps, and an alert raised through
+  `epic:signals` can arrive urgent. Whatever work arrives with, the operator can change it afterwards like any other.
 - **The queue looks the same and says more.** Both lists keep their rank order on the board. Each card carries its
   urgency's indicator, so the urgent fix at the bottom of the queue is the first thing an eye lands on.
 - **Urgency first, rank within it, at the moment of claiming.** Claim order is decided when a runner reaches for work,
