@@ -134,12 +134,10 @@ CLI invocation in a runbook still runs, except one that gives a work source a `w
 which is refused naming the forge to set it on ([surfaces.md](./surfaces.md#old-fields)). The `land` action ships with
 the hub, so a chunk mid-delivery when the hub restarts resumes on the ported action.
 
-The workspace's feature-environment seeding (`.winter/config/winter-service-tmux/hub-host.sh`) writes a configuration
-document naming `api_base` and `forge_api_url` today, and keeps doing so until the retirement. One script seeds every
-feature environment, and the environments run blizzard at different revisions — some before the epic, which refuse an
-entry they do not know — so the old fields are the only document all of them accept. A feature environment's
-`config-old-field-used` events are expected and say nothing about the instances blizzard runs. The script moves to a
-version-2 document, with a `forges` section and `forge` references, in the retirement's own change.
+The workspace's feature-environment seeding (`.winter/config/winter-service-process-compose/hub-host.sh`) writes a
+version-2 document, with a `forges` section and `forge` references, ahead of the retirement: every feature environment
+runs a blizzard that carries the transition, so nothing it seeds still needs the old fields, and the retirement's
+refusal of a version-1 document breaks no environment.
 
 **The retirement** removes the old fields from every door, refusing them `422 field_moved_to_forge`, refuses a version-1
 configuration document naming version 2, answers version 2 from the export and schema routes when no version is asked
@@ -149,16 +147,16 @@ work-source locator to its forge ([record.md](./record.md#references)), and drop
 `work_sources.api_base`, and `work_sources.web_base`. Its downgrade restores the three columns from each record's forge
 and the constraints on them, and refuses a store holding one locator on two forges, naming the pairs. It is not part of
 the epic. It is a standalone cleanup chunk, filed beside the epic but taken up only when a person decides the time has
-come rather than decomposed from this spec, no sooner than one release after a release carrying all five transition
-steps ships, and only once the hosted hub has recorded no `config-old-field-used` event through a whole release. Because
-it removes request and response fields, a document version, and the old CLI flags, and contracts the store, its commit
-is marked breaking, `feat!` (`docs/versioning.md`), its `removed` notes each `retire` their deprecation, and its release
-notes name each removed field with what replaces it. The constraints it adds to `repositories` and `work_sources` sit on
-tables no release marks deprecated, so they pass as a break the window admits: the cleanup raises `floor`
-(`wire/window.toml`) to the line that first shipped the deprecations, which refuses a runner below that line from then
-on. It is taken up together with the other advanced-delivery cleanups, the `actions` and `flows` epics', so `floor`
-rises once for all of them. The event joins the closed `EventLogKind` and its severity map (`foundation/event_log.py`)
-as a warning, and is removed with the fields it reports.
+come rather than decomposed from this spec, no sooner than the line whose release carries all five transition steps is
+cut, so the removal lands in the line after it. Because it removes request and response fields, a document version, and
+the old CLI flags, and contracts the store, its commit is marked breaking, `feat!` (`docs/versioning.md`), its `removed`
+notes each `retire` their deprecation, and its release notes name each removed field with what replaces it. The
+constraints it adds to `repositories` and `work_sources` sit on tables no release marks deprecated, so they pass as a
+break the window admits: the cleanup raises `floor` (`wire/window.toml`) to the line that first shipped the
+deprecations, which refuses a runner below that line from then on. It lands in the same release as the other
+advanced-delivery cleanups, the `actions` and `flows` epics', so `floor` rises once per release, however many changes
+raise it; each cleanup is its own change. The event joins the closed `EventLogKind` and its severity map
+(`foundation/event_log.py`) as a warning, and is removed with the fields it reports.
 
 Runners are untouched by both: nothing in this epic crosses the runner's wire.
 

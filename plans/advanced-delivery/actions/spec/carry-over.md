@@ -249,14 +249,14 @@ is three hours.
 
 Its `removed` notes each `retires` their deprecation, and its `docs/upgrade.md` section names what replaced each. It is
 no landing of the epic. It is a chunk of its own, filed beside the epic but belonging to none, and taken up only once an
-operator decides a release may carry the break: after a release carrying the deprecations has shipped, and before the
-line their `removes-in` names is cut, since the cut refuses to open a line with an unretired promise. Because it removes
-routes, a CLI command, a durable path, a span's attributes, and a column, its commit is marked breaking, `feat!`
+operator decides a release may carry the break: once the line whose release carries the deprecations is cut, and before
+the line their `removes-in` names is cut, since the cut refuses to open a line with an unretired promise. Because it
+removes routes, a CLI command, a durable path, a span's attributes, and a column, its commit is marked breaking, `feat!`
 (`docs/versioning.md`). Its findings pass only as breaks the window admits, on surfaces every supported release marks
 deprecated, so it raises `floor` in `wire/window.toml` to the line whose release first carried the deprecations, as
 `docs/versioning.md` asks of the change that removes what a released minor deprecated; from it, a runner of an earlier
-line is refused registration. So that `floor` rises once, the retirement is taken up together with the cleanups the
-`forges` and `flows` epics leave behind, in the same release.
+line is refused registration. The retirement lands in the same release as the cleanups the `forges` and `flows` epics
+leave behind, so `floor` rises once per release, however many changes raise it; each cleanup is its own change.
 
 Nothing in this epic crosses the runner's wire, so its landings leave runners untouched; the retirement reaches them
 only through the `floor` it raises.

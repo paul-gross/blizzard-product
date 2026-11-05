@@ -45,16 +45,16 @@ and `contracts/store/hub.json` with it; a `deprecated` note under `changes/unrel
 third chunk retires the code that did and keeps only the trace corpus's read of its past rows.
 
 **Dropped by a follow-up cleanup** that belongs to no epic: a breaking change filed beside the epic and taken up only
-once an operator decides a release may carry it, which is no sooner than a release carrying the deprecation has shipped,
-and before the line its `removes-in` names is cut. It runs the second migration, removes `TracedHubExecSlot`, `_slots`,
-and the corpus's read of the slot's rows, and raises `floor` in `wire/window.toml` to the line that deprecated the
-table, as the window requires of the change that removes what a released minor deprecated (`docs/versioning.md`); from
-it, a runner of an earlier line is refused registration. Its `removed` note `retires` the deprecation, is
+once an operator decides a release may carry it, which is no sooner than the line whose release carries the deprecation
+is cut, and before the line its `removes-in` names is cut. It runs the second migration, removes `TracedHubExecSlot`,
+`_slots`, and the corpus's read of the slot's rows, and raises `floor` in `wire/window.toml` to the line that deprecated
+the table, as the window requires of the change that removes what a released minor deprecated (`docs/versioning.md`);
+from it, a runner of an earlier line is refused registration. Its `removed` note `retires` the deprecation, is
 `breaking: true` with `breaks` naming the table, and carries the `## Upgrade` section that says the table and the older
 traces' `hub exec` intervals are gone; its commit is marked breaking, `feat!`. Those intervals, of every chunk traced
-before the turns began, are an accepted loss: nothing carries them into `hub_turns`. The cleanup is taken up together
-with the actions and forges epics' cleanups, which raise `floor` for the same reason, so that the fleet's oldest runners
-are let go once, in one release, rather than three times. `blizzard-context`'s
+before the turns began, are an accepted loss: nothing carries them into `hub_turns`. The cleanup lands in the same
+release as the actions and forges epics' cleanups, which raise `floor` for the same reason, so that the fleet's oldest
+runners are let go once, in one release, rather than three times; each cleanup is its own change. `blizzard-context`'s
 `architecture/system-shape/store-facts.md` stops citing `hub_exec_slot.released_at` as its example of a released-at
 column in the same change.
 

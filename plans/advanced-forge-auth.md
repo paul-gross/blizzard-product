@@ -102,8 +102,8 @@ the whole advanced-delivery initiative a blocker.
 
 Every landing is additive to supported releases. Existing PAT secrets, references, configuration documents, and clients
 remain usable while the new credential configuration arrives. A retirement of superseded secret-reference fields, if
-needed, is a separate follow-up cleanup outside this epic, after the transition has shipped. Authentication here belongs
-to hub-to-forge integrations; runner checkout and worker-side git credentials remain their own boundary.
+needed, is a separate follow-up cleanup outside this epic, once the line carrying the transition is cut. Authentication
+here belongs to hub-to-forge integrations; runner checkout and worker-side git credentials remain their own boundary.
 
 ## Deliberately left out
 
