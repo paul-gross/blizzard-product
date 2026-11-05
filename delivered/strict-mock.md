@@ -1,7 +1,7 @@
 ---
 epic: strict-mock
-refinement: scaffolded
-status: in-progress
+refinement: pristine
+status: delivered
 ---
 
 # Plan — `epic:strict-mock`

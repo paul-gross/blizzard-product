@@ -66,8 +66,8 @@ is blizzard's 1.0.
 | `epic:test-suite/journey`                | delivered   |
 | `epic:architectural-sweep`               | delivered   |
 | `epic:strict-types`                      | delivered   |
+| `epic:strict-mock`                       | delivered   |
 | `epic:test-suite/controlled-clock`       | in-progress |
-| `epic:strict-mock`                       | in-progress |
 | `epic:resilience`                        | horizon     |
 | `epic:config/model-resolution`           | horizon     |
 | `epic:config/sweep`                      | horizon     |
