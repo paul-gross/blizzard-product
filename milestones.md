@@ -71,6 +71,7 @@ is blizzard's 1.0.
 | `epic:resilience`                        | horizon     |
 | `epic:config/model-resolution`           | horizon     |
 | `epic:config/sweep`                      | horizon     |
+| `epic:config/runtime`                    | horizon     |
 | `epic:ui-toolkit`                        | horizon     |
 | `epic:documentation`                     | horizon     |
 | `epic:test-suite/optimization`           | horizon     |

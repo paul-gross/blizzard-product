@@ -8,4 +8,5 @@ at a time.
 | [initiative.md](./initiative.md)                 | Reading the initiative's intent — why the surface needs opening, and why it is cut into these epics                 |
 | [model-resolution/](./model-resolution/index.md) | Planning or building `epic:config/model-resolution` — the read-only command that shows what model a session runs on |
 | [sweep.md](./sweep.md)                           | Planning or building `epic:config/sweep` — the inventory and promotion of every other operational constant          |
+| [runtime/](./runtime/index.md)                   | Planning or building `epic:config/runtime` — changing hub and runner settings without a restart                     |
 | [artifacts/](./artifacts/model-resolution.txt)   | Seeing the model-resolution command's worked terminal and JSON output                                               |

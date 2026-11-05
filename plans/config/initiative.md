@@ -4,6 +4,7 @@ refinement: scaffolded
 epics:
   - model-resolution
   - sweep
+  - runtime
 ---
 
 # Plan — `initiative:config`
@@ -17,12 +18,14 @@ craft is comparison: run the same chunk twice with one variable moved and see wh
 is a question they cannot ask. This is a survey-then-sweep effort rather than a large build.
 
 One corner of that surface is answered early, because there the answer decides what a night costs: which model a session
-actually runs on. The initiative lands in two epics:
+actually runs on. And a knob is only half a knob if turning it means a restart, so the surface is made live as well as
+opened. The initiative lands in three epics:
 
 | Epic                                            | What it builds                                                                                                                    |
 | ----------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------- |
 | [model-resolution](./model-resolution/index.md) | A read-only runner command that shows how each tier, effort, and session pool resolves to a model, and which layer supplied each. |
 | [sweep](./sweep.md)                             | The inventory and promotion of every other operational constant, under one resolution order.                                      |
+| [runtime](./runtime/index.md)                   | Hub and runner settings an operator changes while the daemons run, each declaring when a change takes hold.                       |
 
 The initiative's worked samples live in [artifacts/](./artifacts/model-resolution.txt): the model-resolution command's
 terminal and JSON output, on one illustrative runner.
