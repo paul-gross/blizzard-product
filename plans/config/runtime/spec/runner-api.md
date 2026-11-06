@@ -15,8 +15,9 @@ signed-in human may call every human-lane write. A caller over the unix socket h
 (`runner/auth/session.py:114`), so the CLI writes as it reaches the host today, its permission the socket file's. A
 worker reaches only the ungated lane under its lease token and can reach none of these routes.
 
-The existing human-lane writes — pause, takeover, requeue, selftest, the workspace prompt — keep the access they have.
-Narrowing them is not this epic's.
+The workspace prompt's existing routes write a workspace's record ([host-records.md](./host-records.md) §Workspaces and
+subscriptions) and take the superuser check with every other settings write. The other existing human-lane writes —
+pause, takeover, requeue, selftest — keep the access they have; narrowing them is not this epic's.
 
 ## Routes
 
@@ -47,8 +48,7 @@ A settings view answers what the runner is configured with and what it is runnin
   "settings": [
     { "key": "throttle.budget.usd", "value": 40.0, "source": "entry", "lifetime": "pass",
       "revision": 7, "written_at": "2026-11-05T22:15:40Z", "written_by": "operator" },
-    { "key": "agents", "value": 2, "source": "default", "lifetime": "pass" },
-    { "key": "port", "value": 7781, "source": "file", "lifetime": "boot" }
+    { "key": "agents", "value": 2, "source": "default", "lifetime": "pass" }
   ]
 }
 ```
@@ -56,8 +56,12 @@ A settings view answers what the runner is configured with and what it is runnin
 - `revision` is the record's revision in the store; `in_force` is the revision the runner's most recent pass started
   from, and when it took hold. The two differ for the length of one tick after a write, and the operator reads the gap
   as "written, not yet running".
-- `source` is `entry`, `default` (no entry, or an entry `at_default`), `file`, or `env`; only a `boot` key is ever
-  `file` or `env`. Every key the registry declares for the record is listed, so the view is the whole answer.
+- `source` is `entry`, or `default` for a key with no entry or an entry `at_default`. Every `pass`, `session`, and
+  `immutable` key the registry declares for the record is listed, so the view is the whole answer to what can be
+  changed. A `boot` key is never listed: it is the daemon's footing, it holds the host's credentials and its store's
+  address, and it is changed in the file, not here. No `pass`, `session`, or `immutable` key holds a secret — a
+  subscription's `credentials_path` and OpenCode's `auth_path` are paths to credentials, never the credentials — and a
+  key added later that would hold one is a question for its own plan, not a row in this view.
 - The host view lists the host-level keys and its own `in_force`, taken from the host tick.
 
 ### A settings write
@@ -97,6 +101,11 @@ store to what it states, under the rules `bzh:config-apply` gives the hub's docu
 - **One transaction.** Every write of the apply commits together, each beside its change row, door `apply`, sharing one
   `apply_id`, or none does. A dry run is the same transaction rolled back.
 
+The route takes the document as JSON. `blizzard runner settings apply FILE` reads a TOML file and decodes it through the
+host loader's decode step (`runner/host_config.py`), the one runner module `bzh:config-key-declared`'s ast-grep rule
+lets read TOML, and sends the JSON; `settings export` asks for the JSON and emits TOML through `foundation/toml_emit.py`
+([hub.md](./hub.md) §Apply). No new decoding seam is opened, and the rule is unchanged.
+
 The answer lists one outcome row per entry and record, as the hub's apply does: `created`, `edited` with the keys it
 moved, `enabled`, `unchanged`, or `refused` with its errors. `GET /api/host/settings/export` writes the store as an
 apply document, so applying an export back writes nothing, and an operator who keeps their host's settings in version
@@ -131,7 +140,7 @@ The runner's Angular app (`web/projects/runner`) gains a **Settings** tab beside
   showing its value, its source, and its lifetime as a badge an operator reads as "when will this bite". The `in_force`
   line sits at the top: "running revision 6 since 22:14 — revision 7 written, takes hold at the next tick".
 - An edit dialog per key for the superuser, sending a one-key write; a refused write shows each error beside its key. A
-  `boot` key shows its value and the sentence that changing it is a file edit and a restart, and offers no edit.
+  `boot` key is not shown.
 - **Workspaces** and **Subscriptions**: lists of the records with their state, a detail with the six verbs, and the
   record's change history.
 - **History**: the change log, each row showing its door, actor, revision, and the keys it moved, old and new.

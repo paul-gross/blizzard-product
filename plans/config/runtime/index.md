@@ -29,8 +29,8 @@ settings that exist.
 The two daemons are different machines with different owners, different failure modes, and different things at stake in
 a restart, so the epic is cut into a runner half and a hub half, and each daemon owns its own settings outright. The
 hub's settings are changed through the hub's API; a runner's are changed through that runner's API, and stay on the
-runner. Neither daemon holds the other's, and neither file is a way to change a running daemon. The runner half is what
-the epic is for, because that is where a restart hurts, and it lands first. The hub half is worth having and follows it.
+runner. Neither daemon holds the other's, and neither file is a way to change a running daemon. The runner half is where
+a restart hurts, and it lands first; the hub half follows. The epic is delivered when both have landed.
 
 | Where                    | Read when                                                             |
 | ------------------------ | --------------------------------------------------------------------- |
@@ -120,7 +120,9 @@ it is an environment variable read at boot.
   wanted under another id is retired and a new one added.
 - **Runners that come and go on a running host.** A runner added to a host starts at the host's next tick, and one
   retired from it stops there, with no restart of the host or of the runners beside it. Today adding one waits for the
-  host's next start, and a retired runner's threads run on after the hub refuses its token.
+  host's next start, and a retired runner's threads run on after the hub refuses its token. A runner's hub token moves
+  from a file keyed by its name into the host's store, keyed by its id and encrypted, so nothing about a runner but its
+  id outlives a rename.
 - **The host's footing lives for the host's boot.** Its lifetime is `boot`. The host's address and port, which every
   running worker was handed to reach its runner by; its store, where every other setting now lives; the hub it reports
   to and the host token it presents there; and its auth are the ground every runner on the host stands on. They are not
@@ -133,7 +135,8 @@ it is an environment variable read at boot.
   are kept by subscription — so a workspace or subscription wanted under another id is retired and a new one created.
   Retiring one stops new work through it: the host stops reporting it, and the hub already withholds work from a binding
   naming a workspace the host does not report, and from a runner naming a subscription outside the host's roster. A
-  runner bound to a retired workspace keeps working its other bindings. Its history stays.
+  runner bound to a retired workspace keeps working its other bindings. Its history stays. A host has no default
+  workspace: it has the workspaces its operator declares or creates, and none until then.
 - **A workspace is the operator's to reshape.** Every setting of a workspace other than its id — its provider, its root,
   its repositories, its environment pool and limit, its base branch — can change at any time, with nothing refused, and
   applies to the next environment acquired. Blizzard does not reconcile what is on disk: an operator who repoints a

@@ -21,9 +21,10 @@ so they are kept in one hub-wide record beside the tenant records, never in them
 All three are added to `GLOBAL_TABLES` (`hub/store/schema.py:41`) in one additive revision, applied by
 `blizzard hub migrate` (`bzh:manual-migrations`), and `contracts/store/hub.json` is regenerated. A write is the runner's
 write ([runner-store.md](./runner-store.md) §A write) over these tables: `If-Match` against `revision`, the whole
-resolved configuration validated through the hub's own `parse()` (`hub/config.py`), one revision and one change row per
-committed write, `at_default` for an unset. The seed is [settings.md](./settings.md) §Seeding from the file, run by
-`blizzard hub serve` after its store check and before `build_services`.
+resolved configuration validated through the section parsers `HubConfig.load` runs over the file (`hub/config.py`),
+factored out so a write can run them over the resolved settings, one revision and one change row per committed write,
+`at_default` for an unset. The seed is [settings.md](./settings.md) §Seeding from the file, run by `blizzard hub serve`
+after its store check and before `build_services`.
 
 `bzh:configured-record` gains the hub settings record as a kind without retire or enable — there is always exactly one —
 keyed by the entry rather than a field, and `bzh:config-read-on-use`'s scope gains the hub-wide record beside the
@@ -35,17 +36,17 @@ A new hub-level `Permission.SETTINGS_ADMIN`, "operate the hub-wide settings ever
 `hub/auth/permissions.py` beside `EXPORT_ADMIN`, held only by a hub administrator (`hub_admin_facts`) and, under
 `auth.mode = none`, by the implicit operator. No tenant role holds it: a tenant's superuser cannot slow another tenant's
 sweeps. Every route below is authorized by `require_hub(Permission.SETTINGS_ADMIN)` (`hub/api/auth_session.py:355`),
-reads included, since a tenant's members have no business with another tenant's hub.
+reads included, since the hub's settings are no single tenant's business.
 
 ## Routes and CLI
 
-| Route                             | CLI                                                | Does                                                                                                                                         |
-| --------------------------------- | -------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------- |
-| `GET /api/admin/settings`         | `blizzard hub settings show [KEY]`                 | The view: as the runner's ([runner-api.md](./runner-api.md) §Views), `in_force` omitted, since every pass and request takes its own snapshot |
-| `PATCH /api/admin/settings`       | `blizzard hub settings set KEY VALUE`, `unset KEY` | A write: `set` and `unset` with `If-Match`, refused as the runner's write is                                                                 |
-| `GET /api/admin/settings/changes` | `blizzard hub settings changes`                    | The change log, newest first, paginated                                                                                                      |
-| `POST /api/admin/settings/apply`  | `blizzard hub settings apply FILE [--dry-run]`     | A declarative apply (§Apply)                                                                                                                 |
-| `GET /api/admin/settings/export`  | `blizzard hub settings export`                     | The apply document, as the store stands                                                                                                      |
+| Route                             | CLI                                                | Does                                                                                                                                                                       |
+| --------------------------------- | -------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `GET /api/admin/settings`         | `blizzard hub settings show [KEY]`                 | The view: as the runner's ([runner-api.md](./runner-api.md) §Views), listing only the `pass` keys, `in_force` omitted, since every pass and request takes its own snapshot |
+| `PATCH /api/admin/settings`       | `blizzard hub settings set KEY VALUE`, `unset KEY` | A write: `set` and `unset` with `If-Match`, refused as the runner's write is                                                                                               |
+| `GET /api/admin/settings/changes` | `blizzard hub settings changes`                    | The change log, newest first, paginated                                                                                                                                    |
+| `POST /api/admin/settings/apply`  | `blizzard hub settings apply FILE [--dry-run]`     | A declarative apply (§Apply)                                                                                                                                               |
+| `GET /api/admin/settings/export`  | `blizzard hub settings export`                     | The apply document, as the store stands                                                                                                                                    |
 
 The routes are described in `openapi/hub.openapi.json` and reach the board through its generated client; the CLI verbs
 in `contracts/cli/`. None is on the fleet wire.
@@ -54,7 +55,12 @@ in `contracts/cli/`. None is on the fleet wire.
 
 The hub's settings document is its own, not a section of a tenant's config document, since a tenant's document never
 reaches past its tenant (`bzh:config-apply`). It is shaped like `blizzard-hub.toml` — the same tables, the same key
-names — and states any of the hub's `pass` keys. An apply sets each key it states and touches nothing else, refuses a
+names — and states any of the hub's `pass` keys. The route takes it, and the export answers it, as JSON.
+`blizzard hub settings apply FILE` reads a TOML file and decodes it through the hub's file loader (`hub/config.py`), the
+one hub module `bzh:config-key-declared`'s ast-grep rule lets read TOML, so no new decoding seam is opened and the rule
+is unchanged; `export` emits TOML through the hand-rolled emitter `HubConfig.to_toml` already uses, moved to
+`foundation/toml_emit.py` so the runner shares it. The document is decoded by the file's loader and is not a config
+document, so `bzh:config-codec` does not bind it. An apply sets each key it states and touches nothing else, refuses a
 `boot` key with `setting_not_live`, commits in one transaction with door `apply` and one `apply_id`, and answers one
 outcome row per key; a dry run is the transaction rolled back. The export writes every entry the store holds, so
 applying it back writes nothing.
@@ -62,8 +68,9 @@ applying it back writes nothing.
 ## Reading per pass
 
 `HubSettingsReader`, in `hub/settings/`, reads `hub_settings.revision` in one indexed read and answers the snapshot,
-cached under the revision, so a hub of several processes reads the same settings and a cold one is correct. Each holder
-below takes the snapshot at its pass's start, or a request's arrival:
+cached under the revision, so a cold hub is correct. The hub runs as one process: a write's wake of a waiting sweep is
+in-process, and running the hub as several processes is not this epic's. Each holder below takes the snapshot at its
+pass's start, or a request's arrival:
 
 | Held today                                                                                             | Under this epic                                                                                                                                                                                                                                                              |
 | ------------------------------------------------------------------------------------------------------ | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
