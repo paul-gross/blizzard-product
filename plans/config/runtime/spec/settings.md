@@ -7,14 +7,12 @@ only to be refused, graduated, or honored. Code paths are under `src/blizzard/`.
 
 ## Lifetimes
 
-Each key's registry entry (`blizzard.hub.config_keys`, `blizzard.runner.config_keys`) gains a `lifetime` field carrying
-one of the values below, and `blizzard-export-contracts` writes it into the contract documents beside `type` and
-`default`, so `contract drift` turns red when a lifetime changes without a regenerated document.
-
-A key whose lifetime is `pass` or `session` is an **entry**: it lives in its own daemon's store, is written only through
-its own daemon's API, and is seeded from the file (§Seeding from the file). A `boot` key is not an entry: it stays in
-the file, read at boot as today. An `immutable` key is an entry written once, when the thing it belongs to is created,
-and refused by every later write. Neither daemon's API reads or writes the other's entries.
+Each key's registry entry declares one of the values below, and the contract documents carry it
+([lifetimes.md](./lifetimes.md)). A key whose lifetime is `pass` or `session` is an **entry**: it lives in its own
+daemon's store, is written only through its own daemon's API, and is seeded from the file (§Seeding from the file). A
+`boot` key is not an entry: it stays in the file, read at boot as today. An `immutable` key is an entry written once,
+when the thing it belongs to is created, and refused by every later write. Neither daemon's API reads or writes the
+other's entries.
 
 | `lifetime`  | Meaning                                                                                                                                                                                                                                                                                       |
 | ----------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
@@ -42,13 +40,14 @@ and when it is evaluated, not whether it exists.
 
 The machinery that holds settings, serves them, and says which ones are in force. None of these is a setting.
 
-| Piece                 | Daemon | Where                                                                                                                  | What it is                                                                                                                                                                                                  |
-| --------------------- | ------ | ---------------------------------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `lifetime` field      | both   | each `ConfigKey` in `blizzard.hub.config_keys` and `blizzard.runner.config_keys`, exported into the contract documents | Each key's lifetime (§Lifetimes)                                                                                                                                                                            |
-| Runner settings store | runner | new tables in the host's store                                                                                         | Every runner entry, revised rather than overwritten, with a change log naming each write's author; replaces the file and the frozen `LoopConfig` as the source of an entry's value                          |
-| Runner settings API   | runner | the runner's local API, with CLI verbs and the runner's local page over it                                             | Read, write, and change-log routes for the runner's entries, and the add and retire of a runner on a running host                                                                                           |
-| Settings revision     | runner | the host's store, one per runner                                                                                       | Starts at `1` at first boot and increments on each applied write; a session records it at launch and the runner reports it to the hub at registration, so a step can be traced to the settings it ran under |
-| Hub settings record   | hub    | the hub store, a new `RecordKind`, written through the hub's config API                                                | The hub's `pass` entries (§Hub), seeded from `blizzard-hub.toml` (§Seeding from the file)                                                                                                                   |
+| Piece                 | Daemon | Owned by                                                                                                             |
+| --------------------- | ------ | -------------------------------------------------------------------------------------------------------------------- |
+| `lifetime` and `env`  | both   | [lifetimes.md](./lifetimes.md)                                                                                       |
+| Runner settings store | runner | [runner-store.md](./runner-store.md)                                                                                 |
+| Runner settings API   | runner | [runner-api.md](./runner-api.md)                                                                                     |
+| Settings revisions    | runner | [runner-store.md](./runner-store.md), [passes.md](./passes.md) §Sessions — kept on the runner, never sent to the hub |
+| Host records          | runner | [host-records.md](./host-records.md)                                                                                 |
+| Hub settings record   | hub    | [hub.md](./hub.md)                                                                                                   |
 
 ## Environment variables
 
@@ -87,16 +86,7 @@ Five places freeze a runner's configuration at boot today, and each becomes an e
 | Each runner's object graph                        | `runner/composition.py`: harness adapters and their alias tables, subscription samplers, trace settings, the worker telemetry plan                                                                         | Rebuilt per object when the revision of the settings it was built from moves, closing the one it replaces once nothing is mid-use on it |
 | The set of runners                                | One `_RunnerThreads` per `[[runner]]` at boot (`runner/cli/runtime.py:1088`): the tick driver, the trace-sweep driver where tracing is on, and the runner's spawner executor (`runner/composition.py:873`) | Reconciled by the host tick (§The running set of runners)                                                                               |
 
-Today `HostConfig.load` (`runner/host_config.py:567`) reads the file once, `LoopWiring.context()` freezes a `LoopConfig`
-from it (`runner/loop_wiring.py:151`), and `RunnerStepper._context` caches that context under its `_build` lock for the
-life of the process (`runner/loop_wiring.py:429`); only `close()` clears it. Under this epic, the `RunnerConfig` a
-stepper is built from is resolved from the file's `boot` keys and the store's entries together. An API write validates
-the changed entries against the same rules `parse()` applies to a boot (`runner/host_config.py:844`), refuses the whole
-write on any error, and otherwise commits the entries and a new settings revision, then, holding the tick lock between
-ticks, rebuilds the stepper's `LoopWiring` from the newly resolved `RunnerConfig` (`LoopWiring.of`,
-`runner/loop_wiring.py:92`, which also resolves the runner prompt), drops its cached context, and lets the next tick
-rebuild it. Every `pass` key below is reached through that rebuild: the tick, and each of the runner's other passes,
-resolves its snapshot when it starts.
+How each becomes an evaluation is [passes.md](./passes.md).
 
 ### Host-level keys
 
@@ -113,7 +103,7 @@ resolves its snapshot when it starts.
 | `tracing.harness_telemetry`, `tracing.worker_programs`, `tracing.worker_program_services`                                        | `session`   | The telemetry environment handed to a worker at launch                                                                                                                                                                                                                                   |
 | `tracing.sweep_seconds`, `tracing.settle_seconds`, `tracing.max_lag_seconds`, `tracing.batch_limit`, `tracing.replay_max_window` | `pass`      | The lease trace sweep, built once per runner                                                                                                                                                                                                                                             |
 | `transcripts.ship`                                                                                                               | `pass`      | Whether the transcript drain runs                                                                                                                                                                                                                                                        |
-| `transcripts.record_max_bytes`, `transcripts.chunk_max_bytes`                                                                    | `pass`      | The transcript pump; `record_max_bytes` stays bound below the hub's cap (§Across both)                                                                                                                                                                                                   |
+| `transcripts.record_max_bytes`, `transcripts.chunk_max_bytes`                                                                    | `pass`      | The transcript pump                                                                                                                                                                                                                                                                      |
 | `worker_stdout.retention_days`                                                                                                   | `pass`      | `LoopConfig`, read by the retention pass                                                                                                                                                                                                                                                 |
 | `workspace[].id`                                                                                                                 | `immutable` | Operator-chosen, scoped to the host, default `workspace-local` (`runner/config.py:83`). Reported to the hub at each host tick (`wire/host.py:20`), declared in every runner binding, and recorded on every claim's route (`hub/domain/runners/route.py:23`)                              |
 | `workspace[].root`, `workspace[].provider`, `workspace[].repo[]`                                                                 | `pass`      | Built into the workspace's environment provider at boot (`build_workspaces`, `runner/composition.py:411`; `runner/environments/factory.py`). The host tick rebuilds the provider when they move, and the next `acquire` uses it. Nothing is refused; the operator keeps the disk in step |
@@ -155,53 +145,17 @@ resolves its snapshot when it starts.
 | `worker.env_passthrough`, `worker.path_prepend`, `worker.shell`                   | `session`   | The worker environment built at launch                                                                                                                                                                                         |
 | `runner_prompt`, `runner_prompt_file`                                             | `session`   | Resolved by `LoopWiring.of` when the stepper is built                                                                                                                                                                          |
 
-## The running set of runners
+## The running set of runners, workspaces, and subscriptions
 
-A host starts one thread group per `[[runner]]` it finds at boot — its tick driver, its trace-sweep driver where tracing
-is on, and its spawner executor (`runner/cli/runtime.py:1088`), so `blizzard runner add` today registers the runner at
-the hub, writes its token and its `[[runner]]`, and leaves it for the host's next start (`runner/cli/runners.py:81`).
-Retirement already works on a running host, but not through configuration: the hub refuses the retired runner's token,
-and the host tick's `RetiredRunnerWatch` (`runner/composition.py:292`) halts it.
-
-Under this epic the set of runners is itself an entry with lifetime `pass`, evaluated by the host tick. `runner add`
-writes the new runner's entries and token through the host's API; the host's next tick builds the runner's object graph,
-re-reads the host's `.env` for its token, and starts its thread group. `runner retire` removes the runner's entries; the
-next tick drains and halts its thread group, as a retirement halts it today. Neither touches the runners beside it. A
-runner's entries are seeded from its `[[runner]]` table the first time the host starts with that table and no entries
-for the runner.
-
-## Workspaces and subscriptions as records
-
-The host builds one environment provider per `[[workspace]]` (`build_workspaces`, `runner/composition.py:411`) and one
-usage-sample pass and one credential-renewal pass over every `[[subscription]]` (`runner/composition.py:440`, `:466`),
-all at boot. Under this epic each workspace and each subscription is a record of the host, in the shape
-`epic:live-config` gave the hub's forges and repositories: revised rather than overwritten, created, edited, and retired
-through the host's API, and never deleted. The host tick evaluates the set of active records and rebuilds each provider,
-sampler, or renewer whose record's revision has moved.
-
-- **Creating** a workspace builds its provider at the next host tick; it serves work once a runner binds a project to
-  it. Creating a subscription samples it and reports it to the hub from that tick.
-- **Editing** a workspace's provider, root, repositories, pool, limit, or base branch rebuilds its provider at the next
-  host tick, and the next `acquire` uses it. Nothing is refused and nothing is reconciled on disk: an environment
-  already held is released, listed, and resumed through the rebuilt provider, and keeping the disk in step with a
-  repointed workspace is the operator's, outside blizzard.
-- **Retiring** a workspace or a subscription stops the host reporting it and building work through it. The hub already
-  withholds work from a binding naming a workspace the host does not report, and flags a runner whose subscription is
-  outside the host's roster (`hub/domain/runners/bindings.py:42`), so a runner still naming a retired record keeps
-  running its other bindings. A retired record can be enabled again. Its history — the routes that name a workspace, the
-  usage samples and limit marks kept by a subscription — stays.
-
-Each workspace's and subscription's record is seeded from its table the first time the host starts with that table and
-no record for it.
+Each is a record of the host, added or created and retired through its API and taken up at the next host tick:
+[host-records.md](./host-records.md).
 
 ## Hub
 
-The hub's operational settings move from `blizzard-hub.toml` into one hub settings record per hub, written through the
-hub's config API, under the revisions, change log, and board `epic:live-config` built. Readers fetch through the
-existing revision-keyed `ConfigObjectCache` (`hub/live_config/__init__.py`), so a long-lived object built from a setting
-is rebuilt the first use after the record's revision moves. The record's entries are seeded from the file by §Seeding
-from the file. Every value below is bound into a long-lived object in `build_services` today
-(`hub/composition.py:1451`).
+The hub's operational settings move from `blizzard-hub.toml` into one hub-wide settings record, beside the tenants'
+records rather than in any of them, read per pass and per request ([hub.md](./hub.md)). Its entries are seeded from the
+file by §Seeding from the file. Every value below is bound into a long-lived object in `build_services` today
+(`hub/composition.py:1451`), or read from the boot configuration per request.
 
 | Key                                                                                                                       | `lifetime` | Moves to the record | Held today                                                                                             |
 | ------------------------------------------------------------------------------------------------------------------------- | ---------- | ------------------- | ------------------------------------------------------------------------------------------------------ |
@@ -225,11 +179,20 @@ from the file. Every value below is bound into a long-lived object in `build_ser
 | `egress.backfill_max_window`                                                                                              | `pass`     | yes                 | The backfill command's bound                                                                           |
 | `work_source[]`                                                                                                           | —          | already moved       | `epic:live-config`                                                                                     |
 
-## Constants the sweep promotes
+## Lifetimes for constants the sweep will promote
 
-`epic:config/sweep` turns hard-coded constants into settings; this epic gives each the lifetime it will declare. The
-ones below are the constants a run is most often tuned by, listed so each daemon's settings store is built to carry
-them. Each enters through the sweep, not here.
+Neither epic waits for the other, and they land in either order. `epic:config/sweep` turns hard-coded constants into
+settings; this epic decides when a setting is evaluated. The table below is not work this epic does: it is the lifetime
+each of these constants will declare when the sweep promotes it, agreed here so the sweep does not have to decide it
+again.
+
+- **This epic first:** a constant the sweep promotes later arrives with its lifetime, and if that is `pass` or `session`
+  it is an entry from the start, seeded from the file and changed through its daemon's API.
+- **The sweep first:** a promoted constant arrives as a file key with its lifetime declared, and is read at boot until
+  this epic's piece for its daemon lands, which makes it an entry like every other key of its lifetime.
+
+The constants listed are the ones a run is most often tuned by, which is why they are named ahead of time; the sweep's
+full list is its own.
 
 | Constant                                                                          | Daemon | Where                                                                                                         | Value               | `lifetime` |
 | --------------------------------------------------------------------------------- | ------ | ------------------------------------------------------------------------------------------------------------- | ------------------- | ---------- |
@@ -254,17 +217,11 @@ them. Each enters through the sweep, not here.
 
 ## Across both
 
-Three pairs span the daemons. Each side owns its own setting, so neither can refuse the other's write. The hub checks
-each pair whenever a runner reports its settings revision or the hub record moves, and flags the runner that breaks it
-on the fleet view.
-
-| Hub side                                                                       | Runner side                                      | Must hold    |
-| ------------------------------------------------------------------------------ | ------------------------------------------------ | ------------ |
-| `STALE_AFTER` (`hub/domain/runners/registration.py:29`, 5 min)                 | `tick_seconds` (30 s), the registration cadence  | hub > runner |
-| `EXTERNAL_USAGE_STALE_AFTER` (`hub/domain/runners/registration.py:33`, 15 min) | `subscription[].sample_interval_seconds` (300 s) | hub > runner |
-| `transcripts.record_max_bytes` (10 MiB effective)                              | `transcripts.record_max_bytes` (8 MiB effective) | runner < hub |
-
-Pairs inside one daemon are checked at its own API write, which refuses an edit that breaks one: the runner's
+A few settings only make sense beside a partner on the other daemon — the hub's offline cutoff against the runner's
+tick, its usage staleness against the runner's sample interval, its transcript record cap against the runner's. This
+epic leaves each daemon free to set its own side and does not check one against the other; a runner and a hub set out of
+step simply behave as their settings say. Having the runner take its side of each from the hub's settings is left for
+later. Pairs inside one daemon are checked at its own write, once both sides are settings: the runner's
 `api/hub_proxy.py` retry ceiling below the worker's read timeout, the heartbeat retention window above
 `HEARTBEAT_STALENESS_THRESHOLD`, and the close-drain interval equal to its backoff base.
 
