@@ -49,6 +49,6 @@ there to ask, the checks after the restart cover the same recovery, and the cras
 `tests/journey/`'s Python, its `conftest.py`, and the `journey` marker in `pyproject.toml` are deleted in the port's
 change. `mise run journey` stays, re-pointed at the Playwright project, so `scripts/gate-full.sh`, `docs/ci.md`, the
 `blizzard:journey` matrix row, and its command page keep their command; the command page's machine-checked command text
-and test path change in the same change, and `tests/test_default_suite_markers.py` drops the marker. The method keeps
-its name. `tests/crash/support.py` is untouched: the helpers the rehearsal borrowed stay there for the sweep, and the
-port has its own in TypeScript.
+and test path change in the same change, and `tests/guards/test_default_suite_markers.py` drops the marker. The method
+keeps its name. `tests/crash/support.py` is untouched: the helpers the rehearsal borrowed stay there for the sweep, and
+the port has its own in TypeScript.

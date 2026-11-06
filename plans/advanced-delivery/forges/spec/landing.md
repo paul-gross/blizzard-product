@@ -67,10 +67,10 @@ The requirement does not sit on the actions epic's `ActionSpec` (`hub/domain/gra
 the `graph` package so graph validation can read it, `graph` may import only `artifact` (`bzh:domain-package-layers`),
 and both `ResolvedRepository` and `Capability` are `config`'s. It sits instead in `ACTION_REQUIREMENTS`
 (`hub/domain/actions/requirements.py`), keyed by action name, in the `actions` package, which imports `config`;
-`tests/test_hub_actions.py` holds its keys equal to the catalogue's, so an action can no more be added without a
-requirement than without an implementation. It is a function of the repository from the start, so the `policies` epic
-changes only what `land`'s answers rather than where requirements live. In this epic `land`'s answers the same set for
-every repository: `refs.read`, `compare`, `changes.open`, `changes.read`, `changes.update-from-base`,
+`tests/unit/hub/delivery/test_action_registry.py` holds its keys equal to the catalogue's, so an action can no more be
+added without a requirement than without an implementation. It is a function of the repository from the start, so the
+`policies` epic changes only what `land`'s answers rather than where requirements live. In this epic `land`'s answers
+the same set for every repository: `refs.read`, `compare`, `changes.open`, `changes.read`, `changes.update-from-base`,
 `changes.merge.merge`, and `checks.read`. `record-findings`, `garden-deliver`, and `pass` answer the empty set.
 `Capability` is the domain's (`hub/domain/config/capabilities.py`), so neither the requirements nor the catalogue import
 the seam.

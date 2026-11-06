@@ -63,8 +63,8 @@ checks out no `blizzard-mock`. It is a required check of its own, `gate / playwr
 
 ## The winter-free guard
 
-`tests/test_winter_free_ci.py` keeps every job that runs tests free of winter. It learns the Playwright jobs in three
-places:
+`tests/guards/test_winter_free_ci.py` keeps every job that runs tests free of winter. It learns the Playwright jobs in
+three places:
 
 - `_RUNS_TESTS` matches `mise run playwright` and `playwright test` besides `pytest` and `mise run e2e`, so
   `service-playwright` counts as a job that runs tests and its checkouts are held to `persist-credentials: false`.

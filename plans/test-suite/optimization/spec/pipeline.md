@@ -3,7 +3,7 @@
 ## Recording durations
 
 A split by time needs times, and none are kept today. The suite plugin gains a recorder: when `BLIZZARD_DURATIONS_OUT`
-names a file, `tests/suite_plugin.py` adds each test's setup, call, and teardown durations from
+names a file, `tests/support/suite_plugin.py` adds each test's setup, call, and teardown durations from
 `pytest_runtest_logreport` and, at session end, writes `{ "<nodeid>": <seconds>, ... }` to that file. Under xdist each
 worker writes its own part, `<file>.<worker id>`, and the controller merges them at `pytest_sessionfinish`, so the file
 holds every test the run executed exactly once. A skipped test is not recorded, since its time says nothing about its
@@ -41,9 +41,9 @@ schedules within the shard as it does now. With `BLIZZARD_TEST_SHARD` unset noth
 `uv run pytest` is unchanged. A missing or unreadable `tests/durations.json` falls back to `shard_of`'s hash with a
 warning, so the gate never fails for want of times.
 
-`tests/test_shard_split.py`, a unit test, holds the partition to its promises over a synthetic collection: every item in
-exactly one shard, the same partition from any item order, a missing table falling back to the hash, and the largest
-shard's total within the longest single test of the mean.
+`tests/guards/test_shard_split.py`, a unit test, holds the partition to its promises over a synthetic collection: every
+item in exactly one shard, the same partition from any item order, a missing table falling back to the hash, and the
+largest shard's total within the longest single test of the mean.
 
 The service tier's pytest half shards through the same hook, so it is balanced too, from its own durations in the same
 table.

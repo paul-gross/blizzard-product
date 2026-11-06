@@ -2,7 +2,7 @@
 
 ## The environment contract
 
-Every daemon the pytest suite spawns today inherits an environment assembled in `tests/suite_plugin.py`.
+Every daemon the pytest suite spawns today inherits an environment assembled in `tests/support/suite_plugin.py`.
 `pytest_configure` sets the tenant and runner statement guards (`BLIZZARD_TENANT_GUARD`, `BLIZZARD_RUNNER_GUARD`),
 strict configuration reads (`BLIZZARD_STRICT_CONFIG`), and commit and tag signing off through `GIT_CONFIG_COUNT` and its
 key and value pairs, and it pops `LEGACY_FORGE_VARIABLES`. Autouse fixtures strip the operator's tracing variables, the
@@ -43,10 +43,10 @@ both subclasses of `blizzard.foundation.store.key_scoping`'s `UnscopedKeyedState
 
 The pytest suite reads the file first, in the change that introduces it. `pytest_configure` applies `set` and `unset`
 from it in place of its literals, and the autouse fixtures take their lists from it, so the pytest suite runs exactly
-what it ran before. A unit test, `tests/test_daemon_env_contract.py`, holds the file to the code it restates: the guard
-variables are each guard module's `GUARD_ENVIRONMENT_VARIABLE`, strict reads are `STRICT_CONFIG_ENVIRONMENT_VARIABLE`,
-`unset` holds every name in `LEGACY_FORGE_VARIABLES`, and `refusals` names the two exception classes. A guard renamed in
-`src/` fails that test before it silently drops out of both suites.
+what it ran before. A unit test, `tests/guards/test_daemon_env_contract.py`, holds the file to the code it restates: the
+guard variables are each guard module's `GUARD_ENVIRONMENT_VARIABLE`, strict reads are
+`STRICT_CONFIG_ENVIRONMENT_VARIABLE`, `unset` holds every name in `LEGACY_FORGE_VARIABLES`, and `refusals` names the two
+exception classes. A guard renamed in `src/` fails that test before it silently drops out of both suites.
 
 The harness reads it in `harness/env.ts`. A daemon's environment is the runner's own, less every `unset` name and every
 variable under an `unsetPrefixes` prefix, plus `set`, plus `XDG_CONFIG_HOME` pointed at `.run/<run>/config-home/`, plus

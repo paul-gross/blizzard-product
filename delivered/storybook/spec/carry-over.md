@@ -16,9 +16,9 @@ on each other may land in parallel. A piece that changes `blizzard-context` land
    found in the order [toolchain.md](./toolchain.md) §The install gives; `.storybook/`'s three files; the `fleet`
    project's two targets; the stories exclude in each production `tsconfig`; `npm run storybook` and
    `npm run storybook:build` with their `mise` mirrors; the `web/README.md` section, without the sentence on what holds
-   stories; and `tests/test_web_workshop.py`. `KitButton` and `KitPanel` get their stories, as proof that a control and
-   a container with projected content both render with the board's own styles, zoneless. Proven by `web:lint`, which
-   reaches `.storybook/` and the stories; `web:typecheck`, `web:unit-test`, `web:bundle-composition`,
+   stories; and `tests/guards/test_web_workshop.py`. `KitButton` and `KitPanel` get their stories, as proof that a
+   control and a container with projected content both render with the board's own styles, zoneless. Proven by
+   `web:lint`, which reaches `.storybook/` and the stories; `web:typecheck`, `web:unit-test`, `web:bundle-composition`,
    `web:structural-gate`, `web:shell-sweep`, and `blizzard:unit-test`, all passing on the new tree;
    `tsc --noEmit -p projects/fleet/.storybook/tsconfig.json` passing over the two stories; and the two parts opened by
    hand in `npm run storybook`. If neither a direct Vite dependency nor a scoped override holds, the piece stops and

@@ -51,11 +51,11 @@ script or a test driving many verbs must repeat the flag on every one.
 verbs that take no tenant ignore it. The runner's own `--tenant` (`src/blizzard/runner/cli/runtime.py`) is unchanged,
 since it names the tenant a runner is added to, a different act.
 
-The CLI's reference and `docs/deployment/tenants.md` name the variable beside `BZ_HUB_URL`. `tests/suite_plugin.py`'s
-`_strip_hub_coordinates_env` strips it with the other hub coordinates, and `daemon-env.json` unsets it
-([daemons.md](./daemons.md#the-environment-contract)), so a developer's shell never names a test's tenant.
-`tests/test_hub_cli_tenant_header.py` learns the variable's three cases: it sends the header, `--tenant` overrides it,
-and an empty one sends none.
+The CLI's reference and `docs/deployment/tenants.md` name the variable beside `BZ_HUB_URL`.
+`tests/support/suite_plugin.py`'s `_strip_hub_coordinates_env` strips it with the other hub coordinates, and
+`daemon-env.json` unsets it ([daemons.md](./daemons.md#the-environment-contract)), so a developer's shell never names a
+test's tenant. `tests/component/hub/cli/test_tenant_header.py` learns the variable's three cases: it sends the header,
+`--tenant` overrides it, and an empty one sends none.
 
 ## Unhandled request errors in the hub's log
 

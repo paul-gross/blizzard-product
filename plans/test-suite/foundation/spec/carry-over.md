@@ -15,9 +15,9 @@ Each change leaves `master` green and the required check intact. The plan's nine
    everything.
 3. **Unhandled request errors in the hub's log**, in `blizzard`
    ([surfaces.md](./surfaces.md#unhandled-request-errors-in-the-hubs-log)). Independent of everything; 5 waits on it.
-4. **The daemons' environment contract**: `tests/daemon-env.json`, `tests/suite_plugin.py` reading it, and
-   `tests/test_daemon_env_contract.py` ([daemons.md](./daemons.md#the-environment-contract)). The pytest suite runs
-   exactly what it ran before, which every tier's CI run proves. Independent of 1 and 2; if 2 lands first, the file
+4. **The daemons' environment contract**: `tests/daemon-env.json`, `tests/support/suite_plugin.py` reading it, and
+   `tests/guards/test_daemon_env_contract.py` ([daemons.md](./daemons.md#the-environment-contract)). The pytest suite
+   runs exactly what it ran before, which every tier's CI run proves. Independent of 1 and 2; if 2 lands first, the file
    unsets `BZ_HUB_TENANT` from the start, and otherwise 2 adds it.
 5. **The package and the harness**, waiting on 1, 3, and 4: everything in [package.md](./package.md),
    [daemons.md](./daemons.md), [hubs.md](./hubs.md), and [isolation.md](./isolation.md) but the cross-check, the

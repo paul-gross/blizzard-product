@@ -52,10 +52,10 @@ refused. The second migration restates the map in its own frozen revision rather
 Two manual migrations (`bzh:manual-migrations`) under `hub/store/migrations/versions/`, each frozen once it reaches
 `master` (`bzh:frozen-revisions`), inside the portable surface (`bzh:sql-portable`), with its colocated migration test
 (`bzh:colocated-migration-tests`) and a working `downgrade()` that
-`tests/test_store_migrations.py::test_migrate_up_and_down` walks. Both only expand (`bzh:store-expand-contract`): each
-adds nullable columns and writes rows, and neither drops, renames, or tightens anything a supported release reads, so
-`blizzard:compat` finds nothing in either. Each lands with its columns in `contracts/store/hub.json`, which
-`blizzard:store-contract` holds to the schema.
+`tests/unit/foundation/store/test_migrations.py::test_migrate_up_and_down` walks. Both only expand
+(`bzh:store-expand-contract`): each adds nullable columns and writes rows, and neither drops, renames, or tightens
+anything a supported release reads, so `blizzard:compat` finds nothing in either. Each lands with its columns in
+`contracts/store/hub.json`, which `blizzard:store-contract` holds to the schema.
 
 The first, in the epic's first landing, adds `graph_nodes.action` (String, null), `graph_nodes.action_args` (Text, JSON,
 null), and `hub_node_poll.next_poll_at` (UtcDateTime, null), where a waiting pass's next-poll hint is kept; existing
@@ -140,11 +140,11 @@ recorded and writes nothing, so a chunk the boot pass escalated is never escalat
 
 `EscalationCause` (`foundation/escalation_causes.py`) gains `HUB_ACTION_MISSING` and `UNROUTABLE_OUTCOME`, the OpenAPI
 enum with them, and the board's `CAUSE_SENTENCES` (`web/projects/fleet/src/lib/chunk/chunk-detail/chunk-escalation.ts`)
-a sentence for each. `EventLogKind`, `EVENT_LOG_SEVERITY` (`foundation/event_log.py`), `tests/event_log_kind_census.py`
-at the repository root, and `blizzard-context:/domain/operations.md` gain `hub-action-missing` and `hub-action-overran`;
-the unroutable case keeps the `hub-node-unroutable-outcome` kind it is recorded under today, and
-`docs/deployment/observability.md` says it now escalates. `tools/invariants.py` gains `hub:hub-node-has-action`: every
-hub node at a version a live chunk is pinned to names an action.
+a sentence for each. `EventLogKind`, `EVENT_LOG_SEVERITY` (`foundation/event_log.py`),
+`tests/support/event_log_kind_census.py` at the repository root, and `blizzard-context:/domain/operations.md` gain
+`hub-action-missing` and `hub-action-overran`; the unroutable case keeps the `hub-node-unroutable-outcome` kind it is
+recorded under today, and `docs/deployment/observability.md` says it now escalates. `tools/invariants.py` gains
+`hub:hub-node-has-action`: every hub node at a version a live chunk is pinned to names an action.
 
 ## What is removed
 
@@ -268,11 +268,11 @@ deleted with what they tested: `test_land_scripts.py`, `test_land_common.py`, `t
 `test_review_deliver_script.py`, `test_hub_command_runner.py`, `test_hub_command_node.py`, `test_marker_auth.py`,
 `test_hub_marker_auth.py`, `test_hub_cli_record_marker.py`, `test_pin_hub_delivery.py`, `test_garden_delivery_api.py`,
 and `test_garden_delivery_guard_race.py`, with the route rows in `test_route_classification.py` and
-`test_route_token_authz.py`, and the fixtures in `tests/support.py` and `tests/fleet_world.py` that arm the fake
-`IHubCommandRunner`. The rule beyond the list is the one the list follows: any test that arms the command runner or
-mints or presents a marker token moves onto an action or goes in the fourth landing, and any that calls one of the three
-routes or `record-marker` holds them behind `CHUNK_CONTROL` alone, and the command's refusal, until the retirement takes
-it out with them. The two scenarios in `tests/crash/test_kill9_sweep.py` that held a window open with
+`test_route_token_authz.py`, and the fixtures in `tests/support/scaffolding.py` and `tests/support/fleet_world.py` that
+arm the fake `IHubCommandRunner`. The rule beyond the list is the one the list follows: any test that arms the command
+runner or mints or presents a marker token moves onto an action or goes in the fourth landing, and any that calls one of
+the three routes or `record-marker` holds them behind `CHUNK_CONTROL` alone, and the command's refusal, until the
+retirement takes it out with them. The two scenarios in `tests/crash/test_kill9_sweep.py` that held a window open with
 `BZ_HUB_LAND_TEST_PAUSE_SECONDS` are rewritten onto the armed crash points, and the sweep's family list and CI subsets
 follow the points ([Crash points](./actions.md#crash-points)). `scripts/prose-density-baseline.json` drops its entries
 for the deleted scripts and tests.
@@ -280,7 +280,7 @@ for the deleted scripts and tests.
 The rest follows from changes above rather than from a removal. The thirteen test modules that call `Validator.of(doc)`
 directly pass `TEST_CATALOGUE` ([The catalogue](./actions.md#the-catalogue)). Each migration has its colocated test,
 covering a stored row of every translated shape, an untranslatable one kept in `legacy_run`, and the walk back down.
-`tests/test_container_image.py::test_image_installs_git` stays only if the image keeps `git`
+`tests/guards/test_container_image.py::test_image_installs_git` stays only if the image keeps `git`
 ([Documentation](#documentation)). `blizzard-context`'s `verification/blizzard/gaps.md` drops the gaps the script
 process left and names any the actions leave.
 
@@ -296,9 +296,9 @@ epic retires the slot, `docs/deployment/observability.md` says an unroutable out
 `docs/deployment/install.md` documents `action_pass_seconds`. `packaging/docker/Dockerfile`'s comment that `git` is
 there for delivery `run:` scripts cloning into hub workdirs goes: the scripts never cloned, and the image keeps `git`
 only if another of its parts still needs it, which the change confirms, keeping or deleting
-`tests/test_container_image.py::test_image_installs_git` to match. Each graph's `graph.yaml` comments that name a script
-or its route (`land_pr_ci.py`, "the review-findings-delivery route") and `hub/graphs/garden-routine/README.md` name the
-action instead.
+`tests/guards/test_container_image.py::test_image_installs_git` to match. Each graph's `graph.yaml` comments that name a
+script or its route (`land_pr_ci.py`, "the review-findings-delivery route") and `hub/graphs/garden-routine/README.md`
+name the action instead.
 
 `blizzard`'s exemplar `exemplars/python/exemplar/hub/graphs/scripts/land_clean.py`, the reference for a hub node's
 `run:` step script, which cites `bzh:hub-node-env-contract`, becomes an exemplar action under

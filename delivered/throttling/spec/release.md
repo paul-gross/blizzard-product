@@ -137,4 +137,4 @@ on.
 
 `blizzard-context` records the write as `domain/execution/recovery.md` §Release, and `acquisition.md` §Giving tenure
 back counts it among the writes that give tenure back. `blizzard-mock`'s mock hub serves the route and records the
-write, and `tests/service/test_parity_guard.py` holds `IHubClient.release` to it (`bzh:wire-change-extends-mock`).
+write, and `tests/service/wire/test_parity_guard.py` holds `IHubClient.release` to it (`bzh:wire-change-extends-mock`).

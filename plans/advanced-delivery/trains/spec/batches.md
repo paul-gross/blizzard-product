@@ -8,13 +8,13 @@ that restarts mid-train picks it up at the step its record says it reached.
 
 `hub/delivery/trains/` holds it: `readiness.py`, `train.py`, `split.py`, and `eject.py`. A train step is an action under
 `bzh:hub-action-purity`, as `land` is — the import allowlist
-(`tests/test_layering.py::test_hub_actions_import_only_their_allowlist`) and the frozen-input check
-(`tests/test_hub_actions.py`) walk `hub/delivery/trains/` beside `hub/delivery/actions/` — and runs on the `ActionLoop`:
-`step(batch, forge, effects)` receives the batch as a frozen value — its members, their revisions, its facts so far, the
-flow's repository and settings — the flow's repository's `RepositoryForge`, and an `IEffectSink` through which it hands
-over each fact it records; the driver persists each before the step continues, so a forge write and its record are never
-further apart than one crash point ([record.md](./record.md#crash-points)). A step that needs more than its batch
-carries declares it as an input the driver loads; it never reads the store.
+(`tests/guards/test_layering.py::test_hub_actions_import_only_their_allowlist`) and the frozen-input check
+(`tests/unit/hub/delivery/test_action_registry.py`) walk `hub/delivery/trains/` beside `hub/delivery/actions/` — and
+runs on the `ActionLoop`: `step(batch, forge, effects)` receives the batch as a frozen value — its members, their
+revisions, its facts so far, the flow's repository and settings — the flow's repository's `RepositoryForge`, and an
+`IEffectSink` through which it hands over each fact it records; the driver persists each before the step continues, so a
+forge write and its record are never further apart than one crash point ([record.md](./record.md#crash-points)). A step
+that needs more than its batch carries declares it as an input the driver loads; it never reads the store.
 
 ## Mechanical first
 

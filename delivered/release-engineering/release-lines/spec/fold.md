@@ -28,8 +28,9 @@ The fold replaces the absorbed revisions with one file that keeps the floor revi
 - `upgrade()` recreates, in one step, every table, column, index, and constraint the floor's tree builds, and inserts
   every row its history inserts into an empty store. It is written as explicit Alembic operations, generated once and
   then frozen — never `metadata.create_all()` against the live `schema.py`, which keeps moving above the baseline.
-- `downgrade()` drops everything, back to an empty store, so `tests/test_store_migrations.py::test_migrate_up_and_down`
-  holds unchanged: every revision in the tree, the baseline included, still walks back.
+- `downgrade()` drops everything, back to an empty store, so
+  `tests/unit/foundation/store/test_migrations.py::test_migrate_up_and_down` holds unchanged: every revision in the
+  tree, the baseline included, still walks back.
 - `BASELINE_FLOOR` names the floor release's tag, and `ABSORBED` is the frozen set of every revision id the baseline
   stands for — the ones this fold absorbed and every id the previous baseline's `ABSORBED` held.
 
@@ -55,13 +56,13 @@ release to step through before they meet the refusal.
 
 ## The two proofs
 
-**The baseline matches the history it replaced.** `tests/test_store_baseline.py` builds two stores for each tree on each
-database blizzard supports, sqlite and postgres: one by migrating an empty store with the floor's released wheel, one by
-upgrading an empty store to the baseline alone. It compares them table for table — columns with their types,
-nullability, and defaults; primary keys, foreign keys, unique constraints, and indexes; and every row — and fails on any
-difference. It skips while the base revision declares no `BASELINE_FLOOR`. It cannot run in the gate, which is
-token-free and reaches no network beyond package installs, while this proof downloads the floor's wheel from its GitHub
-Release and needs a postgres service no other tier runs. So it is a job of its own, `store-baseline`, declared as
+**The baseline matches the history it replaced.** `tests/store_baseline/test_store_baseline.py` builds two stores for
+each tree on each database blizzard supports, sqlite and postgres: one by migrating an empty store with the floor's
+released wheel, one by upgrading an empty store to the baseline alone. It compares them table for table — columns with
+their types, nullability, and defaults; primary keys, foreign keys, unique constraints, and indexes; and every row — and
+fails on any difference. It skips while the base revision declares no `BASELINE_FLOOR`. It cannot run in the gate, which
+is token-free and reaches no network beyond package installs, while this proof downloads the floor's wheel from its
+GitHub Release and needs a postgres service no other tier runs. So it is a job of its own, `store-baseline`, declared as
 `blizzard:store-baseline` in `blizzard-context`'s `verification/blizzard.md`: `pr.yml` runs it on pull requests that
 touch either tree's `versions/` directory, which every fold's pull request does, and `release.yml` on every candidate
 and patch tag. A stable tag relies on its candidate's run ([train.md](./train.md) §Promotion), as it does for the

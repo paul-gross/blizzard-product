@@ -57,9 +57,9 @@ The rules the sweeps enforce say the same. In `blizzard-context`'s `architecture
 beside it, and `bzh:frontend-placement`'s reach by "the non-spec code of both `hub` and `runner`" becomes reach by their
 code other than specs and stories.
 
-`tests/test_web_workshop.py` pins what the scripts cannot see from inside `web/`. The workshop's stylesheets match the
-hub build's `styles` ([toolchain.md](./toolchain.md) §What every story renders inside). Every `tsconfig` that compiles
-production code excludes `**/*.stories.ts`. And `angular.json`'s `fleet` project carries the `storybook` and
+`tests/guards/test_web_workshop.py` pins what the scripts cannot see from inside `web/`. The workshop's stylesheets
+match the hub build's `styles` ([toolchain.md](./toolchain.md) §What every story renders inside). Every `tsconfig` that
+compiles production code excludes `**/*.stories.ts`. And `angular.json`'s `fleet` project carries the `storybook` and
 `build-storybook` targets with `zoneless` set, and with `enableProdMode` off on the build.
 
 ## The render check

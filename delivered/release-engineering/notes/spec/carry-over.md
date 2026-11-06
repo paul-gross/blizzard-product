@@ -65,7 +65,7 @@ only what is not the operator's — a step for the landing itself — and says n
 
 - **`scripts/release-notes.sh`** stays, as the commit appendix's source. Its placeholder **Upgrade notes** heading and
   the breaking-changes section it builds from `!` subjects are removed — the notes own both now — and
-  `tests/test_release_notes.py` follows.
+  `tests/guards/test_release_notes.py` follows.
 - **`docs/versioning.md`**'s paragraph saying release notes are generated from Conventional Commits points to
   `changes/README.md` instead; `docs/ci.md`'s release section names the render step; `docs/upgrade.md`'s §Before you
   pull reads the release's upgrade notes as it does today, now that they are written.

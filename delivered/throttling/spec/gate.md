@@ -77,9 +77,9 @@ runner is held back while a brake blocks claims or the gate declines one. Its ot
 start asks the gate as every start does, below.
 
 **Starts.** Every process start already funnels through `Spawner.suppressed` (`runner/lifecycle/spawn.py:219`), and
-`tests/test_spawn_suppressed_registry.py` holds every start site to calling it. `suppressed` gains a required keyword,
-`start`, a `StartKind` of `STEP`, `CONTINUATION`, or `ESCALATION`, and asks the gate after the brakes and the chunk's
-own pause have said nothing:
+`tests/guards/test_spawn_suppressed_registry.py` holds every start site to calling it. `suppressed` gains a required
+keyword, `start`, a `StartKind` of `STEP`, `CONTINUATION`, or `ESCALATION`, and asks the gate after the brakes and the
+chunk's own pause have said nothing:
 
 - `STEP` — `Spawner.spawn` (`:267`), the funnel every fresh lease passes through: a claim's first entry, a next node
   entered from an apply response or from FILL's adopt arm, a retry's requeue (`runner/lifecycle/attempt.py:206`), and a

@@ -6,12 +6,13 @@ package, the shared hubs, the isolation levels, and the clients it ports onto ar
 below.
 
 It builds on the hub's service tests as they run today. About sixty-five tests in `tests/service/` drive a hub
-subprocess over HTTP, each starting its own through `tests/fleet_launchers.py`'s `run_hub` beside a mock forge, and most
-of them a mock runner too. Eleven more drive a hub with authentication on, through launchers of their own and the stub
-IdP, and give it its people by writing invitation rows into its store with `tests/support.py`'s `seed_invitation`.
-Hub-wide settings ride `run_hub`'s keyword arguments: `route_token_mode`, `produces_mode`, `annotate` and
-`annotation_interval_seconds`, `extra_env`. The event-stream tests read through `tests/service/support.py`'s `sse_tap`,
-which drains the connect-time replay for a fixed `settle`, and `SseTap.collect`, which holds a fixed `window` open.
+subprocess over HTTP, each starting its own through `tests/support/fleet_launchers.py`'s `run_hub` beside a mock forge,
+and most of them a mock runner too. Eleven more drive a hub with authentication on, through launchers of their own and
+the stub IdP, and give it its people by writing invitation rows into its store with `tests/support/scaffolding.py`'s
+`seed_invitation`. Hub-wide settings ride `run_hub`'s keyword arguments: `route_token_mode`, `produces_mode`, `annotate`
+and `annotation_interval_seconds`, `extra_env`. The event-stream tests read through `tests/service/support.py`'s
+`sse_tap`, which drains the connect-time replay for a fixed `settle`, and `SseTap.collect`, which holds a fixed `window`
+open.
 
 Paths are relative to the `blizzard` repo root unless a leaf says otherwise. The epic reaches `blizzard-mock`, whose
 stub IdP learns keyed sign-in ([surfaces.md](./surfaces.md#keyed-sign-in)), and `blizzard-context`, whose citations of

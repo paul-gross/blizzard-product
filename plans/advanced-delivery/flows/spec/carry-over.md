@@ -12,9 +12,9 @@ slot's table, which they leave deprecated, is dropped by a cleanup after it
 Two manual migrations (`bzh:manual-migrations`) under `hub/store/migrations/versions/`, the first revised after the
 forges epic's — the chain head when it merges — and the second after whatever heads the chain when the cleanup merges,
 each frozen once it merges (`bzh:frozen-revisions`), inside the portable surface (`bzh:sql-portable`), proven on
-Postgres as on SQLite (`tests/test_store_migrations.py`) with a colocated test of its own
+Postgres as on SQLite (`tests/unit/foundation/store/test_migrations.py`) with a colocated test of its own
 (`bzh:colocated-migration-tests`), and with every constraint and index name inside Postgres's 63 characters
-(`tests/test_migration_identifier_length.py`).
+(`tests/unit/test_migration_identifier_length.py`).
 
 1. **The first, with the record.** It creates `flows`, `flow_submissions`, `flow_submission_flows`,
    `flow_submission_closures`, `hub_turns`, and `flow_facts`, with their indexes ([record.md](./record.md)). It writes
@@ -107,16 +107,19 @@ hub node when the release is installed lands only once someone resumes it.
 ## Tests
 
 The tests written against the slot follow it out across the second and third chunks. In the second, which stops
-acquiring it, `tests/test_hub_command_node.py`, `tests/test_chunk_stop.py`, `tests/test_chunk_complete.py`,
-`tests/test_attempt_coherence.py`, `tests/test_hub_store_seam.py`, and `tests/test_hub_wide_jobs_across_tenants.py`
-assert turns and withdrawals where they asserted the slot's acquisition and release; `tests/trace_fixtures.py`,
-`tests/test_trace_assembly.py`, `tests/test_trace_contract.py`, and `tests/test_hub_platform_tracing.py` build turns
-where they built slot rows, keeping one case of a slot row from before the turns; and `tests/crash/test_kill9_sweep.py`
-gains the `flow.` family and loses `hubnode.after-poll.before-slot-release`. In the third, which retires the slot's
-code, `tests/test_hub_exec_slot_tenancy.py` and `tests/test_chunk_artifact_order_and_hub_exec_slot_store.py` lose their
-slot cases, whose flow equivalents are the store tests of `flow_store`; `tests/test_pin_foundation.py` pins the flow
-invariants in place of `OneLiveExecSlot`; and `tests/store_scan_allowlist.py` loses the slot's scans and
-`tests/store_read_census.py` its slot recipes. The census gains a recipe per `IReadFlows` method in the first.
+acquiring it, `tests/component/hub/test_command_node.py`, `tests/component/hub/api/test_chunks_stop.py`,
+`tests/component/hub/api/test_chunks_complete.py`, `tests/component/hub/api/test_fleet_attempt_coherence.py`,
+`tests/unit/hub/store/test_errors_seam.py`, and `tests/component/hub/test_wide_jobs_across_tenants.py` assert turns and
+withdrawals where they asserted the slot's acquisition and release; `tests/support/trace_fixtures.py`,
+`tests/unit/hub/domain/observability/tracing/test_assembly.py`, `tests/guards/test_trace_contract.py`, and
+`tests/component/hub/test_app_platform_tracing.py` build turns where they built slot rows, keeping one case of a slot
+row from before the turns; and `tests/crash/test_kill9_sweep.py` gains the `flow.` family and loses
+`hubnode.after-poll.before-slot-release`. In the third, which retires the slot's code,
+`tests/test_hub_exec_slot_tenancy.py` and `tests/unit/hub/store/internal/test_chunk_artifacts_store_order.py` lose their
+slot cases, whose flow equivalents are the store tests of `flow_store`; `tests/component/test_pin_foundation.py` pins
+the flow invariants in place of `OneLiveExecSlot`; and `tests/support/store_scan_allowlist.py` loses the slot's scans
+and `tests/support/store_read_census.py` its slot recipes. The census gains a recipe per `IReadFlows` method in the
+first.
 
 The end-to-end and crash tiers need one more test action than the actions epic ships. **`test.block`**, with required
 argument `seconds`, blocks the `ActionLoop`'s thread in synchronous code for that long and then answers `success`; it

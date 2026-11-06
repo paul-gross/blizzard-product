@@ -37,13 +37,13 @@ A port deletes the file it moves, so whatever a file that outlives it imports fr
 service file not yet ported, moves to a support module in a change of its own, before any port. With every shared helper
 out of the ported files, no port waits on another, and the ports land in any order:
 
-| Helper                                                                                    | Imported by                                                                                                    | Moves to                                      |
-| ----------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------- | --------------------------------------------- |
-| `invite`, in `test_auth_login_service.py`                                                 | `tests/e2e/test_login_session_e2e.py`, `test_cli_login`, `test_event_stream_revocation`, `test_idp_federation` | `tests/support.py`, beside `seed_invitation`  |
-| `_oauth_hub` and `_SECRET_ENV`, in `test_auth_login_service.py`                           | `test_cli_login`, `test_event_stream_revocation`, `test_idp_federation`                                        | `tests/service/support.py`, beside `stub_idp` |
-| `_graph_yaml`, in `test_hub_service.py`                                                   | `tests/e2e/test_event_log_e2e.py`, `test_event_log`                                                            | `tests/support.py`, as `graph_yaml`           |
-| `_stack` and `_ingest`, in `test_hub_service.py`                                          | `test_event_log`, `test_runner_served_projects`, `test_runner_declining`, `test_runner_auth`                   | `tests/service/support.py`                    |
-| `Garden`, `garden_stack`, `deliver`, `seed`, `add_op`, in `test_finding_exits_service.py` | `test_routine_baselines`                                                                                       | `tests/service/support.py`                    |
+| Helper                                                                                    | Imported by                                                                                                    | Moves to                                                 |
+| ----------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------- | -------------------------------------------------------- |
+| `invite`, in `test_auth_login_service.py`                                                 | `tests/e2e/test_login_session_e2e.py`, `test_cli_login`, `test_event_stream_revocation`, `test_idp_federation` | `tests/support/scaffolding.py`, beside `seed_invitation` |
+| `_oauth_hub` and `_SECRET_ENV`, in `test_auth_login_service.py`                           | `test_cli_login`, `test_event_stream_revocation`, `test_idp_federation`                                        | `tests/service/support.py`, beside `stub_idp`            |
+| `_graph_yaml`, in `test_hub_service.py`                                                   | `tests/e2e/test_event_log_e2e.py`, `test_event_log`                                                            | `tests/support/scaffolding.py`, as `graph_yaml`          |
+| `_stack` and `_ingest`, in `test_hub_service.py`                                          | `test_event_log`, `test_runner_served_projects`, `test_runner_declining`, `test_runner_auth`                   | `tests/service/support.py`                               |
+| `Garden`, `garden_stack`, `deliver`, `seed`, `add_op`, in `test_finding_exits_service.py` | `test_routine_baselines`                                                                                       | `tests/service/support.py`                               |
 
 The service files in the second column are named without their `_service.py` suffix. `blizzard-context`'s
 `e2e-scenarios/auth.md` cites `invite` in its old home, and the citation moves with it.
@@ -64,5 +64,6 @@ change: a citation of a deleted file fails it.
 ## Done
 
 Every file in [roster.md](./roster.md)'s *What moves* runs in `tests/service/hub/` under the profile and level it was
-placed at, the files in *What stays in Python* still run in the pytest half, `tests/test_tenant_teardown.py` runs in the
-component tier, and the tier's CI time before and after is recorded in the plan.
+placed at, the files in *What stays in Python* still run in the pytest half,
+`tests/component/hub/domain/tenancy/test_teardown.py` runs in the component tier, and the tier's CI time before and
+after is recorded in the plan.

@@ -106,12 +106,12 @@ directory again on the same port. The SIGTERM test and the tracing tests' flush 
 
 ## The OTLP sink
 
-`harness/otlp-sink.ts` is an OTLP/HTTP receiver on a port of its own, accepting what `tests/otlp_sink.py` accepts today
-and recording each export's spans with their attributes, their scope's name, and their resource's attributes.
-`otlpSink()`, a factory fixture, starts one for the test and returns its endpoint and its spans, which the test reads
-once the hub has stopped and flushed. The hub file has no key for an OTLP endpoint, since the exporter reads it from the
-environment, so a `fresh-hub` test names the endpoint in its `hubEnv` as `OTEL_EXPORTER_OTLP_ENDPOINT`, and its
-`hubConfig` only turns tracing on.
+`harness/otlp-sink.ts` is an OTLP/HTTP receiver on a port of its own, accepting what `tests/support/otlp_sink.py`
+accepts today and recording each export's spans with their attributes, their scope's name, and their resource's
+attributes. `otlpSink()`, a factory fixture, starts one for the test and returns its endpoint and its spans, which the
+test reads once the hub has stopped and flushed. The hub file has no key for an OTLP endpoint, since the exporter reads
+it from the environment, so a `fresh-hub` test names the endpoint in its `hubEnv` as `OTEL_EXPORTER_OTLP_ENDPOINT`, and
+its `hubConfig` only turns tracing on.
 
 ## The mock runner's client
 

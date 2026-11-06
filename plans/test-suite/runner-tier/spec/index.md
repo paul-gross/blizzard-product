@@ -11,10 +11,10 @@ calls `tick` (`src/blizzard/runner/loop/tick.py`) every `BZ_RUNNER_TICK_SECONDS`
 `HostTick` on its own timer, while serving the local API from `build_hosted_app` (`src/blizzard/runner/app.py`) over TCP
 and `host.sock`. `blizzard-runner tick` runs one pass under the same lock and serves no API, so it is refused while a
 host runs. The runner's service tests mostly bypass both: they build a `RunnerConfig` in memory with
-`dataclasses.replace` (`tests/fleet_launchers.py`'s `runner_config`), step it with `LoopWiring.tick_once`, serve
+`dataclasses.replace` (`tests/support/fleet_launchers.py`'s `runner_config`), step it with `LoopWiring.tick_once`, serve
 `build_hosted_app` on a thread (`runner_api`), and read the store through `SqlAlchemyRunnerStore`, `daemon_store`, or
-`reflect`. About thirty start a host as a process but lay out its directory through `tests/host_files.py` and
-`tests/runner_join.py`.
+`reflect`. About thirty start a host as a process but lay out its directory through `tests/support/host_files.py` and
+`tests/support/runner_join.py`.
 
 Paths are relative to the `blizzard` repo root unless a leaf says otherwise. The epic reaches `blizzard-context`, whose
 citations move with each test, and which gains the stepping host where the runner's architecture is stated

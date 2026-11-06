@@ -104,8 +104,8 @@ workshop's reach, not the library's.
 `styles` in `angular.json`: `@angular/cdk/overlay-prebuilt.css`, `fleet`'s `core/design/tokens.css` and
 `core/design/scrollbars.css`, and `projects/hub/src/styles.css`. The hub's own sheet carries the board's body
 background, text color, and monospace face, so a part sits on the surface it sits on in the board.
-`tests/test_web_workshop.py` pins the two lists equal, read from `angular.json` and from `preview.ts`'s CSS imports, so
-a sheet added to the board cannot go missing from the workshop. Storybook's backgrounds control is disabled
+`tests/guards/test_web_workshop.py` pins the two lists equal, read from `angular.json` and from `preview.ts`'s CSS
+imports, so a sheet added to the board cannot go missing from the workshop. Storybook's backgrounds control is disabled
 (`parameters.backgrounds.disable: true`), since the board has one theme and one surface.
 
 **The application providers.** `preview.ts` applies one `applicationConfig` decorator to every story:

@@ -40,8 +40,8 @@ blizzard @ https://github.com/paul-gross/blizzard/releases/download/v<version>/b
 
 `--locked` fails the export when `uv.lock` disagrees with `pyproject.toml`, so a release never ships a set the gate did
 not run. `--no-project` leaves the last line off, for a build that installs the wheel from its own context. The script
-is unit-tested beside `tests/test_image_tags.py`, and the release job runs it right after the wheel is built, before
-anything is pushed.
+is unit-tested beside `tests/guards/test_image_tags.py`, and the release job runs it right after the wheel is built,
+before anything is pushed.
 
 The requirements file is the chain of trust an install hangs from: its own attestation vouches for it
 ([attestation.md](./attestation.md)), and it carries the hash of every package an install will fetch, the wheel
@@ -76,7 +76,7 @@ provenance attestation like every other attached file, and travels in the same w
 in the one `gh release create` call, before immutable releases lock the page. Its shape, and what it records, are
 `epic:release-engineering/compat-floor`'s; this epic only carries it.
 
-Each job holds only its own scopes, and the workflow level stays `contents: read`. `tests/test_release_workflow.py`
-learns the new shape: each job's scopes exactly as tabled, the image signed and attested after its push and before
-`publish`, `verify` after `publish`, and no job but `publish` holding `contents: write`. Every third-party action the
-new jobs use is pinned by commit SHA.
+Each job holds only its own scopes, and the workflow level stays `contents: read`.
+`tests/guards/test_release_workflow.py` learns the new shape: each job's scopes exactly as tabled, the image signed and
+attested after its push and before `publish`, `verify` after `publish`, and no job but `publish` holding
+`contents: write`. Every third-party action the new jobs use is pinned by commit SHA.

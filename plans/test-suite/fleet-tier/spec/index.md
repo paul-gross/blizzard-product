@@ -9,10 +9,10 @@ Implementation enters at the concern below.
 
 It builds on the e2e tier as it runs today. `mise run e2e` runs `BLIZZARD_E2E=1 uv run pytest tests/e2e/`, serially,
 after `web-build` fills `src/blizzard/static/`, with a pinned `otelcol-contrib` on `PATH` for the fleet-trace subtests.
-Its 38 files hold 84 cases. Most start a forge and a hub through `tests/fleet_launchers.py`, tick the runner in-process
-with `drive_until_done` or a file's own `_tick_until` or `_drive_until`, and serve the runner's API with `runner_api`;
-three start a real `blizzard-runner host`. Thirteen drive a browser through Python Playwright. The upper tiers' `e2e`
-job in `.github/workflows/upper-tiers.yml` runs it under `full_suite`, as the required check
+Its 38 files hold 84 cases. Most start a forge and a hub through `tests/support/fleet_launchers.py`, tick the runner
+in-process with `drive_until_done` or a file's own `_tick_until` or `_drive_until`, and serve the runner's API with
+`runner_api`; three start a real `blizzard-runner host`. Thirteen drive a browser through Python Playwright. The upper
+tiers' `e2e` job in `.github/workflows/upper-tiers.yml` runs it under `full_suite`, as the required check
 `upper-tiers / e2e acceptance loop (blizzard:e2e)`.
 
 Paths are relative to the `blizzard` repo root unless a leaf says otherwise. The epic leaves `blizzard-mock` unchanged,

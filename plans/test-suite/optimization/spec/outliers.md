@@ -2,11 +2,11 @@
 
 ## Measure first
 
-The plan's figures for `tests/test_runner_harness_opencode_diagnostic.py`, about 164 seconds of CPU, one 35-second test,
-and some thirty at four to five seconds, do not match the file as it stands: it holds twenty test functions, twenty-four
-items with one parametrized five ways, and its subprocess tests carry bounds of five seconds and fixed sleeps of at most
-0.7. The cost is either in what the tests start, the pty fork, the Landlock probe, the six megabytes each pipe drains,
-the `CompatibilityDiagnostic` runs, or in a recent change that already cut it.
+The plan's figures for `tests/component/runner/harness/opencode/compatibility/test_diagnostic.py`, about 164 seconds of
+CPU, one 35-second test, and some thirty at four to five seconds, do not match the file as it stands: it holds twenty
+test functions, twenty-four items with one parametrized five ways, and its subprocess tests carry bounds of five seconds
+and fixed sleeps of at most 0.7. The cost is either in what the tests start, the pty fork, the Landlock probe, the six
+megabytes each pipe drains, the `CompatibilityDiagnostic` runs, or in a recent change that already cut it.
 
 So the work opens with a measurement on the CI shape: the unit and component tiers run once on an `ubuntu-latest` runner
 with `--durations=0`, through a `workflow_dispatch` input on `gate.yml` that adds the flag, and the slowest fifty items

@@ -95,20 +95,20 @@ only `artifact`: a catalogue in any higher package would be an upward import the
 level, under `TYPE_CHECKING`, or inside a function. `graph/actions.py` imports nothing outside `graph` and the standard
 library. The executor reads the same catalogue to know what a visit must be handed, and neither reaches `hub/delivery/`,
 which the walker also forbids. The implementations live in `hub/delivery/actions/`, one per catalogue entry, keyed by
-name; `tests/test_hub_actions.py` asserts the two sets are the same. The catalogue is a value handed to validation and
-to the executor at composition, never a module-level global either reads, so a test can hand both a catalogue of its own
-([Testing hub nodes](#testing-hub-nodes)). `Validator.of(doc)` becomes `Validator.of(doc, catalogue)`, and the test
-modules that call it directly pass `tests/support.py`'s `TEST_CATALOGUE`, the shipped catalogue with the two test
-actions added.
+name; `tests/unit/hub/delivery/test_action_registry.py` asserts the two sets are the same. The catalogue is a value
+handed to validation and to the executor at composition, never a module-level global either reads, so a test can hand
+both a catalogue of its own ([Testing hub nodes](#testing-hub-nodes)). `Validator.of(doc)` becomes
+`Validator.of(doc, catalogue)`, and the test modules that call it directly pass `tests/support/scaffolding.py`'s
+`TEST_CATALOGUE`, the shipped catalogue with the two test actions added.
 
 ## The domain package
 
 `hub/domain/actions/` is a concept package of its own, and `bzh:domain-package-layers` gains its row: `actions` at L3,
 importing `chunk`, `graph`, `artifact`, `config`, and `projects`, beside `kernel`. `blizzard-context`'s table in
-`architecture/clean-architecture.md` and `_DOMAIN_PACKAGE_LAYERS` (`tests/test_layering.py`) gain it together, since the
-layer walker fails a module that sits in no declared package. Nothing below L3 imports it — graph validation reads the
-catalogue in `graph`, not this package — and `execution` does not need to: the executor reaches it from `hub/delivery/`,
-an edge.
+`architecture/clean-architecture.md` and `_DOMAIN_PACKAGE_LAYERS` (`tests/guards/test_layering.py`) gain it together,
+since the layer walker fails a module that sits in no declared package. Nothing below L3 imports it — graph validation
+reads the catalogue in `graph`, not this package — and `execution` does not need to: the executor reaches it from
+`hub/delivery/`, an edge.
 
 The package holds `visit.py` and `effects.py`. Three types `hub/delivery/hub_node.py` defines today move into
 `visit.py`, since a `Visit` carries them and the domain may not import the delivery edge: `GitCommits`, whose `rows`
@@ -207,8 +207,8 @@ An action is pure of the hub's data: it reads only what it is handed, and writes
 an action that needs more is to declare it as an input, read by the executor into the `Visit`, never to reach for it
 inside the pass. Three gates hold it:
 
-- **An import allowlist.** `tests/test_layering.py` gains `test_hub_actions_import_only_their_allowlist`, which reuses
-  the walker the file already has (`_imported_modules`), checking against an allowlist rather than `_violations`'
+- **An import allowlist.** `tests/guards/test_layering.py` gains `test_hub_actions_import_only_their_allowlist`, which
+  reuses the walker the file already has (`_imported_modules`), checking against an allowlist rather than `_violations`'
   forbidden prefixes, so an import nobody thought to forbid fails as surely as one somebody did. Every module under
   `hub/delivery/actions/` imports only what the allowlist names:
   - From the standard library, `__future__`, `abc`, `asyncio`, `base64`, `collections`, `collections.abc`, `contextlib`,
@@ -238,10 +238,10 @@ inside the pass. Three gates hold it:
   `VisitForges`, and adds `blizzard.hub.domain.config.capabilities`; the `policies` epic adds
   `blizzard.hub.domain.config.landing_policies`; the `trains` epic widens the walk to `hub/delivery/trains/`. The GitHub
   client sits outside `hub/delivery/actions/` for the same reason: the allowlist admits no HTTP library.
-- **Frozen inputs.** `tests/test_hub_actions.py` builds a `Visit` from a fixture visit that exercises every field and
-  walks its runtime values recursively, failing on any `list`, `dict`, `set`, `bytearray`, or dataclass instance that is
-  not frozen; a mapping passes only as a `types.MappingProxyType` over immutable values. It reads values, never
-  annotations, since an annotation of `Mapping` says nothing about the `dict` behind it.
+- **Frozen inputs.** `tests/unit/hub/delivery/test_action_registry.py` builds a `Visit` from a fixture visit that
+  exercises every field and walks its runtime values recursively, failing on any `list`, `dict`, `set`, `bytearray`, or
+  dataclass instance that is not frozen; a mapping passes only as a `types.MappingProxyType` over immutable values. It
+  reads values, never annotations, since an annotation of `Mapping` says nothing about the `dict` behind it.
 - **Nothing smuggled in.** The same test constructs every action in `hub/delivery/actions/` with no arguments, so no
   collaborator can arrive through a constructor.
 

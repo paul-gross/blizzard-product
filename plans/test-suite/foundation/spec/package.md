@@ -26,7 +26,7 @@ tests/
 ├── package.json · package-lock.json · tsconfig.json · eslint.config.mjs
 ├── playwright.config.ts          projects derived from service/hub/ and its profile subfolders
 ├── openapi-ts.config.ts
-├── daemon-env.json               read by harness/env.ts and by tests/suite_plugin.py
+├── daemon-env.json               read by harness/env.ts and by tests/support/suite_plugin.py
 ├── harness/
 │   ├── fixtures.ts               ◀ the only module a spec imports: test, expect
 │   ├── tenancy.ts                level, tenant, project, and the hub a test reaches
@@ -171,10 +171,10 @@ overridable on the command line.
 
 The daemons run as the installed binaries an operator runs: `blizzard-hub` from `.venv/bin/` after `uv sync`, and the
 mock fleet's `blizzard-mock-forge`, `blizzard-mock-idp`, and `blizzard-mock-runner` from the sibling
-`../blizzard-mock/.venv/bin/`, the directory `tests/fleet_launchers.py`'s `mock_bin_dir` already resolves. Either
-directory can be overridden, by `BLIZZARD_BIN_DIR` and `BLIZZARD_MOCK_BIN_DIR`. A missing binary fails the setup project
-with the message the pytest suite skips with, naming `winter provision <env>`. The tier never skips, since a skipped
-service tier reads as a green one.
+`../blizzard-mock/.venv/bin/`, the directory `tests/support/fleet_launchers.py`'s `mock_bin_dir` already resolves.
+Either directory can be overridden, by `BLIZZARD_BIN_DIR` and `BLIZZARD_MOCK_BIN_DIR`. A missing binary fails the setup
+project with the message the pytest suite skips with, naming `winter provision <env>`. The tier never skips, since a
+skipped service tier reads as a green one.
 
 Node is the version `mise.toml` pins, made exact by this epic (`node = "22.<minor>.<patch>"` in place of `"22"`, at
 22.13 or later, the first 22 release to load `node:sqlite` without a flag, which the runner tier's store tests use), and
@@ -201,8 +201,8 @@ skip what the npm package adds:
 - **pytest** already skips `node_modules` through its default `norecursedirs`, and `pyproject.toml` writes the list out
   explicitly with `node_modules` in it, so a later edit to the setting cannot drop it silently.
 - **pyright**'s `exclude` gains `tests/node_modules`.
-- **The repo-read guard** behind `tests/repo_files.py`'s `audited_roots` exempts `tests/node_modules` and `tests/.run`,
-  as it exempts `.venv`.
+- **The repo-read guard** behind `tests/support/repo_files.py`'s `audited_roots` exempts `tests/node_modules` and
+  `tests/.run`, as it exempts `.venv`.
 - **dprint** excludes `tests/node_modules`, `tests/harness/client/wire`, and `tests/package-lock.json`.
 
 The pytest half of the tier keeps its files in `tests/service/` beside the `hub/` folder, and its runs are unchanged.

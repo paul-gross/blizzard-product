@@ -71,7 +71,7 @@ nothing: `push.yml` stays `master`'s, and `edge` and the dev wheel never come fr
 read from the repository's tags, and moves `latest` only when the version being published is the highest stable version
 there is. Every stable release and patch publishes its exact version and moves its own `X.Y` line; a patch on an old
 major's line never moves `latest`. The GitHub Release follows the same rule, created with `--latest=false` unless it is
-the highest stable version. `tests/test_image_tags.py` covers the old-line case beside the cases it holds today.
+the highest stable version. `tests/guards/test_image_tags.py` covers the old-line case beside the cases it holds today.
 
 A line publishes its patches the way it published its first release. A release branch cut before
 `epic:release-engineering/supply-chain`'s signing lands keeps publishing unsigned patches for as long as it is

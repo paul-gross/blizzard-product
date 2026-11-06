@@ -28,7 +28,7 @@ Paths are relative to `blizzard/src/blizzard/`.
 
 The epic reaches beyond `blizzard`'s source. In `blizzard-context`:
 
-- `architecture/clean-architecture.md`'s `bzh:domain-package-layers` table, and `tests/test_layering.py`'s
+- `architecture/clean-architecture.md`'s `bzh:domain-package-layers` table, and `tests/guards/test_layering.py`'s
   `_DOMAIN_PACKAGE_LAYERS` with it, gain a `delivery` row for `hub/domain/delivery/` at L4, importing `actions`,
   `chunk`, `graph`, `config`, and `artifact`. It is a domain package, distinct from the `hub/delivery/` edge beside the
   domain, which the layer walker tells apart by comparing whole path segments.

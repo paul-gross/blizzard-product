@@ -37,11 +37,11 @@ new coverage, all additive. A timed host, the default, behaves as it does today.
 
 When the last port has landed, `tests/service/` holds only the pytest half's files and `support.py`. What other tiers
 borrow from `support.py`, `stub_idp`, `require_stub_idp`, `mock_runner`, and `poll_until`, used by `tests/e2e/`, moves
-to `tests/mock_fleet_support.py`, a support module of its own outside `tests/service/`, and its importers are re-pointed
+to `tests/support/mock_fleet.py`, a support module of its own outside `tests/service/`, and its importers are re-pointed
 in the same change. `sse_tap` and `SseTap` are deleted once nothing uses them. The modules e2e and the crash sweep
-already borrow from outside `tests/service/`, `tests/fleet_launchers.py`, `tests/runner_join.py`,
-`tests/runner_fakes.py`, `tests/host_files.py`, and `tests/crash/support.py`, are already support modules and stay as
-they are.
+already borrow from outside `tests/service/`, `tests/support/fleet_launchers.py`, `tests/support/runner_join.py`,
+`tests/support/runner_fakes.py`, `tests/support/host_files.py`, and `tests/crash/support.py`, are already support
+modules and stay as they are.
 
 ## Citations and the rulebook
 

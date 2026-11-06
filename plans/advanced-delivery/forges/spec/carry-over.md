@@ -7,10 +7,10 @@ for it, in one migration and with nothing reconfigured by hand.
 
 One manual migration (`bzh:manual-migrations`) under `hub/store/migrations/versions/`, frozen once released
 (`bzh:frozen-revisions`) and inside the portable surface (`bzh:sql-portable`), proven on Postgres as on SQLite
-(`tests/test_store_migrations.py`) with every constraint and index name inside Postgres's 63 characters
-(`tests/test_migration_identifier_length.py`), and tested beside its revision (`bzh:colocated-migration-tests`). Its
-`down_revision` is the chain's head when it merges — after the actions epic's revision, since that epic lands first —
-and it is re-chained if another revision lands first, as the identity and host revisions were. It follows the identity
+(`tests/unit/foundation/store/test_migrations.py`) with every constraint and index name inside Postgres's 63 characters
+(`tests/unit/test_migration_identifier_length.py`), and tested beside its revision (`bzh:colocated-migration-tests`).
+Its `down_revision` is the chain's head when it merges — after the actions epic's revision, since that epic lands first
+— and it is re-chained if another revision lands first, as the identity and host revisions were. It follows the identity
 revisions' shape: every step inspects first and skips what a stopped run already did, so a migration that dies midway is
 finished by running it again. Within every tenant it:
 

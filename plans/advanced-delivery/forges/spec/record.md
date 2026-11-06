@@ -90,13 +90,13 @@ A forge's row is locked as a secret's is. `lock_forge_row(conn, forge_id)` in th
 `lock_secret_row` (`hub/store/internal/secret_store.py`), is the first statement after the scoped write's tenant-row
 lock in a forge's retire and enable and in every repository or work-source write that names a forge, so a retire and an
 enable racing on one forge wait for each other's commit rather than leaving an enabled record on a retired forge;
-`tests/test_forge_row_lock.py` proves it as `tests/test_secret_row_lock.py` proves the secret's. `IWriteForgeRepository`
-joins `_CONFIGURED_WRITE_NAMES` and `hub/domain/config/forges.py` joins `_CONFIGURED_WRITE_HOMES`
-(`tests/test_layering.py`), so only the authoring service writes a forge, as only it writes the other configured
-records. The forge's effective web origin — its own `web_base`, else the derived one — now serves every record that
-names it. Today a repository's branch links always derive from its `forge_api_url`, while a work source on the same
-server may declare a `web_base` of its own; once both name one forge, a `web_base` set on that forge moves the
-repository's branch links with it.
+`tests/unit/hub/store/test_forge_row_lock.py` proves it as `tests/unit/hub/store/test_secret_row_lock.py` proves the
+secret's. `IWriteForgeRepository` joins `_CONFIGURED_WRITE_NAMES` and `hub/domain/config/forges.py` joins
+`_CONFIGURED_WRITE_HOMES` (`tests/guards/test_layering.py`), so only the authoring service writes a forge, as only it
+writes the other configured records. The forge's effective web origin — its own `web_base`, else the derived one — now
+serves every record that names it. Today a repository's branch links always derive from its `forge_api_url`, while a
+work source on the same server may declare a `web_base` of its own; once both name one forge, a `web_base` set on that
+forge moves the repository's branch links with it.
 
 A forge is resolved at every boundary through the shared kernel every slugged kind uses
 (`hub/domain/kernel/id_or_slug.py::resolve`): a `frg_<ulid>` value by id, otherwise a current slug, otherwise a former

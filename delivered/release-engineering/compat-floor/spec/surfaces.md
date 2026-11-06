@@ -30,7 +30,7 @@ wire finding is also an API finding; the tool reports it once, under the wire.
 
 A wire deprecation carries a promise the classifier cannot see from the hub's document alone: the runner of the release
 that deprecates an operation or field no longer calls or sends it, so a runner at the floor never depends on what the
-floor deprecated. `tests/test_runner_hub_client_deprecations.py` drives every `HttpHubClient` method
+floor deprecated. `tests/component/runner/hub/test_client_deprecations.py` drives every `HttpHubClient` method
 (`src/blizzard/runner/hub/internal/http_hub.py`) through a recording transport and fails when one reaches an operation,
 or sends or reads a field, that the tree's own `hub.openapi.json` marks deprecated. FastAPI emits the operation mark
 from `deprecated=True` on the route and Pydantic the property mark from `Field(deprecated=...)`.

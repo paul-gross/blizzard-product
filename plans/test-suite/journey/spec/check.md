@@ -13,16 +13,17 @@ Neither half may build its own collaborators where it lands. The runner's half b
 `HubStoreConnections`. So each half takes its connections and its process probe injected, and the composition roots wire
 them: `blizzard.tools.invariants`, which stays a composition root keeping `Invariants` and its signature, the hub's
 composition, and the runner's app. The direct callers of `RunnerInvariants(engine)` and `HubInvariants(engine)` are
-rewired in the same change to build through `blizzard.tools.invariants`: `tests/test_invariant_checker.py`,
-`tests/runner_fakes.py`, `tests/runner_ingest_support.py`, `tests/test_pin_foundation.py`,
-`tests/test_chunk_restart.py`, `tests/test_complete_claim_race.py`, `tests/test_hub_action_missing.py`, the crash
-sweep's modules, and the store migration tests under `src/blizzard/hub/store/migrations/tests/` and
-`src/blizzard/runner/store/migrations/tests/`. Their assertions do not change, and the split changes no check.
+rewired in the same change to build through `blizzard.tools.invariants`: `tests/component/tools/test_invariants.py`,
+`tests/support/runner_fakes.py`, `tests/support/runner_ingest.py`, `tests/component/test_pin_foundation.py`,
+`tests/component/hub/api/test_chunks_restart.py`, `tests/component/hub/api/test_complete_claim_race.py`,
+`tests/component/hub/api/test_action_missing.py`, the crash sweep's modules, and the store migration tests under
+`src/blizzard/hub/store/migrations/tests/` and `src/blizzard/runner/store/migrations/tests/`. Their assertions do not
+change, and the split changes no check.
 
 Serving the hub's half from a route adds a cross-tenant read outside the closed seam `bzh:hub-scoped-reads-confined`
 names in blizzard-context's `architecture/system-shape/tenancy.md`. The split's change amends that rule to name the
 invariant audit as its one exception, an admin-only read every check of which is a `SELECT`, and moves the hub-scoped
-exemption's allowance in `tests/test_layering.py`, with the ast-grep ignores the rule carries, to the hub's half.
+exemption's allowance in `tests/guards/test_layering.py`, with the ast-grep ignores the rule carries, to the hub's half.
 
 ## Two routes
 

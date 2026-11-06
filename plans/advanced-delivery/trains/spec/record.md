@@ -92,7 +92,7 @@ one-element `members` the flows epic gives it and no `batch_id`.
 
 `EventLogKind` and `EVENT_LOG_SEVERITY` (`foundation/event_log.py`) gain `train-unproven` (warning), `train-outpaced`
 (warning), `train-advance-refused` (critical), `train-proof-timed-out` (warning), `train-held` (warning),
-`train-released` (info), and `forge-capability-fallback` (warning); `tests/event_log_kind_census.py` and
+`train-released` (info), and `forge-capability-fallback` (warning); `tests/support/event_log_kind_census.py` and
 `blizzard-context:/domain/operations.md` gain each.
 
 `EscalationCause` (`foundation/escalation_causes.py`) gains `FORGE_QUEUE_REMOVED`, for a change a person took out of a

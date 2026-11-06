@@ -5,7 +5,7 @@ fixed waits outside the service tier that this epic owns are three, in two files
 event it stood for. E2E's tick spacing, its `poll_until` intervals, and its termination allowance move with their
 scenarios under `epic:test-suite/fleet-tier`, and the crash sweep's are untouched.
 
-## `tests/test_cli.py`
+## `tests/unit/cli/test_cli.py`
 
 `_serve_on` stands up a fake runner daemon on a Unix socket, and when its reply is `None` it holds the connection with
 `time.sleep(LOCAL_CLIENT_TIMEOUT * 3)`, a daemon that accepts and never answers. That sleep runs on a daemon thread and
@@ -19,7 +19,7 @@ of the production constant is asserted where it is defined, if anywhere, not by 
 daemon's hold becomes an `Event` the fixture sets on teardown, so the thread ends with the test rather than fifteen
 seconds later.
 
-## `tests/test_runner_harness_opencode_diagnostic.py`
+## `tests/component/runner/harness/opencode/compatibility/test_diagnostic.py`
 
 `test_timeout_kills_and_reaps_an_opencode_descendant` and
 `test_successful_run_rejects_and_reaps_a_pipe_closing_descendant` each start a launcher whose descendant sleeps half a

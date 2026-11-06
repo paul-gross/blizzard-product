@@ -63,8 +63,8 @@ request's own job, and a break that bypassed it is caught at the next push and a
 `wire-compat-deployed` job is removed, and `dev-image` stops waiting on it; with the rehearsal in place it needs
 `[gate, upper-tiers, dev-build, rehearsal]` ([rehearsal.md](./rehearsal.md)), so `edge` advances on proven commits
 alone. `mise run wire-compat` becomes `mise run compat`; `tests/test_wire_compat.py`'s history and baseline cases go,
-and its classification cases move to `tests/test_compat_wire.py`. `tests/test_push_workflow.py` pins the new `dev-image`
-needs.
+and its classification cases move to `tests/unit/tools/compat/surfaces/test_wire.py`.
+`tests/guards/test_push_workflow.py` pins the new `dev-image` needs.
 
 An unacknowledged break that reaches `master` is repaired as today: a following commit reverts it, since the job
 compares the net tree with the releases and not each step.

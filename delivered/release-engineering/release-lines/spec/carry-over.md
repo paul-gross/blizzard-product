@@ -18,9 +18,9 @@ it need it.
 1. **What the first cut needs**, landed before `epic:release-engineering/first-release` cuts it: `check-version-tag.sh`
    comparing the tag with its `-rc.K` suffix removed, `pyproject.toml` naming the last cut and moving only in a cut
    commit ([train.md](./train.md) §Versions on `master` and on a branch, §The cut commit), and `push.yml`'s dev version
-   naming the next minor. Each is covered beside today's tests (`tests/test_check_version_tag.py`,
-   `tests/test_release_workflow.py`, `tests/test_push_workflow.py`). The first cut is then a cut commit on `master` and
-   a candidate tag there, with no branch yet.
+   naming the next minor. Each is covered beside today's tests (`tests/guards/test_check_version_tag.py`,
+   `tests/guards/test_release_workflow.py`, `tests/guards/test_push_workflow.py`). The first cut is then a cut commit on
+   `master` and a candidate tag there, with no branch yet.
 2. **The refusal of an older store** ([fold.md](./fold.md) §Turning an older store away), at any point: no tree declares
    `ABSORBED` until the first fold, so it is inert when it lands.
 3. **Release branches proven**, once the first candidate exists, since the line it proves is that candidate's: `pr.yml`
@@ -47,7 +47,7 @@ it need it.
    attended step every week until `epic:cadence` schedules it.
 7. **The fold's tool and proof**, once `epic:release-engineering/compat-floor` publishes its store documents and the
    supported releases (`blizzard-compat releases --json`) and a release with a published wheel exists:
-   `scripts/fold_store.py`, `tests/test_store_baseline.py`, and its `store-baseline` job, with
+   `scripts/fold_store.py`, `tests/store_baseline/test_store_baseline.py`, and its `store-baseline` job, with
    `workspace:/context/project/workflows/store-fold.md` written beside them by hand ([fold.md](./fold.md) §The
    procedure). It folds nothing.
 8. **Attended: the first fold**, by `workspace:/context/project/workflows/store-fold.md`, once compat-floor's rehearsal

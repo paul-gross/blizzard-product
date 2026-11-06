@@ -7,13 +7,13 @@ of them is specified here.
 
 It builds on the service tier as it runs today. `mise run service-test` runs
 `BLIZZARD_SERVICE=1 uv run pytest -n auto tests/service/`, about fifty `test_*_service.py` files with no conftest of
-their own. Each test starts its own daemons through `tests/fleet_launchers.py` (`run_forge`, `run_hub`) and
-`tests/service/support.py` (`mock_hub`, `mock_runner`, `stub_idp`), on ports from `tests/support.py`'s `free_port`, and
-most mint a fixture world first through `tests/fleet_world.py`'s `mint_world`. The environment those daemons inherit is
-assembled piecemeal in `tests/suite_plugin.py`, partly in `pytest_configure` and partly in autouse fixtures. CI runs the
-tier as `upper-tiers.yml`'s three-shard `service-tier` job, reported under one check by `service-tier-result`, and as
-`release.yml`'s single `service-tier` job. No `package.json` exists outside `web/`, and nothing in the repo uses
-`@playwright/test`.
+their own. Each test starts its own daemons through `tests/support/fleet_launchers.py` (`run_forge`, `run_hub`) and
+`tests/service/support.py` (`mock_hub`, `mock_runner`, `stub_idp`), on ports from `tests/support/scaffolding.py`'s
+`free_port`, and most mint a fixture world first through `tests/support/fleet_world.py`'s `mint_world`. The environment
+those daemons inherit is assembled piecemeal in `tests/support/suite_plugin.py`, partly in `pytest_configure` and partly
+in autouse fixtures. CI runs the tier as `upper-tiers.yml`'s three-shard `service-tier` job, reported under one check by
+`service-tier-result`, and as `release.yml`'s single `service-tier` job. No `package.json` exists outside `web/`, and
+nothing in the repo uses `@playwright/test`.
 
 Paths are relative to the `blizzard` repo root unless a leaf says otherwise.
 

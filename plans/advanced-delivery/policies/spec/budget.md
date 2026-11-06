@@ -133,6 +133,6 @@ window when the forge itself refuses. Each names the forge, the secret, the buck
 read, and the reset. A budget lives beside adapters that hold no store, so it never writes an event itself: it queues
 each notice in memory, once per window, and the flow driver's tick drains the tenant's queue into `event_log` through
 `EventLogService.record`, off the event loop as every driver write is. A notice queued just before the hub stops is lost
-with it, and the next window records afresh. `tests/event_log_kind_census.py` and
+with it, and the next window records afresh. `tests/support/event_log_kind_census.py` and
 `blizzard-context:/domain/operations.md` gain both. A forge's document on `GET /api/forges/{forge}` carries each of its
 budgets' last reading, so the admin screen's forge detail shows how close each key runs to its limit.

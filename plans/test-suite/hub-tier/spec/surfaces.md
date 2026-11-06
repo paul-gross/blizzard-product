@@ -101,8 +101,9 @@ things. The runner's stream, which shares `Stream`, gains the same parameter.
 
 The frame shapes in `contracts/sse/` are unchanged. The stream is excluded from the OpenAPI document, and `docs/` has no
 event-stream reference, so the parameter is documented in `contracts/sse/README.md` and, for the runner's stream, in
-`docs/deployment/runner-doors.md`. `tests/test_sse_contract.py` checks frame shapes and never opens a stream, so each
-answer's case goes in `tests/test_foundation_events.py` and `tests/test_events.py`.
+`docs/deployment/runner-doors.md`. `tests/component/wire/test_sse_contract.py` checks frame shapes and never opens a
+stream, so each answer's case goes in `tests/unit/foundation/events/test_events.py` and
+`tests/component/hub/api/test_events.py`.
 
 ## A configurable login throttle
 

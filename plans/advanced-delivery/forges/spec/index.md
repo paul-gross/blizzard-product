@@ -36,13 +36,14 @@ learn the forge record; `domain/projects.md` names forges beside work sources an
 `domain/operations.md` gains `forge-capability-missing` and `config-old-field-used`. In `blizzard`'s own docs,
 `docs/deployment/repositories.md`, `work-sources.md`, and `config-documents.md` name the forge, and a new
 `docs/deployment/forges.md` describes it, and `docs/deployment/observability.md` names `forge-capability-missing` and
-`config-old-field-used`. The census `tests/store_read_census.py` learns the new reads, `contracts/store/hub.json` the
-new tables and columns, `contracts/cli/hub.json` the `forge` commands, and `tests/test_layering.py`'s configured-write
-gate the forge's writer ([record.md](./record.md#the-table)); the legacy import's store
-(`hub/store/internal/config_import_store.py`) creates the forges the import resolves. The workspace's
-feature-environment seeding (`hub-host.sh`) keeps the old fields until the retirement, since it seeds feature
-environments at every revision ([carry-over.md](./carry-over.md#the-transition-then-retirement)). `blizzard-mock`'s
-forge grows the few states and answers the end-to-end proofs need ([carry-over.md](./carry-over.md#the-mock-forge)).
+`config-old-field-used`. The census `tests/support/store_read_census.py` learns the new reads,
+`contracts/store/hub.json` the new tables and columns, `contracts/cli/hub.json` the `forge` commands, and
+`tests/guards/test_layering.py`'s configured-write gate the forge's writer ([record.md](./record.md#the-table)); the
+legacy import's store (`hub/store/internal/config_import_store.py`) creates the forges the import resolves. The
+workspace's feature-environment seeding (`hub-host.sh`) keeps the old fields until the retirement, since it seeds
+feature environments at every revision ([carry-over.md](./carry-over.md#the-transition-then-retirement)).
+`blizzard-mock`'s forge grows the few states and answers the end-to-end proofs need
+([carry-over.md](./carry-over.md#the-mock-forge)).
 
 ## Landing order
 

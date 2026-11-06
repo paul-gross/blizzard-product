@@ -181,10 +181,10 @@ the transition: the container is each process's composition graph, new services 
 bags are a path being retired that admits nothing new. At cutover they describe the end state, with the reasoning this
 plan carries, so the next person to ask why blizzard has a container finds the answer beside the rule. `bzh:domain-core`
 admits the registry interface and names dishka among the frameworks a domain module may not import. The layering gates
-in `tests/test_layering.py` that assume hand wiring — the roster of composition roots, and the check that no class is
-constructed twice across the hub's root files — are restated against the translation modules and the wiring modules in
-the foundation. The exemplars move with the code they model (`bzh:exemplar-conformance`): the exemplar wiring module at
-the foundation, and each exemplar service the day its production counterpart adopts.
+in `tests/guards/test_layering.py` that assume hand wiring — the roster of composition roots, and the check that no
+class is constructed twice across the hub's root files — are restated against the translation modules and the wiring
+modules in the foundation. The exemplars move with the code they model (`bzh:exemplar-conformance`): the exemplar wiring
+module at the foundation, and each exemplar service the day its production counterpart adopts.
 
 Pyright runs in strict mode since `epic:strict-types`, and dishka's `provide` is partially unknown to it there. Because
 only the translation modules import dishka, the two epics agree on one named waiver confined to them, and every wiring

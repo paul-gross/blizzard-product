@@ -74,5 +74,5 @@ marked `component`:
 seed or read its stopped store, and migrate it back up. The migrations each proves are already proved by
 `20261025_0900_forges_test.py`, `20261023_0901_hub_actions_test.py`, and `20261027_0900_flows_test.py` under
 `src/blizzard/hub/store/migrations/tests/`, and against released builds by the upgrade rehearsal. Each is deleted in a
-change of its own that names the test which covers it, and `tests/test_run_step_census.py`'s allowlist entry for
+change of its own that names the test which covers it, and `tests/guards/test_run_step_census.py`'s allowlist entry for
 `run_carry_over` leaves with it.

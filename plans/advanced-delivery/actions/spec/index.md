@@ -17,7 +17,8 @@ Paths are relative to `blizzard/src/blizzard/`.
 The epic reaches beyond `blizzard`'s source. In `blizzard-context`:
 
 - `architecture/clean-architecture.md`'s `bzh:domain-package-layers` table gains the `actions` row
-  ([The domain package](./actions.md#the-domain-package)), with `_DOMAIN_PACKAGE_LAYERS` in `tests/test_layering.py`.
+  ([The domain package](./actions.md#the-domain-package)), with `_DOMAIN_PACKAGE_LAYERS` in
+  `tests/guards/test_layering.py`.
 - `standards/hub-nodes/run-steps.md` becomes `standards/hub-nodes/action-shape.md`, the rule that a hub node names an
   action and routes every answer it can give but a reserved wait, under the id `bzh:hub-node-action-shape` in place of
   `bzh:hub-node-run-shape`; every citation of the old id follows, `standards/worker-nodes/declarations.md`'s Scope line

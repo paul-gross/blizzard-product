@@ -70,8 +70,9 @@ flow_facts                                append-only; the flow's record
 
 Each minted string key — `flow_id`, `submission_id`, `turn_id` — is declared `info={"hub_unique": True}` in
 `hub/store/schema.py`, and every other key is either one of those, a foreign key onto one, or led by `tenant_id`, so the
-tenant schema gate (`tests/test_tenant_schema_gate.py`) finds no natural key two tenants could both claim and no table
-without a tenant-led index. `flow_facts.id` is the table's autoincrement surrogate, which the gate already admits.
+tenant schema gate (`tests/unit/hub/store/test_schema_tenant_gate.py`) finds no natural key two tenants could both claim
+and no table without a tenant-led index. `flow_facts.id` is the table's autoincrement surrogate, which the gate already
+admits.
 
 A visit almost always has one submission. It has a second only when a turn found its resources changed under it — an
 operator edited a repository's base branch or a project's links while it waited — and closed the first `superseded`
@@ -117,9 +118,9 @@ closure nor a second `withdrawn` fact.
 Every read the driver makes each tick — the open submissions from the tenant's arrival floor
 ([turns.md](./turns.md#the-flow-driver)), the flows each holds, open turns, the newest poll — is served by an index
 above or an existing one, so `IReadFlows` needs no entry in the store-read-index gate's allow-list
-(`tests/store_scan_allowlist.py`), whose entries for the slot's scans leave with the store methods that make them. Each
-`IReadFlows` method gains its recipe in `tests/store_read_census.py`, which `test_hub_census_is_exhaustive` requires of
-every `IRead*` method.
+(`tests/support/store_scan_allowlist.py`), whose entries for the slot's scans leave with the store methods that make
+them. Each `IReadFlows` method gains its recipe in `tests/support/store_read_census.py`, which
+`test_hub_census_is_exhaustive` requires of every `IRead*` method.
 
 `flow_facts` and the closures are kept as long as chunk facts are; bounding how long the hub keeps either is
 `epic:retention`'s.
@@ -171,8 +172,8 @@ fact and no `flow-landed` event: the migration cannot tell which branch a past l
 
 `EventLogKind` and `EVENT_LOG_SEVERITY` (`foundation/event_log.py`) gain `flow-landed` (info) and `turn-interrupted`
 (warning, a turn ended without its pass's answer — [turns.md](./turns.md#a-turn-that-cannot-end));
-`tests/event_log_kind_census.py` gains both, and `blizzard-context:/domain/operations.md`'s table gains a row for each.
-`turn-interrupted` arrives with the record, since the first chunk's boot recovery may already end a turn
+`tests/support/event_log_kind_census.py` gains both, and `blizzard-context:/domain/operations.md`'s table gains a row
+for each. `turn-interrupted` arrives with the record, since the first chunk's boot recovery may already end a turn
 ([carry-over.md](./carry-over.md#at-boot)); `flow-landed` arrives with the turns that write it.
 
 ## Invariants

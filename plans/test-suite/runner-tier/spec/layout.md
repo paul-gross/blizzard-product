@@ -5,7 +5,7 @@
 `contracts/config/host.json` documents the host file's keys and seven paths: `.env`, `blizzard-host.toml`, `data`,
 `data/host.db`, `data/host.lock`, `host.sock`, `runners`. It says nothing of what lives inside `runners/` or `.env`, and
 nothing of the harness files `blizzard-runner init` writes, so a test that lays out a host today does it through
-`tests/host_files.py`'s `init_runner_environment`, `host_config_of`, and `write_host_file`, `HubTokenFile`, and
+`tests/support/host_files.py`'s `init_runner_environment`, `host_config_of`, and `write_host_file`, `HubTokenFile`, and
 `write_runner_id`.
 
 The contract's `paths` grow to name every file a host directory holds, each with what writes it and its mode where it
@@ -22,8 +22,8 @@ matters:
 The contract gains an `env` section naming the variables `.env` holds: `BZ_HOST_TOKEN`, the host's token, and
 `BZ_HUB_TOKEN_<NAME>`, each runner's, where `<NAME>` is the runner's name upper-cased with every non-alphanumeric
 character replaced by `_`, the rule `src/blizzard/foundation/runner_token_names.py` implements.
-`blizzard-export-contracts` writes both from the code that owns them, and `tests/test_config_contract.py` holds them to
-it, as it holds the keys.
+`blizzard-export-contracts` writes both from the code that owns them, and `tests/guards/test_config_contract.py` holds
+them to it, as it holds the keys.
 
 ## How the harness builds a host
 

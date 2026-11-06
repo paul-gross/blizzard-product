@@ -18,8 +18,8 @@ workspace repository.
    release it publishes is already protected by them.
 3. **The release workflow's signature, provenance, and inventory.** The `build` and `publish` jobs, the image's
    signature, the provenance on the image and every attached file, the requirements files, the image file, and the
-   checksums ([artifacts.md](./artifacts.md#the-release-workflows-jobs)), with `tests/test_release_workflow.py` updated
-   in the same change and the settings recorded in `docs/ci.md`.
+   checksums ([artifacts.md](./artifacts.md#the-release-workflows-jobs)), with `tests/guards/test_release_workflow.py`
+   updated in the same change and the settings recorded in `docs/ci.md`.
 4. **The bills of materials** ([attestation.md](./attestation.md#bills-of-materials)), added to the `build` job and the
    inventory.
 5. **The verify script and job** ([verification.md](./verification.md)). With them, by hand, the operator writes the
