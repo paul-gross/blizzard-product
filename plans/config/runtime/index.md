@@ -1,6 +1,6 @@
 ---
 epic: config/runtime
-refinement: scaffolded
+refinement: refined
 status: horizon
 ---
 
