@@ -74,15 +74,15 @@ declares the kinds of work it takes, running each under settings named once rath
 too large to share the road is marked a chokepoint, worked alone, and built by a swarm. The operator still decides what
 matters; they stop being the one who has to set it moving.
 
-| Epic                         | Status      |
-| ---------------------------- | ----------- |
-| `epic:cadence`               | in-progress |
-| `epic:signals`               | horizon     |
-| `epic:urgency`               | horizon     |
-| `epic:tagging`               | horizon     |
-| `epic:worker-profiles`       | horizon     |
-| `epic:chokepoint/chokepoint` | horizon     |
-| `epic:chokepoint/epic-dwf`   | horizon     |
+| Epic                         | Status    |
+| ---------------------------- | --------- |
+| `epic:cadence`               | delivered |
+| `epic:signals`               | horizon   |
+| `epic:urgency`               | horizon   |
+| `epic:tagging`               | horizon   |
+| `epic:worker-profiles`       | horizon   |
+| `epic:chokepoint/chokepoint` | horizon   |
+| `epic:chokepoint/epic-dwf`   | horizon   |
 
 ## `milestone:foundational-seams` — the seams opened wide
 
