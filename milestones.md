@@ -28,11 +28,11 @@ native configurations and tool rules they carry — and every harness honours th
 a headless run stuck on a prompt and without any worker running with its permissions dangerously bypassed. Protected
 branches remain the forge's to guard, not the agent's to respect on a bad night.
 
-| Epic                            | Status      |
-| ------------------------------- | ----------- |
-| `epic:adapters/opencode`        | delivered   |
-| `epic:security/worker-security` | delivered   |
-| `epic:adapters/opencode-2`      | in-progress |
+| Epic                            | Status    |
+| ------------------------------- | --------- |
+| `epic:adapters/opencode`        | delivered |
+| `epic:security/worker-security` | delivered |
+| `epic:adapters/opencode-2`      | delivered |
 
 ## `milestone:hardening` — the platform stops guessing on your behalf
 

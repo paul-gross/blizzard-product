@@ -1,7 +1,7 @@
 ---
 epic: adapters/opencode-2
 refinement: pristine
-status: in-progress
+status: delivered
 ---
 
 # Plan — `epic:adapters/opencode-2`
