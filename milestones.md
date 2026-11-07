@@ -28,36 +28,36 @@ people running blizzard when they choose. Each holds because the build enforces 
 Little of this is new capability; it is what a platform does after it works, and the release that reaches this milestone
 is blizzard's 1.0.
 
-| Epic                                     | Status      |
-| ---------------------------------------- | ----------- |
-| `epic:runner-host`                       | delivered   |
-| `epic:release-engineering/first-release` | delivered   |
-| `epic:release-engineering/compat-floor`  | delivered   |
-| `epic:release-engineering/notes`         | delivered   |
-| `epic:release-engineering/release-lines` | delivered   |
-| `epic:release-engineering/dark-launch`   | delivered   |
-| `epic:release-engineering/supply-chain`  | delivered   |
-| `epic:storybook`                         | delivered   |
-| `epic:throttling`                        | delivered   |
-| `epic:test-suite/foundation`             | delivered   |
-| `epic:test-suite/hub-tier`               | delivered   |
-| `epic:test-suite/runner-tier`            | delivered   |
-| `epic:test-suite/fleet-tier`             | delivered   |
-| `epic:test-suite/journey`                | delivered   |
-| `epic:architectural-sweep`               | delivered   |
-| `epic:strict-types`                      | delivered   |
-| `epic:strict-mock`                       | delivered   |
-| `epic:test-suite/controlled-clock`       | in-progress |
-| `epic:resilience`                        | horizon     |
-| `epic:config/model-resolution`           | horizon     |
-| `epic:config/sweep`                      | horizon     |
-| `epic:config/runtime`                    | horizon     |
-| `epic:ui-toolkit`                        | horizon     |
-| `epic:documentation`                     | horizon     |
-| `epic:test-suite/optimization`           | horizon     |
-| `epic:adopt-di`                          | horizon     |
-| `epic:transactions`                      | horizon     |
-| `epic:advanced-forge-auth`               | horizon     |
+| Epic                                     | Status    |
+| ---------------------------------------- | --------- |
+| `epic:runner-host`                       | delivered |
+| `epic:release-engineering/first-release` | delivered |
+| `epic:release-engineering/compat-floor`  | delivered |
+| `epic:release-engineering/notes`         | delivered |
+| `epic:release-engineering/release-lines` | delivered |
+| `epic:release-engineering/dark-launch`   | delivered |
+| `epic:release-engineering/supply-chain`  | delivered |
+| `epic:storybook`                         | delivered |
+| `epic:throttling`                        | delivered |
+| `epic:test-suite/foundation`             | delivered |
+| `epic:test-suite/hub-tier`               | delivered |
+| `epic:test-suite/runner-tier`            | delivered |
+| `epic:test-suite/fleet-tier`             | delivered |
+| `epic:test-suite/journey`                | delivered |
+| `epic:architectural-sweep`               | delivered |
+| `epic:strict-types`                      | delivered |
+| `epic:strict-mock`                       | delivered |
+| `epic:test-suite/controlled-clock`       | delivered |
+| `epic:resilience`                        | horizon   |
+| `epic:config/model-resolution`           | horizon   |
+| `epic:config/sweep`                      | horizon   |
+| `epic:config/runtime`                    | horizon   |
+| `epic:ui-toolkit`                        | horizon   |
+| `epic:documentation`                     | horizon   |
+| `epic:test-suite/optimization`           | horizon   |
+| `epic:adopt-di`                          | horizon   |
+| `epic:transactions`                      | horizon   |
+| `epic:advanced-forge-auth`               | horizon   |
 
 ## `milestone:autonomy` — a fleet that runs itself
 

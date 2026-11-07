@@ -12,4 +12,4 @@ of the move, and the gate's speed beside it.
 | [fleet-tier/](./fleet-tier/index.md)             | Tracing the delivered e2e scenarios' ports into the fleet service and UI tests, or the e2e tier's retirement                            |
 | [optimization/](./optimization/index.md)         | Speeding up the pipeline, the pull request gate, or the tiers that stay in Python                                                       |
 | [journey/](./journey/index.md)                   | Tracing the delivered daemon-answered consistency check, the journey's Playwright port, or `blizzard-mock`'s wire parity in CI          |
-| [controlled-clock/](./controlled-clock/index.md) | Giving the daemons a clock a test moves, moving a spec off a real-time wait, or reading time in a spec                                  |
+| [controlled-clock/](./controlled-clock/index.md) | Tracing the delivered controlled clock the daemons run on, how specs moved off real-time waits, or how a spec reads time                |
