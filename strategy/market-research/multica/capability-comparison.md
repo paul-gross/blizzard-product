@@ -226,8 +226,8 @@ Five decisions fall out of this comparison.
 
 **The confinement posture now has a market baseline, and it is no posture.** The most-adopted product in the field runs
 every harness with permissions bypassed and no sandbox, and its users have not objected. That weakens the case that
-confinement is what wins a prospect, and leaves the case that [`milestone:polyglot`](../../../milestones.md) makes on
-its own terms, that no worker should run with permissions dangerously bypassed, exactly where the
+confinement is what wins a prospect, and leaves the case that [`milestone:polyglot`](../../../delivered.md) makes on its
+own terms, that no worker should run with permissions dangerously bypassed, exactly where the
 [Soleur comparison](../soleur/capability-comparison.md#what-the-differences-ask) left it: urgent and undecided. What
 Multica adds is a model for the interim. Its security-model page states, in a few paragraphs, what a run can reach and
 what an operator should do about it. Blizzard has no such page. Writing one is cheap, honest, and independent of the

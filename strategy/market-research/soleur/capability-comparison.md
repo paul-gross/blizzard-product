@@ -152,7 +152,7 @@ The Fusion comparison credits blizzard with a fail-closed Landlock boundary on t
 exists, but it confines only the OpenCode compatibility diagnostic. It refuses any workdir outside a temporary
 directory, so a feature environment can never run under it, and the live adapter never uses it. That was already true
 when the Fusion comparison was written, so the row there is wrong rather than stale.
-[`milestone:polyglot`](../../../milestones.md) promises that no worker runs with permissions dangerously bypassed, and
+[`milestone:polyglot`](../../../delivered.md) promises that no worker runs with permissions dangerously bypassed, and
 today's default does exactly that.
 
 ## What blizzard has that Soleur does not
@@ -237,9 +237,9 @@ learned, one incident at a time, why someone would want a layer above.
 Four decisions fall out of this comparison, and one of them is urgent.
 
 **Confinement is the urgent one.** The shipped default runs every worker with permissions bypassed, which is the
-condition [`milestone:polyglot`](../../../milestones.md) promises to end, and the Landlock boundary the Fusion
-comparison relied on to soften that gap does not govern live workers. Soleur demonstrates that a fail-closed sandbox
-with a network allowlist is buildable by one person and can be proven on every deploy.
+condition [`milestone:polyglot`](../../../delivered.md) promises to end, and the Landlock boundary the Fusion comparison
+relied on to soften that gap does not govern live workers. Soleur demonstrates that a fail-closed sandbox with a network
+allowlist is buildable by one person and can be proven on every deploy.
 [`epic:security/worker-security`](../../../delivered/security/worker-security/index.md) currently frames the work as
 harness configuration plus one autonomy level. Either that framing meets the milestone through a safer default and a
 narrower permission posture, or the epic needs an operating-system boundary added to its scope. Which of the two is the

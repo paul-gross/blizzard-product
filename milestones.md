@@ -6,7 +6,6 @@ way around.
 
 | Milestone                      | What users will be able to do                                                                                                                                                                                                                                                                                                                                      |
 | ------------------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
-| `milestone:polyglot`           | Run the fleet on the coding harness of their choice — Claude Code or OpenCode, first-class and mixable by node — with the safeties on: no worker runs with permissions dangerously bypassed.                                                                                                                                                                       |
 | `milestone:hardening`          | Decide for themselves how the fleet behaves: every operational constant theirs to set, when and at what rate each runner takes work theirs to declare, a provider outage ridden out rather than slept through, every upgrade taken when they choose and told beforehand what it asks of them, and every question about the platform answerable without cloning it. |
 | `milestone:autonomy`           | Leave the fleet to run itself: it keeps its own schedule, takes up work the moment something happens, reaches first for what is most urgent, hands each piece to the runner and the settings suited to it, and clears the road for a change too large to share it — without the operator choreographing any of it.                                                 |
 | `milestone:foundational-seams` | Run blizzard on the tools they already use, not only the ones it was first built on: each seam the fleet was drawn along — the coding harness first — opened from the one tool it shipped with to the range of tools its users actually work in.                                                                                                                   |
@@ -14,25 +13,6 @@ way around.
 | `milestone:mobile`             | Carry the fleet in a pocket: watch the night, answer a question, and unblock a chunk from a phone, through notifications that arrive the way the phone's own do.                                                                                                                                                                                                   |
 | `milestone:project-management` | Assemble what the fleet works on from inside blizzard — browse the backlog, take many items at once, and shape them into chunks — instead of handing over ids one at a time.                                                                                                                                                                                       |
 | `milestone:future-state`       | Unsorted work that belongs to no major milestone underway.                                                                                                                                                                                                                                                                                                         |
-
-## `milestone:polyglot` — any harness, with the safeties on
-
-No single coding agent should ever be load-bearing for the fleet. The operator runs the harness that serves the work —
-chosen for the whole fleet, or mixed by node the way models already are — and when a harness ships a new major version,
-the fleet takes it up beside the old one rather than forcing a migration. Harness choice becomes a tunable rather than a
-fact of the platform: the harness engineer runs the same chunk through two harnesses and compares them on cost and
-quality.
-
-Choice never costs safety. The operator sets each runner's terms once — how much autonomy its workers have, and which
-native configurations and tool rules they carry — and every harness honours those terms in its own way, without leaving
-a headless run stuck on a prompt and without any worker running with its permissions dangerously bypassed. Protected
-branches remain the forge's to guard, not the agent's to respect on a bad night.
-
-| Epic                            | Status    |
-| ------------------------------- | --------- |
-| `epic:adapters/opencode`        | delivered |
-| `epic:security/worker-security` | delivered |
-| `epic:adapters/opencode-2`      | delivered |
 
 ## `milestone:hardening` — the platform stops guessing on your behalf
 
