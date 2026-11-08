@@ -1,6 +1,6 @@
 ---
 epic: urgency
-refinement: refined
+refinement: pristine
 status: horizon
 ---
 
