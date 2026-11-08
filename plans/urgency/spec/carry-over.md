@@ -44,38 +44,42 @@ extends `blizzard-mock`'s mirror in the same change.
    operator page on urgencies, with the set, the default, and retiring, and the config-documents page's sections. Its
    context half: the domain's new urgency spoke, with the record, the default, and retiring, routed from the work hub;
    the configuration spoke's entries for the urgency and the tenant's settings, the urgency's departure from
-   `bzh:config-apply` among them; the hub's crash-correctness record of tenant creation. Proven by `blizzard:unit-test`
-   over every validation refusal — a slug a retired urgency holds, an emoji carrying a letter, an SVG icon, both marks
-   at once — over the order's refusals, and over every retire refusal in its order; `blizzard:component-test` over the
-   revision on a store with chunks at every status, run twice, over tenant creation, over a retire moving open work
-   while finished work keeps its urgency, over an apply naming a retired urgency refused, an apply whose order leaves an
-   urgency out refused, and an export applied back writing nothing; `blizzard:postgres-uow-concurrency` over a retire
-   racing a mint and a chunk edit naming the same urgency; `blizzard:manual-postgres-migrations`;
-   `blizzard:store-contract`, `blizzard:cli-contract`, `blizzard:compat`, and `web:client-drift`.
+   `bzh:config-apply` among them; the tenancy spoke's new tenant given `standard`; the hub's crash-correctness record of
+   tenant creation. Proven by `blizzard:unit-test` over every validation refusal — a slug a retired urgency holds, an
+   emoji carrying a letter, an SVG icon, both marks at once — over the order's refusals, and over every retire refusal
+   in its order; `blizzard:component-test` over the revision on a store with chunks at every status, run twice, over
+   tenant creation, over a retire moving open work while finished work keeps its urgency, over an apply naming a retired
+   urgency refused, an apply whose order leaves an urgency out refused, and an export applied back writing nothing;
+   `blizzard:postgres-uow-concurrency` over a retire racing a mint and a settings edit naming the same urgency;
+   `blizzard:manual-postgres-migrations`; `blizzard:store-contract`, `blizzard:cli-contract`, `blizzard:compat`, and
+   `web:client-drift`.
 2. **The chunk's urgency.** Waits for piece 1. The chain's stated links on ingest, a hub item's create, a proposal's
    accept, and a routine run; the routine's default and the chore's override, with their columns in one additive
    revision; `urgency` on the chunk's edit, its window, and the queue change it publishes; `urgency` on every chunk
    view; the CLI options that set them ([chunk.md](./chunk.md)); a retire clearing the routine defaults and chore
    overrides that name it; and `blizzard-mock`'s mirror of the views' new field. The pages on routines and scopes and on
    cadences gain what touches them. Its context half: the chunk spoke names the urgency among a chunk's
-   operator-editable properties, its window, and that grouping keeps the survivor's. Proven by `blizzard:unit-test` over
-   the chain at every link — a run stating one, a chore naming one over a routine naming another, a chore naming none
-   over a routine naming none — and over the edit's window at every status; `blizzard:component-test` over each mint
-   path writing what the chain resolves, a stated retired urgency refused, grouping keeping the survivor's urgency, an
-   edit leaving rank untouched, a retire leaving a routine's default and a chore's override reading as none, and a
-   document declaring an urgency and a routine naming it applying in one pass; `blizzard:service-test` editing a ready
-   chunk's urgency and reading its view and the queue's change frame; `blizzard:store-contract`,
-   `blizzard:cli-contract`, `blizzard:compat`, and `web:client-drift`.
+   operator-editable properties, its window, and that grouping keeps the survivor's; the spokes on routines and scopes
+   and on cadences gain a routine's default and a chore's override. Proven by `blizzard:unit-test` over the chain at
+   every link — a run stating one, a chore naming one over a routine naming another, a chore naming none over a routine
+   naming none — and over the edit's window at every status; `blizzard:component-test` over each mint path writing what
+   the chain resolves, a stated retired urgency refused, grouping keeping the survivor's urgency, an edit leaving rank
+   untouched, a retire leaving a routine's default and a chore's override reading as none, and a document declaring an
+   urgency and a routine naming it applying in one pass; `blizzard:postgres-uow-concurrency` over a retire racing a
+   chunk edit naming the same urgency; `blizzard:service-test` editing a ready chunk's urgency and reading its view and
+   the queue's change frame; `blizzard:store-contract`, `blizzard:cli-contract`, `blizzard:compat`, and
+   `web:client-drift`.
 3. **Claim order.** Waits for piece 2. Claim order in the queue operations; the matched and legacy peeks walking it; the
    walk returning its trace ([claim-order.md](./claim-order.md) §Two orders over one queue, §The peeks walk claim
    order). The operator page on urgencies gains claim order, hold and pass-over under it, and an urgent chunk behind a
-   prerequisite. Its context half: the ranking spoke names claim order beside each list's rank, and the acquisition
-   spoke restates the walk over claim order and says a prerequisite is never raised. Proven by `blizzard:unit-test` over
-   the walk — pass-over stepping past a blocked urgent chunk to the next urgent one, then down a group; hold stopping at
-   an urgent chunk it cannot use, per project when projects are named; one urgency giving rank order exactly; a reorder
-   of the set reordering the walk — and over the trace matching the choice on every fixture; `blizzard:component-test`
-   over the peeks on a two-project tenant; `blizzard:service-test` with a runner claiming an urgent chunk ranked last;
-   `blizzard:compat`; and `blizzard:manual-hub` with a real runner taking the urgent chunk first.
+   prerequisite. Its context half: the ranking spoke names claim order beside each list's rank, the acquisition spoke
+   restates the walk over claim order and says a prerequisite is never raised, and the urgency spoke gains claim order.
+   Proven by `blizzard:unit-test` over the walk — pass-over stepping past a blocked urgent chunk to the next urgent one,
+   then down a group; hold stopping at an urgent chunk it cannot use, per project when projects are named; one urgency
+   giving rank order exactly; a reorder of the set reordering the walk — and over the trace matching the choice on every
+   fixture; `blizzard:component-test` over the peeks on a two-project tenant; `blizzard:service-test` with a runner
+   claiming an urgent chunk ranked last; `blizzard:compat`; and `blizzard:manual-hub` with a real runner taking the
+   urgent chunk first.
 4. **The explanation.** Waits for piece 3. The next-claim route and `runner next` ([claim-order.md](./claim-order.md)
    §The walk, explained, [surfaces.md](./surfaces.md) §The CLI). Proven by `blizzard:unit-test` over each reason and
    over `held_at`; `blizzard:service-test` reading a runner's explanation before and after raising a blocking

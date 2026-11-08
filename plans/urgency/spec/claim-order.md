@@ -82,8 +82,8 @@ answers:
 - `passed`: each chunk ahead of `next` in claim order within the runner's projects, with its urgency and its reason, at
   most twenty, and `passed_total` beside them;
 - `if_holding`: what a runner that holds would reach for instead, walking per project as a real runner's peek does, and
-  where each of its projects stops — so the board can say both, since the policy is the runner's own configuration and
-  the hub holds no record of it;
+  `held_at`, the chunk where each of its projects stops — so the board can say both, since the policy is the runner's
+  own configuration and the hub holds no record of it;
 - `unserved`: how many chunks ahead of `next` it never walked.
 
 The explanation reads nothing a peek does not read, once per request, and its trace walks a list the read has already
