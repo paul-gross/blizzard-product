@@ -1,7 +1,7 @@
 ---
 epic: urgency
 refinement: pristine
-status: horizon
+status: in-progress
 ---
 
 # Plan — `epic:urgency`
