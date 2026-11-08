@@ -31,8 +31,11 @@ clears.
   shows what each move means — which chunks it would now wait on and which it would hold back — so that deciding to do
   the big thing sooner or later is a drag, not a negotiation with the fleet.
 - **Rules applied at the moment of claiming.** A chokepoint is enforced when a runner goes to pick up work, against the
-  queue as it stands at that moment, and nowhere else. Nothing ranked behind a chokepoint is claimed until the
-  chokepoint is done, and the chokepoint itself is not claimed while any chunk ranked ahead of it is still open.
+  queue as it stands at that moment, and nowhere else. Nothing behind a chokepoint is claimed until the chokepoint is
+  done, and the chokepoint itself is not claimed while any chunk ahead of it is still open. Ahead and behind follow
+  rank, except that a chunk ranked behind a chokepoint but more urgent than it counts as ahead — [How a chokepoint meets
+  urgency](#how-a-chokepoint-meets-urgency) owns that exception. Once the chokepoint is claimed, nothing in its project
+  is claimed until it is done, however urgent.
 - **A chokepoint belongs to its project.** Once `initiative:projects` gives the hub more than one project, a chokepoint
   narrows only the project its chunk belongs to. Ahead and behind are counted within that project's queue, and runners
   go on claiming every other project's work as if nothing had happened. A rewrite of one codebase has no reason to stall
@@ -45,8 +48,9 @@ clears.
 ## How it behaves
 
 A chokepoint never freezes the queue in front of it. Anyone can put work ahead of it — minting a chunk ranked ahead of
-it, or moving one past it — and the chokepoint simply waits for that work too. Whether the big change happens now or
-later is the operator's to decide by where they place it; the fleet only keeps the rules each time it reaches for work.
+it, moving one past it, or giving one behind it more urgency than the chokepoint carries — and the chokepoint simply
+waits for that work too. Whether the big change happens now or later is the operator's to decide by where they place it;
+the fleet only keeps the rules each time it reaches for work.
 
 Anything open ahead of a chokepoint holds it back, whatever state it is in. A chunk that is running, paused, parked at a
 gate, or waiting on an answer is still ahead, and the chokepoint waits for it. The board names each one, so the operator
@@ -63,3 +67,22 @@ them flows as usual.
 A chokepoint does not police dependencies. A chunk that names the chokepoint as a prerequisite was behind it anyway, and
 a chokepoint that names a chunk ranked behind it as a prerequisite will wait for it forever. Blizzard does not guard
 against that; the board shows what the chokepoint is waiting on, and seeing the mistake is the operator's job.
+
+## How a chokepoint meets urgency
+
+A chokepoint is a wall across the rank order, and under `epic:urgency` its own urgency decides how high the wall stands.
+Work ranked behind a chokepoint and less urgent than it, or equally urgent, waits for the chokepoint to clear, exactly
+as it would if urgency did not exist. Work ranked behind it and more urgent than it goes around the wall: it counts as
+ahead of the chokepoint, so a runner may claim it and the chokepoint waits for it like anything else ahead. An operator
+planning a rewrite can mark the chokepoint `standard` and still let an urgent fix through on the night it arrives,
+without anyone moving the fix by hand, or mark it with their most urgent group to hold back everything. A steady stream
+of work more urgent than the chokepoint keeps it waiting; that is the operator's choice made when they set its urgency,
+and they change it the same way.
+
+The wall lowers only until the chokepoint starts. Once it has been claimed, nothing in its project is claimed until it
+clears, however urgent, because the chokepoint exists so that nothing runs beside it. An urgent fix that arrives while
+the big change is running waits for it, at the head of the line.
+
+Ahead of the wall, urgency orders the work as it does anywhere else, and the chokepoint waits for every chunk ahead of
+it, the lowest group's work included. That work does not stall the road: once the more urgent work ahead of the
+chokepoint is gone, it is all that is left to claim, and the fleet takes it.

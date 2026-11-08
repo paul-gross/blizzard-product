@@ -16,7 +16,7 @@ both of those were arranged by hand, from outside the fleet.
 
 This initiative lets the fleet arrange both itself. The [chokepoint epic](./chokepoint.md) clears the road: the operator
 marks a chunk as a chokepoint, sees it flagged on the board well before it arrives, moves it up or down the queue as
-plans change, and the fleet finishes everything ranked ahead of it, works it alone, and claims nothing ranked behind it
+plans change, and the fleet finishes everything ranked ahead of it, works it alone, and holds back the work behind it
 until it clears. The [epic-dwf epic](./epic-dwf.md) gives the work a lane built for its size: a development workflow for
 epic-level change of twenty thousand lines or more, or thousands of small adjustments, planned whole, built by a swarm
 of agents, and landed as one. The chokepoint comes first, because a swarm without a clear road is the very merge it

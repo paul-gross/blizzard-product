@@ -170,12 +170,14 @@ much more about the fleet. The experiment spends repetitions where they are info
 itself to know how noisy a single trial is, and the rest spread across specimens, because generalizing beyond the work
 that happened to be chosen is the point.
 
-Trials travel the same ready queue as everything else, ranked in the group that yields to real work, which is what
-`epic:urgency`'s `background` group already promises, but only a runner that brings a lab workspace claims one. A
-separate queue would need claiming rules of its own; a runner that declares what kind of workspace it offers needs only
-the claim it already makes. An experiment declares how many of its trials may run at once, so it can never crowd its lab
-runners, and an arm that names a harness reaches only the lab runners that offer it, by the same harness choice every
-declared session already makes.
+Trials travel the same ready queue as everything else, at an urgency the experiment names, the way a routine names the
+urgency its work enters at, and falling back to the tenant's default the same way when that urgency is retired. An
+engineer who keeps a low group under `epic:urgency`, a `background` below the work that matters, puts the trials there
+so they yield to real work, but only a runner that brings a lab workspace claims one. A separate queue would need
+claiming rules of its own; a runner that declares what kind of workspace it offers needs only the claim it already
+makes. An experiment declares how many of its trials may run at once, so it can never crowd its lab runners, and an arm
+that names a harness reaches only the lab runners that offer it, by the same harness choice every declared session
+already makes.
 
 Twenty trials would bury the operator's board, so they do not appear on it. The board shows an experiment as a single
 card, and the trials behind it live on a board of their own, the **lab board**, where the question being asked is
