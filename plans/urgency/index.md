@@ -14,6 +14,10 @@ in the same line as the features, competing for runners they only ever needed wh
 the queue cannot hear is that some work should jump the line the moment it exists, and some should only ever take a
 runner nobody else wants.
 
+| Where                    | Read when                                                             |
+| ------------------------ | --------------------------------------------------------------------- |
+| [spec/](./spec/index.md) | Implementing any part of the epic or resolving its technical contract |
+
 Urgency is that second axis. Every chunk carries an urgency drawn from a short, ordered set the operator keeps, and a
 runner reaching for work looks at the most urgent group first, takes the highest-ranked chunk it can claim there, and
 steps down to the next group only when the one above has nothing to offer. Rank keeps its meaning: it still orders the
