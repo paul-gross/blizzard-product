@@ -1,8 +1,8 @@
 # blizzard-product
 
 > **Product planning has moved.** Current Fleet requirements and plans live in
-> [c5xlabs/winter-planning](https://github.com/c5xlabs/winter-planning/tree/master/projects/fleet).
-> This repository is retained as a historical archive; contribute new planning work in `winter-planning`.
+> [c5xlabs/winter-planning](https://github.com/c5xlabs/winter-planning/tree/master/projects/fleet). This repository is
+> retained as a historical archive; contribute new planning work in `winter-planning`.
 
 **The live product intent behind [blizzard](https://github.com/paul-gross/blizzard).** What we are building next, and
 why, kept current.
